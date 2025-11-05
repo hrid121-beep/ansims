@@ -15,7 +15,15 @@
       "Bash(dotnet build:*)",
       "Bash(powershell \"(Get-Content Interfaces.cs | Measure-Object -Line).Lines\")",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implement Voucher System with Bengali PDF Generation\n\n- Added voucher generation system for Issue and Receive transactions\n- Implemented Bengali PDF voucher template matching official format\n- Added LedgerNo and PageNo fields to IssueItem and ReceiveItem entities\n- Added voucher fields to Receive entity (VoucherNo, VoucherDate, etc.)\n- Created VoucherService with PDF generation using iTextSharp\n- Added UsableQuantity, PartiallyUsableQuantity, UnusableQuantity breakdown\n- Fixed StoreService GetAllStoresAsync to populate AssignedUserCount\n- Database migration: AddVoucherLedgerPageFields applied successfully\n- Created comprehensive implementation guide (VOUCHER_IMPLEMENTATION_GUIDE.md)\n\nFeatures:\n- Automatic voucher number generation (ISS-YYYYMM-0001, RCV-YYYYMM-0001)\n- Bengali text support for voucher PDF\n- Ledger and page number tracking per item\n- Item condition breakdown (Usable/Partial/Unusable)\n- Signature sections for provider and receiver\n- PDF download and storage in wwwroot/vouchers/\n\nPending Tasks:\n- Fix VoucherService compilation errors (Document class conflict)\n- Add Bengali font file (kalpurush.ttf)\n- Update Issue/Receive forms with ledger/page input fields\n- Add voucher download buttons to details views\n- Update DTOs with new fields\n\n🤖 Generated with Claude Code (https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(powershell \"(Get-Content ''IMS.Web/Controllers/IssueController.cs'' | Measure-Object -Line).Lines\")",
+      "Bash(Select-String \"IssueService\")",
+      "Bash(Select-String \"Error\\(s\\)|Warning\\(s\\)|Build succeeded|Build FAILED\")"
     ],
     "deny": [],
     "ask": []

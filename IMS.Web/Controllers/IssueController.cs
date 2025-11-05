@@ -29,7 +29,8 @@ namespace IMS.Web.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<IssueController> _logger;
         private readonly IWebHostEnvironment _environment;
-        private readonly IAllotmentLetterService _allotmentLetterService; // ADD THIS
+        private readonly IAllotmentLetterService _allotmentLetterService;
+        private readonly IVoucherService _voucherService;
 
         public IssueController(
             IIssueService issueService,
@@ -45,7 +46,8 @@ namespace IMS.Web.Controllers
             UserManager<User> userManager,
             ILogger<IssueController> logger,
             IWebHostEnvironment environment,
-            IAllotmentLetterService allotmentLetterService)
+            IAllotmentLetterService allotmentLetterService,
+            IVoucherService voucherService)
         {
             _issueService = issueService;
             _storeService = storeService;
@@ -61,6 +63,7 @@ namespace IMS.Web.Controllers
             _itemService = itemService;
             _environment = environment;
             _allotmentLetterService = allotmentLetterService;
+            _voucherService = voucherService;
         }
 
         #region Index & List Views
@@ -1257,6 +1260,31 @@ namespace IMS.Web.Controllers
                 _logger.LogError(ex, "Error deleting voucher document");
             }
         }
+
+        #endregion
+
+        #region Voucher Actions
+
+        [HttpGet]
+        [HasPermission(Permission.ViewIssue)]
+        public async Task<IActionResult> DownloadVoucher(int id)
+        {
+            try
+            {
+                var pdfBytes = await _voucherService.GetIssueVoucherPdfAsync(id);
+                var issue = await _issueService.GetIssueByIdAsync(id);
+
+                string fileName = $"Issue_Voucher_{issue.VoucherNo}_{DateTime.Now:yyyyMMdd}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading voucher for Issue {IssueId}", id);
+                TempData["Error"] = "ভাউচার ডাউনলোডে সমস্যা হয়েছে।";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
         #endregion
     }
 }

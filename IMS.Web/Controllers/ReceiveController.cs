@@ -30,6 +30,7 @@ namespace IMS.Web.Controllers
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ReceiveController> _logger;
+        private readonly IVoucherService _voucherService;
 
         public ReceiveController(
             IReceiveService receiveService,
@@ -41,7 +42,8 @@ namespace IMS.Web.Controllers
             IUnitOfWork unitOfWork,
             INotificationService notificationService,
             UserManager<User> userManager,
-            ILogger<ReceiveController> logger)
+            ILogger<ReceiveController> logger,
+            IVoucherService voucherService)
         {
             _receiveService = receiveService;
             _issueService = issueService;
@@ -53,6 +55,7 @@ namespace IMS.Web.Controllers
             _notificationService = notificationService;
             _userManager = userManager;
             _logger = logger;
+            _voucherService = voucherService;
         }
 
         // GET: Receive/Index - List all receives
@@ -825,6 +828,50 @@ namespace IMS.Web.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        #region Voucher Actions
+
+        // POST: Receive/GenerateVoucher - Generate voucher for receive
+        [HttpPost]
+        [HasPermission(Permission.CreateReceive)]
+        public async Task<IActionResult> GenerateVoucher(int id)
+        {
+            try
+            {
+                var voucherNo = await _voucherService.GenerateReceiveVoucherAsync(id);
+                TempData["Success"] = $"ভাউচার তৈরি হয়েছে: {voucherNo}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating voucher for Receive {ReceiveId}", id);
+                TempData["Error"] = "ভাউচার তৈরিতে সমস্যা হয়েছে।";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
+        // GET: Receive/DownloadVoucher - Download voucher PDF
+        [HttpGet]
+        [HasPermission(Permission.ViewReceive)]
+        public async Task<IActionResult> DownloadVoucher(int id)
+        {
+            try
+            {
+                var pdfBytes = await _voucherService.GetReceiveVoucherPdfAsync(id);
+                var receive = await _receiveService.GetReceiveByIdAsync(id);
+
+                string fileName = $"Receive_Voucher_{receive.VoucherNo}_{DateTime.Now:yyyyMMdd}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading voucher for Receive {ReceiveId}", id);
+                TempData["Error"] = "ভাউচার ডাউনলোডে সমস্যা হয়েছে।";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
+        #endregion
 
         #region Helper Methods
 

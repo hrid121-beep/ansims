@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using PdfDocument = iTextSharp.text.Document;
 
 namespace IMS.Application.Services
 {
@@ -95,17 +96,10 @@ namespace IMS.Application.Services
             try
             {
                 // Get issue with related data
-                var issue = await _unitOfWork.Issues.FindAsync(
+                var issueEntity = await _unitOfWork.Issues.GetAsync(
                     i => i.Id == issueId,
-                    include: query => query
-                        .Include(i => i.Items).ThenInclude(ii => ii.Item)
-                        .Include(i => i.FromStore)
-                        .Include(i => i.IssuedToBattalion)
-                        .Include(i => i.IssuedToRange)
-                        .Include(i => i.IssuedToZila)
+                    includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila" }
                 );
-
-                var issueEntity = issue.FirstOrDefault();
 
                 if (issueEntity == null)
                 {
@@ -117,14 +111,10 @@ namespace IMS.Application.Services
                 {
                     await GenerateIssueVoucherAsync(issueId);
                     // Reload entity
-                    issue = await _unitOfWork.Issues.FindAsync(i => i.Id == issueId,
-                        include: query => query
-                            .Include(i => i.Items).ThenInclude(ii => ii.Item)
-                            .Include(i => i.FromStore)
-                            .Include(i => i.IssuedToBattalion)
-                            .Include(i => i.IssuedToRange)
-                            .Include(i => i.IssuedToZila));
-                    issueEntity = issue.FirstOrDefault();
+                    issueEntity = await _unitOfWork.Issues.GetAsync(
+                        i => i.Id == issueId,
+                        includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila" }
+                    );
                 }
 
                 // Generate PDF
@@ -204,17 +194,10 @@ namespace IMS.Application.Services
             try
             {
                 // Get receive with related data
-                var receive = await _unitOfWork.Receives.FindAsync(
+                var receiveEntity = await _unitOfWork.Receives.GetAsync(
                     r => r.Id == receiveId,
-                    include: query => query
-                        .Include(r => r.ReceiveItems).ThenInclude(ri => ri.Item)
-                        .Include(r => r.Store)
-                        .Include(r => r.ReceivedFromBattalion)
-                        .Include(r => r.ReceivedFromRange)
-                        .Include(r => r.ReceivedFromZila)
+                    includes: new[] { "ReceiveItems.Item", "Store", "ReceivedFromBattalion", "ReceivedFromRange", "ReceivedFromZila" }
                 );
-
-                var receiveEntity = receive.FirstOrDefault();
 
                 if (receiveEntity == null)
                 {
@@ -226,14 +209,10 @@ namespace IMS.Application.Services
                 {
                     await GenerateReceiveVoucherAsync(receiveId);
                     // Reload entity
-                    receive = await _unitOfWork.Receives.FindAsync(r => r.Id == receiveId,
-                        include: query => query
-                            .Include(r => r.ReceiveItems).ThenInclude(ri => ri.Item)
-                            .Include(r => r.Store)
-                            .Include(r => r.ReceivedFromBattalion)
-                            .Include(r => r.ReceivedFromRange)
-                            .Include(r => r.ReceivedFromZila));
-                    receiveEntity = receive.FirstOrDefault();
+                    receiveEntity = await _unitOfWork.Receives.GetAsync(
+                        r => r.Id == receiveId,
+                        includes: new[] { "ReceiveItems.Item", "Store", "ReceivedFromBattalion", "ReceivedFromRange", "ReceivedFromZila" }
+                    );
                 }
 
                 // Generate PDF
@@ -412,7 +391,7 @@ namespace IMS.Application.Services
             using (MemoryStream ms = new MemoryStream())
             {
                 // Create document in A4 landscape
-                Document document = new Document(PageSize.A4, 20, 20, 20, 20);
+                PdfDocument document = new PdfDocument(PageSize.A4, 20, 20, 20, 20);
                 PdfWriter writer = PdfWriter.GetInstance(document, ms);
                 document.Open();
 
@@ -466,7 +445,7 @@ namespace IMS.Application.Services
             using (MemoryStream ms = new MemoryStream())
             {
                 // Create document in A4 landscape
-                Document document = new Document(PageSize.A4, 20, 20, 20, 20);
+                PdfDocument document = new PdfDocument(PageSize.A4, 20, 20, 20, 20);
                 PdfWriter writer = PdfWriter.GetInstance(document, ms);
                 document.Open();
 

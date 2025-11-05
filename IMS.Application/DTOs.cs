@@ -1089,6 +1089,13 @@ namespace IMS.Application.DTOs
         public string BatchNumber { get; internal set; }
         public bool IsAvailable { get; set; }
         public decimal CurrentStock { get; set; }
+
+        // Voucher fields
+        public string LedgerNo { get; set; }
+        public string PageNo { get; set; }
+        public decimal? UsableQuantity { get; set; }
+        public decimal? PartiallyUsableQuantity { get; set; }
+        public decimal? UnusableQuantity { get; set; }
     }
 
     // Receive DTOs
@@ -1135,6 +1142,14 @@ namespace IMS.Application.DTOs
         public DateTime ReceivedDate { get; set; }
         public string OriginalVoucherNo { get; set; }
         public string VoucherDocumentPath { get; set; }
+
+        // Voucher fields for Receipt Voucher
+        public string VoucherNo { get; set; }
+        public string VoucherNumber { get; set; }
+        public DateTime? VoucherDate { get; set; }
+        public DateTime? VoucherGeneratedDate { get; set; }
+        public string VoucherQRCode { get; set; }
+
         public string ReceiverSignature { get; set; }
         public string ReceiverName { get; set; }
         public string ReceiverBadgeNo { get; set; }
@@ -1190,6 +1205,13 @@ namespace IMS.Application.DTOs
         public string BatchNumber { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public string Remarks { get; set; }
+
+        // Voucher fields
+        public string LedgerNo { get; set; }
+        public string PageNo { get; set; }
+        public decimal? UsableQuantity { get; set; }
+        public decimal? PartiallyUsableQuantity { get; set; }
+        public decimal? UnusableQuantity { get; set; }
     }
 
     // Transfer DTOs

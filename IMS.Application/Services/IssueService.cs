@@ -229,6 +229,11 @@ namespace IMS.Application.Services
                         Quantity = itemDto.Quantity,
                         Unit = itemDto.Unit,
                         Remarks = itemDto.Remarks,
+                        LedgerNo = itemDto.LedgerNo,
+                        PageNo = itemDto.PageNo,
+                        UsableQuantity = itemDto.UsableQuantity,
+                        PartiallyUsableQuantity = itemDto.PartiallyUsableQuantity,
+                        UnusableQuantity = itemDto.UnusableQuantity,
                         CreatedBy = _userContext.CurrentUserName,
                         CreatedAt = DateTime.Now,
                         IsActive = true
@@ -1010,7 +1015,12 @@ namespace IMS.Application.Services
                     Quantity = i.RequestedQuantity,
                     ApprovedQuantity = i.ApprovedQuantity,
                     IssuedQuantity = i.IssuedQuantity,
-                    Unit = i.Unit
+                    Unit = i.Unit,
+                    LedgerNo = i.LedgerNo,
+                    PageNo = i.PageNo,
+                    UsableQuantity = i.UsableQuantity,
+                    PartiallyUsableQuantity = i.PartiallyUsableQuantity,
+                    UnusableQuantity = i.UnusableQuantity
                 }).ToList()
             };
         }
@@ -1205,6 +1215,11 @@ namespace IMS.Application.Services
                             BatchNumber = itemDto.BatchNumber,
                             Condition = itemDto.Condition ?? "Good",
                             Remarks = itemDto.Remarks,
+                            LedgerNo = itemDto.LedgerNo,
+                            PageNo = itemDto.PageNo,
+                            UsableQuantity = itemDto.UsableQuantity,
+                            PartiallyUsableQuantity = itemDto.PartiallyUsableQuantity,
+                            UnusableQuantity = itemDto.UnusableQuantity,
                             CreatedAt = DateTime.Now,
                             CreatedBy = issueDto.CreatedBy ?? _userContext.UserId,
                             IsActive = true

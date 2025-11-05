@@ -225,13 +225,18 @@
                                 <table class="table table-bordered table-sm" id="itemsTable">
                                     <thead>
                                         <tr>
-                                            <th width="5%">#</th>
-                                            <th width="25%">Item</th>
-                                            <th width="20%">Store</th>
-                                            <th width="12%">Quantity</th>
-                                            <th width="13%">Condition</th>
-                                            <th width="20%">Remarks</th>
-                                            <th width="5%">Action</th>
+                                            <th width="3%">#</th>
+                                            <th width="15%">Item</th>
+                                            <th width="12%">Store</th>
+                                            <th width="8%">Quantity</th>
+                                            <th width="8%">Condition</th>
+                                            <th width="6%">Ledger No</th>
+                                            <th width="6%">Page No</th>
+                                            <th width="8%">Usable</th>
+                                            <th width="8%">Partial</th>
+                                            <th width="8%">Unusable</th>
+                                            <th width="15%">Remarks</th>
+                                            <th width="3%">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="itemsBody">
@@ -240,7 +245,7 @@
                                         <tr>
                                             <th colspan="3">Total</th>
                                             <th><span id="totalQuantity">0</span></th>
-                                            <th colspan="3"></th>
+                                            <th colspan="8"></th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -540,6 +545,29 @@
                             <option value="Damaged">Damaged</option>
                             <option value="Expired">Expired</option>
                         </select>
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${itemIndex}].LedgerNo"
+                               class="form-control form-control-sm" placeholder="Ledger" />
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${itemIndex}].PageNo"
+                               class="form-control form-control-sm" placeholder="Page" />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].UsableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Usable" />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].PartiallyUsableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Partial" />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].UnusableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Unusable" />
                     </td>
                     <td>
                         <input type="text" name="Items[${itemIndex}].Remarks"

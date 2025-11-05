@@ -67,17 +67,23 @@
                         </button>
                     }
 
-                    @if (Model.Status == "Approved" && string.IsNullOrEmpty(Model.VoucherNumber))
+                    @if (Model.Status == "Approved" && string.IsNullOrEmpty(Model.VoucherNumber) && string.IsNullOrEmpty(Model.VoucherNo))
                     {
-                        <a asp-action="GenerateVoucher" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
-                            <i class="fas fa-qrcode"></i> Generate Voucher
-                        </a>
+                        <form asp-action="GenerateVoucher" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-qrcode"></i> Generate Voucher
+                            </button>
+                        </form>
                     }
 
-                    @if (!string.IsNullOrEmpty(Model.VoucherNumber))
+                    @if (!string.IsNullOrEmpty(Model.VoucherNumber) || !string.IsNullOrEmpty(Model.VoucherNo))
                     {
                         <a asp-action="PrintVoucher" asp-route-id="@Model.Id" target="_blank" class="btn btn-info btn-sm">
                             <i class="fas fa-print"></i> Print Voucher
+                        </a>
+                        <a asp-action="DownloadVoucher" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                            <i class="fas fa-download"></i> Download Voucher
                         </a>
                     }
 

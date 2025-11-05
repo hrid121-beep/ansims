@@ -84,7 +84,12 @@ namespace IMS.Application.Services
                         ReceivedQuantity = ri.ReceivedQuantity ?? ri.Quantity,
                         Condition = ri.Condition,
                         Remarks = ri.Remarks,
-                        Unit = item?.Unit
+                        Unit = item?.Unit,
+                        LedgerNo = ri.LedgerNo,
+                        PageNo = ri.PageNo,
+                        UsableQuantity = ri.UsableQuantity,
+                        PartiallyUsableQuantity = ri.PartiallyUsableQuantity,
+                        UnusableQuantity = ri.UnusableQuantity
                     });
                 }
 
@@ -265,6 +270,11 @@ namespace IMS.Application.Services
                         Quantity = itemDto.Quantity,
                         Condition = itemDto.Condition ?? "Good",
                         Remarks = itemDto.Remarks,
+                        LedgerNo = itemDto.LedgerNo,
+                        PageNo = itemDto.PageNo,
+                        UsableQuantity = itemDto.UsableQuantity,
+                        PartiallyUsableQuantity = itemDto.PartiallyUsableQuantity,
+                        UnusableQuantity = itemDto.UnusableQuantity,
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = _userContext.CurrentUserName
                     };
@@ -346,6 +356,11 @@ namespace IMS.Application.Services
                         Quantity = itemDto.Quantity,
                         Condition = itemDto.Condition ?? "Good",
                         Remarks = itemDto.Remarks,
+                        LedgerNo = itemDto.LedgerNo,
+                        PageNo = itemDto.PageNo,
+                        UsableQuantity = itemDto.UsableQuantity,
+                        PartiallyUsableQuantity = itemDto.PartiallyUsableQuantity,
+                        UnusableQuantity = itemDto.UnusableQuantity,
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = _userContext.CurrentUserName
                     };

@@ -70,6 +70,23 @@
                         <i class="fas fa-print"></i> Print Receipt
                     </a>
 
+                    @if (Model.Status == "Completed" && string.IsNullOrEmpty(Model.VoucherNo))
+                    {
+                        <form asp-action="GenerateVoucher" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-qrcode"></i> Generate Voucher
+                            </button>
+                        </form>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.VoucherNo))
+                    {
+                        <a asp-action="DownloadVoucher" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                            <i class="fas fa-download"></i> Download Voucher
+                        </a>
+                    }
+
                     @if (Model.Status == "Draft")
                     {
                         <button type="button" class="btn btn-danger btn-sm" id="deleteBtn">

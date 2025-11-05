@@ -240,15 +240,19 @@
                                 <table class="table table-bordered table-sm" id="itemsTable">
                                     <thead class="bg-light">
                                         <tr>
-                                            <th width="5%">#</th>
-                                            <th width="25%">ITEM CODE/NAME</th>
-                                            <th width="15%">CATEGORY</th>
-                                            <th width="12%">CURRENT STOCK</th>
-                                            <th width="12%">REQUEST QTY</th>
-                                            <th width="8%">UNIT</th>
-                                            <th width="10%">BATCH NO</th>
-                                            <th width="10%">CONDITION</th>
-                                            <th width="5%">ACTION</th>
+                                            <th width="3%">#</th>
+                                            <th width="18%">ITEM CODE/NAME</th>
+                                            <th width="10%">CATEGORY</th>
+                                            <th width="8%">CURRENT STOCK</th>
+                                            <th width="8%">REQUEST QTY</th>
+                                            <th width="6%">UNIT</th>
+                                            <th width="8%">BATCH NO</th>
+                                            <th width="6%">LEDGER NO</th>
+                                            <th width="6%">PAGE NO</th>
+                                            <th width="8%">USABLE</th>
+                                            <th width="8%">PARTIAL</th>
+                                            <th width="8%">UNUSABLE</th>
+                                            <th width="3%">ACTION</th>
                                         </tr>
                                     </thead>
                                     <tbody id="itemsContainer">
@@ -258,7 +262,7 @@
                                         <tr>
                                             <td colspan="4" class="text-right"><strong>Total Items:</strong></td>
                                             <td id="totalItems" class="text-center font-weight-bold">0</td>
-                                            <td colspan="4"></td>
+                                            <td colspan="8"></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -1079,11 +1083,29 @@
                                    value="${item.batchNumber || ''}" placeholder="Batch No" />
                         </td>
                         <td>
-                            <select name="Items[${itemIndex}].Condition" class="form-control form-control-sm">
-                                <option value="Good" selected>Good</option>
-                                <option value="Fair">Fair</option>
-                                <option value="Poor">Poor</option>
-                            </select>
+                            <input type="text" name="Items[${itemIndex}].LedgerNo"
+                                   class="form-control form-control-sm"
+                                   placeholder="Ledger" />
+                        </td>
+                        <td>
+                            <input type="text" name="Items[${itemIndex}].PageNo"
+                                   class="form-control form-control-sm"
+                                   placeholder="Page" />
+                        </td>
+                        <td>
+                            <input type="number" name="Items[${itemIndex}].UsableQuantity"
+                                   class="form-control form-control-sm"
+                                   min="0" step="0.01" placeholder="Usable" />
+                        </td>
+                        <td>
+                            <input type="number" name="Items[${itemIndex}].PartiallyUsableQuantity"
+                                   class="form-control form-control-sm"
+                                   min="0" step="0.01" placeholder="Partial" />
+                        </td>
+                        <td>
+                            <input type="number" name="Items[${itemIndex}].UnusableQuantity"
+                                   class="form-control form-control-sm"
+                                   min="0" step="0.01" placeholder="Unusable" />
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-danger remove-item" title="Remove">
