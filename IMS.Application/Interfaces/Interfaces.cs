@@ -60,6 +60,7 @@ namespace IMS.Application.Interfaces
         IRepository<Item> Items { get; }
         IRepository<Store> Stores { get; }
         IRepository<StoreItem> StoreItems { get; }
+        IRepository<LedgerBook> LedgerBooks { get; }
         IRepository<Vendor> Vendors { get; }
         IRepository<Purchase> Purchases { get; }
         IRepository<PurchaseItem> PurchaseItems { get; }
@@ -1714,5 +1715,38 @@ namespace IMS.Application.Interfaces
         // Voucher Validation
         Task<bool> ValidateVoucherAsync(string voucherNo);
         Task<bool> VoucherExistsAsync(string voucherNo, string voucherType);
+    }
+
+    public interface ILedgerBookService
+    {
+        // CRUD Operations
+        Task<LedgerBookDto> GetLedgerBookByIdAsync(int id);
+        Task<LedgerBookDto> GetLedgerBookByLedgerNoAsync(string ledgerNo);
+        Task<IEnumerable<LedgerBookDto>> GetAllLedgerBooksAsync();
+        Task<IEnumerable<LedgerBookDto>> GetActiveLedgerBooksAsync();
+        Task<IEnumerable<LedgerBookDto>> GetLedgerBooksByStoreAsync(int storeId);
+        Task<IEnumerable<LedgerBookDto>> GetLedgerBooksByTypeAsync(string bookType);
+        Task<IEnumerable<LedgerBookDto>> GetActiveLedgerBooksByStoreAndTypeAsync(int? storeId, string bookType);
+
+        Task<int> CreateLedgerBookAsync(LedgerBookCreateDto dto, string createdBy);
+        Task<bool> UpdateLedgerBookAsync(int id, LedgerBookDto dto, string updatedBy);
+        Task<bool> DeleteLedgerBookAsync(int id);
+        Task<bool> CloseLedgerBookAsync(int id, string closedBy);
+
+        // Page Management
+        Task<int> GetNextAvailablePageAsync(int ledgerBookId);
+        Task<int> GetNextAvailablePageByLedgerNoAsync(string ledgerNo);
+        Task<bool> IncrementPageNumberAsync(int ledgerBookId);
+        Task<bool> IncrementPageNumberAsync(string ledgerNo);
+
+        // Validation
+        Task<bool> IsLedgerBookFullAsync(int ledgerBookId);
+        Task<bool> IsLedgerNoUniqueAsync(string ledgerNo, int? excludeId = null);
+        Task<bool> CanUseLedgerBookAsync(int ledgerBookId);
+
+        // Statistics
+        Task<int> GetPagesUsedAsync(int ledgerBookId);
+        Task<int> GetPagesRemainingAsync(int ledgerBookId);
+        Task<IEnumerable<LedgerBookDto>> GetAlmostFullLedgerBooksAsync(int threshold = 10);
     }
 }
