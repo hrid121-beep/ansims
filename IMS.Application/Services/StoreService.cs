@@ -1556,7 +1556,7 @@ namespace IMS.Application.Services
                         Type = movement.MovementType,
                         ItemCode = item?.ItemCode,
                         ItemName = item?.Name,
-                        Quantity = movement.Quantity,
+                        Quantity = movement.Quantity ?? 0,
                         Direction = movement.SourceStoreId == storeId ? "Out" : "In",
                         ReferenceNumber = movement.ReferenceNo,
                         User = movement.CreatedBy
