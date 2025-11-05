@@ -515,6 +515,7 @@ namespace IMS.Domain.Entities
         public string HandoverRemarks { get; set; }
 
         // Ledger and Page tracking for voucher
+        public int? LedgerBookId { get; set; }
         public string LedgerNo { get; set; }
         public string PageNo { get; set; }
 
@@ -526,6 +527,7 @@ namespace IMS.Domain.Entities
         public virtual Issue Issue { get; set; }
         public virtual Item Item { get; set; }
         public virtual Store Store { get; set; }
+        public virtual LedgerBook LedgerBook { get; set; }
     }
     public class Receive : BaseEntity
     {
@@ -605,6 +607,7 @@ namespace IMS.Domain.Entities
         public bool IsScanned { get; set; }
 
         // Ledger and Page tracking for voucher
+        public int? LedgerBookId { get; set; }
         public string LedgerNo { get; set; }
         public string PageNo { get; set; }
 
@@ -616,6 +619,7 @@ namespace IMS.Domain.Entities
         public virtual Receive Receive { get; set; }
         public virtual Item Item { get; set; }
         public virtual Store Store { get; set; }
+        public virtual LedgerBook LedgerBook { get; set; }
     }
     public class Transfer : BaseEntity
     {
