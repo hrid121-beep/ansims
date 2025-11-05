@@ -909,6 +909,61 @@
 
             $('#fromStore').data('previous', $('#fromStore').val());
 
+            // ==================== Ledger Book Loading ====================
+            $('#fromStore').on('change', function() {
+                const storeId = $(this).val();
+                if (!storeId) {
+                    $('.ledger-book-select').empty().append('<option value="">Select Ledger</option>');
+                    return;
+                }
+
+                // Load ledger books for Issue type
+                $.ajax({
+                    url: '/LedgerBook/GetActiveLedgerBooks',
+                    data: { storeId: storeId, bookType: 'Issue' },
+                    success: function(ledgerBooks) {
+                        $('.ledger-book-select').each(function() {
+                            const select = $(this);
+                            select.empty();
+                            select.append('<option value="">Select Ledger</option>');
+
+                            ledgerBooks.forEach(function(book) {
+                                const pagesLeft = book.pagesRemaining || 0;
+                                const status = pagesLeft <= 10 ? '⚠️' : '✅';
+                                select.append(`<option value="${book.id}"
+                                                      data-ledger-no="${book.ledgerNo}"
+                                                      data-next-page="${book.currentPageNo}">
+                                                   ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
+                                               </option>`);
+                            });
+                        });
+                    },
+                    error: function() {
+                        console.error('Error loading ledger books');
+                    }
+                });
+            });
+
+            // Auto-fill page number when ledger is selected
+            window.updatePageNumber = function(selectElement) {
+                const $select = $(selectElement);
+                const $selectedOption = $select.find('option:selected');
+                const nextPage = $selectedOption.data('next-page');
+                const ledgerNo = $selectedOption.data('ledger-no');
+
+                const $row = $select.closest('tr');
+                const $pageField = $row.find('.page-no-field');
+                const $ledgerNoField = $row.find('.ledger-no-hidden');
+
+                if (nextPage) {
+                    $pageField.val(nextPage);
+                    $ledgerNoField.val(ledgerNo);
+                } else {
+                    $pageField.val('');
+                    $ledgerNoField.val('');
+                }
+            };
+
             // ==================== Purpose Selection ====================
             $('#purposeSelect').change(function() {
                 if ($(this).val() === 'Other') {
@@ -1083,14 +1138,18 @@
                                    value="${item.batchNumber || ''}" placeholder="Batch No" />
                         </td>
                         <td>
-                            <input type="text" name="Items[${itemIndex}].LedgerNo"
-                                   class="form-control form-control-sm"
-                                   placeholder="Ledger" />
+                            <select name="Items[${itemIndex}].LedgerBookId"
+                                    class="form-control form-control-sm ledger-book-select"
+                                    data-item-index="${itemIndex}"
+                                    onchange="updatePageNumber(this)">
+                                <option value="">Select Ledger</option>
+                            </select>
+                            <input type="hidden" name="Items[${itemIndex}].LedgerNo" class="ledger-no-hidden" />
                         </td>
                         <td>
                             <input type="text" name="Items[${itemIndex}].PageNo"
-                                   class="form-control form-control-sm"
-                                   placeholder="Page" />
+                                   class="form-control form-control-sm page-no-field"
+                                   placeholder="Page" readonly />
                         </td>
                         <td>
                             <input type="number" name="Items[${itemIndex}].UsableQuantity"
