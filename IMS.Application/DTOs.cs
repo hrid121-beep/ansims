@@ -5128,4 +5128,64 @@ namespace IMS.Application.DTOs
         public string User { get; set; }
     }
 
+    // Ledger Book DTOs
+    public class LedgerBookDto : BaseDto
+    {
+        [Required]
+        public string LedgerNo { get; set; }
+
+        [Required]
+        public string BookName { get; set; }
+
+        public string BookType { get; set; } // "Issue", "Receive", "Transfer", "General"
+
+        public string Description { get; set; }
+
+        public int? StoreId { get; set; }
+        public string StoreName { get; set; }
+
+        public int TotalPages { get; set; } = 500;
+
+        public int CurrentPageNo { get; set; } = 1;
+
+        [Required]
+        public DateTime StartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
+
+        public bool IsClosed { get; set; }
+
+        public string Location { get; set; }
+
+        public string Remarks { get; set; }
+
+        // Computed properties
+        public int PagesUsed => CurrentPageNo - 1;
+        public int PagesRemaining => TotalPages - CurrentPageNo + 1;
+        public string Status => IsClosed ? "Closed" : (PagesRemaining <= 10 ? "Almost Full" : "Active");
+    }
+
+    public class LedgerBookCreateDto
+    {
+        [Required]
+        public string LedgerNo { get; set; }
+
+        [Required]
+        public string BookName { get; set; }
+
+        public string BookType { get; set; }
+
+        public string Description { get; set; }
+
+        public int? StoreId { get; set; }
+
+        public int TotalPages { get; set; } = 500;
+
+        public DateTime StartDate { get; set; } = DateTime.Now;
+
+        public string Location { get; set; }
+
+        public string Remarks { get; set; }
+    }
+
 }

@@ -47,6 +47,7 @@ namespace IMS.Infrastructure.Data
         public DbSet<StoreConfiguration> StoreConfigurations { get; set; }
         public DbSet<UserStore> UserStores { get; set; }
         public DbSet<StoreStock> StoreStocks { get; set; }
+        public DbSet<LedgerBook> LedgerBooks { get; set; }
         #endregion
 
         #region Vendor & Procurement

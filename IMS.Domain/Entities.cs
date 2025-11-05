@@ -2762,4 +2762,44 @@ namespace IMS.Domain.Entities
         public bool IsDefault { get; set; } = false;
         public int DisplayOrder { get; set; } = 0;
     }
+
+    /// <summary>
+    /// Ledger Book for tracking physical register books
+    /// Helps manage multiple ledger books and current page tracking
+    /// </summary>
+    public class LedgerBook : BaseEntity
+    {
+        [Required]
+        [MaxLength(50)]
+        public string LedgerNo { get; set; } // e.g., "LB-2025-001", "ISSUE-01", "RCV-03"
+
+        [Required]
+        [MaxLength(200)]
+        public string BookName { get; set; } // e.g., "Issue Ledger Book 2025", "Stock Receipt Register 3"
+
+        [MaxLength(50)]
+        public string BookType { get; set; } // "Issue", "Receive", "Transfer", "General"
+
+        [MaxLength(500)]
+        public string Description { get; set; }
+
+        public int? StoreId { get; set; }
+        public virtual Store Store { get; set; }
+
+        public int TotalPages { get; set; } = 500; // Total pages in the physical book
+
+        public int CurrentPageNo { get; set; } = 1; // Last used page number
+
+        public DateTime StartDate { get; set; } // When the book was opened
+
+        public DateTime? EndDate { get; set; } // When the book was closed/full
+
+        public bool IsClosed { get; set; } = false; // true when book is full or archived
+
+        [MaxLength(100)]
+        public string Location { get; set; } // Physical location: "Store Room A", "Office Cabinet 2"
+
+        [MaxLength(500)]
+        public string Remarks { get; set; }
+    }
 }
