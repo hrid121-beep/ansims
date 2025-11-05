@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<ItemGroup>
+	  <Compile Remove="Views\Dashboard\**" />
+	  <Content Remove="Views\Dashboard\**" />
+	  <EmbeddedResource Remove="Views\Dashboard\**" />
+	  <None Remove="Views\Dashboard\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Controllers\IssueController - Copy.cs" />
+	  <Compile Remove="Controllers\ReceiveController - Copy.cs" />
+	  <Compile Remove="Controllers\ReportController - Copy.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="Views\Account\Logino.cshtml" />
+	  <Content Remove="Views\Shared\_Layout - Copy.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Views\Shared\_Layout - Copy.cshtml.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\IMS.Infrastructure\IMS.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="15.0.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.7">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="QRCoder" Version="1.6.0" />
+		<PackageReference Include="QuestPDF" Version="2024.10.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\uploads\items\" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+</Project>

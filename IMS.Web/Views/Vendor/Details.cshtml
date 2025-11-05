@@ -1,0 +1,317 @@
+﻿@model IMS.Application.DTOs.VendorDto
+@{
+    ViewData["Title"] = "Vendor Details";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Vendor Details
+                </h1>
+                <small class="text-muted">Complete information about @Model.Name</small>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Vendors</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Vendor Information -->
+            <div class="col-lg-8">
+                <!-- Vendor Overview Card -->
+                <div class="card card-outline card-info shadow">
+                    <div class="card-header bg-gradient-info">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-building mr-2"></i>
+                            @Model.Name
+                        </h3>
+                        <div class="card-tools">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge badge-success badge-lg">
+                                    <i class="fas fa-check"></i> Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger badge-lg">
+                                    <i class="fas fa-times"></i> Inactive
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="font-weight-bold" width="40%">
+                                            <i class="fas fa-building text-primary"></i> Name:
+                                        </td>
+                                        <td>@Model.Name</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-tag text-primary"></i> Type:
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.VendorType))
+                                            {
+                                                <span class="badge badge-info">@Model.VendorType</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not specified</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-user text-primary"></i> Contact Person:
+                                        </td>
+                                        <td>@(Model.ContactPerson ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-envelope text-primary"></i> Email:
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.Email))
+                                            {
+                                                <a href="mailto:@Model.Email" class="text-info">@Model.Email</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="font-weight-bold" width="40%">
+                                            <i class="fas fa-phone text-primary"></i> Phone:
+                                        </td>
+                                        <td>@(Model.Phone ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-mobile-alt text-primary"></i> Mobile:
+                                        </td>
+                                        <td>@(Model.Mobile ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-file-invoice text-primary"></i> TIN:
+                                        </td>
+                                        <td>@(Model.TIN ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <i class="fas fa-id-card text-primary"></i> BIN:
+                                        </td>
+                                        <td>@(Model.BIN ?? "N/A")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Address))
+                        {
+                            <div class="row">
+                                <div class="col-12">
+                                    <hr>
+                                    <p class="mb-2">
+                                        <strong>
+                                            <i class="fas fa-map-marker-alt text-primary"></i> Address:
+                                        </strong>
+                                    </p>
+                                    <p class="text-muted">@Model.Address</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- System Information Card -->
+                <div class="card card-outline card-secondary shadow">
+                    <div class="card-header bg-gradient-secondary">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-database mr-2"></i>
+                            System Information
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="font-weight-bold">Created Date:</td>
+                                        <td>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Created By:</td>
+                                        <td>@(Model.CreatedBy ?? "System")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="font-weight-bold">Last Updated:</td>
+                                        <td>
+                                            @if (Model.UpdatedAt.HasValue)
+                                            {
+                                                @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Never</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Updated By:</td>
+                                        <td>@(Model.UpdatedBy ?? "N/A")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="col-lg-4">
+                <!-- Quick Actions Card -->
+                <div class="card card-outline card-success shadow">
+                    <div class="card-header bg-gradient-success">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Quick Actions
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-block">
+                                <i class="fas fa-edit"></i> Edit Vendor
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary btn-block">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                            <hr>
+                            <button type="button" class="btn btn-info btn-block" onclick="printVendorDetails()">
+                                <i class="fas fa-print"></i> Print Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendor Statistics Card -->
+                <div class="card card-outline card-warning shadow">
+                    <div class="card-header bg-gradient-warning">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            Vendor Statistics
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info">
+                                <i class="fas fa-shopping-cart"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Purchases</span>
+                                <span class="info-box-number">0</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success">
+                                <i class="fas fa-dollar-sign"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Value</span>
+                                <span class="info-box-number">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Last Purchase</span>
+                                <span class="info-box-number">Never</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function printVendorDetails() {
+            window.print();
+        }
+
+        $(document).ready(function() {
+            // Show success messages
+            @if (TempData["Success"] != null)
+            {
+                    <text>
+                    toastr.success('@TempData["Success"]');
+                    </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                    <text>
+                    toastr.error('@TempData["Error"]');
+                    </text>
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        @@media print {
+            .card-tools, .btn, .breadcrumb {
+                display: none !important;
+            }
+        }
+    </style>
+}

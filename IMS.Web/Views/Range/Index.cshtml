@@ -1,0 +1,343 @@
+﻿@model IEnumerable<IMS.Application.DTOs.RangeDto>
+@{
+    ViewData["Title"] = "Range Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Range Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Ranges</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Success/Error Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle"></i>
+                <strong>Success!</strong> @TempData["Success"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error!</strong> @TempData["Error"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Range List</h3>
+                        <div class="card-tools">
+                            <a asp-action="Create" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add New Range
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search ranges...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="rangeListContainer">
+                            <table id="rangeTable" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Headquarter</th>
+                                        <th>Commander</th>
+                                        <th>Rank</th>
+                                        <th>Battalions</th>
+                                        <th>Districts</th>
+                                        <th>Stores</th>
+                                        <th>Status</th>
+                                        <th width="180">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var range in Model)
+                                        {
+                                            <tr>
+                                                <td>@(range.Code ?? "-")</td>
+                                                <td>@(range.Name ?? "-")</td>
+                                                <td>@(range.HeadquarterLocation ?? "-")</td>
+                                                <td>@(range.CommanderName ?? "-")</td>
+                                                <td>@(range.CommanderRank ?? "-")</td>
+                                                <td>
+                                                    <span class="badge badge-info" title="@string.Join(", ", range.BattalionNames)">
+                                                        @range.BattalionCount
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-success">@range.ZilaCount</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-warning">@range.StoreCount</span>
+                                                </td>
+                                                <td>
+                                                    @if (range.IsActive)
+                                                    {
+                                                        <span class="badge badge-success">Active</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger">Inactive</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <a asp-action="Details" asp-route-id="@range.Id"
+                                                       class="btn btn-info btn-xs" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Hierarchy" asp-route-id="@range.Id"
+                                                       class="btn btn-primary btn-xs" title="View Hierarchy">
+                                                        <i class="fas fa-sitemap"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@range.Id"
+                                                       class="btn btn-warning btn-xs" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-danger btn-xs delete-btn"
+                                                            data-id="@range.Id"
+                                                            data-name="@range.Name"
+                                                            data-battalions="@range.BattalionCount"
+                                                            data-districts="@range.ZilaCount"
+                                                            data-stores="@range.StoreCount"
+                                                            data-code="@range.Code"
+                                                            title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="10" class="text-center">No ranges found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Improved Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Delete Range
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-map-marked-alt fa-4x text-danger mb-3"></i>
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="text-danger">You are about to delete the following range:</h6>
+                        <div class="alert alert-light border">
+                            <strong id="deleteRangeName"></strong>
+                            <span class="badge badge-secondary" id="deleteRangeCode"></span>
+                        </div>
+
+                        <div id="deleteWarning" class="mt-3">
+                            <!-- Warning content will be inserted here -->
+                        </div>
+
+                        <div class="mt-3">
+                            <h6 class="text-muted">What happens when you delete this range?</h6>
+                            <ul class="text-muted small">
+                                <li>The range will be permanently removed from the system</li>
+                                <li>All associated data will be updated accordingly</li>
+                                <li>This action cannot be undone</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Yes, Delete Range
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#rangeTable').DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "buttons": ["copy", "csv", "excel", "pdf", "print"],
+                "order": [[1, "asc"]]
+            }).buttons().container().appendTo('#rangeTable_wrapper .col-md-6:eq(0)');
+
+            // Delete button click handler
+            $('.delete-btn').on('click', function() {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var code = $(this).data('code');
+                var battalions = parseInt($(this).data('battalions')) || 0;
+                var districts = parseInt($(this).data('districts')) || 0;
+                var stores = parseInt($(this).data('stores')) || 0;
+
+                // Set range info
+                $('#deleteRangeName').text(name);
+                $('#deleteRangeCode').text(code);
+
+                // Generate warning based on associated data
+                var warningHtml = '';
+                var canDelete = true;
+
+                if (battalions > 0 || districts > 0 || stores > 0) {
+                    warningHtml = '<div class="alert alert-warning">';
+                    warningHtml += '<h6><i class="fas fa-exclamation-triangle"></i> This range has associated data:</h6>';
+                    warningHtml += '<ul class="mb-0">';
+
+                    if (battalions > 0) {
+                        warningHtml += '<li><strong>' + battalions + '</strong> Battalion(s) assigned</li>';
+                        canDelete = false;
+                    }
+                    if (districts > 0) {
+                        warningHtml += '<li><strong>' + districts + '</strong> District(s) assigned</li>';
+                        canDelete = false;
+                    }
+                    if (stores > 0) {
+                        warningHtml += '<li><strong>' + stores + '</strong> Store(s) assigned</li>';
+                        canDelete = false;
+                    }
+
+                    warningHtml += '</ul>';
+
+                    if (!canDelete) {
+                        warningHtml += '<hr><p class="text-danger mb-0">';
+                        warningHtml += '<i class="fas fa-ban"></i> ';
+                        warningHtml += 'Please reassign or remove all associated data before deleting this range.';
+                        warningHtml += '</p>';
+                    }
+
+                    warningHtml += '</div>';
+                } else {
+                    warningHtml = '<div class="alert alert-success">';
+                    warningHtml += '<i class="fas fa-check-circle"></i> ';
+                    warningHtml += 'This range has no associated data and can be safely deleted.';
+                    warningHtml += '</div>';
+                }
+
+                $('#deleteWarning').html(warningHtml);
+
+                // Configure delete button
+                if (canDelete) {
+                    $('#confirmDeleteBtn')
+                        .removeClass('disabled')
+                        .prop('disabled', false)
+                        .off('click')
+                        .on('click', function() {
+                            performDelete(id, name);
+                        });
+                } else {
+                    $('#confirmDeleteBtn')
+                        .addClass('disabled')
+                        .prop('disabled', true)
+                        .off('click');
+                }
+
+                $('#deleteModal').modal('show');
+            });
+
+            // Perform delete function
+            function performDelete(id, name) {
+                // Show loading state
+                $('#confirmDeleteBtn').html('<i class="fas fa-spinner fa-spin"></i> Deleting...').prop('disabled', true);
+
+                // Prepare form data
+                var form = $('<form></form>');
+                form.attr('method', 'post');
+                form.attr('action', '@Url.Action("Delete")/' + id);
+                form.append('@Html.AntiForgeryToken()');
+
+                // Hide modal first
+                $('#deleteModal').modal('hide');
+
+                // Show progress alert
+                Swal.fire({
+                    title: 'Deleting Range...',
+                    text: 'Please wait while we delete ' + name,
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit form
+                setTimeout(function() {
+                    $('body').append(form);
+                    form.submit();
+                }, 1000);
+            }
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });
+    </script>
+}

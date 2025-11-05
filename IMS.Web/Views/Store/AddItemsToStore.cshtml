@@ -1,0 +1,449 @@
+﻿@model IMS.Web.Models.AddItemsToStoreViewModel
+@{
+    ViewData["Title"] = "Add Items to Store";
+    var store = ViewBag.Store as IMS.Application.DTOs.StoreDto;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1><i class="fas fa-plus-circle"></i> Add Items to Store</h1>
+                <p class="text-muted mb-0">Configure inventory items for <strong>@store.Name</strong></p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stores</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@store.Id">@store.Name</a></li>
+                    <li class="breadcrumb-item active">Add Items</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header" style="background-color: #007bff; color: white;">
+                        <h3 class="card-title" style="color: white;">
+                            <i class="fas fa-box"></i> Item Selection & Configuration
+                        </h3>
+                    </div>
+                    <form asp-action="AddItemsToStore" method="post" id="addItemsForm">
+                        <input type="hidden" asp-for="StoreId" />
+                        @Html.AntiForgeryToken()
+
+                        <div class="card-body">
+                            <!-- Validation Summary -->
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                            <!-- Instructions Alert -->
+                            <div class="alert alert-info alert-dismissible fade show" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
+                                <button type="button" class="close" data-dismiss="alert" style="color: #0c5460;">&times;</button>
+                                <h5 style="color: #0c5460;"><i class="icon fas fa-info-circle"></i> Instructions</h5>
+                                <ul class="mb-0 pl-3" style="color: #0c5460;">
+                                    <li>Select one or multiple items to add to this store</li>
+                                    <li>Set stock level thresholds that will apply to all selected items</li>
+                                    <li>Ensure: <strong>Minimum Stock ≤ Reorder Level ≤ Maximum Stock</strong></li>
+                                    <li>If an item already exists in this store, its stock levels will be updated</li>
+                                </ul>
+                            </div>
+
+                            <!-- Item Selection Section -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card card-outline card-info">
+                                        <div class="card-header" style="background-color: #17a2b8; color: white;">
+                                            <h3 class="card-title" style="color: white;">
+                                                <i class="fas fa-list"></i> Select Items
+                                            </h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label class="form-label font-weight-bold">
+                                                    Items to Add <span class="text-danger">*</span>
+                                                </label>
+                                                <select asp-for="SelectedItemIds"
+                                                        asp-items="ViewBag.Items"
+                                                        class="form-control select2bs4"
+                                                        multiple
+                                                        required
+                                                        data-placeholder="Type to search and select items..."
+                                                        style="width: 100%;">
+                                                </select>
+                                                <span asp-validation-for="SelectedItemIds" class="text-danger small"></span>
+                                                <small class="form-text text-muted">
+                                                    <i class="fas fa-keyboard"></i> Use <kbd>Ctrl</kbd> + <kbd>Click</kbd> to select multiple items, or start typing to search
+                                                </small>
+                                                <div id="selectedItemsCount" class="mt-2 text-primary" style="display:none;">
+                                                    <i class="fas fa-check-circle"></i> <strong><span id="itemCount">0</span></strong> item(s) selected
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stock Level Configuration -->
+                            <div class="card card-outline card-warning">
+                                <div class="card-header" style="background-color: #ffc107; color: #1f2d3d;">
+                                    <h3 class="card-title" style="color: #1f2d3d;">
+                                        <i class="fas fa-sliders-h"></i> Stock Level Configuration
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Validation Warning -->
+                                    <div class="alert alert-warning" style="background-color: #fff3cd; border-color: #ffeaa7; color: #856404;">
+                                        <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                                        <strong>Important:</strong> Ensure that <strong>Min Stock ≤ Reorder Level ≤ Max Stock</strong>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Minimum Stock -->
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="MinStock" class="form-label font-weight-bold">
+                                                    <i class="fas fa-arrow-down text-danger"></i>
+                                                    Minimum Stock <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <input asp-for="MinStock"
+                                                           class="form-control"
+                                                           type="number"
+                                                           step="0.01"
+                                                           min="0"
+                                                           required
+                                                           placeholder="0.00"
+                                                           id="minStockInput" />
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text"><i class="fas fa-box"></i> units</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Alert threshold for low stock</small>
+                                                <span asp-validation-for="MinStock" class="text-danger small d-block"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Reorder Level -->
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="ReorderLevel" class="form-label font-weight-bold">
+                                                    <i class="fas fa-bell text-warning"></i>
+                                                    Reorder Level <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <input asp-for="ReorderLevel"
+                                                           class="form-control"
+                                                           type="number"
+                                                           step="0.01"
+                                                           min="0"
+                                                           required
+                                                           placeholder="0.00"
+                                                           id="reorderLevelInput" />
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text"><i class="fas fa-box"></i> units</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Trigger reorder at this level</small>
+                                                <span asp-validation-for="ReorderLevel" class="text-danger small d-block"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Maximum Stock -->
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="MaxStock" class="form-label font-weight-bold">
+                                                    <i class="fas fa-arrow-up text-success"></i>
+                                                    Maximum Stock <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <input asp-for="MaxStock"
+                                                           class="form-control"
+                                                           type="number"
+                                                           step="0.01"
+                                                           min="0"
+                                                           required
+                                                           placeholder="0.00"
+                                                           id="maxStockInput" />
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text"><i class="fas fa-box"></i> units</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Maximum storage capacity</small>
+                                                <span asp-validation-for="MaxStock" class="text-danger small d-block"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Visual Stock Level Indicator -->
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <label class="font-weight-bold">Stock Level Visualization:</label>
+                                            <div class="progress" style="height: 30px; font-size: 14px;">
+                                                <div id="minStockBar"
+                                                     class="progress-bar bg-danger"
+                                                     style="width: 20%; color: white; font-weight: bold;">
+                                                    Min
+                                                </div>
+                                                <div id="reorderBar"
+                                                     class="progress-bar bg-warning"
+                                                     style="width: 30%; color: #1f2d3d; font-weight: bold;">
+                                                    Reorder Zone
+                                                </div>
+                                                <div id="maxStockBar"
+                                                     class="progress-bar bg-success"
+                                                     style="width: 50%; color: white; font-weight: bold;">
+                                                    Safe Zone
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Visual representation of stock level ranges</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Validation Messages Container -->
+                                    <div id="validationMessages" class="mt-3" style="display:none;">
+                                        <!-- Dynamic validation messages will appear here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-primary btn-lg" id="submitBtn">
+                                        <i class="fas fa-plus-circle"></i> Add Selected Items to Store
+                                    </button>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <a asp-action="Details" asp-route-id="@store.Id" class="btn btn-secondary btn-lg">
+                                        <i class="fas fa-times-circle"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            console.log('AddItemsToStore page loaded');
+
+            // Initialize Select2 with better options
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                placeholder: "Type to search and select items...",
+                allowClear: true,
+                width: '100%',
+                closeOnSelect: false
+            });
+
+            // Show selected items count
+            $('.select2bs4').on('change', function() {
+                var count = $(this).val() ? $(this).val().length : 0;
+                if (count > 0) {
+                    $('#itemCount').text(count);
+                    $('#selectedItemsCount').fadeIn();
+                } else {
+                    $('#selectedItemsCount').fadeOut();
+                }
+            });
+
+            // Real-time stock level validation
+            $('#minStockInput, #reorderLevelInput, #maxStockInput').on('input change', function() {
+                validateStockLevels();
+                updateProgressBar();
+            });
+
+            // ✅ FIXED: Submit button click handler (not form submit)
+            $('#submitBtn').on('click', function(e) {
+                e.preventDefault();
+                console.log('Submit button clicked');
+                validateAndSubmitForm();
+            });
+
+            // Initialize validation on page load
+            validateStockLevels();
+        });
+
+        function validateStockLevels() {
+            var min = parseFloat($('#minStockInput').val()) || 0;
+            var reorder = parseFloat($('#reorderLevelInput').val()) || 0;
+            var max = parseFloat($('#maxStockInput').val()) || 0;
+
+            // Clear previous states
+            $('#minStockInput, #reorderLevelInput, #maxStockInput').removeClass('is-valid is-invalid');
+            $('#validationMessages').hide().html('');
+
+            var isValid = true;
+            var messages = [];
+
+            // Validate minimum vs reorder
+            if (min > reorder && reorder > 0) {
+                $('#minStockInput, #reorderLevelInput').addClass('is-invalid');
+                messages.push('<i class="fas fa-exclamation-circle"></i> Minimum stock cannot be greater than reorder level');
+                isValid = false;
+            }
+
+            // Validate reorder vs maximum
+            if (reorder > max && max > 0) {
+                $('#reorderLevelInput, #maxStockInput').addClass('is-invalid');
+                messages.push('<i class="fas fa-exclamation-circle"></i> Reorder level cannot be greater than maximum stock');
+                isValid = false;
+            }
+
+            // Validate minimum vs maximum
+            if (min > max && max > 0) {
+                $('#minStockInput, #maxStockInput').addClass('is-invalid');
+                messages.push('<i class="fas fa-exclamation-circle"></i> Minimum stock cannot be greater than maximum stock');
+                isValid = false;
+            }
+
+            // Show validation messages
+            if (!isValid && messages.length > 0) {
+                var html = '<div class="alert alert-danger">' + messages.join('<br>') + '</div>';
+                $('#validationMessages').html(html).fadeIn();
+            } else if (min > 0 && reorder > 0 && max > 0) {
+                // All values valid
+                $('#minStockInput, #reorderLevelInput, #maxStockInput').addClass('is-valid');
+                var html = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Stock levels are valid</div>';
+                $('#validationMessages').html(html).fadeIn();
+            }
+
+            return isValid;
+        }
+
+        function updateProgressBar() {
+            var min = parseFloat($('#minStockInput').val()) || 0;
+            var reorder = parseFloat($('#reorderLevelInput').val()) || 0;
+            var max = parseFloat($('#maxStockInput').val()) || 0;
+
+            if (max > 0) {
+                var minPercent = (min / max) * 100;
+                var reorderPercent = ((reorder - min) / max) * 100;
+                var maxPercent = 100 - minPercent - reorderPercent;
+
+                // Ensure percentages are not negative
+                minPercent = Math.max(0, minPercent);
+                reorderPercent = Math.max(0, reorderPercent);
+                maxPercent = Math.max(0, maxPercent);
+
+                $('#minStockBar').css('width', minPercent + '%');
+                $('#reorderBar').css('width', reorderPercent + '%');
+                $('#maxStockBar').css('width', maxPercent + '%');
+            }
+        }
+
+        // ✅ FIXED: Separate validation and submission logic
+        function validateAndSubmitForm() {
+            var selectedItems = $('#SelectedItemIds').val();
+            var min = parseFloat($('#minStockInput').val());
+            var max = parseFloat($('#maxStockInput').val());
+            var reorder = parseFloat($('#reorderLevelInput').val());
+
+            console.log('Validating form:', {
+                selectedItems: selectedItems,
+                min: min,
+                max: max,
+                reorder: reorder
+            });
+
+            // Check if items are selected
+            if (!selectedItems || selectedItems.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Items Selected',
+                    text: 'Please select at least one item to add to the store.',
+                    confirmButtonColor: '#007bff'
+                });
+                return false;
+            }
+
+            // Validate stock levels are numbers
+            if (isNaN(min) || isNaN(max) || isNaN(reorder)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Stock Levels',
+                    text: 'Please enter valid numbers for all stock levels.',
+                    confirmButtonColor: '#007bff'
+                });
+                return false;
+            }
+
+            // Validate stock levels are non-negative
+            if (min < 0 || max < 0 || reorder < 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Stock Levels',
+                    text: 'Stock levels cannot be negative.',
+                    confirmButtonColor: '#007bff'
+                });
+                return false;
+            }
+
+            // Validate minimum vs maximum
+            if (min > max) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Stock Levels',
+                    text: 'Minimum stock cannot be greater than maximum stock.',
+                    confirmButtonColor: '#007bff'
+                });
+                return false;
+            }
+
+            // Validate reorder level
+            if (reorder < min || reorder > max) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Reorder Level',
+                    text: 'Reorder level must be between minimum and maximum stock levels.',
+                    confirmButtonColor: '#007bff'
+                });
+                return false;
+            }
+
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Add Items to Store?',
+                html: `Are you sure you want to add <strong>${selectedItems.length}</strong> item(s) to <strong>@store.Name</strong>?<br><br>
+                       <div class="text-left">
+                       <strong>Stock Configuration:</strong><br>
+                       • Minimum Stock: ${min}<br>
+                       • Reorder Level: ${reorder}<br>
+                       • Maximum Stock: ${max}
+                       </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#007bff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check"></i> Yes, Add Items!',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('User confirmed, submitting form');
+                    // Disable submit button to prevent double submission
+                    $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Adding Items...');
+
+                    // ✅ FIXED: Direct form submission without triggering validation again
+                    $('#addItemsForm')[0].submit();
+                }
+            });
+        }
+    </script>
+}

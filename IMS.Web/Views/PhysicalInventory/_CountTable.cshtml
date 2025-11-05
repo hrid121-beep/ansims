@@ -1,0 +1,83 @@
+﻿@model List<IMS.Application.DTOs.PhysicalInventoryDetailDto>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped count-table">
+        <thead>
+            <tr>
+                <th width="100">কোড/Code</th>
+                <th>আইটেম নাম/Item Name</th>
+                <th width="100">ক্যাটাগরি/Category</th>
+                <th width="80">একক/Unit</th>
+                <th width="100">সিস্টেম পরিমাণ<br>System Qty</th>
+                <th width="120" class="bg-warning">বাস্তব পরিমাণ<br>Physical Qty</th>
+                <th width="100">পার্থক্য<br>Variance</th>
+                <th width="120">মূল্য পার্থক্য<br>Value (৳)</th>
+                <th width="150">অবস্থান/Location</th>
+                <th width="150">ব্যাচ নং/Batch</th>
+                <th>মন্তব্য/Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in Model)
+            {
+                <tr data-detail-id="@detail.Id"
+                    data-status="@detail.Status.ToString().ToLower()"
+                    data-unit-price="@detail.UnitPrice">
+                    <td><code>@detail.ItemCode</code></td>
+                    <td>
+                        <strong>@detail.ItemName</strong>
+                        @if (!string.IsNullOrEmpty(detail.ItemNameBn))
+                        {
+                            <br>
+                            <small class="text-muted">@detail.ItemNameBn</small>
+                        }
+                    </td>
+                    <td><span class="badge badge-info">@detail.CategoryName</span></td>
+                    <td>@detail.ItemUnit</td>
+                    <td class="text-right system-qty">@detail.SystemQuantity</td>
+                    <td class="bg-warning">
+                        <input type="number"
+                               class="form-control physical-qty"
+                               data-item-id="@detail.ItemId"
+                               value="@detail.PhysicalQuantity"
+                               min="0"
+                               step="0.01"
+                               onchange="calculateVariance(this)"
+                               placeholder="Enter count">
+                    </td>
+                    <td class="text-right variance">
+                        <span class="@(detail.Variance > 0 ? "text-success" : detail.Variance < 0 ? "text-danger" : "")">
+                            @detail.Variance.ToString("+#;-#;0")
+                        </span>
+                    </td>
+                    <td class="text-right variance-value">
+                        @if (detail.VarianceValue != null && detail.VarianceValue != 0)
+                        {
+                            <span class="@(detail.VarianceValue > 0 ? "text-success" : "text-danger")">
+                                ৳ @Math.Abs(detail.VarianceValue.Value).ToString("N2")
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        <input type="text"
+                               class="form-control location"
+                               value="@detail.LocationCode"
+                               placeholder="Rack/Shelf">
+                    </td>
+                    <td>
+                        <input type="text"
+                               class="form-control batch"
+                               value="@detail.BatchNumbers"
+                               placeholder="Batch/Serial">
+                    </td>
+                    <td>
+                        <input type="text"
+                               class="form-control remarks"
+                               value="@detail.Remarks"
+                               placeholder="Notes">
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,269 @@
+﻿@model IEnumerable<IMS.Application.DTOs.IssueDto>
+@{
+    ViewData["Title"] = "Issue Vouchers";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-qrcode"></i> Issue Vouchers
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Issue" asp-action="Index">Issues</a></li>
+                    <li class="breadcrumb-item active">Vouchers</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Vouchers</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(i => i.Status == "Approved")</h3>
+                        <p>Approved</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(i => i.Status == "Issued")</h3>
+                        <p>Issued</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>@Model.Count(i => i.Status == "Completed")</h3>
+                        <p>Completed</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-receipt"></i> Approved Issue Vouchers</h3>
+                <div class="card-tools">
+                    <a asp-action="Index" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Issues
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
+                        <i class="fas fa-info-circle fa-2x mb-3" style="color: #0c5460;"></i>
+                        <h5 style="color: #0c5460; font-weight: 600;">No Vouchers Found</h5>
+                        <p style="color: #0c5460; font-size: 14px;">There are no approved issue vouchers yet. Vouchers are automatically generated when issues are approved.</p>
+                        <a asp-action="Index" class="btn btn-primary mt-2" style="background-color: #007bff; border-color: #007bff;">
+                            <i class="fas fa-arrow-left"></i> Go to Issues
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <table id="vouchersTable" class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Voucher No</th>
+                                <th>Issue No</th>
+                                <th>Issue Date</th>
+                                <th>From Store</th>
+                                <th>Issued To</th>
+                                <th>Items</th>
+                                <th>Status</th>
+                                <th>QR Code</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-info badge-lg">
+                                            <i class="fas fa-hashtag"></i> @item.VoucherNumber
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.IssueNo</strong>
+                                    </td>
+                                    <td>
+                                        <i class="far fa-calendar-alt"></i>
+                                        @item.IssueDate.ToString("dd-MMM-yyyy")
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-warehouse"></i>
+                                        @(item.FromStoreName ?? item.StoreName ?? "N/A")
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-user"></i>
+                                        @(item.IssuedToName ?? "N/A")
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-secondary">
+                                            @item.TotalItems item(s)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Approved")
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check-circle"></i> @item.Status
+                                            </span>
+                                        }
+                                        else if (item.Status == "Issued")
+                                        {
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-truck"></i> @item.Status
+                                            </span>
+                                        }
+                                        else if (item.Status == "Completed")
+                                        {
+                                            <span class="badge badge-primary">
+                                                <i class="fas fa-flag-checkered"></i> @item.Status
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">@item.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (!string.IsNullOrEmpty(item.QRCode))
+                                        {
+                                            <img src="@item.QRCode" alt="QR Code" class="img-thumbnail" style="width:50px;height:50px;"
+                                                 data-toggle="tooltip" title="Voucher QR Code" />
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="GenerateVoucher" asp-route-id="@item.Id"
+                                               class="btn btn-xs btn-warning" data-toggle="tooltip" title="Generate QR Code">
+                                                <i class="fas fa-qrcode"></i>
+                                            </a>
+                                        }
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.Id"
+                                               class="btn btn-info" data-toggle="tooltip" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="PrintVoucher" asp-route-id="@item.Id"
+                                               target="_blank" class="btn btn-primary" data-toggle="tooltip" title="Print Voucher">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            @if (item.Status == "Approved")
+                                            {
+                                                <a asp-action="ProcessHandover" asp-route-id="@item.Id"
+                                                   class="btn btn-success" data-toggle="tooltip" title="Process Handover">
+                                                    <i class="fas fa-handshake"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables with enhanced features
+            $('#vouchersTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by Issue Date descending
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        text: '<i class="far fa-file-excel"></i> Export to Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude QR Code and Actions columns
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="far fa-file-pdf"></i> Export to PDF',
+                        className: 'btn btn-danger btn-sm',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Print List',
+                        className: 'btn btn-info btn-sm',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-columns"></i> Column Visibility',
+                        className: 'btn btn-secondary btn-sm'
+                    }
+                ],
+                "language": {
+                    "search": "Search Vouchers:",
+                    "lengthMenu": "Show _MENU_ vouchers per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ vouchers",
+                    "infoEmpty": "No vouchers available",
+                    "infoFiltered": "(filtered from _MAX_ total vouchers)",
+                    "zeroRecords": "No matching vouchers found",
+                    "emptyTable": "No vouchers available"
+                }
+            }).buttons().container().appendTo('#vouchersTable_wrapper .col-md-6:eq(0)');
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Add search highlights
+            $('#vouchersTable').on('draw.dt', function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+        });
+    </script>
+}

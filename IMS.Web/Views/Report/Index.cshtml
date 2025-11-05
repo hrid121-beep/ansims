@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Reports</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Reports</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <!-- Issue Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>Issue</h3>
+                        <p>Track all issued items by date range</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <a asp-action="IssueReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Stock Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-dark">
+                    <div class="inner">
+                        <h3>Stock</h3>
+                        <p>Current stock levels and availability</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <a asp-action="StockReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Purchase Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>Purchase</h3>
+                        <p>Analyze purchases and vendor performance</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <a asp-action="PurchaseReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Transfer Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>Transfer</h3>
+                        <p>Monitor transfers between stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <a asp-action="TransferReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Loss Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>Loss</h3>
+                        <p>Track damages and write-offs</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a asp-action="LossReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Movement History -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3>Movement</h3>
+                        <p>Complete inventory movement tracking</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <a asp-action="MovementHistory" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary Dashboard -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>Summary</h3>
+                        <p>Overall inventory dashboard</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">
+                        View Dashboard <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Statistics</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-shopping-bag"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Purchases</span>
+                                        <span class="info-box-number">@ViewBag.TotalPurchases</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-arrow-up"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Issues</span>
+                                        <span class="info-box-number">@ViewBag.TotalIssues</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-sync"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Transfers</span>
+                                        <span class="info-box-number">@ViewBag.TotalTransfers</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-times"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Losses</span>
+                                        <span class="info-box-number">@ViewBag.TotalLosses</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

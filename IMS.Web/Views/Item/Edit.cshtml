@@ -1,0 +1,1130 @@
+﻿@model IMS.Application.DTOs.ItemDto
+@{
+    ViewData["Title"] = "Edit Item";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    <i class="fas fa-edit text-warning"></i> Edit Item
+                    <small class="text-muted ml-2">@Model.ItemCode</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Item")">Items</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Edit" method="post" id="editItemForm">
+            <!-- Hidden Fields -->
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ItemCode" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="CreatedBy" />
+            <input type="hidden" asp-for="CurrentStock" />
+            <input type="hidden" asp-for="Status" />
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-8">
+                    <!-- Basic Information Card -->
+                    <div class="card card-warning card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i> Basic Information
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ItemCode" class="control-label">
+                                            <i class="fas fa-barcode text-primary"></i> Item Code
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-light">
+                                                    <i class="fas fa-hashtag"></i>
+                                                </span>
+                                            </div>
+                                            <input asp-for="ItemCode" class="form-control" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">
+                                            <i class="fas fa-tag text-primary"></i> Item Name <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-box"></i>
+                                                </span>
+                                            </div>
+                                            <input asp-for="Name" class="form-control" placeholder="Enter item name" required />
+                                        </div>
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NameBn" class="control-label">
+                                            <i class="fas fa-language text-primary"></i> Item Name (Bengali)
+                                        </label>
+                                        <input asp-for="NameBn" class="form-control" placeholder="বাংলা নাম" />
+                                        <span asp-validation-for="NameBn" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label">
+                                            <i class="fas fa-code text-primary"></i> Alternative Code
+                                        </label>
+                                        <input asp-for="Code" class="form-control" placeholder="Alternative item code" />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label asp-for="Description" class="control-label">
+                                            <i class="fas fa-align-left text-primary"></i> Description
+                                        </label>
+                                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter detailed description..."></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Manufacturer" class="control-label">
+                                            <i class="fas fa-industry text-info"></i> Manufacturer
+                                        </label>
+                                        <input asp-for="Manufacturer" class="form-control" placeholder="Manufacturer Name" />
+                                        <span asp-validation-for="Manufacturer" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ManufactureDate" class="control-label">
+                                            <i class="fas fa-calendar text-info"></i> Manufacture Date
+                                        </label>
+                                        <input asp-for="ManufactureDate" type="date" class="form-control" />
+                                        <span asp-validation-for="ManufactureDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Classification Card -->
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-sitemap"></i> Classification
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="CategoryId" class="control-label">
+                                            <i class="fas fa-layer-group text-info"></i> Category <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="CategoryId" id="CategoryDropdown" class="form-control select2" asp-items="ViewBag.Categories" data-placeholder="Select Category" required>
+                                            <option value="">-- Select Category --</option>
+                                        </select>
+                                        <span asp-validation-for="CategoryId" class="text-danger" id="CategoryError"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SubCategoryId" class="control-label">
+                                            <i class="fas fa-stream text-info"></i> Sub Category
+                                        </label>
+                                        <select asp-for="SubCategoryId" class="form-control select2" asp-items="ViewBag.SubCategories" data-placeholder="Select Sub Category">
+                                            <option value="">-- Select Sub Category --</option>
+                                        </select>
+                                        <span asp-validation-for="SubCategoryId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BrandId" class="control-label">
+                                            <i class="fas fa-award text-info"></i> Brand
+                                        </label>
+                                        <select asp-for="BrandId" class="form-control select2" asp-items="ViewBag.Brands" data-placeholder="Select Brand">
+                                            <option value="">-- Select Brand --</option>
+                                        </select>
+                                        <span asp-validation-for="BrandId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ItemModelId" class="control-label">
+                                            <i class="fas fa-cogs text-info"></i> Model
+                                        </label>
+                                        <select asp-for="ItemModelId" class="form-control select2" asp-items="ViewBag.ItemModels" data-placeholder="Select Model">
+                                            <option value="">-- Select Model --</option>
+                                        </select>
+                                        <span asp-validation-for="ItemModelId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock Management Card -->
+                    <div class="card card-success card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-warehouse"></i> Stock Management
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Type" class="control-label">
+                                            <i class="fas fa-cube text-success"></i> Item Type <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Type" class="form-control select2" asp-items="ViewBag.ItemTypes" required>
+                                            <option value="">-- Select Type --</option>
+                                        </select>
+                                        <span asp-validation-for="Type" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Unit" class="control-label">
+                                            <i class="fas fa-balance-scale text-success"></i> Unit <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Unit" class="form-control" required>
+                                            <option value="">Select Unit</option>
+                                            <option value="Piece">Piece</option>
+                                            <option value="Box">Box</option>
+                                            <option value="Pack">Pack</option>
+                                            <option value="Set">Set</option>
+                                            <option value="Kg">Kilogram</option>
+                                            <option value="Gram">Gram</option>
+                                            <option value="Liter">Liter</option>
+                                            <option value="Meter">Meter</option>
+                                            <option value="Dozen">Dozen</option>
+                                            <option value="Roll">Roll</option>
+                                            <option value="Bundle">Bundle</option>
+                                        </select>
+                                        <span asp-validation-for="Unit" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="MinimumStock" class="control-label">
+                                            <i class="fas fa-exclamation-triangle text-warning"></i> Min Stock <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="MinimumStock" class="form-control" type="number" min="0" step="0.001" required />
+                                        <span asp-validation-for="MinimumStock" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="MaximumStock" class="control-label">
+                                            <i class="fas fa-arrow-up text-info"></i> Max Stock
+                                        </label>
+                                        <input asp-for="MaximumStock" class="form-control" type="number" min="0" step="0.001" />
+                                        <span asp-validation-for="MaximumStock" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="ReorderLevel" class="control-label">
+                                            <i class="fas fa-sync text-primary"></i> Reorder Level
+                                        </label>
+                                        <input asp-for="ReorderLevel" class="form-control" type="number" min="0" step="0.001" />
+                                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="UnitPrice" class="control-label">
+                                            <i class="fas fa-dollar-sign text-success"></i> Unit Price
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">৳</span>
+                                            </div>
+                                            <input asp-for="UnitPrice" class="form-control" type="number" min="0" step="0.01" />
+                                        </div>
+                                        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="UnitCost" class="control-label">
+                                            <i class="fas fa-dollar-sign text-info"></i> Unit Cost
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">৳</span>
+                                            </div>
+                                            <input asp-for="UnitCost" class="form-control" type="number" min="0" step="0.01" />
+                                        </div>
+                                        <span asp-validation-for="UnitCost" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Location" class="control-label">
+                                            <i class="fas fa-map-marker-alt text-danger"></i> Storage Location
+                                        </label>
+                                        <input asp-for="Location" class="form-control" placeholder="e.g., Rack A, Shelf 3" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Control & Authorization -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="ItemControlType" class="control-label">
+                                    <i class="fas fa-shield-alt text-info"></i> Control Type
+                                </label>
+                                <select asp-for="ItemControlType" class="form-control">
+                                    <option value="">Not Specified</option>
+                                    <option value="Controlled">Controlled</option>
+                                    <option value="Uncontrolled">Uncontrolled</option>
+                                </select>
+                                <small class="form-text text-muted">Controlled items require personnel tracking</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label">
+                                    <i class="fas fa-users text-primary"></i> Authorization
+                                </label>
+                                <div class="custom-control custom-checkbox">
+                                    <input asp-for="IsAnsarAuthorized" type="checkbox" class="custom-control-input" id="IsAnsarAuthorized">
+                                    <label class="custom-control-label" for="IsAnsarAuthorized">
+                                        Ansar
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input asp-for="IsVDPAuthorized" type="checkbox" class="custom-control-input" id="IsVDPAuthorized">
+                                    <label class="custom-control-label" for="IsVDPAuthorized">
+                                        VDP
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ansar Lifespan Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-user-shield"></i> <strong>Ansar Personnel Lifespan Settings</strong></h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="AnsarLifeSpanMonths" class="control-label">
+                                    <i class="fas fa-clock text-primary"></i> Ansar Life Span (Months)
+                                </label>
+                                <input asp-for="AnsarLifeSpanMonths" class="form-control" type="number" min="1" max="120" placeholder="e.g., 12" />
+                                <small class="form-text text-muted">Service life in months for Ansar personnel</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="AnsarAlertBeforeDays" class="control-label">
+                                    <i class="fas fa-bell text-primary"></i> Ansar Alert Before (Days)
+                                </label>
+                                <input asp-for="AnsarAlertBeforeDays" class="form-control" type="number" min="1" max="90" placeholder="30" />
+                                <small class="form-text text-muted">Alert before expiry for Ansar</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VDP Lifespan Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-secondary">
+                                <h6><i class="fas fa-users"></i> <strong>VDP Personnel Lifespan Settings</strong></h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="VDPLifeSpanMonths" class="control-label">
+                                    <i class="fas fa-clock text-secondary"></i> VDP Life Span (Months)
+                                </label>
+                                <input asp-for="VDPLifeSpanMonths" class="form-control" type="number" min="1" max="120" placeholder="e.g., 6" />
+                                <small class="form-text text-muted">Service life in months for VDP personnel</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="VDPAlertBeforeDays" class="control-label">
+                                    <i class="fas fa-bell text-secondary"></i> VDP Alert Before (Days)
+                                </label>
+                                <input asp-for="VDPAlertBeforeDays" class="form-control" type="number" min="1" max="90" placeholder="30" />
+                                <small class="form-text text-muted">Alert before expiry for VDP</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Details Card -->
+                    <div class="card card-secondary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-cog"></i> Product Details
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Weight" class="control-label">
+                                            <i class="fas fa-weight text-secondary"></i> Weight
+                                        </label>
+                                        <input asp-for="Weight" class="form-control" type="number" min="0" step="0.001" placeholder="0.000" />
+                                        <span asp-validation-for="Weight" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label asp-for="WeightUnit" class="control-label">Unit</label>
+                                        <select asp-for="WeightUnit" class="form-control">
+                                            <option value="">Unit</option>
+                                            <option value="KG">KG</option>
+                                            <option value="Gram">Gram</option>
+                                            <option value="Pound">Pound</option>
+                                            <option value="Ton">Ton</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Dimensions" class="control-label">
+                                            <i class="fas fa-ruler text-secondary"></i> Dimensions
+                                        </label>
+                                        <input asp-for="Dimensions" class="form-control" placeholder="L x W x H (e.g., 10x5x3 cm)" />
+                                        <span asp-validation-for="Dimensions" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Color" class="control-label">
+                                            <i class="fas fa-palette text-secondary"></i> Color
+                                        </label>
+                                        <input asp-for="Color" class="form-control" placeholder="Product color" />
+                                        <span asp-validation-for="Color" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Material" class="control-label">
+                                            <i class="fas fa-industry text-secondary"></i> Material
+                                        </label>
+                                        <input asp-for="Material" class="form-control" placeholder="Primary material" />
+                                        <span asp-validation-for="Material" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ShelfLife" class="control-label">
+                                            <i class="fas fa-calendar-alt text-warning"></i> Shelf Life (Days)
+                                        </label>
+                                        <input asp-for="ShelfLife" type="number" class="form-control" min="0" />
+                                        <span asp-validation-for="ShelfLife" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="HasExpiry" type="checkbox" class="custom-control-input" id="HasExpiry">
+                                            <label class="custom-control-label" for="HasExpiry">
+                                                <i class="fas fa-clock text-warning"></i> Has Expiry Date
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="ExpiryDateGroup" style="display: none;">
+                                        <label asp-for="ExpiryDate" class="control-label">
+                                            <i class="fas fa-calendar-times text-danger"></i> Expiry Date
+                                        </label>
+                                        <input asp-for="ExpiryDate" type="date" class="form-control" />
+                                        <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="IsHazardous" type="checkbox" class="custom-control-input" id="IsHazardous">
+                                            <label class="custom-control-label" for="IsHazardous">
+                                                <i class="fas fa-exclamation-triangle text-danger"></i> Hazardous Material
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="HazardClassGroup" style="display: none;">
+                                        <label asp-for="HazardClass" class="control-label">
+                                            <i class="fas fa-biohazard text-danger"></i> Hazard Class
+                                        </label>
+                                        <input asp-for="HazardClass" class="form-control" placeholder="Hazard classification" />
+                                        <span asp-validation-for="HazardClass" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="RequiresSpecialHandling" type="checkbox" class="custom-control-input" id="RequiresSpecialHandling">
+                                            <label class="custom-control-label" for="RequiresSpecialHandling">
+                                                <i class="fas fa-hand-paper text-warning"></i> Requires Special Handling
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="StorageRequirements" class="control-label">
+                                            <i class="fas fa-warehouse text-info"></i> Storage Requirements
+                                        </label>
+                                        <textarea asp-for="StorageRequirements" class="form-control" rows="2" placeholder="Special storage conditions..."></textarea>
+                                        <span asp-validation-for="StorageRequirements" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SafetyInstructions" class="control-label">
+                                            <i class="fas fa-shield-alt text-success"></i> Safety Instructions
+                                        </label>
+                                        <textarea asp-for="SafetyInstructions" class="form-control" rows="2" placeholder="Safety handling instructions..."></textarea>
+                                        <span asp-validation-for="SafetyInstructions" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-4">
+                    <!-- Status Card -->
+                    <div class="card card-widget widget-user-2">
+                        <div class="widget-user-header bg-warning">
+                            <div class="widget-user-image">
+                                <div class="img-circle elevation-2 bg-white d-flex align-items-center justify-content-center" style="width: 65px; height: 65px;">
+                                    <i class="fas fa-box fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                            <h3 class="widget-user-username">@Model.Name</h3>
+                            <h5 class="widget-user-desc">@Model.ItemCode</h5>
+                        </div>
+                        <div class="card-footer p-0">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <span class="nav-link">
+                                        <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                            <input asp-for="IsActive" type="checkbox" class="custom-control-input" id="IsActive">
+                                            <label class="custom-control-label" for="IsActive">
+                                                Item Status
+                                            </label>
+                                        </div>
+                                        <small class="form-text text-muted">Inactive items won't appear in transactions</small>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Current Stock Info -->
+                    <div class="info-box bg-gradient-@(Model.CurrentStock < Model.MinimumStock ? "danger" : Model.CurrentStock <= Model.MinimumStock * 1.5m ? "warning" : "success")">
+                        <span class="info-box-icon elevation-1">
+                            <i class="fas fa-boxes"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Current Stock</span>
+                            <span class="info-box-number">
+                                @Model.CurrentStock @Model.Unit
+                            </span>
+                            <div class="progress">
+                                @{
+                                    var percentage = Model.MinimumStock > 0
+                                    ? (int)((Model.CurrentStock / Model.MinimumStock) * 100)
+                                    : 100;
+                                    percentage = Math.Min(percentage, 100);
+                                }
+                                <div class="progress-bar" style="width: @percentage%"></div>
+                            </div>
+                            <span class="progress-description">
+                                @if (Model.CurrentStock < Model.MinimumStock)
+                                {
+                                    <text>Below minimum stock level</text>
+                                }
+                                else
+                                {
+                                    <text>@percentage% of minimum stock</text>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Info -->
+                    <div class="card card-widget widget-user-2">
+                        <div class="widget-user-header bg-gradient-primary">
+                            <h5 class="widget-user-username mb-0">
+                                <i class="fas fa-info-circle"></i> Quick Info
+                            </h5>
+                        </div>
+                        <div class="card-footer p-0">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <span class="nav-link">
+                                        <i class="fas fa-calendar-plus text-primary"></i> Created
+                                        <span class="float-right badge bg-primary">
+                                            @Model.CreatedAt.ToString("dd MMM yyyy")
+                                        </span>
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <span class="nav-link">
+                                        <i class="fas fa-user text-success"></i> Created By
+                                        <span class="float-right badge bg-success">
+                                            @(Model.CreatedBy ?? "System")
+                                        </span>
+                                    </span>
+                                </li>
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <li class="nav-item">
+                                        <span class="nav-link">
+                                            <i class="fas fa-calendar-check text-warning"></i> Last Updated
+                                            <span class="float-right badge bg-warning">
+                                                @Model.UpdatedAt.Value.ToString("dd MMM yyyy")
+                                            </span>
+                                        </span>
+                                    </li>
+                                    @if (!string.IsNullOrEmpty(Model.UpdatedBy))
+                                    {
+                                        <li class="nav-item">
+                                            <span class="nav-link">
+                                                <i class="fas fa-user-edit text-info"></i> Updated By
+                                                <span class="float-right badge bg-info">
+                                                    @Model.UpdatedBy
+                                                </span>
+                                            </span>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card">
+                        <div class="card-body">
+                            <button type="submit" class="btn btn-warning btn-block btn-lg">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-block">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary btn-block">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            console.log('=== Item Edit Form Initialized ===');
+
+            // Initialize Select2 for all select elements
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                allowClear: true
+            });
+
+            // Store initial values for debugging
+            var initialValues = {
+                categoryId: '@Model.CategoryId',
+                subCategoryId: '@Model.SubCategoryId',
+                brandId: '@Model.BrandId',
+                itemModelId: '@Model.ItemModelId'
+            };
+            console.log('Initial form values:', initialValues);
+
+            // Set initial values
+            if (initialValues.categoryId && initialValues.categoryId !== '0') {
+                $('#CategoryDropdown').val(initialValues.categoryId).trigger('change.select2');
+            }
+
+            // Show/hide conditional fields based on checkbox states
+            function toggleConditionalFields() {
+                if ($('#HasExpiry').is(':checked')) {
+                    $('#ExpiryDateGroup').show();
+                } else {
+                    $('#ExpiryDateGroup').hide();
+                }
+
+                if ($('#IsHazardous').is(':checked')) {
+                    $('#HazardClassGroup').show();
+                } else {
+                    $('#HazardClassGroup').hide();
+                }
+            }
+
+            // Initialize conditional fields
+            toggleConditionalFields();
+
+            // Handle checkbox changes
+            $('#HasExpiry, #IsHazardous').on('change', toggleConditionalFields);
+
+            // ================================================================
+            // CASCADING DROPDOWN FUNCTIONALITY - FIXED
+            // ================================================================
+
+            // Category Change Handler - Load SubCategories
+            $('#CategoryDropdown').on('change', function() {
+                var categoryId = $(this).val();
+                console.log('Category changed to:', categoryId);
+
+                // Clear subcategory dropdown
+                var $subCategorySelect = $('#SubCategoryId');
+                $subCategorySelect.empty().append('<option value="">-- Select Sub Category --</option>');
+                $subCategorySelect.trigger('change.select2');
+
+                if (categoryId && categoryId !== '') {
+                    // Show loading indicator
+                    $subCategorySelect.append('<option value="">Loading...</option>');
+
+                    // FIXED: Use correct controller and method name
+                    $.ajax({
+                        url: '@Url.Action("GetSubCategoriesByCategory", "Item")',
+                        type: 'GET',
+                        data: { categoryId: categoryId },
+                        success: function(data) {
+                            console.log('SubCategories loaded:', data);
+                            $subCategorySelect.empty().append('<option value="">-- Select Sub Category --</option>');
+
+                            if (data && data.length > 0) {
+                                $.each(data, function(index, item) {
+                                    // FIXED: Expecting {id, name} format from ItemController
+                                    $subCategorySelect.append($('<option></option>')
+                                        .val(item.id)
+                                        .text(item.name));
+                                });
+
+                                // Restore initial value if this is page load
+                                if (initialValues.subCategoryId && !$subCategorySelect.data('user-changed')) {
+                                    $subCategorySelect.val(initialValues.subCategoryId);
+                                    $subCategorySelect.trigger('change.select2');
+                                }
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error loading subcategories:', error);
+                            $subCategorySelect.empty().append('<option value="">Error loading subcategories</option>');
+                            if (typeof toastr !== 'undefined') {
+                                toastr.error('Failed to load subcategories');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Brand Change Handler - Load Models
+            $('#BrandId').on('change', function() {
+                var brandId = $(this).val();
+                console.log('Brand changed to:', brandId);
+
+                // Clear model dropdown
+                var $modelSelect = $('#ItemModelId');
+                $modelSelect.empty().append('<option value="">-- Select Model --</option>');
+                $modelSelect.trigger('change.select2');
+
+                if (brandId && brandId !== '') {
+                    // Show loading indicator
+                    $modelSelect.append('<option value="">Loading...</option>');
+
+                    // FIXED: Use correct controller and method name
+                    $.ajax({
+                        url: '@Url.Action("GetModelsByBrand", "Item")',
+                        type: 'GET',
+                        data: { brandId: brandId },
+                        success: function(data) {
+                            console.log('Models loaded:', data);
+                            $modelSelect.empty().append('<option value="">-- Select Model --</option>');
+
+                            if (data && data.length > 0) {
+                                $.each(data, function(index, item) {
+                                    // FIXED: Expecting {id, name} format from ItemController
+                                    $modelSelect.append($('<option></option>')
+                                        .val(item.id)
+                                        .text(item.name));
+                                });
+
+                                // Restore initial value if this is page load
+                                if (initialValues.itemModelId && !$modelSelect.data('user-changed')) {
+                                    $modelSelect.val(initialValues.itemModelId);
+                                    $modelSelect.trigger('change.select2');
+                                }
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error loading models:', error);
+                            $modelSelect.empty().append('<option value="">Error loading models</option>');
+                            if (typeof toastr !== 'undefined') {
+                                toastr.error('Failed to load item models');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Mark dropdowns as user-changed after initial load
+            setTimeout(function() {
+                $('#SubCategoryId, #ItemModelId').data('user-changed', true);
+            }, 1000);
+
+            // ================================================================
+            // FORM VALIDATION AND SUBMISSION
+            // ================================================================
+
+            // Stock level validation
+            $('#MinimumStock, #MaximumStock').on('blur', function() {
+                var minStock = parseFloat($('#MinimumStock').val()) || 0;
+                var maxStock = parseFloat($('#MaximumStock').val()) || 0;
+
+                if (maxStock > 0 && maxStock < minStock) {
+                    $('#MaximumStock').addClass('is-invalid');
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning('Maximum stock cannot be less than minimum stock');
+                    }
+                } else {
+                    $('#MaximumStock').removeClass('is-invalid');
+                }
+            });
+
+            // Reorder level validation
+            $('#ReorderLevel').on('blur', function() {
+                var reorderLevel = parseFloat($(this).val()) || 0;
+                var minStock = parseFloat($('#MinimumStock').val()) || 0;
+
+                if (reorderLevel > minStock) {
+                    $(this).addClass('is-invalid');
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning('Reorder level should not exceed minimum stock');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // Form submission handling
+            $('#editItemForm').on('submit', function(e) {
+                console.log('=== Form Submission Started ===');
+
+                // Remove any previous error styling
+                $('.is-invalid').removeClass('is-invalid');
+
+                // Validate required fields
+                var isValid = true;
+                var errors = [];
+
+                // Check category selection
+                var categoryId = $('#CategoryDropdown').val();
+                if (!categoryId || categoryId === '') {
+                    $('#CategoryDropdown').addClass('is-invalid');
+                    $('#CategoryError').text('Category is required');
+                    errors.push('Category is required');
+                    isValid = false;
+                } else {
+                    $('#CategoryDropdown').removeClass('is-invalid');
+                    $('#CategoryError').text('');
+                }
+
+                // Check item name
+                var itemName = $('#Name').val().trim();
+                if (!itemName) {
+                    $('#Name').addClass('is-invalid');
+                    errors.push('Item name is required');
+                    isValid = false;
+                }
+
+                // Check minimum stock
+                var minStock = parseFloat($('#MinimumStock').val());
+                if (isNaN(minStock) || minStock < 0) {
+                    $('#MinimumStock').addClass('is-invalid');
+                    errors.push('Valid minimum stock is required');
+                    isValid = false;
+                }
+
+                // Check unit selection
+                var unit = $('#Unit').val();
+                if (!unit) {
+                    $('#Unit').addClass('is-invalid');
+                    errors.push('Unit is required');
+                    isValid = false;
+                }
+
+                // Check item type
+                var itemType = $('#Type').val();
+                if (!itemType) {
+                    $('#Type').addClass('is-invalid');
+                    errors.push('Item type is required');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    console.error('Form validation failed:', errors);
+
+                    // Show error summary
+                    var errorHtml = '<ul class="mb-0">';
+                    errors.forEach(function(error) {
+                        errorHtml += '<li>' + error + '</li>';
+                    });
+                    errorHtml += '</ul>';
+
+                    $('.alert-danger').html(errorHtml).show();
+
+                    // Scroll to first error
+                    var firstError = $('.is-invalid').first();
+                    if (firstError.length) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Please fix the errors and try again');
+                    }
+                    return false;
+                }
+
+                // Log form data for debugging
+                var formData = $(this).serializeArray();
+                console.log('Form data being submitted:', formData);
+
+                // Disable submit button to prevent double submission
+                var $submitBtn = $(this).find('button[type="submit"]');
+                $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                // Set a timeout to re-enable button if something goes wrong
+                setTimeout(function() {
+                    if ($submitBtn.prop('disabled')) {
+                        console.log('Re-enabling submit button after timeout');
+                        $submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Save Changes');
+                    }
+                }, 10000); // 10 second timeout
+
+                console.log('Form validation passed, submitting...');
+                return true;
+            });
+
+            // Handle collapsible cards
+            $('[data-card-widget="collapse"]').on('click', function() {
+                var $card = $(this).closest('.card');
+                $card.find('.card-body').slideToggle();
+                var $icon = $(this).find('i');
+                $icon.toggleClass('fa-minus fa-plus');
+            });
+
+            // Auto-resize textarea
+            $('textarea').on('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Initialize tooltips if Bootstrap is available
+            if (typeof $().tooltip === 'function') {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+
+            console.log('=== Item Edit Form Ready ===');
+        });
+
+        // Global AJAX error handler
+        $(document).ajaxError(function(event, xhr, settings, thrownError) {
+            if (settings.url && (settings.url.includes('SubCategories') || settings.url.includes('Model'))) {
+                console.error('AJAX Error:', {
+                    url: settings.url,
+                    status: xhr.status,
+                    error: thrownError,
+                    response: xhr.responseText
+                });
+
+                if (xhr.status === 404) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('The requested data could not be found');
+                    }
+                } else if (xhr.status >= 500) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Server error occurred. Please try again later');
+                    }
+                } else {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('An error occurred while loading data');
+                    }
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* Keep existing styles */
+        .select2-container--bootstrap4 .select2-selection {
+            border-color: #ced4da;
+            min-height: calc(1.5em + 0.75rem + 2px);
+        }
+
+            .select2-container--bootstrap4 .select2-selection.is-invalid,
+            .select2-container--bootstrap4 .select2-selection--single.is-invalid {
+                border-color: #dc3545;
+            }
+
+        .widget-user-2 .widget-user-username {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .widget-user-2 .widget-user-desc {
+            margin-top: 0;
+            font-size: 14px;
+        }
+
+        .widget-user-2 .widget-user-image > div {
+            float: left;
+            margin-right: 10px;
+        }
+
+        .nav-link .badge {
+            font-weight: normal;
+        }
+
+        .info-box-number {
+            font-size: 24px;
+        }
+
+        .card-body .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .custom-control-label::before {
+            top: 0.1rem;
+        }
+
+        .custom-control-label::after {
+            top: 0.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .text-danger {
+            font-size: 0.875em;
+        }
+
+        .card-body {
+            transition: all 0.3s ease;
+        }
+    </style>
+}

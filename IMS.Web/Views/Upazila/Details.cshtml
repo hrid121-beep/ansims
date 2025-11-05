@@ -1,0 +1,400 @@
+﻿@model IMS.Application.DTOs.UpazilaDto
+@{
+    ViewData["Title"] = "Sub-district Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stores = ViewBag.Stores as IEnumerable<IMS.Application.DTOs.StoreDto>;
+    var statistics = ViewBag.Statistics as IMS.Application.DTOs.UpazilaStatisticsDto;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Sub-district Details - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Zila" asp-action="Details" asp-route-id="@Model.ZilaId">@Model.ZilaName</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Sub-districts</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Upazila Info -->
+            <div class="col-md-4">
+                <div class="card card-primary card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt fa-5x text-primary mb-3"></i>
+                        </div>
+                        <h3 class="profile-username text-center">@Model.Name</h3>
+                        <p class="text-muted text-center">@Model.NameBangla</p>
+                        <p class="text-center text-muted">@Model.Code</p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>District</b>
+                                <a asp-controller="Zila" asp-action="Details" asp-route-id="@Model.ZilaId" class="float-right">
+                                    @Model.ZilaName
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Range</b> <a class="float-right">@Model.RangeName</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Chairman</b> <a class="float-right">@(Model.UpazilaChairmanName ?? "Not Assigned")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Contact</b> <a class="float-right">@(Model.ContactNumber ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b> <a class="float-right text-truncate" style="max-width: 150px;">@(Model.Email ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Area</b> <a class="float-right">@(Model.Area?.ToString("N2") ?? "N/A") km²</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Population</b> <a class="float-right">@(Model.Population?.ToString("N0") ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>VDP Unit</b>
+                                <a class="float-right">
+                                    @if (Model.HasVDPUnit)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">No Unit</span>
+                                    }
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Status</b>
+                                <a class="float-right">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </a>
+                            </li>
+                        </ul>
+
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-block">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Officer Info Card -->
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Officer Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <strong><i class="fas fa-user mr-1"></i> Upazila Officer</strong>
+                        <p class="text-muted">
+                            @(Model.UpazilaOfficerName ?? "Not Assigned")<br>
+                            <small>@Model.OfficerDesignation</small>
+                        </p>
+
+                        @if (!string.IsNullOrEmpty(Model.VDPOfficerName))
+                        {
+                            <hr>
+                            <strong><i class="fas fa-user-shield mr-1"></i> VDP Officer</strong>
+                            <p class="text-muted">@Model.VDPOfficerName</p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.OfficeAddress))
+                        {
+                            <hr>
+                            <strong><i class="fas fa-map-marker-alt mr-1"></i> Office Address</strong>
+                            <p class="text-muted">@Model.OfficeAddress</p>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Remarks))
+                {
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Remarks</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>@Model.Remarks</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Statistics and Info -->
+            <div class="col-md-8">
+                <!-- Quick Stats -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@(Model.NumberOfUnions ?? 0)</h3>
+                                <p>Unions</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@(Model.NumberOfVillages ?? 0)</h3>
+                                <p>Villages</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model.VDPMemberCount ?? 0)</h3>
+                                <p>VDP Members</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>@Model.StoreCount</h3>
+                                <p>Stores</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Chart -->
+                @if (statistics?.MonthlyActivities != null && statistics.MonthlyActivities.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Monthly Activity (Last 6 Months)</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="activityChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+                }
+
+                <!-- Stores List -->
+                @if (stores != null && stores.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Stores in @Model.Name</h3>
+                            <div class="card-tools">
+                                <a asp-controller="Store" asp-action="Create" asp-route-upazilaId="@Model.Id" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add Store
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Manager</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var store in stores)
+                                    {
+                                        <tr>
+                                            <td>@store.Code</td>
+                                            <td>@store.Name</td>
+                                            <td>@store.StoreTypeName</td>
+                                            <td>@(store.ManagerName ?? "Not Assigned")</td>
+                                            <td>@(store.ContactNumber ?? "N/A")</td>
+                                            <td>
+                                                @if (store.IsActive)
+                                                {
+                                                    <span class="badge badge-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger">Inactive</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Store" asp-action="Details" asp-route-id="@store.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Stores</h3>
+                            <div class="card-tools">
+                                <a asp-controller="Store" asp-action="Create" asp-route-upazilaId="@Model.Id" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add Store
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No stores found in this sub-district.</p>
+                                <a asp-controller="Store" asp-action="Create" asp-route-upazilaId="@Model.Id" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add First Store
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Recent Activity Timeline -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="time-label">
+                                <span class="bg-primary">@DateTime.Now.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-plus bg-blue"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    <h3 class="timeline-header">Sub-district Created</h3>
+                                    <div class="timeline-body">
+                                        Sub-district was created by @Model.CreatedBy
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <div>
+                                    <i class="fas fa-edit bg-yellow"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @Model.UpdatedAt.Value.ToString("dd MMM yyyy")</span>
+                                        <h3 class="timeline-header">Last Updated</h3>
+                                        <div class="timeline-body">
+                                            Updated by @Model.UpdatedBy
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @if (statistics?.MonthlyActivities != null && statistics.MonthlyActivities.Any())
+    {
+        <script>
+            var ctx = document.getElementById('activityChart').getContext('2d');
+            var activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", statistics.MonthlyActivities.Select(m => $"'{m.Month}'")))],
+                    datasets: [{
+                        label: 'Issues',
+                        data: [@string.Join(",", statistics.MonthlyActivities.Select(m => m.IssueCount))],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }, {
+                        label: 'Receives',
+                        data: [@string.Join(",", statistics.MonthlyActivities.Select(m => m.ReceiveCount))],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        </script>
+    }
+
+    <script>
+        $(function () {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Initialize any additional features
+            $('.timeline').fadeIn();
+        });
+    </script>
+}

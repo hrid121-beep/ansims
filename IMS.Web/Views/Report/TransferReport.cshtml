@@ -1,0 +1,475 @@
+@model IEnumerable<IMS.Application.DTOs.TransferDto>
+@{
+    ViewData["Title"] = "Transfer Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Calculate summary statistics
+    var transfers = Model ?? new List<IMS.Application.DTOs.TransferDto>();
+    var totalTransfers = transfers.Count();
+    var completedTransfers = transfers.Count(t => t.Status == "Completed");
+    var inTransitTransfers = transfers.Count(t => t.Status == "InTransit" || t.Status == "In Transit");
+    var pendingTransfers = transfers.Count(t => t.Status == "Pending" || t.Status == "Draft");
+    var totalQuantity = transfers.SelectMany(t => t.Items).Sum(i => i.Quantity);
+
+    // Month names for chart labels
+    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+    // Chart data - Monthly trend
+    var monthlyStats = transfers
+        .GroupBy(t => new { t.TransferDate.Year, t.TransferDate.Month })
+        .Select(g => new {
+            Year = g.Key.Year,
+            Month = g.Key.Month,
+            TransferCount = g.Count(),
+            TotalQuantity = g.SelectMany(t => t.Items).Sum(i => i.Quantity)
+        })
+        .OrderBy(m => m.Year).ThenBy(m => m.Month)
+        .ToList();
+
+    // Chart data - Store-wise transfers
+    var fromStoreStats = transfers
+        .GroupBy(t => t.FromStoreName)
+        .Select(g => new {
+            StoreName = g.Key ?? "Unknown",
+            TransferCount = g.Count()
+        })
+        .OrderByDescending(s => s.TransferCount)
+        .Take(5)
+        .ToList();
+
+    var toStoreStats = transfers
+        .GroupBy(t => t.ToStoreName)
+        .Select(g => new {
+            StoreName = g.Key ?? "Unknown",
+            TransferCount = g.Count()
+        })
+        .OrderByDescending(s => s.TransferCount)
+        .Take(5)
+        .ToList();
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Transfer Report</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Transfer Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="TransferReport" method="get">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date:</label>
+                                <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date:</label>
+                                <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>From Store:</label>
+                                <select id="fromStoreId" name="fromStoreId" class="form-control">
+                                    <option value="">All Stores</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores)
+                                        {
+                                            <option value="@store.Value">@store.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>To Store:</label>
+                                <select id="toStoreId" name="toStoreId" class="form-control">
+                                    <option value="">All Stores</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores)
+                                        {
+                                            <option value="@store.Value">@store.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Widgets -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-exchange-alt"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Transfers</span>
+                        <span class="info-box-number">@totalTransfers</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            All Transfer Records
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Completed</span>
+                        <span class="info-box-number">@completedTransfers</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @((totalTransfers > 0 ? (completedTransfers * 100.0 / totalTransfers) : 0))%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @((totalTransfers > 0 ? (completedTransfers * 100 / totalTransfers) : 0))% of total
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-truck"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">In Transit</span>
+                        <span class="info-box-number">@inTransitTransfers</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Being Transferred
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending</span>
+                        <span class="info-box-number">@pendingTransfers</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Awaiting Approval
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top Source Stores</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="fromStoreChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Transfer Trend</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer Details Table with DataTable -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Transfer Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="transferTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Transfer No</th>
+                            <th>Date</th>
+                            <th>From Store</th>
+                            <th>To Store</th>
+                            <th class="text-center">Items</th>
+                            <th class="text-center">Quantity</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (transfers.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var transfer in transfers)
+                            {
+                                <tr>
+                                    <td>@serial</td>
+                                    <td><strong>@transfer.TransferNo</strong></td>
+                                    <td>@transfer.TransferDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@transfer.FromStoreName</td>
+                                    <td>@transfer.ToStoreName</td>
+                                    <td class="text-center">@transfer.Items.Count</td>
+                                    <td class="text-center">@transfer.Items.Sum(i => i.Quantity)</td>
+                                    <td>
+                                        @if (transfer.Status == "Completed")
+                                        {
+                                            <span class="badge badge-success">Completed</span>
+                                        }
+                                        else if (transfer.Status == "InTransit" || transfer.Status == "In Transit")
+                                        {
+                                            <span class="badge badge-info">In Transit</span>
+                                        }
+                                        else if (transfer.Status == "Pending")
+                                        {
+                                            <span class="badge badge-warning">Pending</span>
+                                        }
+                                        else if (transfer.Status == "Draft")
+                                        {
+                                            <span class="badge badge-secondary">Draft</span>
+                                        }
+                                        else if (transfer.Status == "Cancelled")
+                                        {
+                                            <span class="badge badge-danger">Cancelled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-light">@transfer.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="Transfer" asp-action="Details" asp-route-id="@transfer.Id"
+                                           class="btn btn-xs btn-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No transfer records found for the selected period.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            $('#transferTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by date descending
+                "language": {
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+
+            // From Store Chart
+            var fromStoreChartCanvas = $('#fromStoreChart').get(0).getContext('2d');
+            var fromStoreChartData = {
+                labels: [@Html.Raw(string.Join(",", fromStoreStats.Select(s => "'" + s.StoreName + "'")))],
+                datasets: [{
+                    label: 'Transfer Count',
+                    backgroundColor: 'rgba(243,156,18,0.9)',
+                    borderColor: 'rgba(243,156,18,0.8)',
+                    data: [@string.Join(",", fromStoreStats.Select(s => s.TransferCount))]
+                }]
+            };
+            new Chart(fromStoreChartCanvas, {
+                type: 'bar',
+                data: fromStoreChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+
+            // Monthly Trend Chart
+            var monthlyChartCanvas = $('#monthlyChart').get(0).getContext('2d');
+            var monthlyChartData = {
+                labels: [@Html.Raw(string.Join(",", monthlyStats.Select(m => "'" + monthNames[m.Month - 1] + " " + m.Year + "'")))],
+                datasets: [{
+                    label: 'Transfer Count',
+                    borderColor: 'rgba(243,156,18,1)',
+                    backgroundColor: 'rgba(243,156,18,0.3)',
+                    fill: true,
+                    data: [@string.Join(",", monthlyStats.Select(m => m.TransferCount))]
+                }]
+            };
+            new Chart(monthlyChartCanvas, {
+                type: 'line',
+                data: monthlyChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        });
+
+        // Export to CSV
+        function exportToCSV() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var fromStoreId = document.getElementById('fromStoreId').value;
+            var toStoreId = document.getElementById('toStoreId').value;
+
+            var url = '@Url.Action("ExportTransferReportCsv", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (fromStoreId) params.push('fromStoreId=' + fromStoreId);
+            if (toStoreId) params.push('toStoreId=' + toStoreId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var fromStoreId = document.getElementById('fromStoreId').value;
+            var toStoreId = document.getElementById('toStoreId').value;
+
+            var url = '@Url.Action("ExportTransferReportPdf", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (fromStoreId) params.push('fromStoreId=' + fromStoreId);
+            if (toStoreId) params.push('toStoreId=' + toStoreId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, form {
+                display: none !important;
+            }
+
+            .btn {
+                display: none !important;
+            }
+        }
+    </style>
+}

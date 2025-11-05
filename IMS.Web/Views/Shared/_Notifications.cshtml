@@ -1,0 +1,35 @@
+﻿@* Display TempData Notifications *@
+@if (TempData["Success"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            console.log('Showing success message:', '@Html.Raw(TempData["Success"].ToString().Replace("'", "\\'"))');
+            console.log('Toastr loaded:', typeof toastr !== 'undefined');
+            toastr.success('@Html.Raw(TempData["Success"].ToString().Replace("'", "\\'"))');
+        });
+    </script>
+}
+@if (TempData["Error"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            toastr.error('@Html.Raw(TempData["Error"].ToString().Replace("'", "\\'"))');
+        });
+    </script>
+}
+@if (TempData["Warning"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            toastr.warning('@Html.Raw(TempData["Warning"].ToString().Replace("'", "\\'"))');
+        });
+    </script>
+}
+@if (TempData["Info"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            toastr.info('@Html.Raw(TempData["Info"].ToString().Replace("'", "\\'"))');
+        });
+    </script>
+}

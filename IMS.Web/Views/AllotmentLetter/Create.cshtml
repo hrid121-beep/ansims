@@ -1,0 +1,752 @@
+@model IMS.Application.DTOs.AllotmentLetterDto
+@{
+    ViewData["Title"] = "Create Allotment Letter";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Create Allotment Letter</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Allotment Letters</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <!-- Basic Information -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Basic Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Valid From <span class="text-danger">*</span></label>
+                                <input asp-for="ValidFrom" type="date" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Valid Until <span class="text-danger">*</span></label>
+                                <input asp-for="ValidUntil" type="date" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>From Store <span class="text-danger">*</span></label>
+                                <select asp-for="FromStoreId" asp-items="ViewBag.Stores" class="form-control select2bs4" required>
+                                    <option value="">-- Select Store --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>স্মারক নং (Memo No)</label>
+                                <input asp-for="ReferenceNo" class="form-control"
+                                       placeholder="৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪"
+                                       pattern="[০-৯.]+" />
+                                <small class="text-muted">শুধু বাংলা সংখ্যা ব্যবহার করুন। উদাহরণ: ৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Upload Document</label>
+                                <input type="file" name="documentFile" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png" />
+                                <small class="text-muted">Upload scanned allotment letter (PDF/Image)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Purpose <span class="text-danger">*</span></label>
+                                <textarea asp-for="Purpose" class="form-control" rows="2" required
+                                          placeholder="Purpose of this allotment..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Government Format Fields (Bengali Support) -->
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-language"></i> Government Format</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Fill these fields for government-format PDF printing with Bengali language support
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Subject (English)</label>
+                                <input asp-for="Subject" class="form-control"
+                                       placeholder="e.g., Allotment of Kit Bags (New Design)" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>বিষয় (বাংলায়)</label>
+                                <input asp-for="SubjectBn" class="form-control"
+                                       placeholder="যেমনঃ কিট ব্যাগ (নতুন নকশা) বরাদ্দ প্রদান প্রসঙ্গে" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Body Text (English)</label>
+                                <textarea asp-for="BodyText" class="form-control" rows="4"
+                                          placeholder="Main instructions in English (4-5 points)"></textarea>
+                                <small class="text-muted">Government letter main body/instructions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>পত্রের মূল অংশ (বাংলায়)</label>
+                                <textarea asp-for="BodyTextBn" class="form-control" rows="4"
+                                          placeholder="প্রধান নির্দেশনা (৪-৫টি পয়েন্ট)"></textarea>
+                                <small class="text-muted">সরকারি পত্রের মূল অংশ/নির্দেশনা</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Collection Deadline</label>
+                                <input asp-for="CollectionDeadline" type="date" class="form-control" />
+                                <small class="text-muted">Last date to collect items</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Signatory Preset Selection -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><i class="fas fa-user-tie"></i> Select Signatory Preset (Optional)</label>
+                                <select id="signatoryPresetDropdown" class="form-control">
+                                    <option value="">-- Select a signatory preset to auto-fill fields --</option>
+                                </select>
+                                <small class="text-muted">Selecting a preset will automatically fill all signatory fields below</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Signatory Name <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryName" class="form-control"
+                                       placeholder="e.g., এ.বি.এম. ফরহাদ, বিবিএম" />
+                                <span asp-validation-for="SignatoryName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Signatory Designation (English) <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryDesignation" class="form-control"
+                                       placeholder="e.g., Deputy Director General" />
+                                <span asp-validation-for="SignatoryDesignation" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Signatory Designation (বাংলায়) <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryDesignationBn" class="form-control"
+                                       placeholder="যেমনঃ উপ-মহাপরিচালক (প্রশাসন)" />
+                                <span asp-validation-for="SignatoryDesignationBn" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Signatory ID/Code <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryId" class="form-control"
+                                       placeholder="e.g., DDG-ADM-001" />
+                                <span asp-validation-for="SignatoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Signatory Phone <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryPhone" class="form-control"
+                                       placeholder="e.g., +880-2-XXXXXXXX" />
+                                <span asp-validation-for="SignatoryPhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Signatory Email <span class="text-danger">*</span></label>
+                                <input asp-for="SignatoryEmail" type="email" class="form-control"
+                                       placeholder="e.g., ddg.admin@ansar-vdp.gov.bd" />
+                                <span asp-validation-for="SignatoryEmail" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Bengali Date (Optional)</label>
+                                <input asp-for="BengaliDate" class="form-control"
+                                       placeholder="e.g., ভাদ্র ১৪৩২ বঙ্গাব্দ" />
+                                <small class="text-muted">Auto-generated if left blank</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipients Section (NEW) -->
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Recipients & Items</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-success btn-sm" onclick="addRecipient()">
+                            <i class="fas fa-plus"></i> Add Recipient
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="recipientsContainer">
+                        <!-- Recipients will be added here -->
+                    </div>
+                    <div class="text-center text-muted" id="noRecipientsMessage">
+                        <p>Click "Add Recipient" to start adding recipients and their items</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Create Allotment Letter
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let recipientIndex = 0;
+        const items = @Html.Raw(Json.Serialize(ViewBag.Items));
+        const ranges = @Html.Raw(Json.Serialize(ViewBag.RangesList ?? new List<object>()));
+        const battalions = @Html.Raw(Json.Serialize(ViewBag.BattalionsList ?? new List<object>()));
+        const zilas = @Html.Raw(Json.Serialize(ViewBag.ZilasList ?? new List<object>()));
+        const upazilas = @Html.Raw(Json.Serialize(ViewBag.UpazilasList ?? new List<object>()));
+
+        $(document).ready(function() {
+            $('.select2bs4').select2({ theme: 'bootstrap4' });
+
+            // Load signatory presets
+            loadSignatoryPresets();
+        });
+
+        // Load signatory presets from server
+        function loadSignatoryPresets() {
+            $.ajax({
+                url: '@Url.Action("GetPresetsJson", "AllotmentLetter")',
+                type: 'GET',
+                success: function(presets) {
+                    const dropdown = $('#signatoryPresetDropdown');
+                    dropdown.empty();
+                    dropdown.append('<option value="">-- Select a signatory preset to auto-fill fields --</option>');
+
+                    presets.forEach(function(preset) {
+                        const displayName = preset.presetNameBn || preset.presetName;
+                        const option = $('<option></option>')
+                            .attr('value', preset.id)
+                            .text(displayName)
+                            .data('preset', preset);
+
+                        dropdown.append(option);
+
+                        // If this is the default preset, auto-select it
+                        if (preset.isDefault) {
+                            dropdown.val(preset.id);
+                            applyPreset(preset);
+                        }
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to load signatory presets:', error);
+                }
+            });
+        }
+
+        // Handle preset selection change
+        $('#signatoryPresetDropdown').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const preset = selectedOption.data('preset');
+
+            if (preset) {
+                applyPreset(preset);
+            }
+        });
+
+        // Apply preset values to form fields
+        function applyPreset(preset) {
+            if (!preset) return;
+
+            $('input[name="SignatoryName"]').val(preset.signatoryName || '');
+            $('input[name="SignatoryDesignation"]').val(preset.signatoryDesignation || '');
+            $('input[name="SignatoryDesignationBn"]').val(preset.signatoryDesignationBn || '');
+            $('input[name="SignatoryId"]').val(preset.signatoryId || '');
+            $('input[name="SignatoryPhone"]').val(preset.signatoryPhone || '');
+            $('input[name="SignatoryEmail"]').val(preset.signatoryEmail || '');
+        }
+
+        function addRecipient() {
+            $('#noRecipientsMessage').hide();
+
+            const recipientHtml = `
+                <div class="card card-outline card-success recipient-card" data-index="${recipientIndex}" style="border-left: 4px solid #28a745;">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-map-marker-alt"></i> Recipient #${recipientIndex + 1}
+                        </h5>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool text-danger" onclick="removeRecipient(${recipientIndex})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Serial No <span class="text-danger">*</span></label>
+                                    <input name="Recipients[${recipientIndex}].SerialNo" type="number"
+                                           class="form-control" value="${recipientIndex + 1}" min="1" required />
+                                    <small class="text-muted">Order in PDF</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Entity Type <span class="text-danger">*</span></label>
+                                    <select name="Recipients[${recipientIndex}].RecipientType"
+                                            class="form-control recipient-type"
+                                            data-index="${recipientIndex}" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="Range">Range (→Battalions)</option>
+                                        <option value="Battalion">Battalion (Direct)</option>
+                                        <option value="Zila">Zila (→Upazilas)</option>
+                                        <option value="Upazila">Upazila (→Unions)</option>
+                                        <option value="Union">Union (Direct)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Parent Entity <span class="text-danger">*</span></label>
+                                    <select id="entitySelect_${recipientIndex}"
+                                            class="form-control entity-select"
+                                            data-index="${recipientIndex}" required disabled>
+                                        <option value="">-- Select Parent --</option>
+                                    </select>
+                                    <small class="text-muted" id="entityHelp_${recipientIndex}"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Recipient <span class="text-danger">*</span></label>
+                                    <select id="recipientSelect_${recipientIndex}"
+                                            class="form-control recipient-select"
+                                            data-index="${recipientIndex}" required disabled>
+                                        <option value="">-- Select Recipient --</option>
+                                    </select>
+                                    <small class="text-muted" id="recipientHelp_${recipientIndex}"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bengali Fields for Recipient -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>বাংলা নাম (Recipient Name in Bengali)</label>
+                                    <input type="text" name="Recipients[${recipientIndex}].RecipientNameBn"
+                                           class="form-control"
+                                           placeholder="যেমনঃ কক্সবাজার আনসার ব্যাটালিয়ন (১ বিএন)" />
+                                    <small class="text-muted">Bengali name for government format PDF</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>কর্মরত জনবল (Staff Strength)</label>
+                                    <input type="text" name="Recipients[${recipientIndex}].StaffStrength"
+                                           class="form-control"
+                                           placeholder="যেমনঃ ৫০০" />
+                                    <small class="text-muted">Optional: Number of personnel (in Bengali numerals)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Name (populated from selected entity) -->
+                        <input type="hidden" name="Recipients[${recipientIndex}].RecipientName"
+                               id="recipientName_${recipientIndex}" />
+                        <input type="hidden" name="Recipients[${recipientIndex}].RangeId"
+                               id="rangeId_${recipientIndex}" />
+                        <input type="hidden" name="Recipients[${recipientIndex}].BattalionId"
+                               id="battalionId_${recipientIndex}" />
+                        <input type="hidden" name="Recipients[${recipientIndex}].ZilaId"
+                               id="zilaId_${recipientIndex}" />
+                        <input type="hidden" name="Recipients[${recipientIndex}].UpazilaId"
+                               id="upazilaId_${recipientIndex}" />
+                        <input type="hidden" name="Recipients[${recipientIndex}].UnionId"
+                               id="unionId_${recipientIndex}" />
+
+                        <!-- Items for this recipient -->
+                        <div class="mt-3">
+                            <label><strong>Items for this Recipient:</strong></label>
+                            <button type="button" class="btn btn-primary btn-xs ml-2"
+                                    onclick="addRecipientItem(${recipientIndex})">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+
+                            <table class="table table-sm table-bordered mt-2">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th width="20%">Item</th>
+                                        <th width="20%">বাংলা নাম</th>
+                                        <th width="12%">Quantity</th>
+                                        <th width="10%">Unit</th>
+                                        <th width="10%">একক (Bn)</th>
+                                        <th width="20%">Remarks</th>
+                                        <th width="8%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recipientItems_${recipientIndex}">
+                                    <!-- Items will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#recipientsContainer').append(recipientHtml);
+
+            // Initialize event handlers for this recipient using IIFE to capture correct index
+            (function(idx) {
+                $(`.recipient-type[data-index="${idx}"]`).change(function() {
+                    updateEntityDropdown(idx);
+                });
+
+                $(`.entity-select[data-index="${idx}"]`).change(function() {
+                    loadRecipientDropdown(idx);
+                });
+
+                $(`.recipient-select[data-index="${idx}"]`).change(function() {
+                    updateRecipientData(idx);
+                });
+            })(recipientIndex);
+
+            recipientIndex++;
+        }
+
+        function updateEntityDropdown(index) {
+            const type = $(`.recipient-type[data-index="${index}"]`).val();
+            const entitySelect = $(`#entitySelect_${index}`);
+            const recipientSelect = $(`#recipientSelect_${index}`);
+
+            entitySelect.html('<option value="">-- Select Parent --</option>');
+            recipientSelect.html('<option value="">-- Select Recipient --</option>');
+            recipientSelect.prop('disabled', true);
+
+            // Clear help text
+            $(`#entityHelp_${index}`).text('');
+            $(`#recipientHelp_${index}`).text('');
+
+            // If no type selected, keep dropdown disabled
+            if (!type) {
+                entitySelect.prop('disabled', true);
+                return;
+            }
+
+            // Enable dropdown and populate based on type
+            entitySelect.prop('disabled', false);
+
+            let data = [];
+            let helpText = '';
+            let recipientHelpText = '';
+
+            if (type === 'Range') {
+                data = ranges;
+                helpText = 'Select Range';
+                recipientHelpText = 'Then select Battalion under that Range';
+            } else if (type === 'Battalion') {
+                data = battalions;
+                helpText = 'Select Battalion directly';
+                recipientSelect.prop('disabled', false);
+                recipientSelect.html('<option value="">Auto-filled</option>');
+            } else if (type === 'Zila') {
+                data = zilas;
+                helpText = 'Select Zila';
+                recipientHelpText = 'Then select Upazila under that Zila';
+            } else if (type === 'Upazila') {
+                data = upazilas;
+                helpText = 'Select Upazila';
+                recipientHelpText = 'Then select Union under that Upazila';
+            } else if (type === 'Union') {
+                // For Union, load all unions (if needed, or make it direct selection)
+                helpText = 'Union selected directly';
+                recipientSelect.prop('disabled', false);
+                recipientSelect.html('<option value="">Auto-filled</option>');
+            }
+
+            $(`#entityHelp_${index}`).text(helpText);
+            $(`#recipientHelp_${index}`).text(recipientHelpText);
+
+            data.forEach(entity => {
+                entitySelect.append(`<option value="${entity.id}">${entity.name}</option>`);
+            });
+
+            // Clear hidden fields
+            $(`#rangeId_${index}, #battalionId_${index}, #zilaId_${index}, #upazilaId_${index}, #unionId_${index}`).val('');
+            $(`#recipientName_${index}`).val('');
+        }
+
+        function loadRecipientDropdown(index) {
+            const type = $(`.recipient-type[data-index="${index}"]`).val();
+            const parentEntityId = $(`#entitySelect_${index}`).val();
+            const recipientSelect = $(`#recipientSelect_${index}`);
+
+            recipientSelect.html('<option value="">-- Loading... --</option>');
+
+            if (!parentEntityId) {
+                recipientSelect.prop('disabled', true);
+                return;
+            }
+
+            // For direct selection (Battalion, Union), auto-fill
+            if (type === 'Battalion') {
+                const entityName = $(`#entitySelect_${index} option:selected`).text();
+                $(`#recipientName_${index}`).val(entityName);
+                $(`#battalionId_${index}`).val(parentEntityId);
+                recipientSelect.html(`<option value="${parentEntityId}">${entityName}</option>`);
+                recipientSelect.val(parentEntityId);
+                recipientSelect.prop('disabled', true);
+                return;
+            }
+
+            if (type === 'Union') {
+                const entityName = $(`#entitySelect_${index} option:selected`).text();
+                $(`#recipientName_${index}`).val(entityName);
+                $(`#unionId_${index}`).val(parentEntityId);
+                recipientSelect.html(`<option value="${parentEntityId}">${entityName}</option>`);
+                recipientSelect.val(parentEntityId);
+                recipientSelect.prop('disabled', true);
+                return;
+            }
+
+            // For cascading selection (Range→Battalion, Zila→Upazila, Upazila→Union)
+            let apiUrl = '';
+            if (type === 'Range') apiUrl = `/AllotmentLetter/GetBattalionsByRange?rangeId=${parentEntityId}`;
+            else if (type === 'Zila') apiUrl = `/AllotmentLetter/GetUpazilasByZila?zilaId=${parentEntityId}`;
+            else if (type === 'Upazila') apiUrl = `/AllotmentLetter/GetUnionsByUpazila?upazilaId=${parentEntityId}`;
+
+            if (apiUrl) {
+                $.getJSON(apiUrl, function(data) {
+                    recipientSelect.html('<option value="">-- Select Recipient --</option>');
+                    if (data.length === 0) {
+                        recipientSelect.append('<option value="">No recipients found</option>');
+                        recipientSelect.prop('disabled', true);
+                    } else {
+                        data.forEach(item => {
+                            recipientSelect.append(`<option value="${item.id}">${item.name}</option>`);
+                        });
+                        recipientSelect.prop('disabled', false);
+                    }
+                }).fail(function() {
+                    recipientSelect.html('<option value="">Error loading recipients</option>');
+                    recipientSelect.prop('disabled', true);
+                });
+            }
+        }
+
+        function updateRecipientData(index) {
+            const type = $(`.recipient-type[data-index="${index}"]`).val();
+            const recipientId = $(`#recipientSelect_${index}`).val();
+            const recipientName = $(`#recipientSelect_${index} option:selected`).text();
+
+            // Set recipient name
+            $(`#recipientName_${index}`).val(recipientName);
+
+            // Set appropriate ID field based on final recipient type
+            $(`#rangeId_${index}, #battalionId_${index}, #zilaId_${index}, #upazilaId_${index}, #unionId_${index}`).val('');
+
+            if (type === 'Range') {
+                // Final recipient is Battalion
+                $(`#battalionId_${index}`).val(recipientId);
+            } else if (type === 'Battalion') {
+                $(`#battalionId_${index}`).val(recipientId);
+            } else if (type === 'Zila') {
+                // Final recipient is Upazila
+                $(`#upazilaId_${index}`).val(recipientId);
+            } else if (type === 'Upazila') {
+                // Final recipient is Union
+                $(`#unionId_${index}`).val(recipientId);
+            } else if (type === 'Union') {
+                $(`#unionId_${index}`).val(recipientId);
+            }
+        }
+
+        function addRecipientItem(recipientIdx) {
+            const currentItemCount = $(`#recipientItems_${recipientIdx} tr`).length;
+
+            const itemOptions = items.map(item =>
+                `<option value="${item.id}">${item.itemCode} - ${item.name}</option>`
+            ).join('');
+
+            const row = `
+                <tr data-item-index="${currentItemCount}">
+                    <td>
+                        <select name="Recipients[${recipientIdx}].Items[${currentItemCount}].ItemId"
+                                class="form-control form-control-sm item-select"
+                                data-recipient-idx="${recipientIdx}"
+                                data-item-idx="${currentItemCount}" required>
+                            <option value="">-- Select Item --</option>
+                            ${itemOptions}
+                        </select>
+                        <input type="hidden" name="Recipients[${recipientIdx}].Items[${currentItemCount}].ItemName"
+                               id="itemName_${recipientIdx}_${currentItemCount}" />
+                        <input type="hidden" name="Recipients[${recipientIdx}].Items[${currentItemCount}].ItemCode"
+                               id="itemCode_${recipientIdx}_${currentItemCount}" />
+                    </td>
+                    <td>
+                        <input name="Recipients[${recipientIdx}].Items[${currentItemCount}].ItemNameBn"
+                               type="text" class="form-control form-control-sm"
+                               placeholder="যেমনঃ কিট ব্যাগ" />
+                    </td>
+                    <td>
+                        <input name="Recipients[${recipientIdx}].Items[${currentItemCount}].AllottedQuantity"
+                               type="number" class="form-control form-control-sm"
+                               min="1" step="0.01" required />
+                    </td>
+                    <td>
+                        <input name="Recipients[${recipientIdx}].Items[${currentItemCount}].Unit"
+                               type="text" class="form-control form-control-sm" value="PCS" />
+                    </td>
+                    <td>
+                        <input name="Recipients[${recipientIdx}].Items[${currentItemCount}].UnitBn"
+                               type="text" class="form-control form-control-sm"
+                               placeholder="টি" />
+                    </td>
+                    <td>
+                        <input name="Recipients[${recipientIdx}].Items[${currentItemCount}].Remarks"
+                               type="text" class="form-control form-control-sm" placeholder="Optional" />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-xs"
+                                onclick="removeRecipientItem(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $(`#recipientItems_${recipientIdx}`).append(row);
+
+            // Attach change event to item dropdown to populate ItemName, ItemCode, and Unit
+            $(`#recipientItems_${recipientIdx} .item-select`).last().change(function() {
+                const selectedItemId = parseInt($(this).val());
+                const recipIdx = $(this).data('recipient-idx');
+                const itmIdx = $(this).data('item-idx');
+
+                if (selectedItemId) {
+                    const selectedItem = items.find(item => item.id === selectedItemId);
+                    if (selectedItem) {
+                        // Populate hidden fields
+                        $(`#itemName_${recipIdx}_${itmIdx}`).val(selectedItem.name);
+                        $(`#itemCode_${recipIdx}_${itmIdx}`).val(selectedItem.itemCode);
+
+                        // Populate Unit field from item
+                        const unitInput = $(this).closest('tr').find('input[name*=".Unit"]').not('[name*="UnitBn"]');
+                        if (selectedItem.unit) {
+                            unitInput.val(selectedItem.unit);
+                        }
+                    }
+                }
+            });
+        }
+
+        function removeRecipientItem(btn) {
+            $(btn).closest('tr').remove();
+        }
+
+        function removeRecipient(index) {
+            if (confirm('Are you sure you want to remove this recipient?')) {
+                $(`.recipient-card[data-index="${index}"]`).remove();
+
+                // Show message if no recipients left
+                if ($('#recipientsContainer .recipient-card').length === 0) {
+                    $('#noRecipientsMessage').show();
+                }
+            }
+        }
+
+        // Validation before submit
+        $('form').submit(function(e) {
+            const recipientCount = $('#recipientsContainer .recipient-card').length;
+
+            if (recipientCount === 0) {
+                e.preventDefault();
+                alert('Please add at least one recipient with items.');
+                return false;
+            }
+
+            // Check each recipient has at least one item
+            let hasError = false;
+            $('.recipient-card').each(function() {
+                const index = $(this).data('index');
+                const itemCount = $(`#recipientItems_${index} tr`).length;
+                if (itemCount === 0) {
+                    alert(`Recipient #${index + 1} must have at least one item.`);
+                    hasError = true;
+                    return false;
+                }
+            });
+
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Auto-add first recipient on page load
+        $(document).ready(function() {
+            addRecipient();
+        });
+    </script>
+}

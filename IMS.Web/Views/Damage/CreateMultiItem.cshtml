@@ -1,0 +1,316 @@
+@model IMS.Application.DTOs.DamageDto
+@{
+    ViewData["Title"] = "New Damage Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-exclamation-triangle text-warning"></i> New Damage Report
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">Adjustments</li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Damage Tracking</a></li>
+                    <li class="breadcrumb-item active">New Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="CreateMultiItem" id="multiItemForm" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <!-- Report Information -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-info-circle"></i> Report Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Damage Report No</label>
+                                <input type="text" value="@ViewBag.DamageNo" class="form-control" readonly />
+                                <input type="hidden" asp-for="DamageNo" value="@ViewBag.DamageNo" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="DamageDate">Report Date <span class="text-danger">*</span></label>
+                                <input asp-for="DamageDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="DamageDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="StoreId">Store <span class="text-danger">*</span></label>
+                                <select asp-for="StoreId" class="form-control" asp-items="ViewBag.Stores" required>
+                                    <option value="">Select Store</option>
+                                </select>
+                                <span asp-validation-for="StoreId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Total Value</label>
+                                <input type="text" id="totalValue" class="form-control" readonly value="0.00" />
+                                <small class="form-text text-muted">Auto-calculated</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Description">General Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="2" placeholder="Provide general description of the damage incident"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (true)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> If total damage value exceeds ৳10,000, a write-off request will be automatically generated.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Damaged Items -->
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-boxes"></i> Damaged Items</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-success btn-sm" id="addItemBtn">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="itemsContainer">
+                        <!-- Item rows will be added here dynamically -->
+                    </div>
+
+                    <div id="noItems" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No items added yet. Click "Add Item" to begin.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-save"></i> Submit Damage Report
+                    </button>
+                    <a asp-action="Index" class="btn btn-default">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Item Row Template (Hidden) -->
+<div id="itemRowTemplate" style="display: none;">
+    <div class="card card-outline card-secondary mb-3 item-row">
+        <div class="card-header">
+            <h5 class="card-title">Item <span class="item-number"></span></h5>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool remove-item" title="Remove Item">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Item <span class="text-danger">*</span></label>
+                        <select class="form-control item-select" name="Items[{INDEX}].ItemId" required>
+                            <option value="">Select Item</option>
+                            @if (ViewBag.Items != null)
+                            {
+                                @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Items)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Quantity <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control item-quantity" name="Items[{INDEX}].Quantity" min="0" step="0.01" required />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Damage Type <span class="text-danger">*</span></label>
+                        <select class="form-control" name="Items[{INDEX}].DamageType" required>
+                            <option value="">Select Type</option>
+                            <option value="Physical Damage">Physical Damage</option>
+                            <option value="Water Damage">Water Damage</option>
+                            <option value="Fire Damage">Fire Damage</option>
+                            <option value="Weather Damage">Weather Damage</option>
+                            <option value="Wear and Tear">Wear and Tear</option>
+                            <option value="Technical Failure">Technical Failure</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Estimated Value (৳) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control item-value" name="Items[{INDEX}].EstimatedValue" min="0" step="0.01" required />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Batch/Serial No</label>
+                        <input type="text" class="form-control" name="Items[{INDEX}].BatchNo" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Photo Evidence</label>
+                        <input type="file" class="form-control-file" name="itemPhotos" accept="image/*,application/pdf" />
+                        <small class="form-text text-muted">JPG, PNG, or PDF</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <input type="text" class="form-control" name="Items[{INDEX}].Remarks" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="Items[{INDEX}].Description" rows="2" placeholder="Describe the damage in detail" required></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            let itemIndex = 0;
+
+            // Add first item automatically
+            addItem();
+
+            // Add item button click
+            $('#addItemBtn').click(function () {
+                addItem();
+            });
+
+            // Function to add new item
+            function addItem() {
+                const template = $('#itemRowTemplate').html();
+                const newRow = template.replace(/{INDEX}/g, itemIndex);
+
+                $('#itemsContainer').append(newRow);
+                $('#noItems').hide();
+
+                updateItemNumbers();
+                attachEventHandlers();
+                itemIndex++;
+            }
+
+            // Attach event handlers
+            function attachEventHandlers() {
+                // Remove item
+                $('.remove-item').off('click').on('click', function () {
+                    if ($('.item-row').length > 1) {
+                        $(this).closest('.item-row').remove();
+                        updateItemNumbers();
+                        calculateTotalValue();
+                    } else {
+                        alert('At least one item is required.');
+                    }
+                });
+
+                // Calculate on value change
+                $('.item-value').off('input').on('input', function () {
+                    calculateTotalValue();
+                });
+            }
+
+            // Update item numbers
+            function updateItemNumbers() {
+                $('.item-row').each(function (index) {
+                    $(this).find('.item-number').text(index + 1);
+                });
+
+                if ($('.item-row').length === 0) {
+                    $('#noItems').show();
+                }
+            }
+
+            // Calculate total value
+            function calculateTotalValue() {
+                let total = 0;
+                $('.item-value').each(function () {
+                    const value = parseFloat($(this).val()) || 0;
+                    total += value;
+                });
+
+                $('#totalValue').val(total.toFixed(2));
+
+                // Show warning if exceeds threshold
+                if (total >= 10000) {
+                    if ($('#thresholdWarning').length === 0) {
+                        $('.card-primary .card-body').append(
+                            '<div id="thresholdWarning" class="alert alert-warning">' +
+                            '<i class="fas fa-exclamation-triangle"></i> ' +
+                            '<strong>High Value Damage:</strong> Total value exceeds ৳10,000. ' +
+                            'A write-off request will be automatically generated upon submission.' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $('#thresholdWarning').remove();
+                }
+            }
+
+            // Form submission validation
+            $('#multiItemForm').submit(function (e) {
+                if ($('.item-row').length === 0) {
+                    e.preventDefault();
+                    alert('Please add at least one damaged item.');
+                    return false;
+                }
+
+                // Disable submit button to prevent double submission
+                $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+            });
+        });
+    </script>
+}

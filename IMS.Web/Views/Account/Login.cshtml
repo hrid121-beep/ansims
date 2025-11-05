@@ -1,0 +1,399 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Login - IMS Ansar & VDP";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        /* Login Page Enhancements */
+        .login-container {
+            min-height: calc(100vh - 300px);
+            display: flex;
+            align-items: center;
+            padding: 3rem 0;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 106, 78, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(0, 106, 78, 0.1);
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid var(--bd-gold);
+            position: relative;
+        }
+
+            .login-header::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, transparent, var(--bd-gold), transparent);
+                animation: shimmer 3s infinite;
+            }
+
+        @@keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--bd-gold);
+        }
+
+            .logo-wrapper img {
+                width: 50px;
+                height: 50px;
+                object-fit: contain;
+            }
+
+        .login-header h2 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-header p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .bengali-text-header {
+            color: var(--bd-gold);
+            font-size: 1rem;
+            font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif;
+            margin-top: 0.5rem;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            color: var(--bd-green-dark);
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+            .form-label::before {
+                content: '';
+                display: inline-block;
+                width: 4px;
+                height: 4px;
+                background: var(--bd-gold);
+                border-radius: 50%;
+                margin-right: 0.5rem;
+            }
+
+        .form-control {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+            .form-control:focus {
+                border-color: var(--bd-green);
+                box-shadow: 0 0 0 0.2rem rgba(0, 106, 78, 0.15);
+                background-color: white;
+            }
+
+            .form-control::placeholder {
+                color: #adb5bd;
+                font-size: 0.875rem;
+            }
+
+        .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: var(--bd-green);
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus ~ .input-icon {
+            opacity: 1;
+            color: var(--bd-green-dark);
+        }
+
+        .form-check {
+            padding: 0.75rem;
+            background: rgba(0, 106, 78, 0.03);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 106, 78, 0.1);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--bd-green);
+            border-color: var(--bd-green);
+        }
+
+        .form-check-label {
+            color: #495057;
+            font-size: 0.875rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn-login::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .btn-login:hover::before {
+                left: 100%;
+            }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(0, 106, 78, 0.3);
+                color: white;
+            }
+
+        .text-danger {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+            .text-danger::before {
+                content: '⚠';
+                margin-right: 0.25rem;
+                font-size: 0.75rem;
+            }
+
+        .validation-summary-errors {
+            background: linear-gradient(90deg, rgba(244, 42, 65, 0.1) 0%, rgba(244, 42, 65, 0.05) 100%);
+            border: 1px solid var(--bd-red);
+            border-left: 4px solid var(--bd-red);
+            color: var(--bd-red-dark);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .login-footer {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 106, 78, 0.1);
+        }
+
+            .login-footer p {
+                color: #6c757d;
+                font-size: 0.875rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .login-footer a {
+                color: var(--bd-green);
+                text-decoration: none;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+                .login-footer a:hover {
+                    color: var(--bd-green-dark);
+                    text-decoration: underline;
+                }
+
+        .security-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: rgba(0, 106, 78, 0.03);
+            border-radius: 0.5rem;
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
+            .security-info i {
+                color: var(--bd-green);
+                margin-right: 0.5rem;
+            }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+}
+
+<div class="login-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 col-md-6 col-sm-8 mx-auto">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="logo-wrapper">
+                            <img src="~/images/ansar-vdp-logo.png" alt="Ansar VDP Logo">
+                        </div>
+                        <h2>IMS Ansar & VDP</h2>
+                        <p>Inventory Management System</p>
+                        <p class="bengali-text-header">বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী</p>
+                    </div>
+
+                    <div class="login-body">
+                        <form asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" id="loginForm">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger validation-summary-errors"></div>
+
+                            <!-- CHANGED: Username field instead of Email -->
+                            <div class="form-group mb-3 position-relative">
+                                <label asp-for="UserName" class="form-label">Username</label>
+                                <input asp-for="UserName"
+                                       class="form-control"
+                                       placeholder="Enter your username"
+                                       autocomplete="username" />
+                                <i class="fas fa-user input-icon"></i>
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3 position-relative">
+                                <label asp-for="Password" class="form-label">Password</label>
+                                <input asp-for="Password"
+                                       class="form-control"
+                                       placeholder="Enter your password"
+                                       autocomplete="current-password" />
+                                <i class="fas fa-lock input-icon"></i>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <div class="form-check">
+                                    <input asp-for="RememberMe" class="form-check-input" />
+                                    <label asp-for="RememberMe" class="form-check-label">
+                                        <i class="fas fa-check-circle text-success"></i> Remember me on this device
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-login w-100" id="loginBtn">
+                                    <i class="fas fa-sign-in-alt"></i> LOGIN TO SYSTEM
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="login-footer">
+                            <p>Need help accessing your account?</p>
+                            <div>
+                                <a href="#" class="me-3">
+                                    <i class="fas fa-key"></i> Forgot Password
+                                </a>
+                                <span class="text-muted">|</span>
+                                <a href="#" class="ms-3">
+                                    <i class="fas fa-user-plus"></i> Request Access
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="security-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Protected by Bangladesh Government Security Standards</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').on('submit', function(e) {
+                var btn = $('#loginBtn');
+                var form = $(this);
+
+                if (form.valid()) {
+                    btn.prop('disabled', true);
+                    btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Authenticating...');
+
+                    setTimeout(function() {
+                        btn.prop('disabled', false);
+                        btn.html('<i class="fas fa-sign-in-alt"></i> LOGIN TO SYSTEM');
+                    }, 10000);
+                }
+            });
+
+            // CHANGED: Auto-focus on username field
+            $('#UserName').focus();
+
+            $('.form-control').on('focus', function() {
+                $(this).parent().find('.input-icon').css('transform', 'scale(1.1)');
+            }).on('blur', function() {
+                $(this).parent().find('.input-icon').css('transform', 'scale(1)');
+            });
+        });
+    </script>
+}

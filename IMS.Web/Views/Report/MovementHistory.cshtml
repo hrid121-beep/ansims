@@ -1,0 +1,400 @@
+﻿@{
+    ViewData["Title"] = "Movement History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Movement History</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Movement History</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Timeline Filter -->
+        <div class="card card-secondary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Filter Options
+                </h3>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Item:</label>
+                                <select class="form-control select2" style="width: 100%;">
+                                    <option>All Items</option>
+                                    <option>Laptop Dell XPS</option>
+                                    <option>Office Paper A4</option>
+                                    <option>Printer HP LaserJet</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Movement Type:</label>
+                                <select class="form-control select2" style="width: 100%;">
+                                    <option>All Types</option>
+                                    <option>Purchase</option>
+                                    <option>Issue</option>
+                                    <option>Transfer</option>
+                                    <option>Loss</option>
+                                    <option>Return</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select class="form-control select2" style="width: 100%;">
+                                    <option>All Stores</option>
+                                    <option>Main Warehouse</option>
+                                    <option>Branch Store 1</option>
+                                    <option>Branch Store 2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>From Date:</label>
+                                <input type="date" class="form-control" value="2025-01-01">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>To Date:</label>
+                                <input type="date" class="form-control" value="2025-01-27">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-secondary btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Movement Statistics -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Purchases</span>
+                        <span class="info-box-number">1,410</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success"><i class="fas fa-arrow-right"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Issues</span>
+                        <span class="info-box-number">892</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning"><i class="fas fa-exchange-alt"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Transfers</span>
+                        <span class="info-box-number">234</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger"><i class="fas fa-times"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Losses</span>
+                        <span class="info-box-number">56</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movement History Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Complete Movement History</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                        <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-default">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0" style="height: 400px;">
+                <table class="table table-head-fixed text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Movement ID</th>
+                            <th>Type</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>User</th>
+                            <th>Reference</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-01-27 14:30</td>
+                            <td>MV-2025-1234</td>
+                            <td><span class="badge badge-success">Issue</span></td>
+                            <td>Office Paper A4</td>
+                            <td>-5 Reams</td>
+                            <td>Main Warehouse</td>
+                            <td>Admin Dept</td>
+                            <td>John Doe</td>
+                            <td>ISS-2025-045</td>
+                            <td>Monthly supply</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-27 12:15</td>
+                            <td>MV-2025-1233</td>
+                            <td><span class="badge badge-info">Purchase</span></td>
+                            <td>Laptop Dell XPS</td>
+                            <td>+10 Units</td>
+                            <td>ABC Suppliers</td>
+                            <td>Main Warehouse</td>
+                            <td>Jane Smith</td>
+                            <td>PO-2025-023</td>
+                            <td>New stock arrival</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-26 16:45</td>
+                            <td>MV-2025-1232</td>
+                            <td><span class="badge badge-warning">Transfer</span></td>
+                            <td>Printer HP LaserJet</td>
+                            <td>2 Units</td>
+                            <td>Branch Store 1</td>
+                            <td>Branch Store 2</td>
+                            <td>Mike Johnson</td>
+                            <td>TRF-2025-018</td>
+                            <td>Store rebalancing</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-26 10:20</td>
+                            <td>MV-2025-1231</td>
+                            <td><span class="badge badge-danger">Loss</span></td>
+                            <td>Monitor 24"</td>
+                            <td>-1 Unit</td>
+                            <td>Main Warehouse</td>
+                            <td>-</td>
+                            <td>Sarah Wilson</td>
+                            <td>LS-2025-012</td>
+                            <td>Damaged in storage</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-25 15:30</td>
+                            <td>MV-2025-1230</td>
+                            <td><span class="badge badge-primary">Return</span></td>
+                            <td>Office Chair</td>
+                            <td>+3 Units</td>
+                            <td>HR Dept</td>
+                            <td>Main Warehouse</td>
+                            <td>Emily Brown</td>
+                            <td>RET-2025-005</td>
+                            <td>Excess inventory</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-25 09:00</td>
+                            <td>MV-2025-1229</td>
+                            <td><span class="badge badge-success">Issue</span></td>
+                            <td>Notebooks</td>
+                            <td>-50 Units</td>
+                            <td>Main Warehouse</td>
+                            <td>Sales Dept</td>
+                            <td>David Wilson</td>
+                            <td>ISS-2025-044</td>
+                            <td>Training materials</td>
+                        </tr>
+                        <tr>
+                            <td>2025-01-24 14:20</td>
+                            <td>MV-2025-1228</td>
+                            <td><span class="badge badge-info">Purchase</span></td>
+                            <td>Cleaning Supplies</td>
+                            <td>+20 Sets</td>
+                            <td>CleanCo Ltd</td>
+                            <td>Main Warehouse</td>
+                            <td>Mike Davis</td>
+                            <td>PO-2025-022</td>
+                            <td>Monthly restock</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Movement Timeline -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clock"></i>
+                            Movement Timeline
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <!-- Timeline item -->
+                            <div class="time-label">
+                                <span class="bg-red">27 Jan 2025</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-arrow-right bg-success"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 14:30</span>
+                                    <h3 class="timeline-header">Issue to Admin Department</h3>
+                                    <div class="timeline-body">
+                                        5 Reams of Office Paper A4 issued from Main Warehouse
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="fas fa-shopping-cart bg-info"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 12:15</span>
+                                    <h3 class="timeline-header">Purchase Received</h3>
+                                    <div class="timeline-body">
+                                        10 Units of Laptop Dell XPS received from ABC Suppliers
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="time-label">
+                                <span class="bg-green">26 Jan 2025</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-exchange-alt bg-warning"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 16:45</span>
+                                    <h3 class="timeline-header">Store Transfer</h3>
+                                    <div class="timeline-body">
+                                        2 Units of Printer HP LaserJet transferred from Branch Store 1 to Branch Store 2
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="fas fa-times bg-danger"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 10:20</span>
+                                    <h3 class="timeline-header">Loss Reported</h3>
+                                    <div class="timeline-body">
+                                        1 Unit of Monitor 24" damaged in Main Warehouse storage
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movement Summary Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Daily Movement Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="chart">
+                    <canvas id="movementChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2();
+
+            // Movement Chart
+            var movementChartCanvas = $('#movementChart').get(0).getContext('2d');
+            var movementChartData = {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Purchases',
+                        backgroundColor: '#17a2b8',
+                        borderColor: '#17a2b8',
+                        data: [65, 59, 80, 81, 56, 55, 40]
+                    },
+                    {
+                        label: 'Issues',
+                        backgroundColor: '#28a745',
+                        borderColor: '#28a745',
+                        data: [28, 48, 40, 19, 86, 27, 90]
+                    },
+                    {
+                        label: 'Transfers',
+                        backgroundColor: '#ffc107',
+                        borderColor: '#ffc107',
+                        data: [18, 28, 20, 29, 16, 17, 20]
+                    },
+                    {
+                        label: 'Losses',
+                        backgroundColor: '#dc3545',
+                        borderColor: '#dc3545',
+                        data: [5, 8, 3, 6, 4, 7, 2]
+                    }
+                ]
+            };
+
+            var movementChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                datasetFill: false,
+                scales: {
+                    xAxes: [{
+                        stacked: true,
+                    }],
+                    yAxes: [{
+                        stacked: true
+                    }]
+                }
+            };
+
+            new Chart(movementChartCanvas, {
+                type: 'bar',
+                data: movementChartData,
+                options: movementChartOptions
+            });
+        });
+    </script>
+}

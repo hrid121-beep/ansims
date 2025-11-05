@@ -1,0 +1,78 @@
+﻿@model IEnumerable<IMS.Application.DTOs.RangeDto>
+
+<table id="rangeTable" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Headquarter</th>
+            <th>Commander</th>
+            <th>Rank</th>
+            <th>Battalions</th>
+            <th>Districts</th>
+            <th>Stores</th>
+            <th>Status</th>
+            <th width="180">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var range in Model)
+            {
+                <tr>
+                    <td>@(range.Code ?? "-")</td>
+                    <td>@(range.Name ?? "-")</td>
+                    <td>@(range.HeadquarterLocation ?? "-")</td>
+                    <td>@(range.CommanderName ?? "-")</td>
+                    <td>@(range.CommanderRank ?? "-")</td>
+                    <td>
+                        <span class="badge badge-info" title="@string.Join(", ", range.BattalionNames)">
+                            @range.BattalionCount
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success">@range.ZilaCount</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-warning">@range.StoreCount</span>
+                    </td>
+                    <td>
+                        @if (range.IsActive)
+                        {
+                            <span class="badge badge-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-danger">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@range.Id"
+                           class="btn btn-info btn-xs" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a asp-action="Hierarchy" asp-route-id="@range.Id"
+                           class="btn btn-primary btn-xs" title="View Hierarchy">
+                            <i class="fas fa-sitemap"></i>
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@range.Id"
+                           class="btn btn-warning btn-xs" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn-danger btn-xs delete-btn"
+                                data-id="@range.Id" data-name="@range.Name" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="10" class="text-center">No ranges found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

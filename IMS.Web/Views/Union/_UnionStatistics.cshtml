@@ -1,0 +1,40 @@
+﻿@model IMS.Application.DTOs.UnionStatisticsDto
+
+<div class="row">
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="fas fa-map"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Wards</span>
+                <span class="info-box-number">@Model.TotalWards</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-home"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Villages</span>
+                <span class="info-box-number">@Model.TotalVillages</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-users"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Population</span>
+                <span class="info-box-number">@Model.Population.ToString("N0")</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-warehouse"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Stores</span>
+                <span class="info-box-number">@Model.TotalStores</span>
+            </div>
+        </div>
+    </div>
+</div>

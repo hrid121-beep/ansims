@@ -1,0 +1,281 @@
+@model IMS.Application.DTOs.AllotmentLetterDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Allotment Letter - @Model.AllotmentNo</title>
+    <style>
+        @@media print {
+            .no-print { display: none; }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .header h2 {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .info-section {
+            margin: 20px 0;
+        }
+
+        .info-row {
+            display: flex;
+            margin: 10px 0;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 200px;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table, th, td {
+            border: 1px solid #333;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            padding-top: 10px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .print-btn {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .print-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .stamp-box {
+            border: 2px solid #333;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">
+            🖨️ Print Document
+        </button>
+        <button class="print-btn" onclick="window.close()" style="background-color: #6c757d;">
+            ✖ Close
+        </button>
+    </div>
+
+    <div class="header">
+        <h1>ANSAR & VDP</h1>
+        <h2>ALLOTMENT LETTER</h2>
+        <p><strong>Allotment No:</strong> @Model.AllotmentNo</p>
+    </div>
+
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Date of Issue:</div>
+            <div class="info-value">@Model.AllotmentDate.ToString("dd MMMM yyyy")</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Valid From:</div>
+            <div class="info-value">@Model.ValidFrom.ToString("dd MMMM yyyy")</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Valid Until:</div>
+            <div class="info-value">
+                @Model.ValidUntil.ToString("dd MMMM yyyy")
+                @if (Model.IsExpired)
+                {
+                    <strong style="color: red;"> (EXPIRED)</strong>
+                }
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">From Store:</div>
+            <div class="info-value">@Model.FromStoreName</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Issued To Type:</div>
+            <div class="info-value">@Model.IssuedToType</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">Issued To:</div>
+            <div class="info-value">
+                @if (!string.IsNullOrEmpty(Model.IssuedToBattalionName))
+                {
+                    @Model.IssuedToBattalionName
+                }
+                else if (!string.IsNullOrEmpty(Model.IssuedToRangeName))
+                {
+                    @Model.IssuedToRangeName
+                }
+                else
+                {
+                    @Model.IssuedTo
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ReferenceNo))
+        {
+            <div class="info-row">
+                <div class="info-label">Reference No:</div>
+                <div class="info-value">@Model.ReferenceNo</div>
+            </div>
+        }
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #007bff;">
+        <strong>Purpose:</strong><br />
+        @Model.Purpose
+    </div>
+
+    <h3 style="margin-top: 30px; border-bottom: 2px solid #333; padding-bottom: 10px;">Allotted Items</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="10%">S/N</th>
+                <th width="15%">Item Code</th>
+                <th width="35%">Item Name</th>
+                <th width="15%">Allotted Qty</th>
+                <th width="10%">Unit</th>
+                <th width="15%">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                var item = Model.Items[i];
+                <tr>
+                    <td class="text-right">@(i + 1)</td>
+                    <td>@item.ItemCode</td>
+                    <td>@item.ItemName</td>
+                    <td class="text-right"><strong>@item.AllottedQuantity</strong></td>
+                    <td>@item.Unit</td>
+                    <td>@(item.Remarks ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-right">Total Items: @Model.TotalItems</th>
+                <th class="text-right">@Model.TotalQuantity</th>
+                <th colspan="2"></th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+        <strong>Important Notice:</strong><br />
+        This allotment letter authorizes the issuance of the above-mentioned items. The receiving authority must present this letter at the time of collection. The letter is valid from @Model.ValidFrom.ToString("dd/MM/yyyy") to @Model.ValidUntil.ToString("dd/MM/yyyy").
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>Authorized By</strong><br />
+                @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                {
+                    <span>@Model.ApprovedBy</span><br />
+                    <small>Date: @Model.ApprovedDate?.ToString("dd MMMM yyyy")</small>
+                }
+            </div>
+            <div class="stamp-box">
+                Official Stamp
+            </div>
+        </div>
+
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>Received By</strong><br />
+                <small>(Signature & Seal of Receiving Authority)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>This is a computer-generated document. No signature is required if generated electronically.</p>
+        <p>Generated on: @DateTime.Now.ToString("dd MMMM yyyy HH:mm")</p>
+        <p><strong>ANSAR & VDP Inventory Management System</strong></p>
+    </div>
+</body>
+</html>

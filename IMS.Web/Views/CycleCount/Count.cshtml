@@ -1,0 +1,190 @@
+﻿@using IMS.Application.DTOs
+@model CycleCountDto
+@{
+    ViewData["Title"] = "Perform Cycle Count";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Cycle Count: @Model.CountNumber</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="CycleCount" asp-action="Index">Cycle Counts</a></li>
+                    <li class="breadcrumb-item active">Count</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Progress -->
+        <div class="card">
+            <div class="card-body">
+                <h5>Progress: @Model.CountedItems / @Model.TotalItems items counted</h5>
+                <div class="progress progress-lg">
+                    @{
+                        var progress = Model.TotalItems > 0 ?
+                        (Model.CountedItems * 100.0 / Model.TotalItems) : 0;
+                    }
+                    <div class="progress-bar bg-success" style="width: @progress%">
+                        @progress.ToString("F0")%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Count Items -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Items to Count</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="countTable">
+                        <thead>
+                            <tr>
+                                <th width="100">Item Code</th>
+                                <th>Item Name</th>
+                                <th width="100">System Qty</th>
+                                <th width="120">Counted Qty</th>
+                                <th width="100">Variance</th>
+                                <th width="200">Reason</th>
+                                <th width="100">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                var rowClass = item.CountedQuantity > 0 ? "table-success" : "";
+                                if (item.VarianceQuantity != 0)
+                                    rowClass = "table-warning";
+
+                                <tr class="@rowClass" id="row-@item.Id">
+                                    <td>@item.ItemCode</td>
+                                    <td>@item.ItemName</td>
+                                    <td class="text-right">@item.SystemQuantity</td>
+                                    <td>
+                                        <input type="number" class="form-control counted-qty"
+                                               data-item-id="@item.ItemId"
+                                               data-row-id="@item.Id"
+                                               value="@item.CountedQuantity"
+                                               min="0" step="1" />
+                                    </td>
+                                    <td class="text-right variance-cell">
+                                        @if (item.CountedQuantity > 0)
+                                        {
+                                            var variance = item.CountedQuantity - item.SystemQuantity;
+                                            <span class="@(variance == 0 ? "text-success" : "text-danger")">
+                                                @(variance > 0 ? "+" : "")@variance
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control variance-reason"
+                                               data-row-id="@item.Id"
+                                               value="@item.VarianceReason"
+                                               placeholder="Required if variance" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary btn-sm save-count"
+                                                data-row-id="@item.Id">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <form asp-action="Complete" asp-route-id="@Model.Id" method="post"
+                      onsubmit="return confirm('Complete this cycle count? No further changes will be allowed.')">
+                    <button type="submit" class="btn btn-success"
+                            @(Model.CountedItems < Model.TotalItems ? "disabled" : "")>
+                        <i class="fas fa-check-circle"></i> Complete Count
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                        <i class="fas fa-pause"></i> Save & Exit
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Calculate variance on quantity change
+            $('.counted-qty').on('input', function() {
+                var row = $(this).closest('tr');
+                var systemQty = parseFloat(row.find('td:eq(2)').text());
+                var countedQty = parseFloat($(this).val()) || 0;
+                var variance = countedQty - systemQty;
+
+                var varianceCell = row.find('.variance-cell');
+                if (countedQty > 0) {
+                    var varianceHtml = variance === 0
+                        ? '<span class="text-success">0</span>'
+                        : '<span class="text-danger">' + (variance > 0 ? '+' : '') + variance + '</span>';
+                    varianceCell.html(varianceHtml);
+
+                    // Update row class
+                    row.removeClass('table-success table-warning');
+                    row.addClass(variance === 0 ? 'table-success' : 'table-warning');
+                } else {
+                    varianceCell.html('');
+                    row.removeClass('table-success table-warning');
+                }
+            });
+
+            // Save individual count
+            $('.save-count').click(function() {
+                var btn = $(this);
+                var rowId = btn.data('row-id');
+                var row = $('#row-' + rowId);
+
+                var itemId = row.find('.counted-qty').data('item-id');
+                var countedQty = row.find('.counted-qty').val();
+                var reason = row.find('.variance-reason').val();
+
+                btn.prop('disabled', true);
+                btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.post('@Url.Action("UpdateCount")', {
+                    cycleCountId: @Model.Id,
+                    itemDto: {
+                        itemId: itemId,
+                        countedQuantity: countedQty,
+                        varianceReason: reason
+                    }
+                }, function(response) {
+                    if (response.success) {
+                        toastr.success('Count saved');
+                        row.addClass('table-success');
+
+                        // Update progress
+                        location.reload();
+                    } else {
+                        toastr.error('Error saving count');
+                    }
+                }).always(function() {
+                    btn.prop('disabled', false);
+                    btn.html('<i class="fas fa-save"></i> Save');
+                });
+            });
+        });
+    </script>
+}

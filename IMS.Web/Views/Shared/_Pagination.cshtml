@@ -1,0 +1,71 @@
+﻿@using IMS.Application.Helpers
+@model PagedResult<dynamic>
+
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Button -->
+            <li class="page-item @(!Model.HasPrevious ? "disabled" : "")">
+                <a class="page-link" href="?pageNumber=@(Model.PageNumber - 1)"
+                   aria-label="Previous" tabindex="@(!Model.HasPrevious ? "-1" : "0")">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+
+            <!-- Page Numbers -->
+            @{
+                int startPage = Math.Max(1, Model.PageNumber - 2);
+                int endPage = Math.Min(Model.TotalPages, Model.PageNumber + 2);
+
+                if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pageNumber=1">1</a>
+                    </li>
+                    if (startPage > 2)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" href="?pageNumber=@i">@i</a>
+                    </li>
+                }
+
+                if (endPage < Model.TotalPages)
+                {
+                    if (endPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" href="?pageNumber=@Model.TotalPages">@Model.TotalPages</a>
+                    </li>
+                }
+            }
+
+            <!-- Next Button -->
+            <li class="page-item @(!Model.HasNext ? "disabled" : "")">
+                <a class="page-link" href="?pageNumber=@(Model.PageNumber + 1)"
+                   aria-label="Next" tabindex="@(!Model.HasNext ? "-1" : "0")">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Pagination Info -->
+    <div class="text-center text-muted">
+        Showing @((Model.PageNumber - 1) * Model.PageSize + 1) to @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount) of @Model.TotalCount entries
+    </div>
+}

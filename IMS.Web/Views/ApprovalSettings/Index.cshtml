@@ -1,0 +1,372 @@
+@{
+    ViewData["Title"] = "Approval Settings";
+    var thresholds = ViewBag.Thresholds as List<IMS.Application.DTOs.ApprovalThresholdDto>;
+    var workflows = ViewBag.Workflows as List<IMS.Application.DTOs.ApprovalWorkflowDto>;
+    var entityTypes = ViewBag.EntityTypes as List<string>;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Approval Settings</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+                    <li class="breadcrumb-item active">Approval Settings</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Quick Actions -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-cogs"></i> Quick Actions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <a asp-action="CreateThreshold" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Threshold
+                        </a>
+                        <a asp-action="CreateWorkflow" class="btn btn-info">
+                            <i class="fas fa-project-diagram"></i> New Workflow
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entity Types Configuration -->
+        <div class="card">
+            <div class="card-header bg-gradient-primary">
+                <h3 class="card-title">
+                    <i class="fas fa-toggle-on"></i> Entity Types - Approval Control
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var entityType in entityTypes)
+                    {
+                        var isRequired = thresholds?.Any(t => t.EntityType == entityType && t.IsActive) == true ||
+                                       workflows?.Any(w => w.EntityType == entityType && w.IsActive) == true;
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="info-box @(isRequired ? "bg-success" : "bg-secondary")">
+                                <span class="info-box-icon">
+                                    <i class="fas fa-@(GetEntityIcon(entityType))"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">@entityType</span>
+                                    <span class="info-box-number">
+                                        @(isRequired ? "Enabled" : "Disabled")
+                                    </span>
+                                    <div class="custom-control custom-switch mt-1">
+                                        <input type="checkbox" class="custom-control-input entity-toggle"
+                                               id="toggle_@entityType"
+                                               data-entity="@entityType"
+                                               @(isRequired ? "checked" : "") />
+                                        <label class="custom-control-label" for="toggle_@entityType">
+                                            @(isRequired ? "Approval Required" : "Auto Approve")
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Thresholds -->
+        <div class="card">
+            <div class="card-header bg-gradient-info">
+                <h3 class="card-title">
+                    <i class="fas fa-layer-group"></i> Approval Thresholds (Amount-Based)
+                </h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="thresholdsTable">
+                    <thead>
+                        <tr>
+                            <th>Entity Type</th>
+                            <th>Min Amount</th>
+                            <th>Max Amount</th>
+                            <th>Approval Level</th>
+                            <th>Required Role</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (thresholds != null && thresholds.Any())
+                        {
+                            @foreach (var threshold in thresholds)
+                            {
+                                <tr class="@(!threshold.IsActive ? "table-secondary" : "")">
+                                    <td>
+                                        <span class="badge badge-primary">@threshold.EntityType</span>
+                                    </td>
+                                    <td class="text-right">৳@threshold.MinAmount.ToString("N0")</td>
+                                    <td class="text-right">
+                                        @if (threshold.MaxAmount.HasValue)
+                                        {
+                                            <text>৳@threshold.MaxAmount.Value.ToString("N0")</text>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No Limit</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">Level @threshold.ApprovalLevel</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-warning">@threshold.RequiredRole</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@(threshold.Description ?? "-")</small>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input threshold-toggle"
+                                                   id="threshold_@threshold.Id"
+                                                   data-id="@threshold.Id"
+                                                   @(threshold.IsActive ? "checked" : "") />
+                                            <label class="custom-control-label" for="threshold_@threshold.Id">
+                                                @(threshold.IsActive ? "Active" : "Inactive")
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="EditThreshold" asp-route-id="@threshold.Id"
+                                               class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form asp-action="DeleteThreshold" asp-route-id="@threshold.Id"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this threshold?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">
+                                    No thresholds configured. Click "New Threshold" to create one.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Approval Workflows -->
+        <div class="card">
+            <div class="card-header bg-gradient-success">
+                <h3 class="card-title">
+                    <i class="fas fa-project-diagram"></i> Approval Workflows (Multi-Level)
+                </h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="workflowsTable">
+                    <thead>
+                        <tr>
+                            <th>Workflow Name</th>
+                            <th>Entity Type</th>
+                            <th>Amount Range</th>
+                            <th>Levels</th>
+                            <th>Status</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (workflows != null && workflows.Any())
+                        {
+                            @foreach (var workflow in workflows)
+                            {
+                                <tr class="@(!workflow.IsActive ? "table-secondary" : "")">
+                                    <td>
+                                        <strong>@workflow.Name</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">@workflow.EntityType</span>
+                                    </td>
+                                    <td class="text-right">
+                                        @if (workflow.MinAmount.HasValue || workflow.MaxAmount.HasValue)
+                                        {
+                                            <text>
+                                                ৳@((workflow.MinAmount ?? 0).ToString("N0")) -
+                                                @(workflow.MaxAmount.HasValue ? "৳" + workflow.MaxAmount.Value.ToString("N0") : "∞")
+                                            </text>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">All Amounts</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (workflow.Levels != null && workflow.Levels.Any())
+                                        {
+                                            <div class="d-flex flex-column">
+                                                @foreach (var level in workflow.Levels.OrderBy(l => l.Level))
+                                                {
+                                                    <small class="mb-1">
+                                                        <span class="badge badge-info">L@level.Level</span>
+                                                        <span class="badge badge-warning">@level.ApproverRole</span>
+                                                        @if (level.CanEscalate)
+                                                        {
+                                                            <i class="fas fa-arrow-up text-danger" title="Can Escalate"></i>
+                                                        }
+                                                    </small>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No levels</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input workflow-toggle"
+                                                   id="workflow_@workflow.Id"
+                                                   data-id="@workflow.Id"
+                                                   @(workflow.IsActive ? "checked" : "") />
+                                            <label class="custom-control-label" for="workflow_@workflow.Id">
+                                                @(workflow.IsActive ? "Active" : "Inactive")
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="EditWorkflow" asp-route-id="@workflow.Id"
+                                               class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form asp-action="DeleteWorkflow" asp-route-id="@workflow.Id"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this workflow?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No workflows configured. Click "New Workflow" to create one.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize DataTables
+            $("#thresholdsTable").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "order": [[0, "asc"], [1, "asc"]]
+            });
+
+            $("#workflowsTable").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "order": [[1, "asc"]]
+            });
+
+            // Entity toggle
+            $('.entity-toggle').change(function() {
+                const entityType = $(this).data('entity');
+                const isRequired = $(this).is(':checked');
+
+                $.post('@Url.Action("ToggleEntity")', {
+                    entityType: entityType,
+                    isRequired: isRequired
+                }, function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                });
+            });
+
+            // Threshold toggle
+            $('.threshold-toggle').change(function() {
+                const id = $(this).data('id');
+
+                $.post('@Url.Action("ToggleThreshold")', { id: id }, function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                });
+            });
+
+            // Workflow toggle
+            $('.workflow-toggle').change(function() {
+                const id = $(this).data('id');
+
+                $.post('@Url.Action("ToggleWorkflow")', { id: id }, function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+@functions {
+    string GetEntityIcon(string entityType)
+    {
+        return entityType switch
+        {
+            "PURCHASE" => "shopping-cart",
+            "REQUISITION" => "file-invoice",
+            "ISSUE" => "hand-holding",
+            "TRANSFER" => "exchange-alt",
+            "WRITEOFF" => "trash-alt",
+            "STOCK_ADJUSTMENT" => "adjust",
+            "PHYSICAL_INVENTORY" => "warehouse",
+            _ => "check-circle"
+        };
+    }
+}

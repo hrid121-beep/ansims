@@ -1,0 +1,468 @@
+﻿@using IMS.Application.DTOs
+@using IMS.Domain.Enums
+@model IMS.Application.DTOs.PhysicalInventoryDto
+@{
+    ViewData["Title"] = "Physical Inventory Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var varianceAnalysis = ViewBag.VarianceAnalysis as VarianceAnalysisDto;
+    var approvalChain = ViewBag.ApprovalChain as List<ApprovalDto>;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    বিস্তারিত / Details
+                    <small class="text-muted">@Model.ReferenceNumber</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Physical Inventory</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Status Alert -->
+        @{
+            var statusClass = Model.Status switch
+            {
+                PhysicalInventoryStatus.Initiated => "alert-secondary",
+                PhysicalInventoryStatus.InProgress => "alert-warning",
+                PhysicalInventoryStatus.Completed => "alert-info",
+                PhysicalInventoryStatus.UnderReview => "alert-primary",
+                PhysicalInventoryStatus.Approved => "alert-success",
+                PhysicalInventoryStatus.Rejected => "alert-danger",
+                PhysicalInventoryStatus.Cancelled => "alert-dark",
+                _ => "alert-secondary"
+            };
+        }
+        <div class="alert @statusClass">
+            <h5><i class="icon fas fa-info"></i> Status: @Model.StatusText</h5>
+            @if (!string.IsNullOrEmpty(Model.ApprovalRemarks))
+            {
+                <p class="mb-0"><strong>Remarks:</strong> @Model.ApprovalRemarks</p>
+            }
+        </div>
+
+        <!-- Basic Information -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">মৌলিক তথ্য / Basic Information</h3>
+                <div class="card-tools">
+                    @if (Model.Status == PhysicalInventoryStatus.InProgress)
+                    {
+                        <a asp-action="Count" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                            <i class="fas fa-calculator"></i> Continue Counting
+                        </a>
+                    }
+                    @if (Model.Status == PhysicalInventoryStatus.Completed)
+                    {
+                        <a asp-action="Review" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                            <i class="fas fa-search"></i> Review
+                        </a>
+                    }
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" asp-action="Export" asp-route-id="@Model.Id" asp-route-format="excel">
+                                <i class="fas fa-file-excel text-success"></i> Excel
+                            </a>
+                            <a class="dropdown-item" asp-action="Export" asp-route-id="@Model.Id" asp-route-format="pdf">
+                                <i class="fas fa-file-pdf text-danger"></i> PDF
+                            </a>
+                            <a class="dropdown-item" href="javascript:window.print()">
+                                <i class="fas fa-print text-info"></i> Print
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">Reference Number:</th>
+                                <td><code>@Model.ReferenceNumber</code></td>
+                            </tr>
+                            <tr>
+                                <th>Store:</th>
+                                <td>@Model.StoreName</td>
+                            </tr>
+                            <tr>
+                                <th>Count Date:</th>
+                                <td>@Model.CountDate.ToString("dd MMMM yyyy")</td>
+                            </tr>
+                            <tr>
+                                <th>Fiscal Year:</th>
+                                <td>@Model.FiscalYear</td>
+                            </tr>
+                            <tr>
+                                <th>Count Type:</th>
+                                <td><span class="badge badge-info">@Model.CountType</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">Initiated By:</th>
+                                <td>@Model.InitiatedBy</td>
+                            </tr>
+                            <tr>
+                                <th>Initiated Date:</th>
+                                <td>@Model.InitiatedDate?.ToString("dd MMM yyyy HH:mm")</td>
+                            </tr>
+                            @if (!string.IsNullOrEmpty(Model.CompletedBy))
+                            {
+                                <tr>
+                                    <th>Completed By:</th>
+                                    <td>@Model.CompletedBy</td>
+                                </tr>
+                                <tr>
+                                    <th>Completed Date:</th>
+                                    <td>@Model.CompletedDate?.ToString("dd MMM yyyy HH:mm")</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                            {
+                                <tr>
+                                    <th>Approved By:</th>
+                                    <td>@Model.ApprovedBy</td>
+                                </tr>
+                                <tr>
+                                    <th>Approved Date:</th>
+                                    <td>@Model.ApprovedDate?.ToString("dd MMM yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Organization Hierarchy -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>সাংগঠনিক অবস্থান / Organizational Location:</h6>
+                        <div class="d-flex flex-wrap">
+                            @if (!string.IsNullOrEmpty(Model.RangeName))
+                            {
+                                <span class="badge badge-secondary mr-2">Range: @Model.RangeName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.BattalionName))
+                            {
+                                <span class="badge badge-secondary mr-2">Battalion: @Model.BattalionName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ZilaName))
+                            {
+                                <span class="badge badge-secondary mr-2">জেলা: @Model.ZilaName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.UpazilaName))
+                            {
+                                <span class="badge badge-secondary mr-2">উপজেলা: @Model.UpazilaName</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        @if (varianceAnalysis != null)
+        {
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>@varianceAnalysis.TotalItems</h3>
+                            <p>Total Items</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>@varianceAnalysis.ItemsWithVariance</h3>
+                            <p>Items with Variance</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>+@varianceAnalysis.TotalPositiveVariance</h3>
+                            <p>Excess Quantity</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>-@varianceAnalysis.TotalNegativeVariance</h3>
+                            <p>Short Quantity</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-minus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="card card-warning card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">আর্থিক সারাংশ / Financial Summary</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="description-block border-right">
+                                <h5 class="description-header">৳ @Model.TotalSystemValue.ToString("N2")</h5>
+                                <span class="description-text">System Value</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="description-block border-right">
+                                <h5 class="description-header">৳ @Model.TotalPhysicalValue.ToString("N2")</h5>
+                                <span class="description-text">Physical Value</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="description-block">
+                                <h5 class="description-header @(Model.TotalVarianceValue >= 0 ? "text-success" : "text-danger")">
+                                    ৳ @Model.TotalVarianceValue.ToString("N2")
+                                </h5>
+                                <span class="description-text">Total Variance</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Approval Chain -->
+        @if (approvalChain != null && approvalChain.Any())
+        {
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">অনুমোদন প্রক্রিয়া / Approval Process</h3>
+                </div>
+                <div class="card-body">
+                    <div class="timeline timeline-inverse">
+                        @foreach (var approval in approvalChain.OrderBy(a => a.Level))
+                        {
+                            <div>
+                                <i class="fas fa-user-check bg-@(approval.IsApproved ? "success" : "gray")"></i>
+                                <div class="timeline-item">
+                                    <span class="time">
+                                        <i class="far fa-clock"></i>
+                                        @(approval.ApprovedDate?.ToString("dd MMM yyyy HH:mm") ?? "Pending")
+                                    </span>
+                                    <h3 class="timeline-header">
+                                        Level @approval.Level: @approval.RoleDescription
+                                    </h3>
+                                    <div class="timeline-body">
+                                        @if (approval.IsApproved)
+                                        {
+                                            <p>
+                                                <strong>Approved by:</strong> @approval.ApprovedBy<br>
+                                                @if (!string.IsNullOrEmpty(approval.Remarks))
+                                                {
+                                                    <strong>Remarks:</strong> 
+                                                    @approval.Remarks
+                                                }
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted">Awaiting approval</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div>
+                            <i class="far fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Detail Items -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">আইটেম বিবরণ / Item Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped datatable">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>System Qty</th>
+                                <th>Physical Qty</th>
+                                <th>Variance</th>
+                                <th>Value (৳)</th>
+                                <th>Status</th>
+                                <th>Counted By</th>
+                                <th>Location</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.Details)
+                            {
+                                <tr class="@(Math.Abs(detail.Variance) > 0 ? "table-warning" : "")">
+                                    <td><code>@detail.ItemCode</code></td>
+                                    <td>@detail.ItemName</td>
+                                    <td><span class="badge badge-info">@detail.CategoryName</span></td>
+                                    <td class="text-right">@detail.SystemQuantity</td>
+                                    <td class="text-right">@detail.PhysicalQuantity</td>
+                                    <td class="text-right">
+                                        @if (detail.Variance != 0)
+                                        {
+                                            <span class="@(detail.Variance > 0 ? "text-success" : "text-danger")">
+                                                @detail.Variance.ToString("+#;-#;0")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td class="text-right">
+                                        @if (detail.VarianceValue != 0)
+                                        {
+                                            <span class="@(detail.VarianceValue > 0 ? "text-success" : "text-danger")">
+                                                ৳ @Math.Abs(detail.VarianceValue ?? 0).ToString("N2")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var detailStatusClass = detail.Status switch
+                                            {
+                                                CountStatus.Pending => "badge-warning",
+                                                CountStatus.Counted => "badge-success",
+                                                CountStatus.RecountRequested => "badge-danger",
+                                                CountStatus.Verified => "badge-primary",
+                                                _ => "badge-secondary"
+                                            };
+                                        }
+                                        <span class="badge @detailStatusClass">@detail.StatusText</span>
+                                    </td>
+                                    <td>@detail.CountedBy</td>
+                                    <td>@detail.LocationCode</td>
+                                    <td>@detail.Remarks</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        @if (Model.Status == PhysicalInventoryStatus.Initiated || Model.Status == PhysicalInventoryStatus.InProgress)
+        {
+            <div class="card">
+                <div class="card-body">
+                    @if (User.IsInRole("Admin") || User.Identity.Name == Model.InitiatedBy)
+                    {
+                        <button type="button" class="btn btn-danger" onclick="showCancelModal()">
+                            <i class="fas fa-times"></i> Cancel Inventory
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Cancel" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header">
+                    <h4 class="modal-title">Cancel Physical Inventory</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Are you sure you want to cancel this physical inventory?
+                    </div>
+                    <div class="form-group">
+                        <label>Cancellation Reason <span class="text-danger">*</span></label>
+                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.datatable').DataTable({
+                pageLength: 25,
+                order: [[5, 'desc']] // Sort by variance
+            });
+        });
+
+        function showCancelModal() {
+            $('#cancelModal').modal('show');
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        @@media print {
+            .main-header, .main-sidebar, .content-header, .card-tools, .btn {
+                display: none !important;
+            }
+
+            .card {
+                border: 1px solid #000 !important;
+            }
+        }
+    </style>
+}

@@ -1,0 +1,420 @@
+﻿@model IMS.Application.DTOs.ReceiveDto
+@{
+    ViewData["Title"] = "Process Receive";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Process Receive</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Process</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Receive Details -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Receive Details - #@Model.ReceiveNo</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Original Issue:</dt>
+                            <dd class="col-sm-9">@Model.OriginalIssueNo</dd>
+
+                            <dt class="col-sm-3">Voucher No:</dt>
+                            <dd class="col-sm-9">@Model.OriginalVoucherNo</dd>
+
+                            <dt class="col-sm-3">Received From:</dt>
+                            <dd class="col-sm-9">@Model.ReceivedFromType - @Model.ReceivedFromName</dd>
+
+                            <dt class="col-sm-3">Date:</dt>
+                            <dd class="col-sm-9">@Model.ReceiveDate.ToString("dd-MMM-yyyy")</dd>
+                        </dl>
+
+                        <!-- Items Assessment -->
+                        <h5>Item Assessment</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Issued Qty</th>
+                                        <th>Received Qty</th>
+                                        <th>Condition</th>
+                                        <th>Photo</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr data-item-id="@item.ItemId">
+                                            <td>
+                                                @item.ItemName<br>
+                                                <small class="text-muted">@item.ItemCode</small>
+                                            </td>
+                                            <td>@(item.IssuedQuantity ?? item.Quantity ?? 0) @item.Unit</td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm received-qty"
+                                                       value="@(item.IssuedQuantity ?? item.Quantity ?? 0)"
+                                                       min="0" max="@(item.IssuedQuantity ?? item.Quantity ?? 999999)"
+                                                       data-item-id="@item.ItemId" />
+                                            </td>
+                                            <td>
+                                                <select class="form-control form-control-sm condition-select" 
+                                                        data-item-id="@item.ItemId">
+                                                    <option value="Good">Good</option>
+                                                    <option value="Damaged">Damaged</option>
+                                                    <option value="Missing">Missing</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-secondary damage-photo-btn"
+                                                        data-item-id="@item.ItemId" style="display:none;">
+                                                    <i class="fas fa-camera"></i>
+                                                </button>
+                                                <canvas class="damage-canvas" id="canvas-@item.ItemId" 
+                                                        style="display:none;" width="320" height="240"></canvas>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm item-notes"
+                                                       data-item-id="@item.ItemId" placeholder="Notes" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Complete Receive -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Complete Receive</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="completeForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="receiveId" value="@Model.Id" />
+
+                            <!-- Receiver Signature -->
+                            <div class="form-group">
+                                <label>Receiver Signature</label>
+                                <div class="border rounded p-3 bg-light">
+                                    <canvas id="receiverSignature" width="350" height="150" 
+                                            style="border: 1px solid #ddd; background: white;"></canvas>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-secondary" id="clearSignature">
+                                            <i class="fas fa-eraser"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Receiver Name</label>
+                                <input type="text" id="receiverName" class="form-control" 
+                                       value="@User.Identity.Name" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Badge ID</label>
+                                <input type="text" id="receiverBadgeNo" class="form-control" required />
+                            </div>
+
+                            <div class="form-group">
+                                <button type="button" class="btn btn-success btn-block" id="completeBtn">
+                                    <i class="fas fa-check"></i> Complete Receive
+                                </button>
+                                <a asp-action="Index" class="btn btn-default btn-block">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Summary</h3>
+                    </div>
+                    <div class="card-body" id="summary">
+                        <p>Total Items: <strong>@Model.Items.Count</strong></p>
+                        <p>Good Condition: <strong id="goodCount">@Model.Items.Count</strong></p>
+                        <p>Damaged: <strong id="damagedCount">0</strong></p>
+                        <p>Missing: <strong id="missingCount">0</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Camera Modal -->
+<div class="modal fade" id="cameraModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Capture Damage Photo</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <video id="cameraVideo" width="100%" autoplay></video>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="capturePhoto">
+                    <i class="fas fa-camera"></i> Capture
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentItemId = null;
+        let stream = null;
+
+        $(document).ready(function() {
+            // Initialize signature canvas
+            initSignatureCanvas();
+
+            // Condition change
+            $('.condition-select').change(function() {
+                const itemId = $(this).data('item-id');
+                const condition = $(this).val();
+                const photoBtn = $(`.damage-photo-btn[data-item-id="${itemId}"]`);
+
+                if (condition === 'Damaged') {
+                    photoBtn.show();
+                } else {
+                    photoBtn.hide();
+                }
+
+                updateSummary();
+                updateItemCondition(itemId);
+            });
+
+            // Quantity change
+            $('.received-qty').change(function() {
+                const itemId = $(this).data('item-id');
+                updateItemCondition(itemId);
+            });
+
+            // Photo button
+            $('.damage-photo-btn').click(function() {
+                currentItemId = $(this).data('item-id');
+                openCamera();
+            });
+
+            // Capture photo
+            $('#capturePhoto').click(function() {
+                captureAndSavePhoto();
+            });
+
+            // Complete receive
+            $('#completeBtn').click(function() {
+                completeReceive();
+            });
+
+            // Clear signature
+            $('#clearSignature').click(function() {
+                clearSignature();
+            });
+        });
+
+        function initSignatureCanvas() {
+            const canvas = document.getElementById('receiverSignature');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            // Touch events
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+
+            function startDrawing(e) {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            function handleTouch(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' :
+                                                e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function clearSignature() {
+            const canvas = document.getElementById('receiverSignature');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function updateItemCondition(itemId) {
+            const row = $(`tr[data-item-id="${itemId}"]`);
+            const condition = row.find('.condition-select').val();
+            const receivedQty = row.find('.received-qty').val();
+            const notes = row.find('.item-notes').val();
+
+            $.post('/Receive/UpdateItemCondition', {
+                receiveId: $('#receiveId').val(),
+                itemId: itemId,
+                condition: condition,
+                receivedQuantity: receivedQty,
+                notes: notes
+            });
+        }
+
+        function updateSummary() {
+            let good = 0, damaged = 0, missing = 0;
+
+            $('.condition-select').each(function() {
+                const condition = $(this).val();
+                switch(condition) {
+                    case 'Good': good++; break;
+                    case 'Damaged': damaged++; break;
+                    case 'Missing': missing++; break;
+                }
+            });
+
+            $('#goodCount').text(good);
+            $('#damagedCount').text(damaged);
+            $('#missingCount').text(missing);
+        }
+
+        function openCamera() {
+            $('#cameraModal').modal('show');
+            const video = document.getElementById('cameraVideo');
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(s) {
+                    stream = s;
+                    video.srcObject = stream;
+                })
+                .catch(function(err) {
+                    console.error('Camera error:', err);
+                    alert('Unable to access camera');
+                });
+        }
+
+        function captureAndSavePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById(`canvas-${currentItemId}`);
+            const ctx = canvas.getContext('2d');
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const photoData = canvas.toDataURL('image/jpeg').split(',')[1];
+
+            // Save photo
+            $.post('/Receive/UpdateItemCondition', {
+                receiveId: $('#receiveId').val(),
+                itemId: currentItemId,
+                damagePhoto: photoData
+            })
+            .done(function() {
+                toastr.success('Photo saved');
+                $(`.damage-photo-btn[data-item-id="${currentItemId}"]`)
+                    .removeClass('btn-secondary').addClass('btn-success');
+            });
+
+            // Stop camera
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            $('#cameraModal').modal('hide');
+        }
+
+        function completeReceive() {
+            if (!validateForm()) return;
+
+            const signatureCanvas = document.getElementById('receiverSignature');
+            const signatureData = signatureCanvas.toDataURL('image/png').split(',')[1];
+
+            $.post('/Receive/Complete', {
+                id: $('#receiveId').val(),
+                receiverSignature: signatureData,
+                receiverName: $('#receiverName').val(),
+                receiverBadgeNo: $('#receiverBadgeNo').val()
+            })
+            .done(function(data) {
+                if (data.success) {
+                    toastr.success('Receive completed successfully!');
+                    window.location.href = data.redirectUrl;
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .fail(function() {
+                toastr.error('Error completing receive');
+            });
+        }
+
+        function validateForm() {
+            if (!$('#receiverName').val()) {
+                toastr.error('Please enter receiver name');
+                return false;
+            }
+            if (!$('#receiverBadgeNo').val()) {
+                toastr.error('Please enter badge ID');
+                return false;
+            }
+
+            // Check signature
+            const canvas = document.getElementById('receiverSignature');
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const hasSignature = imageData.data.some(channel => channel !== 0 && channel !== 255);
+
+            if (!hasSignature) {
+                toastr.error('Please provide signature');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+}

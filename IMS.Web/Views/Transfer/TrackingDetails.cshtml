@@ -1,0 +1,237 @@
+@model IMS.Application.DTOs.TransferDto
+@{
+    ViewData["Title"] = "Track Transfer - " + Model.TransferNo;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Transfer Tracking</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Track">Track</a></li>
+                    <li class="breadcrumb-item active">@Model.TransferNo</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Transfer Info -->
+            <div class="col-md-8">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-exchange-alt"></i> Transfer Information
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">Tracking Number:</dt>
+                            <dd class="col-sm-8">
+                                <strong class="text-primary">@Model.TransferNo</strong>
+                            </dd>
+
+                            <dt class="col-sm-4">Transfer Date:</dt>
+                            <dd class="col-sm-8">@Model.TransferDate.ToString("dd-MMM-yyyy")</dd>
+
+                            <dt class="col-sm-4">From Store:</dt>
+                            <dd class="col-sm-8">
+                                <i class="fas fa-store text-info"></i> @Model.FromStoreName
+                            </dd>
+
+                            <dt class="col-sm-4">To Store:</dt>
+                            <dd class="col-sm-8">
+                                <i class="fas fa-store text-success"></i> @Model.ToStoreName
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.Remarks))
+                            {
+                                <dt class="col-sm-4">Remarks:</dt>
+                                <dd class="col-sm-8">@Model.Remarks</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-boxes"></i> Transferred Items
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{int itemIndex = 1;}
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@itemIndex</td>
+                                        <td>@item.ItemName</td>
+                                        <td><span class="badge badge-primary">@item.Quantity</span></td>
+                                        <td>pcs</td>
+                                    </tr>
+                                    itemIndex++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-light">
+                                    <th colspan="2">Total Items</th>
+                                    <th colspan="2">@Model.Items.Count items</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="col-md-4">
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i> Transfer Status
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var statusBadgeClass = Model.Status switch
+                            {
+                                "Draft" => "badge-secondary",
+                                "Approved" => "badge-primary",
+                                "InTransit" => "badge-warning",
+                                "Completed" => "badge-success",
+                                "Cancelled" => "badge-danger",
+                                _ => "badge-info"
+                            };
+                        }
+
+                        <div class="callout callout-@(Model.Status == "Completed" ? "success" : Model.Status == "In Transit" ? "warning" : "info")">
+                            <h5><i class="fas fa-info-circle"></i> Current Status</h5>
+                            <p class="mb-0">
+                                <span class="badge @statusBadgeClass" style="font-size: 1.3em; padding: 10px 15px;">
+                                    @Model.Status
+                                </span>
+                            </p>
+                            @if (Model.Status == "In Transit")
+                            {
+                                <p class="mt-2 mb-0"><small><i class="fas fa-truck"></i> Transfer is currently on the way</small></p>
+                            }
+                            else if (Model.Status == "Completed")
+                            {
+                                <p class="mt-2 mb-0 text-success"><small><i class="fas fa-check-double"></i> Transfer successfully completed</small></p>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <p class="mt-2 mb-0"><small><i class="fas fa-clock"></i> Waiting for dispatch</small></p>
+                            }
+                        </div>
+
+                        <div class="timeline">
+                            <!-- Transfer Created -->
+                            <div>
+                                <i class="fas fa-check bg-success"></i>
+                                <div class="timeline-item">
+                                    <span class="time">
+                                        <i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")
+                                    </span>
+                                    <h3 class="timeline-header">Transfer Created</h3>
+                                    <div class="timeline-body">
+                                        Transfer request initiated by @Model.CreatedBy
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.Status != "Draft" && Model.Status != "Cancelled")
+                            {
+                                <!-- Status Updates -->
+                                <div>
+                                    <i class="fas fa-@(Model.Status == "Completed" ? "check-circle" : "hourglass-half") bg-@(Model.Status == "Completed" ? "success" : "primary")"></i>
+                                    <div class="timeline-item">
+                                        <h3 class="timeline-header">Status: @Model.Status</h3>
+                                        <div class="timeline-body">
+                                            @if (!string.IsNullOrEmpty(Model.TransferredBy))
+                                            {
+                                                <p class="mb-0">Transferred by: @Model.TransferredBy</p>
+                                            }
+                                            @if (Model.EstimatedDeliveryDate.HasValue)
+                                            {
+                                                <p class="mb-0">Est. Delivery: @Model.EstimatedDeliveryDate.Value.ToString("dd-MMM-yyyy")</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.Status == "Cancelled")
+                            {
+                                <div>
+                                    <i class="fas fa-times-circle bg-danger"></i>
+                                    <div class="timeline-item">
+                                        <h3 class="timeline-header">Transfer Cancelled</h3>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- End -->
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.TransportMode))
+                        {
+                            <div class="info-box bg-light mt-3">
+                                <span class="info-box-icon bg-info">
+                                    <i class="fas fa-truck"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Transport Mode</span>
+                                    <span class="info-box-number">@Model.TransportMode</span>
+                                    @if (!string.IsNullOrEmpty(Model.VehicleNo))
+                                    {
+                                        <small>Vehicle: @Model.VehicleNo</small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card card-secondary">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <a asp-action="Track" class="btn btn-block btn-primary">
+                            <i class="fas fa-search"></i> Track Another Transfer
+                        </a>
+                        <a asp-action="Print" asp-route-id="@Model.Id" class="btn btn-block btn-success" target="_blank">
+                            <i class="fas fa-print"></i> Print Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

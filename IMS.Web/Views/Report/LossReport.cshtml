@@ -1,0 +1,428 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Loss Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var losses = Model?.ToList() ?? new List<dynamic>();
+
+    // Calculate statistics
+    var totalLosses = losses.Count();
+    var totalValue = losses.Sum(l => (decimal)l.Value);
+    var damageCount = losses.Count(l => ((string)l.LossType).Equals("Damage", StringComparison.OrdinalIgnoreCase));
+    var theftCount = losses.Count(l => ((string)l.LossType).Equals("Theft", StringComparison.OrdinalIgnoreCase));
+    var expiryCount = losses.Count(l => ((string)l.LossType).Equals("Expiry", StringComparison.OrdinalIgnoreCase));
+    var writeOffCount = losses.Count(l => ((string)l.LossType).Equals("WriteOff", StringComparison.OrdinalIgnoreCase));
+
+    var damagePercent = totalLosses > 0 ? (damageCount * 100.0 / totalLosses) : 0;
+    var theftPercent = totalLosses > 0 ? (theftCount * 100.0 / totalLosses) : 0;
+    var expiryPercent = totalLosses > 0 ? (expiryCount * 100.0 / totalLosses) : 0;
+    var writeOffPercent = totalLosses > 0 ? (writeOffCount * 100.0 / totalLosses) : 0;
+
+    // Prepare chart data
+    var lossesByMonthData = losses.Any()
+        ? losses.GroupBy(l => new DateTime(((DateTime)l.LossDate).Year, ((DateTime)l.LossDate).Month, 1))
+                 .OrderBy(g => g.Key)
+                 .Take(12)
+                 .Select(g => (object)new {
+                     Month = g.Key.ToString("MMM yyyy"),
+                     Value = g.Sum(l => (decimal)l.Value)
+                 }).ToList()
+        : new List<object>();
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Loss Report
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Loss Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Filter Card -->
+        <div class="card card-danger card-outline collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="LossReport" method="get">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="fromDate">From Date:</label>
+                                <input type="date" class="form-control" id="fromDate" name="fromDate" value="@ViewBag.FromDate">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="toDate">To Date:</label>
+                                <input type="date" class="form-control" id="toDate" name="toDate" value="@ViewBag.ToDate">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="lossType">Loss Type:</label>
+                                <select class="form-control" id="lossType" name="lossType">
+                                    @Html.Raw(ViewBag.LossTypes)
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="storeId">Store:</label>
+                                <select class="form-control" id="storeId" name="storeId">
+                                    @Html.Raw(ViewBag.Stores)
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-danger btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-times-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Losses</span>
+                        <span class="info-box-number">@totalLosses</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            ৳@totalValue.ToString("N2") Total Value
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-hammer"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Damage</span>
+                        <span class="info-box-number">@damageCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @damagePercent%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @damagePercent.ToString("F1")% of Total Losses
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-dark">
+                    <span class="info-box-icon"><i class="fas fa-user-secret"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Theft</span>
+                        <span class="info-box-number">@theftCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @theftPercent%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @theftPercent.ToString("F1")% of Total Losses
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-secondary">
+                    <span class="info-box-icon"><i class="fas fa-calendar-times"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Expiry/Write-off</span>
+                        <span class="info-box-number">@(expiryCount + writeOffCount)</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @(expiryPercent + writeOffPercent)%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @((expiryPercent + writeOffPercent).ToString("F1"))% of Total Losses
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loss Details Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Loss Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="lossTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Loss No</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Item</th>
+                            <th>Store</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Value</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (losses.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var loss in losses.OrderByDescending(l => (DateTime)l.LossDate))
+                            {
+                                var lossTypeBadge = "";
+                                var lossTypeText = (string)loss.LossType;
+                                switch (lossTypeText.ToLower())
+                                {
+                                    case "damage":
+                                        lossTypeBadge = "badge-warning";
+                                        break;
+                                    case "theft":
+                                        lossTypeBadge = "badge-dark";
+                                        break;
+                                    case "expiry":
+                                        lossTypeBadge = "badge-secondary";
+                                        break;
+                                    case "writeoff":
+                                        lossTypeBadge = "badge-danger";
+                                        lossTypeText = "Write-off";
+                                        break;
+                                    default:
+                                        lossTypeBadge = "badge-info";
+                                        break;
+                                }
+
+                                <tr>
+                                    <td>@serial</td>
+                                    <td><strong>@loss.LossNo</strong></td>
+                                    <td>@((DateTime)loss.LossDate).ToString("dd-MMM-yyyy")</td>
+                                    <td><span class="badge @lossTypeBadge">@lossTypeText</span></td>
+                                    <td>@loss.ItemName</td>
+                                    <td>@loss.StoreName</td>
+                                    <td class="text-right">@loss.Quantity</td>
+                                    <td class="text-right">৳@((decimal)loss.Value).ToString("N2")</td>
+                                    <td>@loss.Reason</td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i> No loss records found for the selected criteria.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Row -->
+        <div class="row">
+            <!-- Loss Type Distribution -->
+            <div class="col-md-6">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Loss Type Distribution</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Loss Trend -->
+            <div class="col-md-6">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Loss Value Trend</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="lineChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize DataTable
+            $("#lossTable").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": 0 } // Disable sorting on serial column
+                ]
+            });
+
+            // Pie Chart - Loss Type Distribution
+            var pieChartCanvas = $('#pieChart').get(0).getContext('2d');
+            var pieData = {
+                labels: ['Damage', 'Theft', 'Expiry', 'Write-off'],
+                datasets: [{
+                    data: [@damageCount, @theftCount, @expiryCount, @writeOffCount],
+                    backgroundColor: ['#ffc107', '#343a40', '#6c757d', '#dc3545']
+                }]
+            };
+            new Chart(pieChartCanvas, {
+                type: 'pie',
+                data: pieData,
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Line Chart - Monthly Trend (using actual data grouped by month)
+            var lossesByMonth = @Html.Raw(Json.Serialize(lossesByMonthData));
+
+            var lineChartCanvas = $('#lineChart').get(0).getContext('2d');
+            var lineChartData = {
+                labels: lossesByMonth.length > 0 ? lossesByMonth.map(m => m.Month) : [],
+                datasets: [{
+                    label: 'Loss Value (৳)',
+                    backgroundColor: 'rgba(220,53,69,0.1)',
+                    borderColor: 'rgba(220,53,69,1)',
+                    pointRadius: 5,
+                    pointColor: '#dc3545',
+                    pointStrokeColor: 'rgba(220,53,69,1)',
+                    pointHighlightFill: '#fff',
+                    pointHighlightStroke: 'rgba(220,53,69,1)',
+                    data: lossesByMonth.length > 0 ? lossesByMonth.map(m => m.Value) : []
+                }]
+            };
+            new Chart(lineChartCanvas, {
+                type: 'line',
+                data: lineChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        function exportToCSV() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var lossType = document.getElementById('lossType').value;
+            var storeId = document.getElementById('storeId').value;
+
+            var url = '@Url.Action("ExportLossReportCsv", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (lossType) params.push('lossType=' + lossType);
+            if (storeId) params.push('storeId=' + storeId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+
+        function exportToPDF() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var lossType = document.getElementById('lossType').value;
+            var storeId = document.getElementById('storeId').value;
+
+            var url = '@Url.Action("ExportLossReportPdf", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (lossType) params.push('lossType=' + lossType);
+            if (storeId) params.push('storeId=' + storeId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+    </script>
+}

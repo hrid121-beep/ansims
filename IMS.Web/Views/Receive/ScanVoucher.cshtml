@@ -1,0 +1,300 @@
+﻿@{
+    ViewData["Title"] = "Scan Issue Voucher";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Scan Issue Voucher</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Scan Voucher</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Scanner Section -->
+            <div class="col-lg-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-qrcode"></i> QR Code Scanner
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Camera View -->
+                        <div class="scanner-container text-center">
+                            <div id="qr-reader" style="width:100%; min-height:400px;"></div>
+                            <div id="qr-reader-results" class="mt-3"></div>
+                        </div>
+
+                        <!-- Manual Input -->
+                        <div class="manual-input mt-4">
+                            <h5>Or Enter Voucher Number Manually</h5>
+                            <div class="input-group">
+                                <input type="text" id="voucherNumber" class="form-control"
+                                       placeholder="Enter voucher number...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" onclick="processVoucher()">
+                                        <i class="fas fa-check"></i> Process
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Scans -->
+                        <div class="recent-scans mt-4">
+                            <h5>Recent Scans</h5>
+                            <div id="recentScansList" class="list-group">
+                                <div class="list-group-item text-muted">No recent scans</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions & Info -->
+            <div class="col-lg-6">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Instructions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="callout callout-info">
+                            <h5>How to Scan</h5>
+                            <ol>
+                                <li>Allow camera access when prompted</li>
+                                <li>Position the QR code within the camera view</li>
+                                <li>The scanner will automatically detect and read the code</li>
+                                <li>Wait for the system to process and validate the voucher</li>
+                            </ol>
+                        </div>
+
+                        <div class="callout callout-warning">
+                            <h5>Important Notes</h5>
+                            <ul>
+                                <li>Only approved issue vouchers can be received</li>
+                                <li>Each voucher can only be received once</li>
+                                <li>Ensure good lighting for better scanning</li>
+                                <li>Keep QR code flat and undamaged</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Receive Number</span>
+                                <span class="info-box-number">@ViewBag.ReceiveNo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="statusAlert" class="alert d-none" role="alert">
+                    <span id="statusMessage"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Include QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+        let html5QrCode;
+        let recentScans = [];
+
+        $(document).ready(function() {
+            initializeScanner();
+        });
+
+        function initializeScanner() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("Unable to start scanner:", err);
+                showStatus("Unable to access camera. Please check permissions.", "danger");
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Add to recent scans
+            addToRecentScans(decodedText);
+
+            // Stop scanning temporarily
+            html5QrCode.stop();
+
+            // Process the scanned QR code
+            processQRCode(decodedText);
+        }
+
+        function onScanError(error) {
+            // Ignore scan errors (happens when no QR code in view)
+            console.warn(`QR scan error: ${error}`);
+        }
+
+        function processQRCode(qrCode) {
+            showStatus("Processing voucher...", "info");
+
+            $.ajax({
+                url: '@Url.Action("ScanVoucher", "Receive")',
+                type: 'POST',
+                data: {
+                    qrCode: qrCode,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showStatus("Voucher validated successfully! Redirecting...", "success");
+                        setTimeout(function() {
+                            window.location.href = response.redirectUrl;
+                        }, 1500);
+                    } else {
+                        showStatus(response.message || "Invalid voucher", "danger");
+                        // Restart scanner after error
+                        setTimeout(function() {
+                            initializeScanner();
+                        }, 3000);
+                    }
+                },
+                error: function(xhr) {
+                    showStatus("Error processing voucher. Please try again.", "danger");
+                    // Restart scanner after error
+                    setTimeout(function() {
+                        initializeScanner();
+                    }, 3000);
+                }
+            });
+        }
+
+        function processVoucher() {
+            var voucherNumber = $('#voucherNumber').val().trim();
+            if (!voucherNumber) {
+                showStatus("Please enter a voucher number", "warning");
+                return;
+            }
+
+            // Create QR data format expected by backend
+            var qrData = JSON.stringify({
+                Type: "ISSUE_VOUCHER",
+                VoucherNo: voucherNumber,
+                IssueId: 0 // Will be looked up by voucher number
+            });
+
+            processQRCode(qrData);
+        }
+
+        function addToRecentScans(text) {
+            // Limit to last 5 scans
+            if (recentScans.length >= 5) {
+                recentScans.shift();
+            }
+
+            var scanInfo = {
+                text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+                time: new Date().toLocaleTimeString()
+            };
+
+            recentScans.push(scanInfo);
+            updateRecentScansList();
+        }
+
+        function updateRecentScansList() {
+            var listHtml = '';
+            if (recentScans.length === 0) {
+                listHtml = '<div class="list-group-item text-muted">No recent scans</div>';
+            } else {
+                recentScans.forEach(function(scan) {
+                    listHtml += '<div class="list-group-item">' +
+                              '<small class="text-muted">' + scan.time + '</small><br>' +
+                              '<span>' + scan.text + '</span>' +
+                              '</div>';
+                });
+            }
+            $('#recentScansList').html(listHtml);
+        }
+
+        function showStatus(message, type) {
+            var alertClass = 'alert-' + type;
+            $('#statusAlert')
+                .removeClass('d-none alert-success alert-danger alert-warning alert-info')
+                .addClass(alertClass);
+            $('#statusMessage').text(message);
+
+            // Auto-hide after 5 seconds for non-error messages
+            if (type !== 'danger') {
+                setTimeout(function() {
+                    $('#statusAlert').addClass('d-none');
+                }, 5000);
+            }
+        }
+
+        // Cleanup on page unload
+        $(window).on('beforeunload', function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop();
+            }
+        });
+
+        // Handle Enter key in manual input
+        $('#voucherNumber').keypress(function(e) {
+            if (e.which === 13) {
+                processVoucher();
+            }
+        });
+    </script>
+
+    @Html.AntiForgeryToken()
+}
+
+@section Styles {
+    <style>
+        .scanner-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        #qr-reader {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+        }
+
+        .recent-scans {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .list-group-item {
+            border-left: 3px solid #007bff;
+        }
+    </style>
+}

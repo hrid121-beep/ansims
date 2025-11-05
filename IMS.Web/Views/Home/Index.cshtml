@@ -1,0 +1,1254 @@
+﻿@model IMS.Web.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
+}
+@section Styles {
+    <style>
+        /* ========================================
+                   DASHBOARD CSS - FIXED VERSION
+                   Bangladesh Ansar & VDP
+                   ======================================== */
+
+        /* Dashboard Header - Fixed */
+        .dashboard-header {
+            background: linear-gradient(135deg, #006a4e 0%, #008060 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #ffc107; /* Reduced from 3px */
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+            /* Remove the extra border-left */
+            .dashboard-header::after {
+                display: none; /* Remove pattern overlay if causing issues */
+            }
+
+            .dashboard-header h1 {
+                color: white;
+                font-size: 1.25rem; /* Consistent with screenshot */
+                font-weight: 600;
+                margin: 0;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .dashboard-header .badge-role {
+                background: #ffc107;
+                color: #004d38;
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.25rem;
+                font-size: 0.625rem; /* Smaller */
+                font-weight: 600;
+                margin-left: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Date and Time Display */
+            .dashboard-header p {
+                margin: 0.25rem 0 0 0;
+                font-size: 0.875rem;
+                opacity: 0.95;
+            }
+
+        .bengali-text-header {
+            color: #ffd54f;
+            font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif;
+        }
+
+        /* Stat Cards - Fixed Styling */
+        .stat-card-bd {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.375rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            min-height: 130px; /* Consistent height */
+        }
+
+            /* Left Border Accent */
+            .stat-card-bd::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: #006a4e;
+            }
+
+            .stat-card-bd.accent-red::before {
+                background: #f42a41;
+            }
+
+            .stat-card-bd.accent-gold::before {
+                background: #ffc107;
+            }
+
+            .stat-card-bd:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+        /* Stat Icon - Fixed Position */
+        .stat-icon {
+            position: absolute;
+            right: 1.25rem;
+            top: 1.25rem;
+            font-size: 2.5rem;
+            opacity: 0.1;
+            color: #006a4e;
+        }
+
+        .accent-red .stat-icon {
+            color: #f42a41;
+        }
+
+        .accent-gold .stat-icon {
+            color: #ffc107;
+        }
+
+        /* Stat Values */
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stat Footer */
+        .stat-footer {
+            margin-top: 0.75rem;
+            padding-top: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+            .stat-footer .badge-indicator {
+                background: rgba(0, 106, 78, 0.1);
+                color: #006a4e;
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.25rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+            }
+
+                .stat-footer .badge-indicator i {
+                    margin-right: 0.25rem;
+                    font-size: 0.625rem;
+                }
+
+        /* Progress Bar Under Stats */
+        .progress-bd {
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 1.5px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .progress-bar-bd {
+            height: 100%;
+            background: #006a4e;
+            border-radius: 1.5px;
+            transition: width 0.3s ease;
+        }
+
+        .accent-gold .progress-bar-bd {
+            background: #ffc107;
+        }
+
+        .accent-red .progress-bar-bd {
+            background: #f42a41;
+        }
+
+        /* Info Boxes - Secondary Stats */
+        .info-box-bd {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            min-height: 70px;
+        }
+
+            .info-box-bd:hover {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+                transform: translateX(2px);
+            }
+
+        .info-box-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .icon-green {
+            background: rgba(0, 106, 78, 0.1);
+            color: #006a4e;
+        }
+
+        .icon-gold {
+            background: rgba(255, 193, 7, 0.1);
+            color: #f59e0b;
+        }
+
+        .icon-red {
+            background: rgba(244, 42, 65, 0.1);
+            color: #f42a41;
+        }
+
+        /* Info Content */
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            display: flex;
+            align-items: baseline;
+        }
+
+            .info-value small {
+                font-size: 0.75rem;
+                margin-left: 0.5rem;
+                color: #6c757d;
+                font-weight: 400;
+            }
+
+        /* Cards - Quick Actions, Activities, Alerts */
+        .card-bd {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .card-header-bd {
+            background: linear-gradient(135deg, #006a4e 0%, #008060 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid #ffc107;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .card-header-bd h5 {
+                margin: 0;
+                font-size: 0.875rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+                .card-header-bd h5 i {
+                    margin-right: 0.5rem;
+                    font-size: 0.875rem;
+                }
+
+            .card-header-bd .badge {
+                background: #ffc107;
+                color: #004d38;
+                padding: 0.2rem 0.4rem;
+                border-radius: 0.25rem;
+                font-size: 0.625rem;
+                font-weight: 600;
+            }
+
+        /* Quick Action Items */
+        .quick-action-item {
+            display: flex;
+            align-items: center;
+            padding: 0.625rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #495057;
+            font-size: 0.8rem;
+        }
+
+            .quick-action-item:last-child {
+                border-bottom: none;
+            }
+
+            .quick-action-item:hover {
+                background: rgba(0, 106, 78, 0.03);
+                padding-left: 1.25rem;
+                color: #006a4e;
+            }
+
+            .quick-action-item i {
+                width: 16px;
+                margin-right: 0.75rem;
+                color: #ffc107;
+                font-size: 0.875rem;
+            }
+
+            .quick-action-item .badge {
+                margin-left: auto;
+                background: #28a745;
+                color: white;
+                padding: 0.2rem 0.4rem;
+                border-radius: 0.25rem;
+                font-size: 0.625rem;
+                font-weight: 600;
+            }
+
+        /* Alert Card for Low Stock */
+        .card-header-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #f42a41 100%);
+        }
+
+        .alert-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+            .alert-item:hover {
+                background: rgba(244, 42, 65, 0.03);
+            }
+
+            .alert-item:last-child {
+                border-bottom: none;
+            }
+
+        .alert-info {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.125rem;
+        }
+
+        .alert-code {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .alert-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-count {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .badge-current {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-min {
+            background: #ffc107;
+            color: #1a1a1a;
+        }
+
+        /* Timeline Items */
+        .timeline-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+            .timeline-item:hover {
+                background: rgba(0, 106, 78, 0.02);
+            }
+
+            .timeline-item:last-child {
+                border-bottom: none;
+            }
+
+        .timeline-content {
+            padding-left: 1.5rem;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 1rem;
+            top: 0.875rem;
+            width: 6px;
+            height: 6px;
+            background: #006a4e;
+            border-radius: 50%;
+        }
+
+        .timeline-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.125rem;
+        }
+
+        .timeline-description {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-time {
+            font-size: 0.7rem;
+            color: #999;
+            display: flex;
+            align-items: center;
+        }
+
+            .timeline-time i {
+                margin-right: 0.25rem;
+                font-size: 0.625rem;
+            }
+
+        /* Button Styles */
+        .btn-export {
+            background: #ffc107;
+            color: #1a1a1a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+            .btn-export:hover {
+                background: #f59e0b;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .btn-export i {
+                margin-right: 0.5rem;
+            }
+
+        /* View Link Styles */
+        .view-link {
+            color: #006a4e;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+            .view-link:hover {
+                color: #008060;
+                transform: translateX(2px);
+            }
+
+            .view-link i {
+                margin-left: 0.25rem;
+                font-size: 0.75rem;
+            }
+
+        /* Responsive Grid */
+        @@media (max-width: 768px) {
+            .stat-card-bd
+
+        {
+            margin-bottom: 0.75rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.125rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        }
+    </style>
+}
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+                <span class="badge-role">@userRole</span>
+            </h1>
+            <p class="mb-0" style="opacity: 0.9;">
+                <i class="far fa-calendar-alt mr-1"></i> @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
+                <span class="mx-2">•</span>
+                <i class="far fa-clock mr-1"></i> <span id="current-time">@DateTime.Now.ToString("HH:mm:ss")</span>
+                <span class="mx-2">•</span>
+                <span class="bengali-text">বাংলাদেশ আনসার ও ভিডিপি</span>
+            </p>
+        </div>
+        <div>
+            <button class="btn btn-bd-outline btn-sm mr-2" onclick="refreshDashboard()">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button class="btn btn-warning btn-sm" onclick="exportDashboard()">
+                <i class="fas fa-download mr-1"></i> Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Primary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-bd accent-green">
+                    <i class="fas fa-boxes stat-icon"></i>
+                    <div class="stat-value">@Model.TotalItems.ToString("N0")</div>
+                    <div class="stat-label">Total Items</div>
+                    <div class="stat-footer">
+                        <span class="badge-indicator">
+                            <i class="fas fa-check-circle mr-1"></i> @Model.ActiveItems Active
+                        </span>
+                        <a asp-controller="Item" asp-action="Index" class="text-success">
+                            View All <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="progress-bd">
+                        <div class="progress-bar-bd" style="width: @((Model.ActiveItems * 100.0 / Math.Max(Model.TotalItems, 1)))%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-bd accent-green">
+                    <i class="fas fa-warehouse stat-icon"></i>
+                    <div class="stat-value">@Model.TotalStores</div>
+                    <div class="stat-label">Active Stores</div>
+                    <div class="stat-footer">
+                        <span class="badge-indicator">
+                            <i class="fas fa-users mr-1"></i> @Model.TotalUsers Users
+                        </span>
+                        <a asp-controller="Store" asp-action="Index" class="text-success">
+                            Manage <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="progress-bd">
+                        <div class="progress-bar-bd" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-bd accent-gold">
+                    <i class="fas fa-chart-line stat-icon"></i>
+                    <div class="stat-value">৳ @Model.TotalStockValue.ToString("N0")</div>
+                    <div class="stat-label">Total Stock Value</div>
+                    <div class="stat-footer">
+                        <span class="badge-indicator" style="background: rgba(255, 193, 7, 0.1); color: var(--bd-gold-dark);">
+                            <i class="fas fa-percentage mr-1"></i> @Model.StockAccuracy% Accuracy
+                        </span>
+                        <a asp-controller="Report" asp-action="StockStatusReport" class="text-warning">
+                            Report <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="progress-bd">
+                        <div class="progress-bar-bd" style="background: linear-gradient(90deg, var(--bd-gold) 0%, var(--bd-gold-light) 100%); width: @Model.StockAccuracy%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-bd accent-red">
+                    <i class="fas fa-exclamation-triangle stat-icon"></i>
+                    <div class="stat-value">
+                        @Model.CriticalAlerts
+                        @if (Model.CriticalAlerts > 0)
+                        {
+                            <i class="fas fa-bell text-danger ml-2" style="font-size: 1rem; animation: pulse-red 2s infinite;"></i>
+                        }
+                    </div>
+                    <div class="stat-label">Critical Alerts</div>
+                    <div class="stat-footer">
+                        <span class="badge-indicator" style="background: rgba(244, 42, 65, 0.1); color: var(--bd-red);">
+                            <i class="fas fa-box-open mr-1"></i> @Model.LowStockItems Low Stock
+                        </span>
+                        <a asp-controller="Store" asp-action="StockLevels" class="text-danger">
+                            View <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="progress-bd">
+                        <div class="progress-bar-bd" style="background: linear-gradient(90deg, var(--bd-red) 0%, var(--bd-red-light) 100%); width: @((Model.LowStockItems * 100.0 / Math.Max(Model.TotalItems, 1)))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Information Row -->
+        <div class="row mt-3">
+            <div class="col-lg-3 col-md-6">
+                <div class="info-box-bd">
+                    <div class="info-box-icon icon-green">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Today's Transactions</div>
+                        <div class="d-flex align-items-center">
+                            <strong style="font-size: 1.5rem; color: var(--bd-green-dark);">@Model.TodayTransactions</strong>
+                            @if (Model.TransactionGrowth > 0)
+                            {
+                                <span class="badge badge-success ml-2">
+                                    <i class="fas fa-arrow-up"></i> @Model.TransactionGrowth%
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-box-bd">
+                    <div class="info-box-icon icon-gold">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Pending Requisitions</div>
+                        <div class="d-flex align-items-center">
+                            <strong style="font-size: 1.5rem; color: var(--bd-green-dark);">@Model.PendingRequisitions</strong>
+                            @if (Model.PendingRequisitions > 0)
+                            {
+                                <a asp-controller="Requisition" asp-action="Pending" class="btn btn-sm btn-warning ml-2">
+                                    Review
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-box-bd">
+                    <div class="info-box-icon icon-green">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Active Purchases</div>
+                        <div class="d-flex align-items-center">
+                            <strong style="font-size: 1.5rem; color: var(--bd-green-dark);">@Model.ActivePurchases</strong>
+                            <small class="text-muted ml-2">৳ @Model.PurchaseValue.ToString("N0")</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-box-bd">
+                    <div class="info-box-icon icon-red">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Expiring Soon</div>
+                        <div class="d-flex align-items-center">
+                            <strong style="font-size: 1.5rem; color: var(--bd-green-dark);">@Model.ExpiringItems</strong>
+                            @if (Model.ExpiringItems > 0)
+                            {
+                                <a asp-controller="BatchTracking" asp-action="ExpiringBatches" class="btn btn-sm btn-danger ml-2">
+                                    View
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Access (Only for Admin users) -->
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a asp-controller="Admin" asp-action="SettingsDashboard" class="text-decoration-none">
+                        <div class="card" style="background: linear-gradient(135deg, #006a4e 0%, #008060 100%); border: none; cursor: pointer; transition: all 0.3s ease;">
+                            <div class="card-body text-white" style="padding: 1.5rem;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1" style="color: white; font-weight: 600;">
+                                            <i class="fas fa-cogs mr-2"></i>Settings Dashboard
+                                        </h5>
+                                        <p class="mb-0" style="font-size: 0.875rem; opacity: 0.9;">
+                                            Administration • System Settings • Data Management
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-arrow-right fa-2x" style="opacity: 0.7;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+
+        <!-- Critical Stock Alerts Widget -->
+        @if (Model.CriticalAlerts > 0)
+        {
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Critical Stock Alerts
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-light">@(Model.CriticalAlertsList?.Count ?? 0) Items</span>
+                                <a href="@Url.Action("Index", "StockAlert")" class="btn btn-tool text-white">
+                                    <i class="fas fa-external-link-alt"></i> View All
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (Model.CriticalAlertsList != null && Model.CriticalAlertsList.Any())
+                            {
+                                <table class="table table-striped table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Store</th>
+                                            <th class="text-center">Current Stock</th>
+                                            <th class="text-center">Minimum Stock</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var alert in Model.CriticalAlertsList.Take(5))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@alert.ItemName</strong><br />
+                                                    <small class="text-muted">@alert.ItemCode</small>
+                                                </td>
+                                                <td>@alert.StoreName</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-danger">@alert.CurrentStock</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-warning">@alert.MinimumStock</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (alert.CurrentStock == 0)
+                                                    {
+                                                        <span class="badge badge-danger">Out of Stock</span>
+                                                    }
+                                                    else if (alert.PercentageRemaining < 25)
+                                                    {
+                                                        <span class="badge badge-danger">Critical (@(alert.PercentageRemaining?.ToString("F0") ?? "0")%)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning">Low Stock</span>
+                                                    }
+                                                </td>
+                                                <td class="text-right">
+                                                    <a href="/Purchase/Create?itemId=@alert.ItemId&storeId=@alert.StoreId"
+                                                       class="btn btn-xs btn-primary" title="Create Purchase Order">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </a>
+                                                    <a href="/Transfer/Create?itemId=@alert.ItemId&toStoreId=@alert.StoreId"
+                                                       class="btn btn-xs btn-info" title="Request Transfer">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </a>
+                                                    <a href="/Item/Details/@alert.ItemId"
+                                                       class="btn btn-xs btn-secondary" title="View Item">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                        @if (Model.CriticalAlertsList?.Count > 5)
+                        {
+                            <div class="card-footer">
+                                <a href="@Url.Action("Index", "StockAlert", new { level = "Critical" })" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-list"></i> View All @Model.CriticalAlertsList.Count Critical Alerts
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Main Content Area -->
+        <div class="row mt-3">
+            <!-- Left Column -->
+            <div class="col-lg-3">
+                <!-- Quick Actions -->
+                <div class="card-bd">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-bolt mr-2"></i> Quick Actions</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (User.IsInRole("StoreKeeper") || User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Issue" asp-action="Create" class="quick-action-item">
+                                <i class="fas fa-share"></i>
+                                <span>Issue Voucher</span>
+                                <span class="badge badge-success ml-auto">NEW</span>
+                            </a>
+                            <a asp-controller="Receive" asp-action="ScanVoucher" class="quick-action-item">
+                                <i class="fas fa-qrcode"></i>
+                                <span>Scan & Receive</span>
+                            </a>
+                            <a asp-controller="StockEntry" asp-action="Create" class="quick-action-item">
+                                <i class="fas fa-dolly"></i>
+                                <span>Stock Entry</span>
+                            </a>
+                            <a asp-controller="Transfer" asp-action="Create" class="quick-action-item">
+                                <i class="fas fa-exchange-alt"></i>
+                                <span>Transfer Stock</span>
+                            </a>
+                        }
+                        <a asp-controller="Report" asp-action="StockReport" class="quick-action-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Stock Report</span>
+                        </a>
+                        <a asp-controller="Barcode" asp-action="Generate" class="quick-action-item">
+                            <i class="fas fa-barcode"></i>
+                            <span>Generate Barcode</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Organization Structure -->
+                <div class="card-bd mt-3">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-sitemap mr-2"></i> Organization</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="org-stat">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <strong>@Model.TotalRanges</strong>
+                                    <small>Ranges</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="org-stat">
+                                    <i class="fas fa-flag"></i>
+                                    <strong>@Model.TotalBattalions</strong>
+                                    <small>Battalions</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="org-stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <strong>@Model.TotalZilas</strong>
+                                    <small>Zilas</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="org-stat">
+                                    <i class="fas fa-building"></i>
+                                    <strong>@Model.TotalUpazilas</strong>
+                                    <small>Upazilas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column -->
+            <div class="col-lg-5">
+                <!-- Recent Activities -->
+                <div class="card-bd">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-history mr-2"></i> Recent Activities</h5>
+                        <span class="badge">Last 24 Hours</span>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                        {
+                            <div class="timeline-bd">
+                                @foreach (var activity in Model.RecentActivities.Take(10))
+                                {
+                                    <div class="timeline-item-bd">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong style="color: var(--bd-green-dark);">@activity.Title</strong>
+                                                <p class="mb-1 text-muted" style="font-size: 0.875rem;">@activity.Description</p>
+                                                <small class="text-muted">
+                                                    <i class="far fa-clock mr-1"></i> @activity.TimeAgo
+                                                </small>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(activity.ActionUrl))
+                                            {
+                                                <a href="@activity.ActionUrl" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                                <p class="text-muted">No recent activities</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Stock Movement Chart -->
+                <div class="card-bd mt-3">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-chart-line mr-2"></i> Stock Movement</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-sm btn-warning active" onclick="updateChart('week')">Week</button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="updateChart('month')">Month</button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="updateChart('year')">Year</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stockMovementChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Low Stock Alerts -->
+                @if (Model.LowStockItems > 0)
+                {
+                    <div class="card-bd">
+                        <div class="card-header-bd" style="background: linear-gradient(135deg, var(--bd-red) 0%, var(--bd-red-light) 100%);">
+                            <h5><i class="fas fa-exclamation-triangle mr-2"></i> Low Stock Alerts</h5>
+                            <span class="badge">@Model.LowStockItems Items</span>
+                        </div>
+                        <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                            @if (Model.LowStockItemsList != null && Model.LowStockItemsList.Any())
+                            {
+                                @foreach (var item in Model.LowStockItemsList.Take(5))
+                                {
+                                    <div class="alert-bd alert-warning-bd">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@item.Name</strong>
+                                                <div class="text-muted" style="font-size: 0.75rem;">Code: @item.ItemCode</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="badge badge-danger">@item.CurrentStock</span>
+                                                <span class="text-muted">/</span>
+                                                <span class="badge badge-warning">@item.MinimumStock</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                <a asp-controller="Report" asp-action="LowStockReport" class="btn btn-bd-primary btn-block">
+                                    View All Low Stock Items
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Performance Metrics -->
+                <div class="card-bd mt-3">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-tachometer-alt mr-2"></i> Performance Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-value text-success">@Model.StockAccuracy%</div>
+                                    <div class="metric-label">Stock Accuracy</div>
+                                    <div class="progress-bd">
+                                        <div class="progress-bar-bd" style="width: @Model.StockAccuracy%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="metric-card">
+                                    <div class="metric-value text-warning">@Model.InventoryTurnover</div>
+                                    <div class="metric-label">Inventory Turnover</div>
+                                    <div class="progress-bd">
+                                        <div class="progress-bar-bd" style="background: linear-gradient(90deg, var(--bd-gold) 0%, var(--bd-gold-light) 100%); width: @((Model.InventoryTurnover * 10))%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-card">
+                                    <div class="metric-value text-info">@Model.FillRate%</div>
+                                    <div class="metric-label">Fill Rate</div>
+                                    <div class="progress-bd">
+                                        <div class="progress-bar-bd" style="width: @Model.FillRate%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-card">
+                                    <div class="metric-value text-primary">@Model.AverageLeadTime</div>
+                                    <div class="metric-label">Lead Time (Days)</div>
+                                    <div class="progress-bd">
+                                        <div class="progress-bar-bd" style="width: @((100 - Model.AverageLeadTime * 2))%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Distribution -->
+                <div class="card-bd mt-3">
+                    <div class="card-header-bd">
+                        <h5><i class="fas fa-chart-pie mr-2"></i> Category Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        // Initialize
+        $(document).ready(function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            initializeCharts();
+            setInterval(loadDashboardData, 300000); // Refresh every 5 minutes
+        });
+
+        function updateTime() {
+            $('#current-time').text(new Date().toLocaleTimeString('en-US', { hour12: false }));
+        }
+
+        function refreshDashboard() {
+            location.reload();
+        }
+
+        function exportDashboard() {
+            window.location.href = '@Url.Action("ExportDashboard", "Home")';
+        }
+
+        function loadDashboardData() {
+            $.get('/api/dashboard/refresh', function(data) {
+                // Update dashboard data via AJAX
+            });
+        }
+
+        let stockMovementChart; // Global chart reference
+
+        function initializeCharts() {
+            // Stock Movement Chart
+            const stockCtx = document.getElementById('stockMovementChart').getContext('2d');
+            stockMovementChart = new Chart(stockCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
+                    datasets: [{
+                        label: 'Issues',
+                        data: @Html.Raw(Json.Serialize(Model.IssueData)),
+                        borderColor: '#f42a41',
+                        backgroundColor: 'rgba(244, 42, 65, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#f42a41',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }, {
+                        label: 'Receives',
+                        data: @Html.Raw(Json.Serialize(Model.ReceiveData)),
+                        borderColor: '#006a4e',
+                        backgroundColor: 'rgba(0, 106, 78, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#006a4e',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }, {
+                        label: 'Purchases',
+                        data: @Html.Raw(Json.Serialize(Model.PurchaseData)),
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffc107',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 106, 78, 0.9)',
+                            titleFont: { size: 12 },
+                            bodyFont: { size: 11 },
+                            padding: 10,
+                            cornerRadius: 4
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [2, 2],
+                                color: 'rgba(0, 106, 78, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Distribution Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.CategoryLabels)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.CategoryData)),
+                        backgroundColor: [
+                            '#006a4e',
+                            '#f42a41',
+                            '#ffc107',
+                            '#17a2b8',
+                            '#6c757d'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                usePointStyle: true,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 106, 78, 0.9)'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(period) {
+            // Update button styling
+            $('.btn-group .btn').removeClass('active').addClass('btn-outline-warning');
+            $(event.target).removeClass('btn-outline-warning').addClass('active');
+
+            // Fetch new data from API
+            $.ajax({
+                url: '@Url.Action("GetStockMovementData", "Home")',
+                type: 'GET',
+                data: { period: period },
+                success: function(data) {
+                    // Update chart data
+                    stockMovementChart.data.labels = data.labels;
+                    stockMovementChart.data.datasets[0].data = data.issues;
+                    stockMovementChart.data.datasets[1].data = data.receives;
+                    stockMovementChart.data.datasets[2].data = data.purchases;
+                    stockMovementChart.update();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading chart data:', error);
+                }
+            });
+        }
+    </script>
+}

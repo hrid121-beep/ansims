@@ -1,0 +1,257 @@
+﻿@model IMS.Application.DTOs.StoreTypeDto
+@{
+    ViewData["Title"] = "Create Store Type";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-plus-circle"></i> Create Store Type</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Store Types</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-edit"></i> Store Type Information</h3>
+                    </div>
+                    <form asp-action="Create" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <!-- Code & Name -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code">
+                                            <i class="fas fa-hashtag"></i> Code <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Code" class="form-control" placeholder="e.g., MAIN, SUB" required />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                        <small class="text-muted">Unique 2-4 character uppercase code</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name">
+                                            <i class="fas fa-tag"></i> Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Name" class="form-control" placeholder="e.g., Main Warehouse" required />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label asp-for="Description">
+                                    <i class="fas fa-info-circle"></i> Description
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="3"
+                                          placeholder="Describe the purpose and characteristics of this store type..."></textarea>
+                                <small class="text-muted">Optional: Provide details about this store type</small>
+                            </div>
+
+                            <!-- Icon & Color -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Icon">
+                                            <i class="fas fa-icons"></i> Icon Class
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i id="iconPreview" class="fas fa-warehouse"></i>
+                                                </span>
+                                            </div>
+                                            <input asp-for="Icon" id="iconInput" class="form-control"
+                                                   placeholder="fas fa-warehouse" />
+                                        </div>
+                                        <small class="text-muted">
+                                            Font Awesome class (e.g., fas fa-warehouse)
+                                            <a href="https://fontawesome.com/icons" target="_blank">
+                                                <i class="fas fa-external-link-alt"></i> Browse icons
+                                            </a>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Color">
+                                            <i class="fas fa-palette"></i> Theme Color
+                                        </label>
+                                        <div class="input-group">
+                                            <input asp-for="Color" type="color" class="form-control"
+                                                   value="#007bff" style="max-width: 80px;" />
+                                            <input type="text" id="colorHex" class="form-control ml-2"
+                                                   placeholder="#007bff" readonly />
+                                        </div>
+                                        <small class="text-muted">Select a color theme for this store type</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Preview -->
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-eye"></i> Live Preview</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="livePreview" style="padding: 20px;">
+                                        <i id="previewIcon" class="fas fa-warehouse fa-4x mb-3" style="color: #007bff;"></i>
+                                        <h4 id="previewName">Store Type Name</h4>
+                                        <p id="previewDescription" class="text-muted">Description will appear here</p>
+                                        <code id="previewCode" class="badge badge-secondary">CODE</code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categories -->
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-tags"></i> Allowed Categories
+                                </label>
+                                <select name="selectedCategories" class="form-control select2" multiple>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (var category in ViewBag.Categories as IEnumerable<dynamic>)
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <small class="text-muted">Select which item categories can be stored in this type</small>
+                            </div>
+
+                            <!-- Active Status -->
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" asp-for="IsActive" checked id="activeSwitch" />
+                                    <label class="custom-control-label" for="activeSwitch">
+                                        <i class="fas fa-toggle-on"></i> Active
+                                    </label>
+                                </div>
+                                <small class="text-muted">Inactive store types cannot be assigned to new stores</small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Store Type
+                            </button>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Guidelines Sidebar -->
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-lightbulb"></i> Guidelines</h3>
+                    </div>
+                    <div class="card-body">
+                        <h6><i class="fas fa-info-circle"></i> Common Store Types:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-warehouse text-primary"></i> <strong>MAIN</strong> - Main warehouse</li>
+                            <li><i class="fas fa-store text-success"></i> <strong>SUB</strong> - Sub-store</li>
+                            <li><i class="fas fa-box text-warning"></i> <strong>TEMP</strong> - Temporary storage</li>
+                            <li><i class="fas fa-map-marker-alt text-danger"></i> <strong>FIELD</strong> - Field storage</li>
+                        </ul>
+                        <hr>
+                        <h6><i class="fas fa-code"></i> Code Format:</h6>
+                        <p class="small">Use 2-4 character uppercase codes (e.g., MAIN, SUB, TEMP)</p>
+                        <hr>
+                        <h6><i class="fas fa-icons"></i> Popular Icons:</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-warehouse text-primary"></i> <code>fas fa-warehouse</code></li>
+                            <li><i class="fas fa-store text-success"></i> <code>fas fa-store</code></li>
+                            <li><i class="fas fa-building text-info"></i> <code>fas fa-building</code></li>
+                            <li><i class="fas fa-box text-warning"></i> <code>fas fa-box</code></li>
+                            <li><i class="fas fa-boxes text-secondary"></i> <code>fas fa-boxes</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tips Card -->
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-check-circle"></i> Best Practices</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="small mb-0">
+                            <li>Use descriptive names that clearly identify the store type</li>
+                            <li>Choose meaningful icons that represent the store's purpose</li>
+                            <li>Select distinct colors for easy visual identification</li>
+                            <li>Assign relevant categories to control inventory flow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select categories'
+            });
+
+            // Live preview updates
+            $('#iconInput').on('input', function() {
+                var iconClass = $(this).val() || 'fas fa-warehouse';
+                $('#iconPreview').attr('class', iconClass);
+                $('#previewIcon').attr('class', iconClass + ' fa-4x mb-3');
+            });
+
+            $('input[name="Name"]').on('input', function() {
+                var name = $(this).val() || 'Store Type Name';
+                $('#previewName').text(name);
+            });
+
+            $('textarea[name="Description"]').on('input', function() {
+                var desc = $(this).val() || 'Description will appear here';
+                $('#previewDescription').text(desc);
+            });
+
+            $('input[name="Code"]').on('input', function() {
+                var code = $(this).val() || 'CODE';
+                $('#previewCode').text(code.toUpperCase());
+            });
+
+            $('input[name="Color"]').on('input', function() {
+                var color = $(this).val();
+                $('#colorHex').val(color);
+                $('#previewIcon').css('color', color);
+                $('#livePreview').css('background-color', color + '10');
+            });
+
+            // Initialize color hex display
+            var initialColor = $('input[name="Color"]').val() || '#007bff';
+            $('#colorHex').val(initialColor);
+        });
+    </script>
+}

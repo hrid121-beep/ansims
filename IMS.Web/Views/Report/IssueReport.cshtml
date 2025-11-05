@@ -1,0 +1,360 @@
+﻿@{
+    ViewData["Title"] = "Issue Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Issue Report</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Issue Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="IssueReport" method="get">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date:</label>
+                                <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date:</label>
+                                <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select id="storeId" name="storeId" class="form-control" asp-items="ViewBag.Stores">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-arrow-right"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Issues</span>
+                        <span class="info-box-number">892</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <span class="progress-description">
+                            70% Increase in 30 Days
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-box"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Items Issued</span>
+                        <span class="info-box-number">15,234</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 85%"></div>
+                        </div>
+                        <span class="progress-description">
+                            85% of Monthly Target
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Value</span>
+                        <span class="info-box-number">$45,678</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 50%"></div>
+                        </div>
+                        <span class="progress-description">
+                            50% of Budget Used
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-users"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Departments</span>
+                        <span class="info-box-number">12</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            All Departments Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Report Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Issue Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-download"></i> Export Excel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="issueTable">
+                    <thead>
+                        <tr>
+                            <th>Issue #</th>
+                            <th>Date</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total Value</th>
+                            <th>Issued To</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ISS-2025-001</td>
+                            <td>2025-01-15</td>
+                            <td>Office Paper A4</td>
+                            <td>Stationery</td>
+                            <td>10 Reams</td>
+                            <td>$5.00</td>
+                            <td>$50.00</td>
+                            <td>John Smith</td>
+                            <td>Admin</td>
+                            <td><span class="badge badge-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>ISS-2025-002</td>
+                            <td>2025-01-16</td>
+                            <td>Printer Cartridge</td>
+                            <td>IT Supplies</td>
+                            <td>2 Units</td>
+                            <td>$45.00</td>
+                            <td>$90.00</td>
+                            <td>Sarah Johnson</td>
+                            <td>IT</td>
+                            <td><span class="badge badge-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>ISS-2025-003</td>
+                            <td>2025-01-17</td>
+                            <td>Cleaning Supplies</td>
+                            <td>Maintenance</td>
+                            <td>5 Sets</td>
+                            <td>$20.00</td>
+                            <td>$100.00</td>
+                            <td>Mike Davis</td>
+                            <td>Facilities</td>
+                            <td><span class="badge badge-success">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>ISS-2025-004</td>
+                            <td>2025-01-18</td>
+                            <td>Desk Lamp</td>
+                            <td>Furniture</td>
+                            <td>3 Units</td>
+                            <td>$25.00</td>
+                            <td>$75.00</td>
+                            <td>Emily Brown</td>
+                            <td>HR</td>
+                            <td><span class="badge badge-warning">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>ISS-2025-005</td>
+                            <td>2025-01-19</td>
+                            <td>Notebooks</td>
+                            <td>Stationery</td>
+                            <td>50 Units</td>
+                            <td>$2.00</td>
+                            <td>$100.00</td>
+                            <td>David Wilson</td>
+                            <td>Sales</td>
+                            <td><span class="badge badge-success">Completed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Issues by Department</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="departmentChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Daily Issue Trend</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+
+    <script>
+        $(function () {
+            // Initialize DataTable
+            $('#issueTable').DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "buttons": ["copy", "csv", "excel", "pdf", "print"]
+            }).buttons().container().appendTo('#issueTable_wrapper .col-md-6:eq(0)');
+
+            // Department Chart - Check if canvas exists
+            var departmentCanvas = document.getElementById('departmentChart');
+            if (departmentCanvas) {
+                var ctx1 = departmentCanvas.getContext('2d');
+                new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Admin', 'IT', 'Sales', 'HR', 'Facilities'],
+                        datasets: [{
+                            data: [120, 89, 156, 78, 92],
+                            backgroundColor: ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                });
+            }
+
+            // Trend Chart - Check if canvas exists
+            var trendCanvas = document.getElementById('trendChart');
+            if (trendCanvas) {
+                var ctx2 = trendCanvas.getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Issues',
+                            data: [12, 19, 15, 25, 22, 18, 28],
+                            borderColor: '#3c8dbc',
+                            backgroundColor: 'rgba(60, 141, 188, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+        });
+
+        // Export to Excel
+        function exportToExcel() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var storeId = document.getElementById('storeId').value;
+
+            var url = '@Url.Action("ExportIssueReport", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (storeId) {
+                url += '&storeId=' + storeId;
+            }
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var storeId = document.getElementById('storeId').value;
+
+            var url = '@Url.Action("ExportIssueReportPdf", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (storeId) {
+                url += '&storeId=' + storeId;
+            }
+
+            window.location.href = url;
+        }
+    </script>
+}

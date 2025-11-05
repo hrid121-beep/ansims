@@ -1,0 +1,432 @@
+@model IMS.Application.DTOs.AuditTrailReportDto
+@{
+    ViewData["Title"] = "Audit Trail Report";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header with Export Options -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Audit Trail Report
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <form asp-action="AuditReport" method="get" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Transaction Type</label>
+                                <select name="transactionType" asp-items="ViewBag.TransactionTypes" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Summary Statistics -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@(Model.Transactions?.Count ?? 0)</h3>
+                                <p>Total Transactions</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@(Model.Transactions?.Select(t => t.UserName).Distinct().Count() ?? 0)</h3>
+                                <p>Unique Users</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model.Transactions?.Select(t => t.StoreName).Distinct().Count() ?? 0)</h3>
+                                <p>Stores Involved</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>@(Model.Transactions?.Select(t => t.TransactionType).Distinct().Count() ?? 0)</h3>
+                                <p>Transaction Types</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Type Breakdown Chart -->
+@if (Model.Transactions != null && Model.Transactions.Any())
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Transaction Type Distribution</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="transactionTypeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Daily Transaction Trend</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyTrendChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Detailed Audit Trail Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Transaction Audit Trail</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="tableSearch" class="form-control float-right" placeholder="Search">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-default">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0" style="max-height: 600px;">
+                <table class="table table-hover table-head-fixed text-nowrap" id="auditTable">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Transaction Type</th>
+                            <th>Reference Number</th>
+                            <th>Item</th>
+                            <th class="text-right">Quantity</th>
+                            <th>Store</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Transactions != null && Model.Transactions.Any())
+                        {
+                            @foreach (var transaction in Model.Transactions.OrderByDescending(x => x.TransactionDate))
+                            {
+                                string badgeClass = transaction.TransactionType switch
+                                {
+                                    "Purchase" => "badge-info",
+                                    "Issue" => "badge-success",
+                                    "Transfer" => "badge-primary",
+                                    "Return" => "badge-secondary",
+                                    "Damage" => "badge-danger",
+                                    "WriteOff" => "badge-dark",
+                                    "StockAdjustment" => "badge-warning",
+                                    _ => "badge-light"
+                                };
+
+                                <tr>
+                                    <td>
+                                        <small>@transaction.TransactionDate.ToString("dd MMM yyyy")<br/>@transaction.TransactionDate.ToString("HH:mm:ss")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @badgeClass">@transaction.TransactionType</span>
+                                    </td>
+                                    <td><strong>@transaction.ReferenceNumber</strong></td>
+                                    <td>
+                                        <strong>@transaction.ItemCode</strong><br/>
+                                        <small>@transaction.ItemName</small>
+                                    </td>
+                                    <td class="text-right">
+                                        @((transaction.Quantity % 1 == 0) ? transaction.Quantity.ToString("N0") : transaction.Quantity.ToString("N2"))
+                                        @transaction.Unit
+                                    </td>
+                                    <td>@transaction.StoreName</td>
+                                    <td>
+                                        <i class="fas fa-user"></i>
+                                        @transaction.UserName
+                                    </td>
+                                    <td>@transaction.Action</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(transaction.Remarks))
+                                        {
+                                            <small>@transaction.Remarks</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">-</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No audit trail data available for the selected criteria</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (Model.Transactions != null && Model.Transactions.Any())
+            {
+                <div class="card-footer">
+                    <small class="text-muted">
+                        Showing @Model.Transactions.Count transactions from @Model.FromDate.ToString("dd MMM yyyy") to @Model.ToDate.ToString("dd MMM yyyy")
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            @if (Model.Transactions != null && Model.Transactions.Any())
+            {
+                <text>
+                // Transaction Type Distribution Pie Chart
+                var transactionTypeCounts = {};
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <text>
+                    if (!transactionTypeCounts['@transaction.TransactionType']) {
+                        transactionTypeCounts['@transaction.TransactionType'] = 0;
+                    }
+                    transactionTypeCounts['@transaction.TransactionType']++;
+                    </text>
+                }
+
+                var typeLabels = Object.keys(transactionTypeCounts);
+                var typeCounts = Object.values(transactionTypeCounts);
+
+                var transactionTypeData = {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeCounts,
+                        backgroundColor: [
+                            'rgba(23, 162, 184, 0.8)',    // Info - Purchase
+                            'rgba(40, 167, 69, 0.8)',     // Success - Issue
+                            'rgba(0, 123, 255, 0.8)',     // Primary - Transfer
+                            'rgba(108, 117, 125, 0.8)',   // Secondary - Return
+                            'rgba(220, 53, 69, 0.8)',     // Danger - Damage
+                            'rgba(52, 58, 64, 0.8)',      // Dark - WriteOff
+                            'rgba(255, 193, 7, 0.8)',     // Warning - StockAdjustment
+                            'rgba(201, 203, 207, 0.8)'    // Light - Others
+                        ]
+                    }]
+                };
+
+                var transactionTypeOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    }
+                };
+
+                var transactionTypeChartCanvas = $('#transactionTypeChart').get(0).getContext('2d');
+                new Chart(transactionTypeChartCanvas, {
+                    type: 'doughnut',
+                    data: transactionTypeData,
+                    options: transactionTypeOptions
+                });
+
+                // Daily Transaction Trend Line Chart
+                var dailyTransactions = {};
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <text>
+                    var dateKey = '@transaction.TransactionDate.ToString("dd MMM")';
+                    if (!dailyTransactions[dateKey]) {
+                        dailyTransactions[dateKey] = 0;
+                    }
+                    dailyTransactions[dateKey]++;
+                    </text>
+                }
+
+                var dailyLabels = Object.keys(dailyTransactions);
+                var dailyCounts = Object.values(dailyTransactions);
+
+                var dailyTrendData = {
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Transactions',
+                        data: dailyCounts,
+                        borderColor: 'rgba(60,141,188,0.8)',
+                        backgroundColor: 'rgba(60,141,188,0.2)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                };
+
+                var dailyTrendOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                stepSize: 1
+                            }
+                        }]
+                    }
+                };
+
+                var dailyTrendChartCanvas = $('#dailyTrendChart').get(0).getContext('2d');
+                new Chart(dailyTrendChartCanvas, {
+                    type: 'line',
+                    data: dailyTrendData,
+                    options: dailyTrendOptions
+                });
+                </text>
+            }
+
+            // Table Search
+            $('#tableSearch').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#auditTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        // Print function
+        function printReport() {
+            window.print();
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            var fromDate = '@ViewBag.FromDate';
+            var toDate = '@ViewBag.ToDate';
+            var transactionType = '@ViewBag.TransactionType';
+            var storeId = '@ViewBag.StoreId';
+
+            var url = '@Url.Action("ExportAuditReport", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (transactionType) url += '&transactionType=' + encodeURIComponent(transactionType);
+            if (storeId) url += '&storeId=' + storeId;
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = '@ViewBag.FromDate';
+            var toDate = '@ViewBag.ToDate';
+            var transactionType = '@ViewBag.TransactionType';
+            var storeId = '@ViewBag.StoreId';
+
+            var url = '@Url.Action("ExportAuditReportPdf", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (transactionType) url += '&transactionType=' + encodeURIComponent(transactionType);
+            if (storeId) url += '&storeId=' + storeId;
+
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, #tableSearch, form {
+                display: none !important;
+            }
+        }
+    </style>
+}

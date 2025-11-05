@@ -1,0 +1,371 @@
+﻿@model IMS.Web.Models.TransferViewModel
+@{
+    ViewData["Title"] = "Create Transfer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Create Transfer</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Transfers</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Create" method="post" id="transferForm">
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Transfer Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="alert alert-success">
+                                <i class="fas fa-info-circle"></i> <strong>Transfer Number:</strong> @ViewBag.TransferNo (Auto-generated)
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FromStoreId" class="control-label">From Store <span class="text-danger">*</span></label>
+                                        <select asp-for="FromStoreId" class="form-control select2" asp-items="ViewBag.Stores" required>
+                                            <option value="">-- Select Source Store --</option>
+                                        </select>
+                                        <span asp-validation-for="FromStoreId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ToStoreId" class="control-label">To Store <span class="text-danger">*</span></label>
+                                        <select asp-for="ToStoreId" class="form-control select2" asp-items="ViewBag.Stores" required>
+                                            <option value="">-- Select Destination Store --</option>
+                                        </select>
+                                        <span asp-validation-for="ToStoreId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks" class="control-label"></label>
+                                <textarea asp-for="Remarks" class="form-control" rows="2" placeholder="Enter any additional notes..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Items -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Transfer Items</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" id="addItem">
+                                    <i class="fas fa-plus"></i> Add Item
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="itemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 5%">#</th>
+                                            <th style="width: 25%">Item <span class="text-danger">*</span></th>
+                                            <th style="width: 10%">Code</th>
+                                            <th style="width: 10%">Available</th>
+                                            <th style="width: 12%">Quantity <span class="text-danger">*</span></th>
+                                            <th style="width: 8%">Unit</th>
+                                            <th style="width: 10%">Unit Price</th>
+                                            <th style="width: 12%">Total Value</th>
+                                            <th style="width: 8%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsContainer">
+                                        <!-- Items will be added dynamically -->
+                                    </tbody>
+                                    <tfoot class="bg-light">
+                                        <tr>
+                                            <th colspan="7" class="text-right">Grand Total:</th>
+                                            <th><span id="grandTotal">৳ 0.00</span></th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="mt-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box bg-info">
+                                            <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Total Items</span>
+                                                <span class="info-box-number" id="totalItems">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Transfer
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Function to get item row HTML with proper model binding
+            function getItemRowHtml(index) {
+                return `
+                    <tr class="item-row" data-index="${index}">
+                        <td class="text-center">${index + 1}</td>
+                        <td>
+                            <select name="Items[${index}].ItemId" class="form-control item-select" style="width: 100%;" required>
+                                <option value="">-- Select Item --</option>
+                                @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.Items)
+                                {
+                                    @Html.Raw("<option value=\"" + item.Value + "\">" + item.Text + "</option>")
+                                }
+                            </select>
+                        </td>
+                        <td><span class="item-code text-muted">-</span></td>
+                        <td><input type="text" class="form-control available-stock" readonly placeholder="0" /></td>
+                        <td>
+                            <input name="Items[${index}].Quantity" type="number" class="form-control quantity"
+                                   min="0.01" step="0.01" required placeholder="0.00" />
+                        </td>
+                        <td><span class="item-unit badge badge-secondary">pcs</span></td>
+                        <td><span class="unit-price">৳ 0.00</span></td>
+                        <td><strong><span class="row-total">৳ 0.00</span></strong></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-danger btn-sm remove-item" title="Remove Item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Add first row on page load
+            addNewRow();
+
+            // Add new item row
+            $('#addItem').click(function() {
+                addNewRow();
+            });
+
+            function addNewRow() {
+                var rowCount = $('#itemsContainer tr').length;
+                var newRow = $(getItemRowHtml(rowCount));
+                $('#itemsContainer').append(newRow);
+
+                // Initialize Select2 for the new row
+                newRow.find('.item-select').select2({
+                    theme: 'bootstrap4',
+                    width: '100%'
+                });
+
+                updateTotalItems();
+            }
+
+            // Remove item row
+            $(document).on('click', '.remove-item', function() {
+                if ($('#itemsContainer tr').length > 1) {
+                    $(this).closest('tr').remove();
+                    reindexRows(); // Re-index after removal
+                    updateTotalItems();
+                } else {
+                    toastr.warning('At least one item is required');
+                }
+            });
+
+            // Re-index all rows to maintain proper model binding sequence
+            function reindexRows() {
+                $('#itemsContainer tr').each(function(index) {
+                    $(this).attr('data-index', index);
+                    $(this).find('td:first').text(index + 1); // Update serial number
+                    $(this).find('.item-select').attr('name', `Items[${index}].ItemId`);
+                    $(this).find('.quantity').attr('name', `Items[${index}].Quantity`);
+                });
+                calculateGrandTotal();
+            }
+
+            // Get item details and available stock when item is selected
+            $(document).on('change', '.item-select', function() {
+                var row = $(this).closest('tr');
+                var itemId = $(this).val();
+
+                if (itemId) {
+                    // Fetch item details (code, unit, price)
+                    $.get('@Url.Action("GetItemDetails")', { itemId: itemId }, function(data) {
+                        if (data.success) {
+                            row.find('.item-code').text(data.itemCode || '-');
+                            row.find('.item-unit').text(data.unit || 'pcs').removeClass('badge-secondary').addClass('badge-info');
+                            row.find('.unit-price').text('৳ ' + (data.unitPrice || 0).toFixed(2)).data('price', data.unitPrice || 0);
+                            calculateRowTotal(row);
+                        }
+                    }).fail(function() {
+                        toastr.error('Failed to fetch item details');
+                    });
+                } else {
+                    // Clear item details if no item selected
+                    row.find('.item-code').text('-');
+                    row.find('.item-unit').text('pcs').removeClass('badge-info').addClass('badge-secondary');
+                    row.find('.unit-price').text('৳ 0.00').data('price', 0);
+                    row.find('.row-total').text('৳ 0.00');
+                    calculateGrandTotal();
+                }
+
+                updateAvailableStock(row);
+                updateTotalItems();
+            });
+
+            // Calculate row total when quantity changes
+            $(document).on('input change', '.quantity', function() {
+                calculateRowTotal($(this).closest('tr'));
+            });
+
+            $('#FromStoreId').change(function() {
+                $('#itemsContainer tr').each(function() {
+                    updateAvailableStock($(this));
+                });
+            });
+
+            function updateAvailableStock(row) {
+                var itemId = row.find('.item-select').val();
+                var storeId = $('#FromStoreId').val();
+
+                if (itemId && storeId) {
+                    $.get('@Url.Action("GetStoreStock")', { storeId: storeId, itemId: itemId }, function(data) {
+                        if (data.success) {
+                            row.find('.available-stock').val(data.stock);
+                        }
+                    });
+                } else {
+                    row.find('.available-stock').val('');
+                }
+            }
+
+            function updateTotalItems() {
+                var count = 0;
+                $('.item-select').each(function() {
+                    if ($(this).val()) {
+                        count++;
+                    }
+                });
+                $('#totalItems').text(count);
+            }
+
+            // Calculate individual row total (Quantity × Unit Price)
+            function calculateRowTotal(row) {
+                var quantity = parseFloat(row.find('.quantity').val()) || 0;
+                var unitPrice = parseFloat(row.find('.unit-price').data('price')) || 0;
+                var total = quantity * unitPrice;
+                row.find('.row-total').text('৳ ' + total.toFixed(2));
+                calculateGrandTotal();
+            }
+
+            // Calculate grand total (Sum of all row totals)
+            function calculateGrandTotal() {
+                var grandTotal = 0;
+                $('#itemsContainer tr').each(function() {
+                    var rowTotalText = $(this).find('.row-total').text().replace('৳ ', '').replace(/,/g, '');
+                    var rowTotal = parseFloat(rowTotalText) || 0;
+                    grandTotal += rowTotal;
+                });
+                $('#grandTotal').text('৳ ' + grandTotal.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            }
+
+            // Form submission - Using standard form post instead of AJAX
+            $('#transferForm').submit(function(e) {
+                // Validate stores
+                var fromStoreId = $('#FromStoreId').val();
+                var toStoreId = $('#ToStoreId').val();
+
+                if (!fromStoreId || !toStoreId) {
+                    e.preventDefault();
+                    toastr.error('Please select both source and destination stores.');
+                    return false;
+                }
+
+                if (fromStoreId === toStoreId) {
+                    e.preventDefault();
+                    toastr.error('Source and destination stores cannot be the same.');
+                    return false;
+                }
+
+                // Validate items
+                var hasItems = false;
+                var hasError = false;
+
+                $('#itemsContainer tr').each(function() {
+                    var itemId = $(this).find('.item-select').val();
+                    var quantity = parseFloat($(this).find('.quantity').val());
+                    var availableStock = parseFloat($(this).find('.available-stock').val());
+
+                    if (itemId && quantity) {
+                        if (quantity <= 0) {
+                            toastr.error('Quantity must be greater than zero');
+                            hasError = true;
+                            return false;
+                        }
+
+                        if (availableStock && quantity > availableStock) {
+                            toastr.error('Transfer quantity cannot exceed available stock: ' + availableStock);
+                            hasError = true;
+                            return false;
+                        }
+
+                        hasItems = true;
+                    }
+                });
+
+                if (hasError) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!hasItems) {
+                    e.preventDefault();
+                    toastr.error('Please add at least one item to transfer.');
+                    return false;
+                }
+
+                // Allow form to submit normally
+                return true;
+            });
+        });
+    </script>
+}

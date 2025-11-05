@@ -1,0 +1,399 @@
+﻿@model IMS.Application.DTOs.ReceiveDto
+@{
+    ViewData["Title"] = "Print Receipt";
+    Layout = null; // No layout for print view
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receive Receipt - @Model.ReceiveNo</title>
+
+    <!-- Bootstrap CSS for basic styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+
+    <style>
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            color: #333;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 3px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+
+        .organization-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .receipt-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 20px 0;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+        }
+
+        .info-value {
+            flex: 1;
+            padding-left: 10px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+            .items-table th,
+            .items-table td {
+                border: 1px solid #333;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .items-table th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+            }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f8f8;
+        }
+
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            min-height: 60px;
+        }
+
+        .signature-label {
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .badge-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-completed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .barcode-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Button (Hidden when printing) -->
+    <button class="btn btn-primary print-button no-print" onclick="window.print()">
+        <i class="fas fa-print"></i> Print Receipt
+    </button>
+    <button class="btn btn-secondary print-button no-print" style="right: 120px;" onclick="window.close()">
+        <i class="fas fa-times"></i> Close
+    </button>
+
+    <div class="container">
+        <!-- Receipt Header -->
+        <div class="receipt-header">
+            <img src="/images/ansar-vdp-logo.png" alt="Ansar VDP Logo" class="logo">
+            <div class="organization-name">Ansar & VDP</div>
+            <div>Bangladesh Ansar and Village Defence Party</div>
+            <div class="receipt-title">RECEIVE RECEIPT</div>
+        </div>
+
+        <!-- Receipt Information -->
+        <div class="info-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <span class="info-label">Receipt No:</span>
+                        <span class="info-value"><strong>@Model.ReceiveNo</strong></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Receive Date:</span>
+                        <span class="info-value">@Model.ReceiveDate.ToString("dd-MMM-yyyy")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Receive Type:</span>
+                        <span class="info-value">@Model.ReceiveType</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">
+                            <span class="badge-status @(Model.Status == "Completed" ? "badge-completed" : "badge-pending")">
+                                @Model.Status
+                            </span>
+                        </span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.OriginalIssueNo))
+                    {
+                        <div class="info-row">
+                            <span class="info-label">Issue Ref:</span>
+                            <span class="info-value">@Model.OriginalIssueNo</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.OriginalVoucherNo))
+                    {
+                        <div class="info-row">
+                            <span class="info-label">Voucher No:</span>
+                            <span class="info-value">@Model.OriginalVoucherNo</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Source Information -->
+        <div class="info-section">
+            <h5>Received From:</h5>
+            <div class="info-row">
+                <span class="info-label">Source:</span>
+                <span class="info-value">@Model.ReceivedFromType - @Model.ReceivedFromName</span>
+            </div>
+            @if (Model.ReceivedFromType == "Individual")
+            {
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">@Model.ReceivedFromIndividualName</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Badge No:</span>
+                    <span class="info-value">@Model.ReceivedFromIndividualBadgeNo</span>
+                </div>
+            }
+        </div>
+
+        <!-- Items Table -->
+        <h5>Received Items:</h5>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">SL</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th style="width: 100px;">Quantity</th>
+                    <th style="width: 100px;">Received</th>
+                    <th style="width: 100px;">Condition</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int sl = 1;
+                    decimal totalQuantity = 0;
+                    decimal totalReceived = 0;
+                }
+                @foreach (var item in Model.Items)
+                {
+                    totalQuantity += item.Quantity ?? 0;
+                    totalReceived += item.ReceivedQuantity ?? item.Quantity ?? 0;
+
+                    <tr>
+                        <td>@sl</td>
+                        <td>@item.ItemCode</td>
+                        <td>@item.ItemName</td>
+                        <td style="text-align: right;">@((item.Quantity ?? 0).ToString("F2"))</td>
+                        <td style="text-align: right;">@((item.ReceivedQuantity ?? item.Quantity ?? 0).ToString("F2"))</td>
+                        <td>
+                            @if (item.Condition == "Good")
+                            {
+                                <span style="color: green;">✓ @item.Condition</span>
+                            }
+                            else if (item.Condition == "Damaged")
+                            {
+                                <span style="color: orange;">⚠ @item.Condition</span>
+                            }
+                            else
+                            {
+                                <span>@item.Condition</span>
+                            }
+                        </td>
+                        <td>@item.Remarks</td>
+                    </tr>
+                    sl++;
+                }
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="3">Total</td>
+                    <td style="text-align: right;">@totalQuantity.ToString("F2")</td>
+                    <td style="text-align: right;">@totalReceived.ToString("F2")</td>
+                    <td colspan="2">
+                        @if (totalReceived < totalQuantity)
+                        {
+                            <span style="color: red;">Partial Receipt</span>
+                        }
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Condition Summary -->
+        @if (Model.OverallCondition != null)
+        {
+            <div class="info-section">
+                <h5>Overall Condition Assessment:</h5>
+                <div class="info-row">
+                    <span class="info-label">Condition:</span>
+                    <span class="info-value">@Model.OverallCondition</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.AssessmentNotes))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Notes:</span>
+                        <span class="info-value">@Model.AssessmentNotes</span>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Remarks -->
+        @if (!string.IsNullOrEmpty(Model.Remarks))
+        {
+            <div class="info-section">
+                <h5>Remarks:</h5>
+                <p>@Model.Remarks</p>
+            </div>
+        }
+
+        <!-- Barcode/QR Code Section -->
+        <div class="barcode-section">
+            <img src="@Url.Action("GenerateBarcode", "Barcode", new { code = Model.ReceiveNo })"
+                 alt="Barcode" style="height: 60px;">
+            <div>@Model.ReceiveNo</div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line">
+                    @if (!string.IsNullOrEmpty(Model.ReceiverSignature))
+                    {
+                        <img src="@Model.ReceiverSignature" style="max-height: 50px;" alt="Signature">
+                    }
+                </div>
+                <div class="signature-label">
+                    <strong>Received By</strong><br>
+                    @(Model.ReceiverName ?? Model.ReceivedBy)<br>
+                    @if (!string.IsNullOrEmpty(Model.ReceiverBadgeNo))
+                    {
+                        <span>Badge: @Model.ReceiverBadgeNo</span>
+                    
+                        <br>
+                    }
+
+                    <span>Date: @Model.ReceiveDate.ToString("dd-MMM-yyyy")</span>
+                </div>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">
+                    <strong>Store Keeper</strong><br>
+                    Name: ______________________<br>
+                    Date: ______________________
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is a system generated document.</p>
+            <p>Printed on: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss") | Printed by: @User.Identity.Name</p>
+            <p>© @DateTime.Now.Year Ansar & VDP - Inventory Management System</p>
+        </div>
+    </div>
+
+    <!-- Auto print on load -->
+    <script>
+        window.onload = function() {
+            // Optional: Auto-print when page loads
+            // window.print();
+        };
+    </script>
+</body>
+</html>

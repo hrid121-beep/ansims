@@ -1,0 +1,185 @@
+﻿@model IMS.Web.Models.InspectionViewModel
+@{
+    ViewData["Title"] = "Inspection Required - Central Store";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>🔍 Inspection Required - Central Store</h1>
+                <p class="text-muted">PO #@Model.PurchaseOrderNo | Store: @Model.FromStoreName</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Purchases</a></li>
+                    <li class="breadcrumb-item active">Inspection</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="CompleteInspection" method="post">
+            <input type="hidden" asp-for="PurchaseId" />
+            <input type="hidden" asp-for="PurchaseOrderNo" />
+            <input type="hidden" asp-for="FromStoreId" />
+
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-check"></i> Items Awaiting Inspection
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-warning">@Model.Items.Count Items</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="icon fas fa-info-circle"></i>
+                        <strong>Inspection Instructions:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Check each item's physical condition</li>
+                            <li>Mark items as Serviceable or Unserviceable</li>
+                            <li>Add inspection remarks if needed</li>
+                            <li>Only approved items will be transferred to Provision Store</li>
+                        </ul>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="120">Item Code</th>
+                                    <th>Item Name</th>
+                                    <th width="100">Quantity</th>
+                                    <th width="150">Condition</th>
+                                    <th width="100">Approve?</th>
+                                    <th>Inspector Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@Model.Items[i].ItemCode</strong>
+                                            <input type="hidden" asp-for="Items[i].ItemId" />
+                                            <input type="hidden" asp-for="Items[i].ItemCode" />
+                                            <input type="hidden" asp-for="Items[i].ItemName" />
+                                            <input type="hidden" asp-for="Items[i].Quantity" />
+                                        </td>
+                                        <td>@Model.Items[i].ItemName</td>
+                                        <td class="text-center">
+                                            <span class="badge badge-primary badge-lg">@Model.Items[i].Quantity</span>
+                                        </td>
+                                        <td>
+                                            <select asp-for="Items[i].Condition" class="form-control">
+                                                <option value="Serviceable">✅ Serviceable</option>
+                                                <option value="Unserviceable">❌ Unserviceable</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="icheck-success">
+                                                <input type="checkbox" asp-for="Items[i].ApprovedForTransfer"
+                                                       id="approve_@i" checked />
+                                                <label for="approve_@i"></label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Items[i].InspectionRemarks"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Optional remarks..." />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-double"></i> Complete Inspection & Transfer to Provision Store
+                            </button>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inspection Summary -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="info-box bg-info">
+                        <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Items</span>
+                            <span class="info-box-number">@Model.Items.Count</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-box bg-success">
+                        <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Approved Items</span>
+                            <span class="info-box-number" id="approvedCount">@Model.Items.Count</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-box bg-warning">
+                        <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Inspection Date</span>
+                            <span class="info-box-number">@DateTime.Now.ToString("dd MMM yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Update approved count dynamically
+            function updateApprovedCount() {
+                var approvedCount = $('input[type="checkbox"]:checked').length;
+                $('#approvedCount').text(approvedCount);
+            }
+
+            $('input[type="checkbox"]').on('change', function() {
+                updateApprovedCount();
+            });
+
+            // Validate at least one item is approved
+            $('form').on('submit', function(e) {
+                var approvedCount = $('input[type="checkbox"]:checked').length;
+
+                if (approvedCount === 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Items Approved',
+                        text: 'Please approve at least one item for transfer!',
+                        confirmButtonText: 'OK'
+                    });
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,445 @@
+﻿@model IMS.Application.DTOs.BarcodeDto
+@{
+    ViewData["Title"] = $"Barcode Details - {Model.BarcodeNumber}";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-barcode"></i> Barcode Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Barcodes</a></li>
+                    <li class="breadcrumb-item active">@Model.BarcodeNumber</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-barcode"></i> @Model.BarcodeNumber
+                            </h4>
+                            <span class="badge badge-@(Model.BarcodeType == "QRCode" ? "success" : "primary")">
+                                @(Model.BarcodeType ?? "Barcode")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-info-circle"></i> Basic Information
+                                </h6>
+                                <dl class="row">
+                                    <dt class="col-sm-5">Barcode Number:</dt>
+                                    <dd class="col-sm-7">
+                                        <span class="font-monospace">@Model.BarcodeNumber</span>
+                                    </dd>
+
+                                    <dt class="col-sm-5">Type:</dt>
+                                    <dd class="col-sm-7">
+                                        <span class="badge badge-@(Model.BarcodeType == "QRCode" ? "success" : "primary")">
+                                            @(Model.BarcodeType ?? "Barcode")
+                                        </span>
+                                    </dd>
+
+                                    <dt class="col-sm-5">Serial Number:</dt>
+                                    <dd class="col-sm-7">@(Model.SerialNumber ?? "N/A")</dd>
+
+                                    <dt class="col-sm-5">Batch Number:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (!string.IsNullOrEmpty(Model.BatchNumber))
+                                        {
+                                            <span class="badge badge-info">@Model.BatchNumber</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-5">Location:</dt>
+                                    <dd class="col-sm-7">@(Model.Location ?? "N/A")</dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-link"></i> Reference Information
+                                </h6>
+                                <dl class="row">
+                                    <dt class="col-sm-5">Reference Type:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (!string.IsNullOrEmpty(Model.ReferenceType))
+                                        {
+                                            <span class="badge badge-info">@Model.ReferenceType</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-5">Reference ID:</dt>
+                                    <dd class="col-sm-7">@(Model.ReferenceId?.ToString() ?? "N/A")</dd>
+
+                                    <dt class="col-sm-5">Generated Date:</dt>
+                                    <dd class="col-sm-7">@Model.GeneratedDate.ToString("MMM dd, yyyy 'at' hh:mm tt")</dd>
+
+                                    <dt class="col-sm-5">Generated By:</dt>
+                                    <dd class="col-sm-7">@(Model.GeneratedBy ?? "System")</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.ItemId.HasValue)
+                {
+                    <div class="card">
+                        <div class="card-header bg-info">
+                            <h5 class="mb-0">
+                                <i class="fas fa-box"></i> Associated Item
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">Item Name:</dt>
+                                        <dd class="col-sm-8">@Model.ItemName</dd>
+
+                                        <dt class="col-sm-4">Item Code:</dt>
+                                        <dd class="col-sm-8">@(Model.ItemCode ?? "Not Set")</dd>
+
+                                        <dt class="col-sm-4">Category:</dt>
+                                        <dd class="col-sm-8">
+                                            @if (!string.IsNullOrEmpty(Model.CategoryName))
+                                            {
+                                                <span class="badge badge-secondary">@Model.CategoryName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not Set</span>
+                                            }
+                                        </dd>
+
+                                        <dt class="col-sm-4">Sub Category:</dt>
+                                        <dd class="col-sm-8">
+                                            @if (!string.IsNullOrEmpty(Model.SubCategoryName))
+                                            {
+                                                <span class="badge badge-light">@Model.SubCategoryName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not Set</span>
+                                            }
+                                        </dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <a asp-controller="Item" asp-action="Details" asp-route-id="@Model.ItemId"
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-external-link-alt"></i> View Item
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.StoreId.HasValue)
+                {
+                    <div class="card">
+                        <div class="card-header bg-success">
+                            <h5 class="mb-0">
+                                <i class="fas fa-warehouse"></i> Store Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">Store Name:</dt>
+                                        <dd class="col-sm-8">@Model.StoreName</dd>
+
+                                        <dt class="col-sm-4">Location:</dt>
+                                        <dd class="col-sm-8">@(Model.Location ?? "N/A")</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <a asp-controller="Store" asp-action="Details" asp-route-id="@Model.StoreId"
+                                       class="btn btn-outline-success">
+                                        <i class="fas fa-external-link-alt"></i> View Store
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-sticky-note"></i> Notes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p>@Model.Notes</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-qrcode"></i> QR Code
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(ViewBag.QRCodeBase64))
+                        {
+                            <img src="data:image/png;base64,@ViewBag.QRCodeBase64"
+                                 alt="QR Code" class="img-fluid border rounded"
+                                 style="max-width: 250px;" id="barcodeImage">
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                QR Code not available
+                            </div>
+                        }
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success btn-sm" onclick="downloadQR()">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <a asp-action="Print" asp-route-id="@Model.Id"
+                               class="btn btn-primary btn-sm" target="_blank">
+                                <i class="fas fa-print"></i> Print
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar"></i> Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="small-box bg-info">
+                                    <div class="inner">
+                                        <h3>@Model.PrintCount</h3>
+                                        <p>Printed</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-print"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small-box bg-success">
+                                    <div class="inner">
+                                        <h3>@(Model.ScanCount ?? 0)</h3>
+                                        <p>Scanned</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-qrcode"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.PrintedDate.HasValue)
+                        {
+                            <div class="border-top pt-3">
+                                <h6 class="fw-bold">Last Printed</h6>
+                                <p class="mb-1">@Model.PrintedDate.Value.ToString("MMM dd, yyyy 'at' hh:mm tt")</p>
+                                <small class="text-muted">by @(Model.PrintedBy ?? "Unknown")</small>
+                            </div>
+                        }
+
+                        @if (Model.LastScannedDate.HasValue)
+                        {
+                            <div class="border-top pt-3 mt-3">
+                                <h6 class="fw-bold">Last Scanned</h6>
+                                <p class="mb-1">@Model.LastScannedDate.Value.ToString("MMM dd, yyyy 'at' hh:mm tt")</p>
+                                <p class="mb-1"><small>at @(Model.LastScannedLocation ?? "Unknown Location")</small></p>
+                                <small class="text-muted">by @(Model.LastScannedBy ?? "Unknown")</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <small>Never scanned</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs"></i> Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#scanModal">
+                                <i class="fas fa-scanner"></i> Record Scan
+                            </button>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit Details
+                            </a>
+                            <a asp-action="Print" asp-route-id="@Model.Id" class="btn btn-success" target="_blank">
+                                <i class="fas fa-print"></i> Print Label
+                            </a>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="scanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Barcode Scan</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="scanForm">
+                    <div class="form-group">
+                        <label>Scan Location <span class="text-danger">*</span></label>
+                        <input type="text" id="scanLocation" class="form-control" required
+                               placeholder="Where was this barcode scanned?" />
+                    </div>
+                    <div class="form-group">
+                        <label>Action</label>
+                        <select id="scanAction" class="form-control">
+                            <option value="Manual">Manual Scan</option>
+                            <option value="Check">Check/Verify</option>
+                            <option value="Move">Move/Transfer</option>
+                            <option value="Issue">Issue</option>
+                            <option value="Receive">Receive</option>
+                            <option value="Count">Physical Count</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="scanNotes" class="form-control" rows="3"
+                                  placeholder="Optional notes about this scan..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitScan()">
+                    <i class="fas fa-save"></i> Record Scan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script>
+        function submitScan() {
+            var location = $('#scanLocation').val();
+            if (!location.trim()) {
+                toastr.error('Please enter a scan location');
+                return;
+            }
+
+            var data = {
+                barcodeId: @Model.Id,
+                location: location,
+                action: $('#scanAction').val(),
+                notes: $('#scanNotes').val()
+            };
+
+            $.post('@Url.Action("RecordScan")', data)
+                .done(function(response) {
+                    if (response.success) {
+                        toastr.success('Scan recorded successfully');
+                        $('#scanModal').modal('hide');
+                        setTimeout(function() { location.reload(); }, 1000);
+                    } else {
+                        toastr.error(response.message || 'Failed to record scan');
+                    }
+                })
+                .fail(function() {
+                    toastr.error('Error recording scan');
+                });
+        }
+
+        function downloadQR() {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var img = document.getElementById('barcodeImage');
+
+            if (img) {
+                canvas.width = img.naturalWidth || img.width;
+                canvas.height = img.naturalHeight || img.height;
+                ctx.drawImage(img, 0, 0);
+
+                var link = document.createElement('a');
+                link.download = '@Model.BarcodeNumber' + '_QR.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" rel="stylesheet" />
+    <style>
+        .font-monospace {
+            font-family: 'Courier New', monospace;
+        }
+
+        .border-top {
+            border-top: 1px solid #dee2e6 !important;
+        }
+
+        .small-box .inner {
+            padding: 10px;
+        }
+
+        .small-box .icon {
+            font-size: 45px;
+            top: auto;
+            right: 10px;
+        }
+    </style>
+}

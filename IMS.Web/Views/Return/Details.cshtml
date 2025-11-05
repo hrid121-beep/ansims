@@ -1,0 +1,184 @@
+﻿@model IMS.Application.DTOs.ReturnDto
+@{
+    ViewData["Title"] = "Return Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var linkedIssue = ViewBag.LinkedIssue as IMS.Application.DTOs.IssueDto;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Return Details - @Model.ReturnNo</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Returns</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Return Information</h3>
+                        <div class="card-tools">
+                            @if (!Model.IsRestocked && Model.Condition == "Good")
+                            {
+                                <form asp-action="MarkAsRestocked" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to mark this return as restocked?')">
+                                        <i class="fas fa-check"></i> Mark as Restocked
+                                    </button>
+                                </form>
+                            }
+                            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Return No:</dt>
+                            <dd class="col-sm-9">@Model.ReturnNo</dd>
+
+                            <dt class="col-sm-3">Return Date:</dt>
+                            <dd class="col-sm-9">@Model.ReturnDate.ToString("dd-MMM-yyyy")</dd>
+
+                            <dt class="col-sm-3">Item:</dt>
+                            <dd class="col-sm-9">@Model.ItemName</dd>
+
+                            <dt class="col-sm-3">Quantity:</dt>
+                            <dd class="col-sm-9">@Model.Quantity</dd>
+
+                            <dt class="col-sm-3">Store:</dt>
+                            <dd class="col-sm-9">@Model.StoreName</dd>
+
+                            <dt class="col-sm-3">Returned From:</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge badge-info">@Model.ReturnedByType</span>
+                                @Model.ReturnedBy
+                            </dd>
+
+                            <dt class="col-sm-3">Reason:</dt>
+                            <dd class="col-sm-9">@Model.Reason</dd>
+
+                            <dt class="col-sm-3">Condition:</dt>
+                            <dd class="col-sm-9">
+                                @switch (Model.Condition)
+                                {
+                                    case "Good":
+                                        <span class="badge badge-success">Good</span>
+                                        break;
+                                    case "Damaged":
+                                        <span class="badge badge-danger">Damaged</span>
+                                        break;
+                                    case "Repairable":
+                                        <span class="badge badge-warning">Repairable</span>
+                                        break;
+                                    default:
+                                        <span class="badge badge-secondary">@Model.Condition</span>
+                                        break;
+                                }
+                            </dd>
+
+                            <dt class="col-sm-3">Restocked:</dt>
+                            <dd class="col-sm-9">
+                                @if (Model.IsRestocked)
+                                {
+                                    <span class="badge badge-success">Yes</span>
+                                    @if (Model.RestockApproved)
+                                    {
+                                        <small class="text-muted">(Approved)</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">No</span>
+                                }
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.Remarks))
+                            {
+                                <dt class="col-sm-3">Remarks:</dt>
+                                <dd class="col-sm-9">@Model.Remarks</dd>
+                            }
+
+                            <dt class="col-sm-3">Created By:</dt>
+                            <dd class="col-sm-9">@Model.CreatedBy</dd>
+
+                            <dt class="col-sm-3">Created At:</dt>
+                            <dd class="col-sm-9">@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                @if (linkedIssue != null)
+                {
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Original Issue Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-5">Issue No:</dt>
+                                <dd class="col-sm-7">
+                                    <a asp-controller="Issue" asp-action="Details" asp-route-id="@linkedIssue.Id">
+                                        @linkedIssue.IssueNo
+                                    </a>
+                                </dd>
+
+                                <dt class="col-sm-5">Issue Date:</dt>
+                                <dd class="col-sm-7">@linkedIssue.IssueDate.ToString("dd-MMM-yyyy")</dd>
+
+                                <dt class="col-sm-5">Issued To:</dt>
+                                <dd class="col-sm-7">@linkedIssue.IssuedToName</dd>
+
+                                <dt class="col-sm-5">Purpose:</dt>
+                                <dd class="col-sm-7">@linkedIssue.Purpose</dd>
+                            </dl>
+                        </div>
+                    </div>
+                }
+
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Return Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box @(Model.IsRestocked ? "bg-success" : "bg-warning")">
+                            <span class="info-box-icon">
+                                <i class="fas @(Model.IsRestocked ? "fa-check-circle" : "fa-clock")"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Restock Status</span>
+                                <span class="info-box-number">
+                                    @(Model.IsRestocked ? "Completed" : "Pending")
+                                </span>
+                            </div>
+                        </div>
+
+                        @if (!Model.IsRestocked && Model.Condition != "Good")
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                This return cannot be auto-restocked due to item condition.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

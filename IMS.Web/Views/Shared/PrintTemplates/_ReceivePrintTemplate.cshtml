@@ -1,0 +1,187 @@
+﻿@model IMS.Application.DTOs.ReceiveDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Receive Voucher - @Model.ReceiveNo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+
+            .header h2 {
+                margin: 5px 0;
+                font-size: 18px;
+            }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+            .info-table td {
+                padding: 5px 0;
+            }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+            .items-table th, .items-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .items-table th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+            }
+
+        .signature-section {
+            margin-top: 50px;
+        }
+
+        .signature-box {
+            display: inline-block;
+            width: 30%;
+            text-align: center;
+            margin-right: 5%;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 40px;
+            padding-top: 5px;
+        }
+
+        @@media print {
+            body {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ANSAR & VDP</h1>
+        <h2>RECEIVE VOUCHER</h2>
+        <p>@Model.ReceiveNo</p>
+    </div>
+
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td width="50%"><strong>Receive Date:</strong> @Model.ReceiveDate.ToString("dd/MM/yyyy")</td>
+                <td width="50%"><strong>Receive Type:</strong> @Model.ReceiveType</td>
+            </tr>
+            <tr>
+                <td><strong>Received From:</strong> @Model.ReceivedFromName</td>
+                <td><strong>Overall Condition:</strong> @Model.OverallCondition</td>
+            </tr>
+            @if (Model.OriginalIssueId.HasValue)
+            {
+                <tr>
+                    <td colspan="2"><strong>Original Issue No:</strong> @Model.OriginalIssueNo</td>
+                </tr>
+            }
+        </table>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th width="5%">SL</th>
+                <th width="15%">Item Code</th>
+                <th width="35%">Item Name</th>
+                <th width="15%">Store</th>
+                <th width="10%">Quantity</th>
+                <th width="10%">Condition</th>
+                <th width="10%">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int sl = 1;
+                foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@sl</td>
+                        <td>@item.ItemCode</td>
+                        <td>@item.ItemName</td>
+                        <td>@item.StoreName</td>
+                        <td style="text-align:center">@item.Quantity</td>
+                        <td>@item.Condition</td>
+                        <td>@item.Remarks</td>
+                    </tr>
+                    sl++;
+                }
+            }
+        </tbody>
+    </table>
+
+    @if (!string.IsNullOrEmpty(Model.AssessmentNotes))
+    {
+        <div class="info-section">
+            <strong>Assessment Notes:</strong><br />
+            @Model.AssessmentNotes
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Remarks))
+    {
+        <div class="info-section">
+            <strong>Remarks:</strong><br />
+            @Model.Remarks
+        </div>
+    }
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line">
+                Received By<br />
+                @Model.ReceivedBy
+            </div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line">
+                Verified By<br />
+                Name & Signature
+            </div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line">
+                Store Keeper<br />
+                Name & Signature
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

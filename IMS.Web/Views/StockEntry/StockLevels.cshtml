@@ -1,0 +1,448 @@
+﻿@using IMS.Application.DTOs
+@model IEnumerable<StockLevelReportDto>
+@{
+    ViewData["Title"] = "Stock Levels";
+}
+
+@section Styles {
+    <style>
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .small-box {
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        }
+
+            .small-box h3 {
+                font-size: 2rem;
+                font-weight: 700;
+            }
+
+            .small-box p {
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            padding: 12px 8px;
+        }
+
+        .table tbody td {
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.7rem;
+        }
+
+        .btn {
+            font-weight: 600;
+        }
+
+        .form-control {
+            font-weight: 500;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-chart-line text-success"></i> Stock Levels
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Entries</a></li>
+                    <li class="breadcrumb-item active">Stock Levels</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@ViewBag.TotalItems</h3>
+                        <p>Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>৳ @ViewBag.TotalValue?.ToString("N2")</h3>
+                        <p>Total Stock Value</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@ViewBag.LowStockCount</h3>
+                        <p>Low Stock Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@ViewBag.OutOfStockCount</h3>
+                        <p>Out of Stock</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Filter Options
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="StockLevels" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store</label>
+                                <select name="storeId" class="form-control select2">
+                                    <option value="">All Stores</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores as IEnumerable<dynamic>)
+                                        {
+                                            bool isSelected = store.Id == ViewBag.CurrentStoreId;
+                                            <option value="@store.Id" selected="@isSelected">
+                                                @store.Name
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="categoryId" class="form-control select2">
+                                    <option value="">All Categories</option>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (var category in ViewBag.Categories as IEnumerable<dynamic>)
+                                        {
+                                            bool isSelected = category.Id == ViewBag.CurrentCategoryId;
+                                            <option value="@category.Id" selected="@isSelected">
+                                                @category.Name
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Stock Status</label>
+                                <select name="stockStatus" class="form-control">
+                                    <option value="">All Status</option>
+                                    @{
+                                        bool isInStock = ViewBag.CurrentStatus == "InStock";
+                                        bool isLowStock = ViewBag.CurrentStatus == "LowStock";
+                                        bool isOutOfStock = ViewBag.CurrentStatus == "OutOfStock";
+                                        bool isOverstock = ViewBag.CurrentStatus == "Overstock";
+                                    }
+                                    <option value="InStock" selected="@isInStock">In Stock</option>
+                                    <option value="LowStock" selected="@isLowStock">Low Stock</option>
+                                    <option value="OutOfStock" selected="@isOutOfStock">Out of Stock</option>
+                                    <option value="Overstock" selected="@isOverstock">Overstock</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Filter
+                                    </button>
+                                    <a asp-action="StockLevels" class="btn btn-default">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                                            <i class="fas fa-download"></i> Export
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#" onclick="exportStock('csv')">
+                                                <i class="fas fa-file-csv"></i> Export as CSV
+                                            </a>
+                                            <a class="dropdown-item" href="#" onclick="exportStock('excel')">
+                                                <i class="fas fa-file-excel"></i> Export as Excel
+                                            </a>
+                                            <a class="dropdown-item" href="#" onclick="exportStock('pdf')">
+                                                <i class="fas fa-file-pdf"></i> Export as PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stock Levels Table -->
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-table"></i> Current Stock Levels
+                </h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="searchBox" class="form-control" placeholder="Search items...">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover" id="stockTable">
+                        <thead>
+                            <tr>
+                                <th width="50">#</th>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Store</th>
+                                <th>Current Stock</th>
+                                <th>Min Stock</th>
+                                <th>Max Stock</th>
+                                <th>Unit</th>
+                                <th>Unit Price</th>
+                                <th>Stock Value</th>
+                                <th>Status</th>
+                                <th width="150">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                int serialNumber = 1;
+                                @foreach (var item in Model)
+                                {
+                                    <tr class="@(item.StockStatus == "OutOfStock" ? "table-danger" : item.StockStatus == "LowStock" ? "table-warning" : "")">
+                                        <td class="text-center" style="font-weight: 700;">@serialNumber</td>
+                                        <td><strong>@item.ItemCode</strong></td>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.StoreName</td>
+                                        <td class="text-right">
+                                            <strong style="font-size: 1rem;">@((item.CurrentStock % 1 == 0) ? item.CurrentStock.ToString("N0") : item.CurrentStock.ToString("N2"))</strong>
+                                        </td>
+                                        <td class="text-right">@((item.MinimumStock.HasValue && item.MinimumStock.Value % 1 == 0) ? item.MinimumStock.Value.ToString("N0") : item.MinimumStock?.ToString("N2"))</td>
+                                        <td class="text-right">@((item.MaximumStock.HasValue && item.MaximumStock.Value % 1 == 0) ? item.MaximumStock.Value.ToString("N0") : item.MaximumStock?.ToString("N2"))</td>
+                                        <td>@item.Unit</td>
+                                        <td class="text-right">৳ @item.UnitPrice.ToString("N2")</td>
+                                        <td class="text-right"><strong>৳ @item.StockValue.ToString("N2")</strong></td>
+                                        <td>
+                                            @switch (item.StockStatus)
+                                            {
+                                                case "OutOfStock":
+                                                    <span class="badge badge-danger">Out of Stock</span>
+                                                    break;
+                                                case "LowStock":
+                                                    <span class="badge badge-warning">Low Stock</span>
+                                                    break;
+                                                case "InStock":
+                                                    <span class="badge badge-success">In Stock</span>
+                                                    break;
+                                                case "Overstock":
+                                                    <span class="badge badge-info">Overstock</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge badge-secondary">@item.StockStatus</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                @if (item.StockStatus == "LowStock" || item.StockStatus == "OutOfStock")
+                                                {
+                                                    <a href="/Purchase/Create?itemId=@item.ItemId&storeId=@item.StoreId"
+                                                       class="btn btn-primary" title="Create Purchase Order">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </a>
+                                                    <a href="/Transfer/Create?itemId=@item.ItemId&toStoreId=@item.StoreId"
+                                                       class="btn btn-info" title="Request Transfer">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </a>
+                                                }
+                                                <button type="button" class="btn btn-default" onclick="showHistory(@item.ItemId, @item.StoreId)"
+                                                        title="View History">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    serialNumber++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="13" class="text-center" style="padding: 3rem; font-weight: 600; font-size: 1rem;">
+                                        <i class="fas fa-info-circle"></i> No stock data available
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('#searchBox').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#stockTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function exportStock(format) {
+            var storeId = $('select[name="storeId"]').val() || '';
+            var categoryId = $('select[name="categoryId"]').val() || '';
+            var stockStatus = $('select[name="stockStatus"]').val() || '';
+
+            var url = '@Url.Action("ExportStock", "StockEntry")' +
+                      '?format=' + format +
+                      '&storeId=' + storeId +
+                      '&categoryId=' + categoryId +
+                      '&stockStatus=' + stockStatus;
+
+            window.location.href = url;
+        }
+
+        function showHistory(itemId, storeId) {
+            $.get('@Url.Action("GetStockHistory", "StockEntry")',
+                { itemId: itemId, storeId: storeId },
+                function(data) {
+                    if (data.success) {
+                        var historyHtml = '<div class="table-responsive"><table class="table table-sm">';
+                        historyHtml += '<thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Reference</th></tr></thead><tbody>';
+
+                        if (data.history && data.history.length > 0) {
+                            data.history.forEach(function(item) {
+                                historyHtml += '<tr>';
+                                historyHtml += '<td>' + new Date(item.date).toLocaleDateString() + '</td>';
+                                historyHtml += '<td><span class="badge badge-info">' + item.type + '</span></td>';
+                                historyHtml += '<td class="text-right"><strong>' + item.quantity + '</strong></td>';
+                                historyHtml += '<td>' + (item.reference || '-') + '</td>';
+                                historyHtml += '</tr>';
+                            });
+                        } else {
+                            historyHtml += '<tr><td colspan="4" class="text-center">No history found</td></tr>';
+                        }
+
+                        historyHtml += '</tbody></table></div>';
+
+                        Swal.fire({
+                            title: 'Stock Movement History',
+                            html: historyHtml,
+                            width: '800px',
+                            showCloseButton: true,
+                            showConfirmButton: false,
+                            customClass: {
+                                title: 'swal-title-bold',
+                                htmlContainer: 'text-left'
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to load stock history',
+                            customClass: {
+                                title: 'swal-title-bold',
+                                content: 'swal-content-bold'
+                            }
+                        });
+                    }
+                });
+        }
+    </script>
+
+    <style>
+        .swal-title-bold {
+            font-weight: 700 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .swal-content-bold {
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+        }
+    </style>
+}

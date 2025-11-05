@@ -1,0 +1,170 @@
+﻿@using IMS.Application.DTOs
+@model IEnumerable<ExpiryTrackingDto>
+@{
+    ViewData["Title"] = "Expired Items";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Expired Items</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="ExpiryTracking" asp-action="Index">Expiry Tracking</a></li>
+                    <li class="breadcrumb-item active">Expired</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-danger">
+            <div class="card-header">
+                <h3 class="card-title">Items Requiring Disposal</h3>
+                <div class="card-tools">
+                    <a asp-action="Index" class="btn btn-primary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Tracking
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> No expired items found.
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-bordered table-striped" id="expiredTable">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Batch Number</th>
+                                <th>Store</th>
+                                <th>Quantity</th>
+                                <th>Expiry Date</th>
+                                <th>Days Expired</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var daysExpired = (DateTime.Now - item.ExpiryDate).Days;
+                                <tr>
+                                    <td>@item.ItemCode</td>
+                                    <td>@item.ItemName</td>
+                                    <td>@item.BatchNumber</td>
+                                    <td>@item.StoreName</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.ExpiryDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        <span class="badge badge-danger">@daysExpired days</span>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Disposed")
+                                        {
+                                            <span class="badge badge-secondary">Disposed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">Expired</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.Status != "Disposed")
+                                        {
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    onclick="processExpired(@item.Id)">
+                                                <i class="fas fa-trash"></i> Process
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Disposed on @item.DisposalDate?.ToString("MM/dd")
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Process Expired Modal -->
+<div class="modal fade" id="processExpiredModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="processExpiredForm" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Process Expired Item</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="expiredItemId" name="id" />
+
+                    <div class="form-group">
+                        <label>Disposal Reason</label>
+                        <select name="disposalReason" class="form-control" required>
+                            <option value="">Select Reason</option>
+                            <option value="Expired - Regular disposal">Regular disposal</option>
+                            <option value="Expired - Contaminated">Contaminated</option>
+                            <option value="Expired - Package damaged">Package damaged</option>
+                            <option value="Expired - Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        This will create a write-off entry and remove the item from stock.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Process Disposal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#expiredTable').DataTable({
+                "order": [[5, "asc"]],
+                "pageLength": 25
+            });
+        });
+
+        function processExpired(id) {
+            $('#expiredItemId').val(id);
+            $('#processExpiredModal').modal('show');
+        }
+
+        $('#processExpiredForm').submit(function(e) {
+            e.preventDefault();
+
+            $.post('@Url.Action("ProcessExpired")', $(this).serialize(), function(response) {
+                location.reload();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,274 @@
+@model IMS.Application.DTOs.RequisitionDto
+@{
+    ViewData["Title"] = "Edit Requisition";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Edit Requisition</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index">Requisitions</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        @if (Model.Status != "Draft")
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Only draft requisitions can be edited. This requisition status is: <strong>@Model.Status</strong>
+            </div>
+        }
+
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="RequisitionNumber" />
+            <input type="hidden" asp-for="Status" />
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Requisition Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Requisition Number</label>
+                                <input asp-for="RequisitionNumber" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="RequestDate"></label>
+                                <input asp-for="RequestDate" type="date" class="form-control" />
+                                <span asp-validation-for="RequestDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="RequiredByDate"></label>
+                                <input asp-for="RequiredByDate" type="date" class="form-control" />
+                                <span asp-validation-for="RequiredByDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Priority"></label>
+                                <select asp-for="Priority" asp-items="ViewBag.Priorities" class="form-control">
+                                    <option value="">-- Select Priority --</option>
+                                </select>
+                                <span asp-validation-for="Priority" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Department">Department <span class="text-danger">*</span></label>
+                                <select asp-for="Department" class="form-control" required>
+                                    <option value="">-- Select Department --</option>
+                                    <option value="Administration">Administration</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Store Management">Store Management</option>
+                                    <option value="Procurement">Procurement</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="IT">IT</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Security">Security</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Department" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Purpose"></label>
+                                <input asp-for="Purpose" class="form-control" />
+                                <span asp-validation-for="Purpose" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="FromStoreId">From Store</label>
+                                <select asp-for="FromStoreId" asp-items="ViewBag.FromStores" class="form-control">
+                                    <option value="">-- Select Store --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="ToStoreId">To Store</label>
+                                <select asp-for="ToStoreId" asp-items="ViewBag.ToStores" class="form-control">
+                                    <option value="">-- Select Store --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>
+                                    <input asp-for="AutoConvertToPO" type="checkbox" />
+                                    Auto Convert to PO when Approved
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Notes"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Requisition Items</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Specification</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            @if (Model.Items != null && Model.Items.Any())
+                            {
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <select name="itemIds" class="form-control select2">
+                                                <option value="">-- Select Item --</option>
+                                                @foreach (var availableItem in ViewBag.Items)
+                                                {
+                                                    <option value="@availableItem.Id" selected="@(availableItem.Id == item.ItemId)">@availableItem.Name (@availableItem.ItemCode)</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="quantities" class="form-control" min="1" step="1" value="@item.RequestedQuantity" />
+                                        </td>
+                                        <td>
+                                            <input type="text" name="specifications" class="form-control" value="@item.Specification" />
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(this)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>
+                                        <select name="itemIds" class="form-control select2">
+                                            <option value="">-- Select Item --</option>
+                                            @foreach (var item in ViewBag.Items)
+                                            {
+                                                <option value="@item.Id">@item.Name (@item.ItemCode)</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="quantities" class="form-control" min="1" step="1" />
+                                    </td>
+                                    <td>
+                                        <input type="text" name="specifications" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    @if (Model.Status == "Draft")
+                    {
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Requisition
+                        </button>
+                    }
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Details
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
+        });
+
+        function addItem() {
+            var newRow = `
+                <tr>
+                    <td>
+                        <select name="itemIds" class="form-control select2">
+                            <option value="">-- Select Item --</option>
+                            @foreach (var item in ViewBag.Items)
+                            {
+                                    <option value="@item.Id">@item.Name (@item.ItemCode)</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="quantities" class="form-control" min="1" step="1" />
+                    </td>
+                    <td>
+                        <input type="text" name="specifications" class="form-control" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            $('#itemsBody').append(newRow);
+            $('.select2').select2();
+        }
+
+        function removeItem(btn) {
+            if ($('#itemsBody tr').length > 1) {
+                $(btn).closest('tr').remove();
+            } else {
+                alert('At least one item is required!');
+            }
+        }
+    </script>
+}

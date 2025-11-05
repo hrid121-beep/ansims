@@ -1,0 +1,196 @@
+@{
+    ViewData["Title"] = "Data Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Data Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="SettingsDashboard">Settings</a></li>
+                    <li class="breadcrumb-item active">Data Management</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-box me-2"></i>Bulk Update Items
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    This operation will update all items in the database with:
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">
+                        <i class="fas fa-language text-info me-2"></i>
+                        <strong>Bangla Names:</strong> Automatically adds Bangla translations for item names
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-warehouse text-warning me-2"></i>
+                        <strong>Stock Thresholds:</strong> Sets default values for MinimumStock, MaximumStock, and ReorderLevel
+                    </li>
+                </ul>
+
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Only items without Bangla names or stock values will be updated. Existing values will not be overwritten.
+                </div>
+
+                <form asp-action="BulkUpdateItems" method="post" id="bulkUpdateForm">
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="confirmUpdate()">
+                        <i class="fas fa-sync-alt me-2"></i>Run Bulk Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Update Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6 class="text-muted">Default Stock Values</h6>
+                <table class="table table-sm table-bordered mb-3">
+                    <tbody>
+                        <tr>
+                            <td><strong>Minimum Stock:</strong></td>
+                            <td>10 units</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Maximum Stock:</strong></td>
+                            <td>1000 units</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reorder Level:</strong></td>
+                            <td>20 units (2x Minimum)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="text-muted">Sample Bangla Translations</h6>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>English</th>
+                            <th>বাংলা</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Uniform</td>
+                            <td>ইউনিফর্ম</td>
+                        </tr>
+                        <tr>
+                            <td>Rifle</td>
+                            <td>রাইফেল</td>
+                        </tr>
+                        <tr>
+                            <td>Notebook</td>
+                            <td>খাতা</td>
+                        </tr>
+                        <tr>
+                            <td>Computer</td>
+                            <td>কম্পিউটার</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <small><strong>Warning:</strong> This operation may take some time depending on the number of items in your database.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2"></i>How It Works
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <h3 class="mb-0">1</h3>
+                            </div>
+                        </div>
+                        <h6 class="text-center">Fetch All Items</h6>
+                        <p class="text-center text-muted">System retrieves all active items from the database</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <h3 class="mb-0">2</h3>
+                            </div>
+                        </div>
+                        <h6 class="text-center">Apply Updates</h6>
+                        <p class="text-center text-muted">Adds Bangla names and sets stock thresholds where missing</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <h3 class="mb-0">3</h3>
+                            </div>
+                        </div>
+                        <h6 class="text-center">Save Changes</h6>
+                        <p class="text-center text-muted">All updates are saved to the database in a single transaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function confirmUpdate() {
+            if (confirm('Are you sure you want to run the bulk update? This will update all items without Bangla names or stock values.\n\nএই প্রক্রিয়াটি চালাতে চান? সব আইটেমের বাংলা নাম এবং স্টক মান আপডেট হবে।')) {
+                document.getElementById('bulkUpdateForm').submit();
+            }
+        }
+    </script>
+}

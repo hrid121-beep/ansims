@@ -1,0 +1,423 @@
+﻿@model IMS.Application.DTOs.UnionDto
+@{
+    ViewData["Title"] = "Create Union";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var upazilaId = ViewBag.UpazilaId as int?;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Create Union</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Unions</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Create" method="post">
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Basic Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label"></label>
+                                        <div class="input-group">
+                                            <input asp-for="Code" class="form-control" readonly />
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" id="generateCode">
+                                                    <i class="fas fa-sync"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="UpazilaId" class="control-label">Upazila <span class="text-danger">*</span></label>
+                                        <select asp-for="UpazilaId" class="form-control select2" asp-items="ViewBag.Upazilas">
+                                            <option value="">Select Upazila</option>
+                                        </select>
+                                        <span asp-validation-for="UpazilaId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">Name (English) <span class="text-danger">*</span></label>
+                                        <input asp-for="Name" class="form-control" placeholder="e.g., Kashipur" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NameBangla" class="control-label">Name (Bengali)</label>
+                                        <input asp-for="NameBangla" class="form-control" placeholder="e.g., কাশিপুর" />
+                                        <span asp-validation-for="NameBangla" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="IsRural" class="control-label">Area Type</label>
+                                        <select asp-for="IsRural" class="form-control">
+                                            <option value="true">Rural</option>
+                                            <option value="false">Urban</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="IsBorderArea" class="control-label">Border Area</label>
+                                        <select asp-for="IsBorderArea" class="form-control">
+                                            <option value="false">No</option>
+                                            <option value="true">Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="IsActive" class="control-label">Status</label>
+                                        <select asp-for="IsActive" class="form-control">
+                                            <option value="true">Active</option>
+                                            <option value="false">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Email" class="control-label"></label>
+                                <input asp-for="Email" class="form-control" type="email" placeholder="union@example.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="OfficeAddress" class="control-label"></label>
+                                <textarea asp-for="OfficeAddress" class="form-control" rows="2" placeholder="Union Parishad Office Address"></textarea>
+                                <span asp-validation-for="OfficeAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Officials Information -->
+                <div class="col-md-6">
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Officials Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ChairmanName" class="control-label"></label>
+                                        <input asp-for="ChairmanName" class="form-control" placeholder="Chairman Name" />
+                                        <span asp-validation-for="ChairmanName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ChairmanContact" class="control-label"></label>
+                                        <input asp-for="ChairmanContact" class="form-control" placeholder="01XXXXXXXXX" />
+                                        <span asp-validation-for="ChairmanContact" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SecretaryName" class="control-label"></label>
+                                        <input asp-for="SecretaryName" class="form-control" placeholder="Secretary Name" />
+                                        <span asp-validation-for="SecretaryName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SecretaryContact" class="control-label"></label>
+                                        <input asp-for="SecretaryContact" class="form-control" placeholder="01XXXXXXXXX" />
+                                        <span asp-validation-for="SecretaryContact" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="VDPOfficerName" class="control-label"></label>
+                                        <input asp-for="VDPOfficerName" class="form-control" placeholder="VDP Officer Name" />
+                                        <span asp-validation-for="VDPOfficerName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="VDPOfficerContact" class="control-label"></label>
+                                        <input asp-for="VDPOfficerContact" class="form-control" placeholder="01XXXXXXXXX" />
+                                        <span asp-validation-for="VDPOfficerContact" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GPS Location -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">GPS Location (Optional)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Latitude" class="control-label"></label>
+                                        <input asp-for="Latitude" class="form-control" type="number" step="0.000001" placeholder="23.123456" />
+                                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Longitude" class="control-label"></label>
+                                        <input asp-for="Longitude" class="form-control" type="number" step="0.000001" placeholder="90.123456" />
+                                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-info" onclick="getLocation()">
+                                <i class="fas fa-map-marker-alt"></i> Get Current Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Demographics -->
+                <div class="col-md-6">
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Demographics</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NumberOfWards" class="control-label"></label>
+                                        <input asp-for="NumberOfWards" class="form-control" type="number" min="0" placeholder="9" />
+                                        <span asp-validation-for="NumberOfWards" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NumberOfVillages" class="control-label"></label>
+                                        <input asp-for="NumberOfVillages" class="form-control" type="number" min="0" placeholder="25" />
+                                        <span asp-validation-for="NumberOfVillages" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NumberOfMouzas" class="control-label"></label>
+                                        <input asp-for="NumberOfMouzas" class="form-control" type="number" min="0" placeholder="15" />
+                                        <span asp-validation-for="NumberOfMouzas" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Area" class="control-label">Area (km²)</label>
+                                        <input asp-for="Area" class="form-control" type="number" step="0.01" min="0" placeholder="12.50" />
+                                        <span asp-validation-for="Area" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Population" class="control-label"></label>
+                                        <input asp-for="Population" class="form-control" type="number" min="0" placeholder="25000" />
+                                        <span asp-validation-for="Population" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NumberOfHouseholds" class="control-label"></label>
+                                        <input asp-for="NumberOfHouseholds" class="form-control" type="number" min="0" placeholder="5000" />
+                                        <span asp-validation-for="NumberOfHouseholds" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VDP/Ansar Information -->
+                <div class="col-md-6">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">VDP/Ansar Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="HasVDPUnit" class="control-label">Has VDP Unit</label>
+                                <select asp-for="HasVDPUnit" class="form-control" id="hasVDPUnit">
+                                    <option value="false">No</option>
+                                    <option value="true">Yes</option>
+                                </select>
+                            </div>
+
+                            <div id="vdpDetails" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label asp-for="VDPMemberCountMale" class="control-label"></label>
+                                            <input asp-for="VDPMemberCountMale" class="form-control" type="number" min="0" placeholder="50" />
+                                            <span asp-validation-for="VDPMemberCountMale" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label asp-for="VDPMemberCountFemale" class="control-label"></label>
+                                            <input asp-for="VDPMemberCountFemale" class="form-control" type="number" min="0" placeholder="30" />
+                                            <span asp-validation-for="VDPMemberCountFemale" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="AnsarMemberCount" class="control-label"></label>
+                                <input asp-for="AnsarMemberCount" class="form-control" type="number" min="0" placeholder="20" />
+                                <span asp-validation-for="AnsarMemberCount" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks" class="control-label"></label>
+                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Any additional information..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Union
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Show/hide VDP details
+            $('#hasVDPUnit').change(function() {
+                if ($(this).val() === 'true') {
+                    $('#vdpDetails').slideDown();
+                } else {
+                    $('#vdpDetails').slideUp();
+                    $('#VDPMemberCountMale').val('');
+                    $('#VDPMemberCountFemale').val('');
+                }
+            });
+
+            // Generate code
+            $('#generateCode').click(function() {
+                var upazilaId = $('#UpazilaId').val();
+                if (!upazilaId) {
+                    toastr.warning('Please select an Upazila first');
+                    return;
+                }
+
+                $.get('@Url.Action("GenerateCode")', { upazilaId: upazilaId }, function(response) {
+                    if (response.success) {
+                        $('#Code').val(response.code);
+                    } else {
+                        toastr.error('Error generating code');
+                    }
+                });
+            });
+
+            // Auto-generate code when upazila changes
+            $('#UpazilaId').change(function() {
+                if ($(this).val()) {
+                    $('#generateCode').click();
+                }
+            });
+
+            // Check if code exists
+            $('#Code').blur(function() {
+                var code = $(this).val();
+                if (code) {
+                    $.get('@Url.Action("CheckCodeExists")', { code: code }, function(isValid) {
+                        if (!isValid) {
+                            $('#Code').addClass('is-invalid');
+                            $('#Code').next('.text-danger').text('This code already exists');
+                        } else {
+                            $('#Code').removeClass('is-invalid');
+                            $('#Code').next('.text-danger').text('');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Get current GPS location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    $('#Latitude').val(position.coords.latitude.toFixed(6));
+                    $('#Longitude').val(position.coords.longitude.toFixed(6));
+                    toastr.success('Location obtained successfully');
+                }, function(error) {
+                    toastr.error('Error getting location: ' + error.message);
+                });
+            } else {
+                toastr.error('Geolocation is not supported by this browser');
+            }
+        }
+    </script>
+}

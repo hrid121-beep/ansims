@@ -1,0 +1,268 @@
+﻿@model IMS.Application.DTOs.PhysicalInventoryDto
+@using IMS.Domain.Enums
+@{
+    ViewData["Title"] = "Start Physical Count";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-play-circle text-warning"></i> Start Physical Count
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Physical Count</a></li>
+                    <li class="breadcrumb-item active">Start Count</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+        <form asp-action="Initiate" method="post">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-info-circle"></i> Count Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="StoreId">Store <span class="text-danger">*</span></label>
+                                        <select asp-for="StoreId" asp-items="ViewBag.Stores" class="form-control select2" required>
+                                            <option value="">-- Select Store --</option>
+                                        </select>
+                                        <span asp-validation-for="StoreId" class="text-danger"></span>
+                                        <small class="form-text text-muted">Select store for physical count</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="CountDate">Count Date <span class="text-danger">*</span></label>
+                                        <input asp-for="CountDate" type="date" class="form-control" required />
+                                        <span asp-validation-for="CountDate" class="text-danger"></span>
+                                        <small class="form-text text-muted">Date to start counting</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="CountType">Count Type <span class="text-danger">*</span></label>
+                                        <select asp-for="CountType" class="form-control" required>
+                                            <option value="">-- Select Type --</option>
+                                            <option value="@CountType.Full">Full Count</option>
+                                            <option value="@CountType.Partial">Partial Count</option>
+                                            <option value="@CountType.Cycle">Cycle Count</option>
+                                            <option value="@CountType.Spot">Spot Count</option>
+                                            <option value="@CountType.Annual">Annual Count</option>
+                                        </select>
+                                        <span asp-validation-for="CountType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Fiscal Year</label>
+                                        <input type="text" class="form-control" value="@ViewBag.CurrentFiscalYear" readonly />
+                                        <small class="form-text text-muted">Current fiscal year</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="d-block">Item Selection</label>
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" class="form-check-input" name="itemSelection" id="allItems" value="all" checked>
+                                    <label class="form-check-label" for="allItems">
+                                        Count All Items
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" class="form-check-input" name="itemSelection" id="selectedItems" value="selected">
+                                    <label class="form-check-label" for="selectedItems">
+                                        Count Selected Items
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="itemSelectionDiv" style="display:none;">
+                                <label>Select Items to Count</label>
+                                <select asp-for="SelectedItemIds" class="form-control select2" multiple data-placeholder="Select items...">
+                                </select>
+                                <small class="form-text text-muted">Select specific items to count</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks">Remarks</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Enter any remarks or notes..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+
+                            <!-- Government Audit Section -->
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" asp-for="IsAuditRequired" id="auditRequired">
+                                    <label class="custom-control-label" for="auditRequired">
+                                        <strong>Government Audit Required</strong>
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Check if government audit officer participation is required</small>
+                            </div>
+
+                            <div class="form-group" id="auditOfficerDiv" style="display:none;">
+                                <label asp-for="AuditOfficer">Audit Officer Name</label>
+                                <input asp-for="AuditOfficer" class="form-control" placeholder="Enter audit officer name" />
+                                <span asp-validation-for="AuditOfficer" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-play"></i> Start Count Now
+                            </button>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-info-circle"></i> Guidelines</h3>
+                        </div>
+                        <div class="card-body">
+                            <h6><i class="fas fa-clipboard-list"></i> Count Types:</h6>
+                            <ul class="small">
+                                <li><strong>Full:</strong> Complete stock count of all items</li>
+                                <li><strong>Partial:</strong> Count selected categories or items</li>
+                                <li><strong>Cycle:</strong> Periodic counting of specific items</li>
+                                <li><strong>Spot:</strong> Random verification count</li>
+                                <li><strong>Annual:</strong> Mandatory yearly physical count</li>
+                            </ul>
+                            <hr>
+                            <h6><i class="fas fa-tasks"></i> Approval Hierarchy:</h6>
+                            <ul class="small">
+                                <li><strong>Upazila:</strong> Zila Commander</li>
+                                <li><strong>Zila:</strong> Range DIG</li>
+                                <li><strong>Battalion:</strong> Range DIG</li>
+                                <li><strong>Range:</strong> Director (Operations)</li>
+                                <li><strong>HQ:</strong> Director General</li>
+                            </ul>
+                            <hr>
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Important:</strong><br>
+                                All transactions will be frozen during the physical count. Complete any ongoing transactions before starting.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Set default date to today
+            var today = new Date().toISOString().split('T')[0];
+            $('input[name="CountDate"]').val(today);
+
+            // Item selection toggle
+            $('#selectedItems').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#itemSelectionDiv').slideDown();
+                    loadStoreItems();
+                }
+            });
+
+            $('#allItems').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#itemSelectionDiv').slideUp();
+                }
+            });
+
+            // Audit required toggle
+            $('#auditRequired').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#auditOfficerDiv').slideDown();
+                } else {
+                    $('#auditOfficerDiv').slideUp();
+                }
+            });
+
+            // Store change event
+            $('#StoreId').change(function() {
+                if ($('#selectedItems').is(':checked')) {
+                    loadStoreItems();
+                }
+            });
+        });
+
+        function loadStoreItems() {
+            var storeId = $('#StoreId').val();
+            if (storeId) {
+                $.ajax({
+                    url: '@Url.Action("GetStoreItems", "PhysicalInventory")',
+                    data: { storeId: storeId },
+                    success: function(data) {
+                        var select = $('#SelectedItemIds');
+                        select.empty();
+                        if (data && data.length > 0) {
+                            $.each(data, function(index, item) {
+                                select.append($('<option></option>')
+                                    .attr('value', item.Id || item.id)
+                                    .text((item.Code || item.code) + ' - ' + (item.Name || item.name)));
+                            });
+                            select.trigger('change');
+                        } else {
+                            select.append('<option value="">No items available in this store</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading items:', error);
+                        alert('Failed to load store items. Please try again.');
+                    }
+                });
+            }
+        }
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

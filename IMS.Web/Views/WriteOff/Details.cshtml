@@ -1,0 +1,280 @@
+@model IMS.Application.DTOs.WriteOffDto
+@{
+    ViewData["Title"] = "Write-off Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var statusClass = Model.Status switch
+    {
+        "Pending" => "badge-warning",
+        "Approved" => "badge-success",
+        "Rejected" => "badge-danger",
+        _ => "badge-secondary"
+    };
+
+    var reasonClass = Model.Reason switch
+    {
+        "Damaged" => "badge-warning",
+        "Expired" => "badge-danger",
+        "Lost" => "badge-secondary",
+        "Obsolete" => "badge-info",
+        "Quality Issues" => "badge-danger",
+        "Theft" => "badge-dark",
+        "Natural Disaster" => "badge-danger",
+        _ => "badge-primary"
+    };
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-trash-alt text-danger"></i> Write-off Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Write-offs</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Details Card -->
+            <div class="col-md-8">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-alt"></i> Write-off No: <strong>@Model.WriteOffNo</strong>
+                        </h3>
+                        <div class="card-tools">
+                            @if (Model.Status == "Pending")
+                            {
+                                <a asp-action="Approve" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Approve
+                                </a>
+                            }
+                            <a asp-action="Print" asp-route-id="@Model.Id" target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-print"></i> Print
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Status and Reason Badges -->
+                        <div class="mb-3">
+                            <span class="badge @statusClass badge-lg">
+                                <i class="fas fa-@(Model.Status == "Pending" ? "clock" : Model.Status == "Approved" ? "check" : "times")"></i>
+                                @Model.Status
+                            </span>
+                            <span class="badge @reasonClass badge-lg ml-2">
+                                <i class="fas fa-tag"></i> @(Model.Reason ?? "Not Specified")
+                            </span>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="40%"><i class="fas fa-calendar"></i> Date:</th>
+                                        <td>@Model.WriteOffDate.ToString("dd-MMM-yyyy")</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-tag"></i> Reason:</th>
+                                        <td><strong class="text-@(Model.Reason == "Damaged" ? "warning" : "primary")">@(Model.Reason ?? "Not Specified")</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-user"></i> Created By:</th>
+                                        <td>@Model.CreatedBy</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-clock"></i> Created At:</th>
+                                        <td>@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="40%"><i class="fas fa-money-bill-wave"></i> Total Value:</th>
+                                        <td><strong class="text-danger">৳@Model.TotalValue.ToString("N2")</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-info-circle"></i> Status:</th>
+                                        <td><span class="badge @statusClass">@Model.Status</span></td>
+                                    </tr>
+                                    @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                                    {
+                                        <tr>
+                                            <th><i class="fas fa-user-check"></i> Approved By:</th>
+                                            <td>@Model.ApprovedBy</td>
+                                        </tr>
+                                        <tr>
+                                            <th><i class="fas fa-check-circle"></i> Approval Date:</th>
+                                            <td>@Model.ApprovalDate?.ToString("dd-MMM-yyyy HH:mm")</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th><i class="fas fa-hourglass-half"></i> Approval Status:</th>
+                                            <td><span class="text-warning">Pending Approval</span></td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Card -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-boxes"></i> Items (@(Model.Items?.Count ?? 0))
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item</th>
+                                    <th>Store</th>
+                                    <th class="text-right">Quantity</th>
+                                    <th class="text-right">Unit Value (৳)</th>
+                                    <th class="text-right">Total (৳)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Items != null && Model.Items.Any())
+                                {
+                                    var serial = 1;
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@serial</td>
+                                            <td>
+                                                <strong>@item.ItemName</strong>
+                                                @if (!string.IsNullOrEmpty(item.ItemCode))
+                                                {
+                                                    <br /><small class="text-muted">Code: @item.ItemCode</small>
+                                                }
+                                            </td>
+                                            <td>@item.StoreName</td>
+                                            <td class="text-right">@item.Quantity</td>
+                                            <td class="text-right">@item.Value.ToString("N2")</td>
+                                            <td class="text-right"><strong>@((item.Quantity * item.Value).ToString("N2"))</strong></td>
+                                        </tr>
+                                        serial++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <i class="fas fa-info-circle"></i> No items found
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            @if (Model.Items != null && Model.Items.Any())
+                            {
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th colspan="5" class="text-right">Total:</th>
+                                        <th class="text-right text-danger">
+                                            <strong>৳@Model.TotalValue.ToString("N2")</strong>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Summary -->
+            <div class="col-md-4">
+                <!-- Quick Summary -->
+                <div class="card card-warning card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Summary</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box bg-light mb-3">
+                            <span class="info-box-icon text-primary"><i class="fas fa-boxes"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Items</span>
+                                <span class="info-box-number">@(Model.Items?.Count ?? 0)</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box bg-light mb-3">
+                            <span class="info-box-icon text-warning"><i class="fas fa-calculator"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Quantity</span>
+                                <span class="info-box-number">@(Model.Items?.Sum(i => i.Quantity) ?? 0)</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box bg-danger mb-0">
+                            <span class="info-box-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Value</span>
+                                <span class="info-box-number">৳@Model.TotalValue.ToString("N0")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Card -->
+                <div class="card card-secondary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-tasks"></i> Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <a asp-action="Index" class="btn btn-secondary btn-block">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                        @if (Model.Status == "Pending")
+                        {
+                            <a asp-action="Approve" asp-route-id="@Model.Id" class="btn btn-success btn-block">
+                                <i class="fas fa-check"></i> Approve Write-off
+                            </a>
+                            <a asp-action="Reject" asp-route-id="@Model.Id" class="btn btn-danger btn-block">
+                                <i class="fas fa-times"></i> Reject Write-off
+                            </a>
+                        }
+                        <a asp-action="Print" asp-route-id="@Model.Id" target="_blank" class="btn btn-info btn-block">
+                            <i class="fas fa-print"></i> Print Report
+                        </a>
+                        <a asp-action="ExportPdf" asp-route-id="@Model.Id" class="btn btn-primary btn-block">
+                            <i class="fas fa-file-pdf"></i> Export to PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Status Information -->
+                @if (Model.Reason == "Damaged")
+                {
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Damage Report</h5>
+                        <p class="mb-0">
+                            This write-off is categorized as <strong>Damaged</strong>.
+                            It will appear in damage reports under the Reports menu.
+                        </p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

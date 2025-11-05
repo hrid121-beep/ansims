@@ -1,0 +1,652 @@
+@model IMS.Application.DTOs.ReceiveDto
+@{
+    ViewData["Title"] = $"Receive #{Model.ReceiveNo}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var originalIssue = ViewBag.OriginalIssue as IMS.Application.DTOs.IssueDto;
+
+    var statusClass = Model.Status switch
+    {
+        "Draft" => "secondary",
+        "Pending" => "warning",
+        "Processing" => "info",
+        "Completed" => "success",
+        "Cancelled" => "dark",
+        _ => "secondary"
+    };
+
+    var statusIcon = Model.Status switch
+    {
+        "Draft" => "fa-file",
+        "Pending" => "fa-clock",
+        "Processing" => "fa-spinner",
+        "Completed" => "fa-check-circle",
+        "Cancelled" => "fa-ban",
+        _ => "fa-question-circle"
+    };
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-inbox"></i> Receive Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">@Model.ReceiveNo</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="btn-group float-right">
+                    @if (Model.Status == "Draft" || Model.Status == "Pending")
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    }
+
+                    @if (Model.Status != "Completed" && Model.Status != "Cancelled")
+                    {
+                        <button type="button" class="btn btn-success btn-sm" id="completeBtn">
+                            <i class="fas fa-check"></i> Complete Receive
+                        </button>
+                    }
+
+                    <a asp-action="Print" asp-route-id="@Model.Id" target="_blank" class="btn btn-info btn-sm">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </a>
+
+                    @if (Model.Status == "Draft")
+                    {
+                        <button type="button" class="btn btn-danger btn-sm" id="deleteBtn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    }
+
+                    @if (Model.OverallCondition == "Damaged" || Model.OverallCondition == "Mixed")
+                    {
+                        <a asp-controller="Damage" asp-action="CreateFromReceive" asp-route-receiveId="@Model.Id"
+                           class="btn btn-warning btn-sm">
+                            <i class="fas fa-exclamation-triangle"></i> Record Damage
+                        </a>
+                    }
+
+                    <a asp-action="Index" class="btn btn-default btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Receive Information -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Receive Information - #@Model.ReceiveNo
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-@statusClass badge-lg">
+                                <i class="fas @statusIcon"></i> @Model.Status
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-5"><i class="fas fa-barcode"></i> Receive No:</dt>
+                                    <dd class="col-sm-7"><strong>@Model.ReceiveNo</strong></dd>
+
+                                    <dt class="col-sm-5"><i class="fas fa-calendar-alt"></i> Receive Date:</dt>
+                                    <dd class="col-sm-7">@Model.ReceiveDate.ToString("dd MMM yyyy")</dd>
+
+                                    <dt class="col-sm-5"><i class="fas fa-tag"></i> Receive Type:</dt>
+                                    <dd class="col-sm-7"><span class="badge badge-info">@Model.ReceiveType</span></dd>
+
+                                    <dt class="col-sm-5"><i class="fas fa-user-friends"></i> Received From:</dt>
+                                    <dd class="col-sm-7"><strong>@Model.ReceivedFromName</strong></dd>
+
+                                    @if (!string.IsNullOrEmpty(Model.ReceivedFromBadgeNo))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-id-badge"></i> Badge No:</dt>
+                                        <dd class="col-sm-7">@Model.ReceivedFromBadgeNo</dd>
+                                    }
+                                </dl>
+                            </div>
+
+                            <div class="col-md-6">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-5"><i class="fas fa-user-check"></i> Received By:</dt>
+                                    <dd class="col-sm-7">@Model.ReceivedBy</dd>
+
+                                    <dt class="col-sm-5"><i class="fas fa-shield-alt"></i> Condition:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (Model.OverallCondition == "Good")
+                                        {
+                                            <span class="badge badge-success"><i class="fas fa-check"></i> Good</span>
+                                        }
+                                        else if (Model.OverallCondition == "Damaged")
+                                        {
+                                            <span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Damaged</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning"><i class="fas fa-adjust"></i> Mixed</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-5"><i class="fas fa-info-circle"></i> Status:</dt>
+                                    <dd class="col-sm-7">
+                                        <span class="badge badge-@statusClass">
+                                            <i class="fas @statusIcon"></i> @Model.Status
+                                        </span>
+                                    </dd>
+
+                                    @if (!string.IsNullOrEmpty(Model.ReceiverName))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-user"></i> Receiver Name:</dt>
+                                        <dd class="col-sm-7">@Model.ReceiverName</dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.ReceiverBadgeNo))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-id-card"></i> Receiver Badge:</dt>
+                                        <dd class="col-sm-7">@Model.ReceiverBadgeNo</dd>
+                                    }
+                                </dl>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Remarks))
+                        {
+                            <hr>
+                            <div class="callout callout-info">
+                                <h5><i class="fas fa-comment-dots"></i> Remarks</h5>
+                                <p class="mb-0">@Model.Remarks</p>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AssessmentNotes))
+                        {
+                            <div class="callout callout-warning">
+                                <h5><i class="fas fa-clipboard-check"></i> Assessment Notes</h5>
+                                <p class="mb-0">@Model.AssessmentNotes</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Received Items -->
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-boxes"></i> Received Items
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-light">@Model.Items.Count Items</span>
+                            <span class="badge badge-light ml-1">Total Qty: @Model.Items.Sum(i => i.Quantity)</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="4%">#</th>
+                                        <th width="10%">Item Code</th>
+                                        <th width="20%">Item Name</th>
+                                        <th width="12%">Category</th>
+                                        <th width="12%">Store</th>
+                                        <th width="10%" class="text-center">Quantity</th>
+                                        <th width="8%">Unit</th>
+                                        <th width="12%">Condition</th>
+                                        <th width="12%">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Items?.Any() == true)
+                                    {
+                                        var index = 1;
+                                        foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td><strong>@(index++)</strong></td>
+                                                <td><span class="badge badge-secondary">@item.ItemCode</span></td>
+                                                <td>
+                                                    <strong>@item.ItemName</strong>
+                                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
+                                                    {
+                                                        <br /><small class="text-muted"><i class="fas fa-barcode"></i> Batch: @item.BatchNumber</small>
+                                                    }
+                                                </td>
+                                                <td>@item.CategoryName</td>
+                                                <td>@item.StoreName</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-primary">@string.Format("{0:0.##}", item.Quantity)</span>
+                                                </td>
+                                                <td>@item.Unit</td>
+                                                <td>
+                                                    @if (item.Condition == "Good")
+                                                    {
+                                                        <span class="badge badge-success"><i class="fas fa-check"></i> Good</span>
+                                                    }
+                                                    else if (item.Condition == "Damaged")
+                                                    {
+                                                        <span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Damaged</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning">@item.Condition</span>
+                                                    }
+                                                </td>
+                                                <td><small>@item.Remarks</small></td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted py-3">
+                                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                                <p>No items found</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                @if (Model.Items?.Any() == true)
+                                {
+                                    <tfoot>
+                                        <tr class="bg-light">
+                                            <td colspan="5" class="text-right"><strong>Totals:</strong></td>
+                                            <td class="text-center"><strong class="text-primary">@string.Format("{0:0.##}", Model.Items.Sum(i => i.Quantity))</strong></td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    </tfoot>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Original Issue Information -->
+                @if (originalIssue != null)
+                {
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-link"></i> Original Issue Reference
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4"><i class="fas fa-barcode"></i> Issue No:</dt>
+                                        <dd class="col-sm-8">
+                                            <a asp-controller="Issue" asp-action="Details" asp-route-id="@originalIssue.Id" class="badge badge-info">
+                                                @originalIssue.IssueNo
+                                            </a>
+                                        </dd>
+
+                                        <dt class="col-sm-4"><i class="fas fa-calendar"></i> Issue Date:</dt>
+                                        <dd class="col-sm-8">@originalIssue.IssueDate.ToString("dd MMM yyyy")</dd>
+
+                                        <dt class="col-sm-4"><i class="fas fa-user"></i> Issued By:</dt>
+                                        <dd class="col-sm-8">@originalIssue.IssuedBy</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4"><i class="fas fa-warehouse"></i> From Store:</dt>
+                                        <dd class="col-sm-8">@originalIssue.FromStoreName</dd>
+
+                                        <dt class="col-sm-4"><i class="fas fa-info-circle"></i> Status:</dt>
+                                        <dd class="col-sm-8"><span class="badge badge-info">@originalIssue.Status</span></dd>
+
+                                        <dt class="col-sm-4"><i class="fas fa-bullseye"></i> Purpose:</dt>
+                                        <dd class="col-sm-8">@originalIssue.Purpose</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Digital Signature -->
+                @if (!string.IsNullOrEmpty(Model.ReceiverSignature))
+                {
+                    <div class="card card-purple card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-signature"></i> Digital Signature
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="callout callout-success">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-6">Signed By:</dt>
+                                            <dd class="col-sm-6"><strong>@(Model.ReceiverName ?? Model.ReceivedBy)</strong></dd>
+
+                                            @if (!string.IsNullOrEmpty(Model.ReceiverBadgeNo))
+                                            {
+                                                <dt class="col-sm-6">Badge No:</dt>
+                                                <dd class="col-sm-6">@Model.ReceiverBadgeNo</dd>
+                                            }
+
+                                            <dt class="col-sm-6">Date:</dt>
+                                            <dd class="col-sm-6">@Model.ReceiveDate.ToString("dd MMM yyyy")</dd>
+                                        </dl>
+                                    </div>
+                                    <div class="col-md-8 text-center">
+                                        <div class="border rounded bg-white p-3">
+                                            <img src="@Model.ReceiverSignature" alt="Receiver Signature"
+                                                 style="max-width: 100%; height: 100px; object-fit: contain;"
+                                                 class="img-fluid" />
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="fas fa-shield-alt text-success"></i> Verified Digital Signature
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Status Info Box -->
+                <div class="info-box bg-@statusClass">
+                    <span class="info-box-icon"><i class="fas @statusIcon"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Current Status</span>
+                        <span class="info-box-number">@Model.Status</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @(Model.Status == "Completed" ? "100" : Model.Status == "Processing" ? "75" : Model.Status == "Pending" ? "50" : "25")%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @(Model.Status == "Completed" ? "Receive Complete" : Model.Status == "Processing" ? "Being Processed" : Model.Status == "Pending" ? "Awaiting Action" : "Draft Mode")
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="card card-warning card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Summary
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><i class="fas fa-boxes text-primary"></i> Total Items</td>
+                                <td class="text-right"><span class="badge badge-primary">@Model.Items.Count</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-weight text-info"></i> Total Quantity</td>
+                                <td class="text-right"><strong>@string.Format("{0:0.##}", Model.Items.Sum(i => i.Quantity))</strong></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-check-circle text-success"></i> Good Items</td>
+                                <td class="text-right">
+                                    <strong class="text-success">@string.Format("{0:0.##}", Model.Items.Where(i => i.Condition == "Good").Sum(i => i.Quantity))</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-exclamation-triangle text-danger"></i> Damaged Items</td>
+                                <td class="text-right">
+                                    <strong class="text-danger">@string.Format("{0:0.##}", Model.Items.Where(i => i.Condition == "Damaged").Sum(i => i.Quantity))</strong>
+                                </td>
+                            </tr>
+                            @if (Model.Items.Any(i => i.Condition != "Good" && i.Condition != "Damaged"))
+                            {
+                                <tr>
+                                    <td><i class="fas fa-question-circle text-warning"></i> Other Condition</td>
+                                    <td class="text-right">
+                                        <strong class="text-warning">@string.Format("{0:0.##}", Model.Items.Where(i => i.Condition != "Good" && i.Condition != "Damaged").Sum(i => i.Quantity))</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i> Activity Timeline
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <!-- Created -->
+                            <div>
+                                <i class="fas fa-plus bg-primary"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</span>
+                                    <h3 class="timeline-header">Receive Created</h3>
+                                    <div class="timeline-body">
+                                        Created by @(Model.CreatedBy ?? "System")
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.Status != "Draft")
+                            {
+                                <!-- Processing -->
+                                <div>
+                                    <i class="fas fa-spinner bg-info"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.UpdatedAt?.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header">Started Processing</h3>
+                                        <div class="timeline-body">
+                                            Items inspection and verification
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.Status == "Completed")
+                            {
+                                <!-- Completed -->
+                                <div>
+                                    <i class="fas fa-check-circle bg-success"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.UpdatedAt?.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header">Receive Completed</h3>
+                                        <div class="timeline-body">
+                                            By @(Model.ReceiverName ?? Model.ReceivedBy)
+                                            <br><small class="text-muted">Stock updated successfully</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attached Documents -->
+                @if (!string.IsNullOrEmpty(Model.VoucherDocumentPath))
+                {
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-paperclip"></i> Attached Documents
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="callout callout-info">
+                                <h5><i class="fas fa-file-pdf text-danger"></i> Voucher Document</h5>
+                                <a href="/@Model.VoucherDocumentPath" target="_blank" class="btn btn-info btn-sm">
+                                    <i class="fas fa-download"></i> Download Document
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Audit Information -->
+                <div class="card card-secondary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clipboard-list"></i> Audit Information
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><i class="fas fa-user text-primary"></i> Created By</td>
+                                <td class="text-right"><strong>@Model.CreatedBy</strong></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-calendar text-primary"></i> Created At</td>
+                                <td class="text-right">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                            </tr>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <tr>
+                                    <td><i class="fas fa-user-edit text-info"></i> Updated By</td>
+                                    <td class="text-right"><strong>@Model.UpdatedBy</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calendar-alt text-info"></i> Updated At</td>
+                                    <td class="text-right">@Model.UpdatedAt.Value.ToString("dd MMM yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                @if (Model.Status != "Completed" && Model.Status != "Cancelled")
+                {
+                    <div class="card card-dark">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-bolt"></i> Quick Actions
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Status == "Draft" || Model.Status == "Pending")
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-block btn-sm mb-2">
+                                    <i class="fas fa-edit"></i> Edit Receive
+                                </a>
+                            }
+                            @if (originalIssue != null)
+                            {
+                                <a asp-controller="Issue" asp-action="Details" asp-route-id="@originalIssue.Id" class="btn btn-info btn-block btn-sm mb-2">
+                                    <i class="fas fa-link"></i> View Original Issue
+                                </a>
+                            }
+                            @if (Model.Items.Any(i => i.Condition == "Damaged"))
+                            {
+                                <a asp-controller="Damage" asp-action="CreateFromReceive" asp-route-receiveId="@Model.Id"
+                                   class="btn btn-warning btn-block btn-sm">
+                                    <i class="fas fa-exclamation-triangle"></i> Record Damage Details
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Complete Receive
+            $('#completeBtn').click(function() {
+                Swal.fire({
+                    title: 'Complete Receive?',
+                    text: 'This will update stock and finalize the receive.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, complete it!',
+                    confirmButtonColor: '#28a745'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("Complete", "Receive")',
+                            type: 'POST',
+                            data: {
+                                id: @Model.Id,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire('Success!', 'Receive completed successfully!', 'success')
+                                        .then(() => location.reload());
+                                } else {
+                                    Swal.fire('Error!', response.message || 'Failed to complete receive', 'error');
+                                }
+                            },
+                            error: function() {
+                                Swal.fire('Error!', 'An error occurred while completing receive', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Delete Receive
+            $('#deleteBtn').click(function() {
+                Swal.fire({
+                    title: 'Delete Receive?',
+                    text: 'This action cannot be undone!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("Delete", "Receive")',
+                            type: 'POST',
+                            data: {
+                                id: @Model.Id,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function() {
+                                Swal.fire('Deleted!', 'Receive has been deleted.', 'success')
+                                    .then(() => { window.location.href = '@Url.Action("Index")'; });
+                            },
+                            error: function() {
+                                Swal.fire('Error!', 'Failed to delete receive.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

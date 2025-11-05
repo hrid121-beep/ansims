@@ -1,0 +1,65 @@
+﻿@model Dictionary<string, string>
+@{
+    ViewData["Title"] = "Bulk Edit Configuration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var availableKeys = ViewBag.AvailableKeys as IEnumerable<string>;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Bulk Edit Configuration - @ViewBag.StoreName</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Store Configuration</a></li>
+                    <li class="breadcrumb-item active">Bulk Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Edit All Configurations</h3>
+            </div>
+            <form asp-action="BulkEdit" method="post">
+                <input type="hidden" name="storeId" value="@ViewBag.StoreId" />
+
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Update multiple configuration values at once. Leave blank to keep current value.
+                    </div>
+
+                    @if (availableKeys != null)
+                    {
+                        foreach (var key in availableKeys)
+                        {
+                            var currentValue = Model?.ContainsKey(key) == true ? Model[key] : "";
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">@key</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="configs[@key]" class="form-control"
+                                           value="@currentValue" placeholder="Enter value or leave blank" />
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save All Changes
+                    </button>
+                    <a asp-action="Index" asp-route-storeId="@ViewBag.StoreId" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,431 @@
+﻿@using IMS.Application.DTOs
+@model StockEntryDto
+@{
+    ViewData["Title"] = "Stock Entry Details";
+}
+
+@section Styles {
+    <style>
+        /* IMPROVED FONT VISIBILITY */
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        dt {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        dd {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        /* TABLE IMPROVEMENTS */
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            padding: 12px 8px;
+        }
+
+        .table tbody td {
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 10px 8px;
+        }
+
+        .table tfoot th {
+            background-color: #343a40;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 12px 8px;
+        }
+
+        /* BADGE VISIBILITY */
+        .badge {
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.7rem;
+        }
+
+        /* BUTTON VISIBILITY */
+        .btn {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* CARD IMPROVEMENTS */
+        .card {
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-file-alt text-primary"></i> Stock Entry Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Entries</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <!-- Entry Information -->
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Entry Information
+                        </h3>
+                        <div class="card-tools">
+                            @if (Model.Status == "Draft")
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-sm btn-success" onclick="completeEntry(@Model.Id)">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            }
+                            @if (Model.Status == "Completed" && Model.BarcodesGenerated > 0)
+                            {
+                                <a asp-action="PrintBarcodes" asp-route-id="@Model.Id" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-barcode"></i> Print Barcodes
+                                </a>
+                            }
+                            <a asp-action="Index" class="btn btn-sm btn-default">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <dl>
+                                    <dt>Entry Number:</dt>
+                                    <dd><strong style="font-size: 1rem; color: #007bff;">@Model.EntryNo</strong></dd>
+
+                                    <dt>Entry Date:</dt>
+                                    <dd>@Model.EntryDate.ToString("dd-MMM-yyyy")</dd>
+
+                                    <dt>Entry Type:</dt>
+                                    <dd><span class="badge badge-info">@Model.EntryType</span></dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-3">
+                                <dl>
+                                    <dt>Store:</dt>
+                                    <dd>@Model.StoreName</dd>
+
+                                    <dt>Status:</dt>
+                                    <dd>
+                                        @switch (Model.Status)
+                                        {
+                                            case "Completed":
+                                                <span class="badge badge-success">Completed</span>
+                                                break;
+                                            case "Draft":
+                                                <span class="badge badge-warning">Draft</span>
+                                                break;
+                                            case "Cancelled":
+                                                <span class="badge badge-danger">Cancelled</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-secondary">@Model.Status</span>
+                                                break;
+                                        }
+                                    </dd>
+
+                                    <dt>Remarks:</dt>
+                                    <dd>@(string.IsNullOrEmpty(Model.Remarks) ? "-" : Model.Remarks)</dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-3">
+                                <dl>
+                                    <dt>Total Items:</dt>
+                                    <dd><strong style="font-size: 1.1rem; color: #28a745;">@Model.TotalItems</strong></dd>
+
+                                    <dt>Total Quantity:</dt>
+                                    <dd><strong style="font-size: 1.1rem; color: #28a745;">@Model.TotalQuantity.ToString("N2")</strong></dd>
+
+                                    <dt>Total Value:</dt>
+                                    <dd><strong style="font-size: 1.1rem; color: #28a745;">৳ @Model.TotalValue.ToString("N2")</strong></dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-3">
+                                <dl>
+                                    <dt>Created By:</dt>
+                                    <dd>@Model.CreatedBy</dd>
+
+                                    <dt>Created At:</dt>
+                                    <dd>@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</dd>
+
+                                    @if (Model.UpdatedAt != null && Model.UpdatedAt != Model.CreatedAt)
+                                    {
+                                        <dt>Updated At:</dt>
+                                        <dd>@Model.UpdatedAt?.ToString("dd-MMM-yyyy HH:mm")</dd>
+                                    }
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Details -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-boxes"></i> Stock Items
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-primary" style="font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+                                @Model.Items?.Count() Items
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item Code</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Unit</th>
+                                        <th>Unit Cost</th>
+                                        <th>Total</th>
+                                        <th>Location</th>
+                                        <th>Batch No</th>
+                                        <th>Expiry Date</th>
+                                        <th>Barcodes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Items != null && Model.Items.Any())
+                                    {
+                                        int index = 1;
+                                        @foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td class="text-center"><strong>@index</strong></td>
+                                                <td><strong>@item.ItemCode</strong></td>
+                                                <td>@item.ItemName</td>
+                                                <td>@item.CategoryName</td>
+                                                <td class="text-right"><strong>@item.Quantity.ToString("N2")</strong></td>
+                                                <td>@item.Unit</td>
+                                                <td class="text-right">৳ @item.UnitCost.ToString("N2")</td>
+                                                <td class="text-right"><strong>৳ @((item.Quantity * item.UnitCost).ToString("N2"))</strong></td>
+                                                <td>@(string.IsNullOrEmpty(item.Location) ? "-" : item.Location)</td>
+                                                <td>@(string.IsNullOrEmpty(item.BatchNumber) ? "-" : item.BatchNumber)</td>
+                                                <td class="text-center">@(item.ExpiryDate?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                                <td class="text-center">
+                                                    @if (item.BarcodesGenerated > 0)
+                                                    {
+                                                        <span class="badge badge-success">@item.BarcodesGenerated</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            index++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="12" class="text-center">
+                                                <i class="fas fa-info-circle"></i> No items found
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4" class="text-right">Grand Total:</th>
+                                        <th class="text-right">@Model.TotalQuantity.ToString("N2")</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th class="text-right">৳ @Model.TotalValue.ToString("N2")</th>
+                                        <th colspan="3"></th>
+                                        <th class="text-center">@Model.BarcodesGenerated</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function completeEntry(id) {
+            Swal.fire({
+                title: 'Complete Stock Entry?',
+                text: "This will finalize the stock entry and update inventory levels.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Yes, Complete!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    title: 'swal-title-bold',
+                    content: 'swal-content-bold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait while we complete the stock entry',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Get anti-forgery token
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("Complete", "StockEntry")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Completed!',
+                                    text: response.message || 'Stock entry completed successfully',
+                                    confirmButtonColor: '#28a745',
+                                    customClass: {
+                                        title: 'swal-title-bold',
+                                        content: 'swal-content-bold'
+                                    }
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: response.message || 'Failed to complete stock entry',
+                                    confirmButtonColor: '#dc3545',
+                                    customClass: {
+                                        title: 'swal-title-bold',
+                                        content: 'swal-content-bold'
+                                    }
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Complete entry error:', xhr, status, error);
+
+                            let errorMessage = 'An error occurred while processing your request';
+
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            } else if (xhr.status === 400) {
+                                errorMessage = 'Invalid request. Please try again.';
+                            } else if (xhr.status === 401) {
+                                errorMessage = 'You are not authorized to perform this action.';
+                            } else if (xhr.status === 404) {
+                                errorMessage = 'Stock entry not found.';
+                            } else if (xhr.status === 500) {
+                                errorMessage = 'Server error. Please contact support.';
+                            }
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage,
+                                confirmButtonColor: '#dc3545',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+
+    <style>
+        /* Make SweetAlert text more visible */
+        .swal-title-bold {
+            font-weight: 700 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .swal-content-bold {
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+        }
+
+        .swal2-html-container {
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+        }
+
+        .swal2-styled {
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+            padding: 0.625rem 2rem !important;
+        }
+    </style>
+}

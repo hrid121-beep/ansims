@@ -1,0 +1,74 @@
+﻿@model IMS.Web.Models.CreateRoleViewModel
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Create Role</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Admin</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Roles">Roles</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">New Role Information</h3>
+                    </div>
+                    <form asp-action="CreateRole" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="form-group">
+                                <label asp-for="Name" class="required"></label>
+                                <input asp-for="Name" class="form-control" placeholder="Enter role name (e.g., StoreManager)" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                                <small class="form-text text-muted">Use PascalCase without spaces (e.g., BattalionCommander)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description"></label>
+                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional description"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> Note</h5>
+                                After creating the role, you can assign permissions from the Permissions page.
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Role
+                            </button>
+                            <a asp-action="Roles" class="btn btn-default">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

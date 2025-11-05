@@ -1,0 +1,320 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dashboard</h1>
+            </div>
+            <div class="col-sm-6">
+                <button id="refreshDashboard" class="btn btn-primary float-sm-right">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Info boxes -->
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info elevation-1">
+                        <i class="fas fa-cog"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Items</span>
+                        <span class="info-box-number">@Model.TotalItems</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger elevation-1">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Low Stock</span>
+                        <span class="info-box-number">@Model.LowStockItems</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success elevation-1">
+                        <i class="fas fa-shopping-cart"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Purchase Orders</span>
+                        <span class="info-box-number">@Model.Stats.PurchaseOrders</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning elevation-1">
+                        <i class="fas fa-dollar-sign"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Inventory Value</span>
+                        <span class="info-box-number">$@Model.Stats.TotalInventoryValue.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Dashboard Link (Only for Admin users) -->
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a asp-controller="Admin" asp-action="SettingsDashboard" class="text-decoration-none">
+                        <div class="info-box bg-gradient-success" style="cursor: pointer;">
+                            <span class="info-box-icon">
+                                <i class="fas fa-cogs"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Settings Dashboard</span>
+                                <span class="info-box-number">Administration & System Management</span>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 100%"></div>
+                                </div>
+                                <span class="progress-description">
+                                    Click to access all admin functions
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Purchase Trend</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="purchaseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Category Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts and Activities -->
+        <div class="row">
+            <!-- Alerts -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">System Alerts</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-danger">@Model.Alerts.Count()</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="products-list product-list-in-card pl-2 pr-2">
+                            @foreach (var alert in Model.Alerts.Take(5))
+                            {
+                                <li class="item">
+                                    <div class="product-img">
+                                        <i class="fas fa-@(alert.Type == "danger" ? "exclamation-circle" :
+                                                    alert.Type == "warning" ? "exclamation-triangle" :
+                                                    "info-circle")
+                                           text-@alert.Type" style="font-size: 2em;"></i>
+                                </div>
+                                <div class="product-info">
+                                    <a href="@alert.Link" class="product-title">
+                                        @alert.Title
+                                        <span class="badge badge-@alert.Type float-right">
+                                            @alert.Type
+                                        </span>
+                                    </a>
+                                    <span class="product-description">
+                                        @alert.Message
+                                    </span>
+                                </div>
+                            </li>
+                                                        }
+                        </ul>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a asp-controller="StockAlert" asp-action="Dashboard">View All Alerts</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="products-list product-list-in-card pl-2 pr-2">
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <li class="item">
+                                    <div class="product-img">
+                                        <i class="fas @activity.Icon text-@activity.Color"
+                                           style="font-size: 2em;"></i>
+                                    </div>
+                                    <div class="product-info">
+                                        <a href="@activity.Link" class="product-title">
+                                            @activity.Title
+                                            <span class="badge badge-@activity.Color float-right">
+                                                @activity.Timestamp.ToString("HH:mm")
+                                            </span>
+                                        </a>
+                                        <span class="product-description">
+                                            @activity.Description
+                                        </span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Valuation -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Inventory Valuation Summary</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="description-block">
+                                    <h5 class="description-header">$@Model.ValuationSummary.CurrentValue.ToString("N0")</h5>
+                                    <span class="description-text">Current Value</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="description-block">
+                                    <h5 class="description-header
+                                       @(Model.ValuationSummary.ValueChange >= 0 ? "text-success" : "text-danger")">
+                                        @(Model.ValuationSummary.ValueChange >= 0 ? "+" : "")$@Model.ValuationSummary.ValueChange.ToString("N0")
+                                    </h5>
+                                    <span class="description-text">Change from Last Month</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="description-block">
+                                    <h5 class="description-header">@Model.ValuationSummary.PercentageChange.ToString("F1")%</h5>
+                                    <span class="description-text">Percentage Change</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="description-block">
+                                    <h5 class="description-header">@Model.ValuationSummary.LastUpdated.ToString("MMM dd, yyyy")</h5>
+                                    <span class="description-text">Last Updated</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Load charts
+            loadPurchaseChart();
+            loadCategoryChart();
+
+            // Refresh button
+            $('#refreshDashboard').click(function() {
+                var btn = $(this);
+                btn.prop('disabled', true);
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Refreshing...');
+
+                $.post('@Url.Action("RefreshDashboard")', function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }).always(function() {
+                    btn.prop('disabled', false);
+                    btn.html('<i class="fas fa-sync-alt"></i> Refresh');
+                });
+            });
+        });
+
+        function loadPurchaseChart() {
+            $.get('@Url.Action("GetChartData", new { chartType = "purchase" })', function(data) {
+                var ctx = document.getElementById('purchaseChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.label),
+                        datasets: [{
+                            label: 'Purchase Orders',
+                            data: data.map(d => d.value),
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadCategoryChart() {
+            $.get('@Url.Action("GetChartData", new { chartType = "category" })', function(data) {
+                var ctx = document.getElementById('categoryChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(d => d.label),
+                        datasets: [{
+                            data: data.map(d => d.value),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            });
+        }
+    </script>
+}

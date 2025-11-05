@@ -1,0 +1,171 @@
+﻿@model IEnumerable<IMS.Application.DTOs.UserStoreDto>
+@{
+    ViewData["Title"] = "User Store Assignments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">User Store Assignments</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">User Store Assignments</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Section -->
+        <div class="card card-default collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">Filters</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Filter by User</label>
+                                <input type="text" name="userId" class="form-control" placeholder="User ID" value="@ViewBag.UserId" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Filter by Store</label>
+                                <input type="text" name="storeId" class="form-control" placeholder="Store ID" value="@ViewBag.StoreId" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Apply Filter</button>
+                    <a asp-action="Index" class="btn btn-default">Reset</a>
+                </form>
+            </div>
+        </div>
+
+        @if (ViewBag.UserName != null)
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-user"></i> Showing assignments for: <strong>@ViewBag.UserName</strong>
+            </div>
+        }
+
+        @if (ViewBag.StoreName != null)
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-warehouse"></i> Showing assignments for store: <strong>@ViewBag.StoreName</strong>
+            </div>
+        }
+
+        <!-- Assignment List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Active Assignments</h3>
+                <div class="card-tools">
+                    <a asp-action="Assign" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> New Assignment
+                    </a>
+                    <a asp-action="BulkAssign" class="btn btn-primary btn-sm">
+                        <i class="fas fa-users"></i> Bulk Assign
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped datatable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Store</th>
+                            <th>Assigned Date</th>
+                            <th>Assigned By</th>
+                            <th>Is Primary</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var assignment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@assignment.UserFullName</strong>
+                                    <br /><small class="text-muted">@assignment.UserName</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">@assignment.StoreName</span>
+                                    <br /><small>@assignment.StoreCode</small>
+                                </td>
+                                <td>@assignment.AssignedDate?.ToString("dd MMM yyyy")</td>
+                                <td>@assignment.AssignedBy</td>
+                                <td>
+                                    @if (assignment.IsPrimary)
+                                    {
+                                        <span class="badge badge-success">Primary</span>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-xs btn-outline-primary"
+                                                onclick="setPrimary('@assignment.UserId', @assignment.StoreId)">
+                                            Set Primary
+                                        </button>
+                                    }
+                                </td>
+                                <td>
+                                    @if (assignment.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <form asp-action="Remove" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@assignment.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Remove this assignment?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function setPrimary(userId, storeId) {
+            if (confirm('Set this as primary store for the user?')) {
+                $.post('@Url.Action("SetPrimary", "UserStore")',
+                    {
+                        userId: userId,
+                        storeId: storeId,
+                        __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()
+                    })
+                    .done(function() {
+                        location.reload();
+                    });
+            }
+        }
+    </script>
+}

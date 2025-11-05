@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Assign Store to Battalion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var battalionId = ViewBag.BattalionId;
+    var battalionName = ViewBag.BattalionName;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Assign Store to Battalion</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Battalions</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@battalionId">@battalionName</a></li>
+                    <li class="breadcrumb-item active">Assign Store</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Store Assignment for @battalionName</h3>
+                    </div>
+                    <form asp-action="AssignStore" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="battalionId" value="@battalionId" />
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="storeId">Select Store</label>
+                                <select name="storeId" class="form-control select2" required>
+                                    <option value="">-- Select Store --</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var item in ViewBag.Stores as SelectList)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" name="isPrimary" value="true" class="custom-control-input" id="isPrimary">
+                                    <label class="custom-control-label" for="isPrimary">
+                                        Set as Primary Store
+                                    </label>
+                                </div>
+                                <small class="text-muted">Primary store will be the default store for this battalion.</small>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Assign Store
+                            </button>
+                            <a asp-action="Details" asp-route-id="@battalionId" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: '-- Select Store --',
+                allowClear: true
+            });
+        });
+    </script>
+}

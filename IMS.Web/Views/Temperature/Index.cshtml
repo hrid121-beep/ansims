@@ -1,0 +1,255 @@
+﻿@using IMS.Application
+@using IMS.Application.DTOs
+@model IEnumerable<TemperatureLogDto>
+@{
+    ViewData["Title"] = "Temperature Monitoring";
+    var statistics = ViewBag.Statistics as TemperatureStatisticsDto;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Temperature Monitoring</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Temperature</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@statistics?.AverageTemperature.ToString("F1")°C</h3>
+                        <p>Average Temperature</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@statistics?.ComplianceRate.ToString("F0")%</h3>
+                        <p>Compliance Rate</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@statistics?.AlertCount</h3>
+                        <p>Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>@statistics?.TotalReadings</h3>
+                        <p>Total Readings</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filters</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Log Temperature
+                    </a>
+                    <a asp-action="Alerts" class="btn btn-warning btn-sm">
+                        <i class="fas fa-exclamation-triangle"></i> View Alerts
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" class="form-inline">
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Store:</label>
+                        <select name="storeId" class="form-control">
+                            <option value="">All Stores</option>
+                            @foreach (var store in ViewBag.Stores)
+                            {
+                                <option value="@store.Id" selected="@(store.Id == ViewBag.CurrentStoreId)">
+                                    @store.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mr-3">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="fromDate" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="form-group mr-3">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="toDate" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a asp-action="Export" asp-route-storeId="@ViewBag.CurrentStoreId"
+                       asp-route-fromDate="@ViewBag.FromDate" asp-route-toDate="@ViewBag.ToDate"
+                       class="btn btn-success ml-2">
+                        <i class="fas fa-file-excel"></i> Export
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Temperature Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Temperature Trend</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="temperatureChart" height="80"></canvas>
+            </div>
+        </div>
+
+        <!-- Temperature Logs Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Temperature Logs</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="temperatureTable">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Store</th>
+                            <th>Temperature</th>
+                            <th>Humidity</th>
+                            <th>Status</th>
+                            <th>Equipment</th>
+                            <th>Recorded By</th>
+                            <th>Alert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            <tr class="@(log.IsAlert ? "table-warning" : "")">
+                                <td>@log.LogTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@log.StoreName</td>
+                                <td>@log.Temperature°@log.Unit</td>
+                                <td>@log.Humidity%</td>
+                                <td>
+                                    @if (log.Status == "Normal")
+                                    {
+                                        <span class="badge badge-success">@log.Status</span>
+                                    }
+                                    else if (log.Status == "Warning")
+                                    {
+                                        <span class="badge badge-warning">@log.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">@log.Status</span>
+                                    }
+                                </td>
+                                <td>@log.Equipment</td>
+                                <td>@log.RecordedBy</td>
+                                <td>
+                                    @if (log.IsAlert)
+                                    {
+                                        <i class="fas fa-exclamation-triangle text-warning"
+                                           data-toggle="tooltip" title="@log.AlertReason"></i>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#temperatureTable').DataTable({
+                "order": [[0, "desc"]],
+                "pageLength": 25
+            });
+
+            // Temperature Chart
+            var ctx = document.getElementById('temperatureChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.Select(m => m.LogTime.ToString("MM/dd HH:mm")))),
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: @Html.Raw(Json.Serialize(Model.Select(m => m.Temperature))),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Humidity (%)',
+                        data: @Html.Raw(Json.Serialize(Model.Select(m => m.Humidity))),
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Humidity (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

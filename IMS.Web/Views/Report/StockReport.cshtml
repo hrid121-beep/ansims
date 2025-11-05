@@ -1,0 +1,415 @@
+﻿@model IMS.Application.DTOs.StockReportDto
+@{
+    ViewData["Title"] = "Stock Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Stock Report</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Stock Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="StockReport" method="get">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Warehouse/Store:</label>
+                                <select id="storeId" name="storeId" asp-items="ViewBag.Stores" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Category:</label>
+                                <select id="categoryId" name="categoryId" asp-items="ViewBag.Categories" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Items</span>
+                        <span class="info-box-number">@Model.TotalItems</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Total Unique Items
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Inventory Value</span>
+                        <span class="info-box-number">৳@($"{Model.TotalValue:N2}")</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Current Stock Value
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Low Stock Items</span>
+                        <span class="info-box-number">@Model.LowStockItems</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Needs Restocking
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-times-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Out of Stock</span>
+                        <span class="info-box-number">@Model.OutOfStockItems</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Urgent Action Required
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stock Status Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stockStatusChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top 10 Items by Value</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="topItemsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Stock Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Stock Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-download"></i> Export Excel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="stockTable">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Store</th>
+                            <th class="text-right">Current Stock</th>
+                            <th class="text-right">Min. Stock</th>
+                            <th>Unit</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Total Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.StockItems != null && Model.StockItems.Any())
+                        {
+                            @foreach (var item in Model.StockItems.OrderBy(x => x.ItemName))
+                            {
+                                <tr class="@(item.CurrentStock == 0 ? "table-danger" : item.CurrentStock < item.MinimumStock ? "table-warning" : "")">
+                                    <td><strong>@item.ItemCode</strong></td>
+                                    <td>@item.ItemName</td>
+                                    <td>@item.CategoryName</td>
+                                    <td>@item.StoreName</td>
+                                    <td class="text-right">@((item.CurrentStock % 1 == 0) ? $"{item.CurrentStock:N0}" : $"{item.CurrentStock:N2}")</td>
+                                    <td class="text-right">@((item.MinimumStock % 1 == 0) ? $"{item.MinimumStock:N0}" : $"{item.MinimumStock:N2}")</td>
+                                    <td>@item.Unit</td>
+                                    <td class="text-right">৳@($"{item.UnitPrice:N2}")</td>
+                                    <td class="text-right">৳@($"{item.TotalValue:N2}")</td>
+                                    <td>
+                                        @if (item.CurrentStock == 0)
+                                        {
+                                            <span class="badge badge-danger">Out of Stock</span>
+                                        }
+                                        else if (item.CurrentStock < item.MinimumStock)
+                                        {
+                                            <span class="badge badge-warning">Low Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-success">In Stock</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center">No stock data available</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-light font-weight-bold">
+                            <td colspan="8" class="text-right">Total:</td>
+                            <td class="text-right">৳@($"{Model.TotalValue:N2}")</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Stock Status Pie Chart
+            var stockStatusData = {
+                labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+                datasets: [{
+                    data: [
+                        @(Model.TotalItems - Model.LowStockItems - Model.OutOfStockItems),
+                        @Model.LowStockItems,
+                        @Model.OutOfStockItems
+                    ],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                    borderWidth: 0
+                }]
+            };
+
+            var stockStatusOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var dataset = data.datasets[tooltipItem.datasetIndex];
+                            var total = dataset.data.reduce(function(previousValue, currentValue) {
+                                return previousValue + currentValue;
+                            });
+                            var currentValue = dataset.data[tooltipItem.index];
+                            var percentage = Math.floor(((currentValue/total) * 100)+0.5);
+                            return data.labels[tooltipItem.index] + ': ' + currentValue + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            };
+
+            var stockStatusChartCanvas = $('#stockStatusChart').get(0).getContext('2d');
+            new Chart(stockStatusChartCanvas, {
+                type: 'doughnut',
+                data: stockStatusData,
+                options: stockStatusOptions
+            });
+
+            // Top Items by Value Bar Chart
+            @{
+                    var topItems = Model.StockItems
+                            .Where(x => x.TotalValue > 0)
+                            .OrderByDescending(x => x.TotalValue)
+                            .Take(10)
+                            .ToList();
+            }
+
+            var topItemsData = {
+                labels: [@Html.Raw(string.Join(",", topItems.Select(x => $"'{x.ItemName}'")))],
+                datasets: [{
+                    label: 'Value (৳)',
+                    data: [@string.Join(",", topItems.Select(x => $"{x.TotalValue:F2}"))],
+                    backgroundColor: 'rgba(60,141,188,0.9)',
+                    borderColor: 'rgba(60,141,188,0.8)',
+                    borderWidth: 1
+                }]
+            };
+
+            var topItemsOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                legend: {
+                    display: false
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            callback: function(value) {
+                                if (value.length > 15) {
+                                    return value.substr(0, 15) + '...';
+                                }
+                                return value;
+                            }
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                var num = parseFloat(value);
+                                var formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(2);
+                                return '৳ ' + formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            }
+                        }
+                    }]
+                }
+            };
+
+            var topItemsChartCanvas = $('#topItemsChart').get(0).getContext('2d');
+            new Chart(topItemsChartCanvas, {
+                type: 'bar',
+                data: topItemsData,
+                options: topItemsOptions
+            });
+
+            // Table Search
+            $('#tableSearch').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#stockTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        // Print function
+        function printReport() {
+            window.print();
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            var storeId = document.getElementById('storeId').value;
+            var categoryId = document.getElementById('categoryId').value;
+
+            var url = '@Url.Action("ExportStockReport", "Report")' + '?';
+
+            if (storeId) {
+                url += 'storeId=' + storeId;
+            }
+
+            if (categoryId) {
+                if (storeId) url += '&';
+                url += 'categoryId=' + categoryId;
+            }
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var storeId = document.getElementById('storeId').value;
+            var categoryId = document.getElementById('categoryId').value;
+
+            var url = '@Url.Action("ExportStockReportPdf", "Report")' + '?';
+
+            if (storeId) {
+                url += 'storeId=' + storeId;
+            }
+
+            if (categoryId) {
+                if (storeId) url += '&';
+                url += 'categoryId=' + categoryId;
+            }
+
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, #tableSearch, form {
+                display: none !important;
+            }
+        }
+    </style>
+}

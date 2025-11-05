@@ -1,0 +1,544 @@
+﻿@model IEnumerable<IMS.Web.Models.ApprovalViewModel>
+@{
+    ViewData["Title"] = "Approval Center";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var initialData = Model?.ToList() ?? new List<IMS.Web.Models.ApprovalViewModel>();
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-clipboard-check"></i> Approval Center
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Approval Center</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="totalPending">@initialData.Count</h3>
+                        <p>Total Pending</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="issueCount">@initialData.Count(x => x.EntityType == "ISSUE")</h3>
+                        <p>Issue Requests</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="purchaseCount">@initialData.Count(x => x.EntityType == "PURCHASE")</h3>
+                        <p>Purchase Orders</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="adjustmentCount">@initialData.Count(x => x.EntityType == "STOCK_ADJUSTMENT")</h3>
+                        <p>Adjustments</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-purple">
+                    <div class="inner">
+                        <h3 id="transferCount">@initialData.Count(x => x.EntityType == "TRANSFER")</h3>
+                        <p>Transfer Requests</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-teal">
+                    <div class="inner">
+                        <h3 id="requisitionCount">@initialData.Count(x => x.EntityType == "REQUISITION")</h3>
+                        <p>Requisitions</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-navy">
+                    <div class="inner">
+                        <h3 id="allotmentCount">@initialData.Count(x => x.EntityType == "ALLOTMENT_LETTER")</h3>
+                        <p>Allotment Letters</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-orange">
+                    <div class="inner">
+                        <h3 id="returnCount">@initialData.Count(x => x.EntityType == "RETURN")</h3>
+                        <p>Return Requests</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-maroon">
+                    <div class="inner">
+                        <h3 id="writeoffCount">@initialData.Count(x => x.EntityType == "WRITEOFF" || x.EntityType == "WRITE_OFF")</h3>
+                        <p>Write-Off Requests</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="btn-group" role="group">
+                    <a asp-action="History" class="btn btn-info">
+                        <i class="fas fa-history"></i> View History
+                    </a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("DirectorGeneral"))
+                    {
+                        <a asp-controller="ApprovalSettings" asp-action="Index" class="btn btn-warning">
+                            <i class="fas fa-cog"></i> Configure Workflows
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-outline card-primary collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">Filters</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="filterForm" class="form-inline">
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Type:</label>
+                        <select class="form-control" id="filterType">
+                            <option value="">All</option>
+                            <option value="ISSUE">Issues</option>
+                            <option value="PURCHASE">Purchases</option>
+                            <option value="STOCK_ADJUSTMENT">Adjustments</option>
+                            <option value="TRANSFER">Transfers</option>
+                            <option value="REQUISITION">Requisitions</option>
+                            <option value="ALLOTMENT_LETTER">Allotment Letters</option>
+                            <option value="RETURN">Returns</option>
+                            <option value="WRITEOFF">Write-Offs</option>
+                        </select>
+                    </div>
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Priority:</label>
+                        <select class="form-control" id="filterPriority">
+                            <option value="">All</option>
+                            <option value="Critical">Critical</option>
+                            <option value="High">High</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                    <button type="button" class="btn btn-default ml-2" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="approvalsContainer">
+            <div class="text-center p-4">
+                <i class="fas fa-spinner fa-pulse fa-3x text-primary"></i>
+                <p class="mt-2">Loading approvals...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        var allApprovals = [];
+        var currentFilters = { type: '', priority: '' };
+
+        $(document).ready(function() {
+            loadApprovals();
+            setInterval(loadApprovals, 60000);
+        });
+
+        function loadApprovals() {
+            $.ajax({
+                url: '@Url.Action("GetPendingJson", "Approval")',
+                type: 'GET',
+                cache: false,
+                success: function(data) {
+                    allApprovals = data || [];
+                    applyFiltersAndDisplay();
+                },
+                error: function() {
+                    $('#approvalsContainer').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Failed to load approvals.
+                            <a href="javascript:loadApprovals()" class="alert-link">Retry</a>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        function applyFilters() {
+            currentFilters.type = $('#filterType').val();
+            currentFilters.priority = $('#filterPriority').val();
+            applyFiltersAndDisplay();
+        }
+
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            currentFilters = { type: '', priority: '' };
+            applyFiltersAndDisplay();
+        }
+
+        function applyFiltersAndDisplay() {
+            var filtered = allApprovals;
+
+            if (currentFilters.type) {
+                filtered = filtered.filter(item => item.entityType === currentFilters.type);
+            }
+
+            if (currentFilters.priority) {
+                filtered = filtered.filter(item => item.priority === currentFilters.priority);
+            }
+
+            displayApprovals(filtered);
+            updateCounts(filtered);
+        }
+
+        function displayApprovals(approvals) {
+            var container = $('#approvalsContainer');
+            container.empty();
+
+            if (!approvals || approvals.length === 0) {
+                container.html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No pending approvals found.
+                    </div>
+                `);
+                return;
+            }
+
+            var grouped = {};
+            approvals.forEach(function(item) {
+                var type = item.entityType || 'UNKNOWN';
+                if (!grouped[type]) grouped[type] = [];
+                grouped[type].push(item);
+            });
+
+            Object.keys(grouped).forEach(function(type) {
+                container.append(createApprovalSection(type, grouped[type]));
+            });
+        }
+
+        function createApprovalSection(type, items) {
+            var color = getTypeColor(type);
+            var icon = getTypeIcon(type);
+
+            var html = `
+                <div class="card card-outline ${color}">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="${icon}"></i> ${getTypeName(type)}
+                            <span class="badge badge-primary ml-2">${items.length}</span>
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Amount</th>
+                                        <th>Requested By</th>
+                                        <th>Date</th>
+                                        <th>Priority</th>
+                                        <th>Level</th>
+                                        <th width="280">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+            items.forEach(function(item) {
+                var amount = 'N/A';
+                if (item.amount) {
+                    var num = parseFloat(item.amount);
+                    var formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(2);
+                    amount = '৳ ' + formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+                var date = item.requestedDate ? new Date(item.requestedDate).toLocaleDateString('en-GB') : 'N/A';
+                var priority = item.priority || 'Normal';
+                var level = item.currentLevel || 1;
+
+                html += `
+                    <tr>
+                        <td><strong>${item.description || '#' + item.entityId}</strong></td>
+                        <td>${amount}</td>
+                        <td>
+                            <strong>${item.requestedByName || 'Unknown'}</strong><br>
+                            <small class="text-muted"><i class="fas fa-user-tag"></i> ${item.requestedByRole || 'N/A'}</small>
+                        </td>
+                        <td>${date}</td>
+                        <td>${getPriorityBadge(priority)}</td>
+                        <td><span class="badge badge-info">Level ${level}</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">`;
+
+                if (type === 'PURCHASE' && level === 2) {
+                    html += `<a href="/Approval/InspectPurchase/${item.entityId}" class="btn btn-warning" title="Inspect">
+                                <i class="fas fa-search"></i> Inspect
+                            </a>`;
+                }
+
+                html += `<button class="btn btn-success" onclick="approveItem(${item.id})" title="Approve">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger" onclick="rejectItem(${item.id})" title="Reject">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                                <a href="/${getControllerName(type)}/Details/${item.entityId}" class="btn btn-info" target="_blank" title="View">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            html += `</tbody></table></div></div></div>`;
+            return html;
+        }
+
+        function updateCounts(approvals) {
+            var counts = {
+                total: approvals.length,
+                issue: approvals.filter(a => a.entityType === 'ISSUE').length,
+                purchase: approvals.filter(a => a.entityType === 'PURCHASE').length,
+                adjustment: approvals.filter(a => a.entityType === 'STOCK_ADJUSTMENT').length,
+                transfer: approvals.filter(a => a.entityType === 'TRANSFER').length,
+                requisition: approvals.filter(a => a.entityType === 'REQUISITION').length,
+                allotment: approvals.filter(a => a.entityType === 'ALLOTMENT_LETTER').length,
+                return: approvals.filter(a => a.entityType === 'RETURN').length,
+                writeoff: approvals.filter(a => a.entityType === 'WRITEOFF' || a.entityType === 'WRITE_OFF').length
+            };
+
+            $('#totalPending').text(counts.total);
+            $('#issueCount').text(counts.issue);
+            $('#purchaseCount').text(counts.purchase);
+            $('#adjustmentCount').text(counts.adjustment);
+            $('#transferCount').text(counts.transfer);
+            $('#requisitionCount').text(counts.requisition);
+            $('#allotmentCount').text(counts.allotment);
+            $('#returnCount').text(counts.return);
+            $('#writeoffCount').text(counts.writeoff);
+        }
+
+        function approveItem(id) {
+            Swal.fire({
+                title: 'Approve Request?',
+                text: 'Are you sure you want to approve this request?',
+                icon: 'question',
+                input: 'textarea',
+                inputPlaceholder: 'Optional comments...',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, approve!',
+                confirmButtonColor: '#28a745',
+                showLoaderOnConfirm: true,
+                preConfirm: (comments) => processApproval(id, 'approve', comments || '')
+            });
+        }
+
+        function rejectItem(id) {
+            Swal.fire({
+                title: 'Reject Request',
+                text: 'Please provide a reason for rejection',
+                icon: 'warning',
+                input: 'textarea',
+                inputPlaceholder: 'Rejection reason (required)',
+                inputValidator: (value) => !value ? 'Rejection reason is required!' : null,
+                showCancelButton: true,
+                confirmButtonText: 'Reject',
+                confirmButtonColor: '#dc3545',
+                showLoaderOnConfirm: true,
+                preConfirm: (reason) => processApproval(id, 'reject', reason)
+            });
+        }
+
+        function processApproval(id, action, remarks) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: '@Url.Action("Process", "Approval")',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: action,
+                        remarks: remarks,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => loadApprovals());
+                            resolve();
+                        } else {
+                            Swal.fire('Error!', response.message || 'An error occurred', 'error');
+                            reject();
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error!', 'Failed to process approval', 'error');
+                        reject();
+                    }
+                });
+            });
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                'ISSUE': 'card-warning',
+                'PURCHASE': 'card-success',
+                'STOCK_ADJUSTMENT': 'card-danger',
+                'TRANSFER': 'card-purple',
+                'REQUISITION': 'card-info',
+                'ALLOTMENT_LETTER': 'card-navy',
+                'RETURN': 'card-orange',
+                'WRITEOFF': 'card-maroon',
+                'WRITE_OFF': 'card-maroon'
+            };
+            return colors[type] || 'card-secondary';
+        }
+
+        function getTypeIcon(type) {
+            const icons = {
+                'ISSUE': 'fas fa-file-export',
+                'PURCHASE': 'fas fa-shopping-cart',
+                'STOCK_ADJUSTMENT': 'fas fa-sync',
+                'TRANSFER': 'fas fa-exchange-alt',
+                'REQUISITION': 'fas fa-clipboard-list',
+                'ALLOTMENT_LETTER': 'fas fa-file-alt',
+                'RETURN': 'fas fa-undo',
+                'WRITEOFF': 'fas fa-trash-alt',
+                'WRITE_OFF': 'fas fa-trash-alt'
+            };
+            return icons[type] || 'fas fa-file';
+        }
+
+        function getTypeName(type) {
+            const names = {
+                'ISSUE': 'Issue Requests',
+                'PURCHASE': 'Purchase Orders',
+                'STOCK_ADJUSTMENT': 'Stock Adjustments',
+                'TRANSFER': 'Transfer Requests',
+                'REQUISITION': 'Requisitions',
+                'ALLOTMENT_LETTER': 'Allotment Letters',
+                'RETURN': 'Return Requests',
+                'WRITEOFF': 'Write-Off Requests',
+                'WRITE_OFF': 'Write-Off Requests'
+            };
+            return names[type] || type;
+        }
+
+        function getControllerName(type) {
+            const controllers = {
+                'ISSUE': 'Issue',
+                'PURCHASE': 'Purchase',
+                'STOCK_ADJUSTMENT': 'StockAdjustment',
+                'TRANSFER': 'Transfer',
+                'REQUISITION': 'Requisition',
+                'ALLOTMENT_LETTER': 'AllotmentLetter',
+                'RETURN': 'Return',
+                'WRITEOFF': 'WriteOff',
+                'WRITE_OFF': 'WriteOff'
+            };
+            return controllers[type] || type;
+        }
+
+        function getPriorityBadge(priority) {
+            const badges = {
+                'Critical': '<span class="badge badge-danger"><i class="fas fa-exclamation-circle"></i> Critical</span>',
+                'High': '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> High</span>',
+                'Normal': '<span class="badge badge-info">Normal</span>',
+                'Low': '<span class="badge badge-secondary">Low</span>'
+            };
+            return badges[priority] || badges['Normal'];
+        }
+    </script>
+}
+
+<style>
+    .card { margin-bottom: 20px; }
+    .table td { vertical-align: middle; }
+    #approvalsContainer { min-height: 200px; }
+</style>

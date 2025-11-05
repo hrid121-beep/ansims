@@ -1,0 +1,106 @@
+@model IMS.Application.DTOs.ApprovalThresholdDto
+@{
+    ViewData["Title"] = "Edit Approval Threshold";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Edit Approval Threshold</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Approval Settings</a></li>
+                    <li class="breadcrumb-item active">Edit Threshold</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Threshold Details</h3>
+                    </div>
+                    <form asp-action="EditThreshold" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <div class="form-group">
+                                <label asp-for="EntityType">Entity Type <span class="text-danger">*</span></label>
+                                <select asp-for="EntityType" asp-items="ViewBag.EntityTypes" class="form-control">
+                                    <option value="">-- Select Entity Type --</option>
+                                </select>
+                                <span asp-validation-for="EntityType" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MinAmount">Minimum Amount (৳) <span class="text-danger">*</span></label>
+                                        <input asp-for="MinAmount" type="number" step="0.01" class="form-control" />
+                                        <span asp-validation-for="MinAmount" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MaxAmount">Maximum Amount (৳)</label>
+                                        <input asp-for="MaxAmount" type="number" step="0.01" class="form-control" />
+                                        <span asp-validation-for="MaxAmount" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ApprovalLevel">Approval Level <span class="text-danger">*</span></label>
+                                        <select asp-for="ApprovalLevel" asp-items="ViewBag.ApprovalLevels" class="form-control">
+                                            <option value="">-- Select Level --</option>
+                                        </select>
+                                        <span asp-validation-for="ApprovalLevel" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="RequiredRole">Required Role <span class="text-danger">*</span></label>
+                                        <select asp-for="RequiredRole" asp-items="ViewBag.Roles" class="form-control">
+                                            <option value="">-- Select Role --</option>
+                                        </select>
+                                        <span asp-validation-for="RequiredRole" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update Threshold
+                            </button>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

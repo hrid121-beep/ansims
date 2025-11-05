@@ -1,0 +1,83 @@
+﻿@model string
+
+@switch (Model)
+{
+    case "Storekeeper":
+        <div class="alert alert-success">
+            <h5><i class="fas fa-warehouse"></i> Storekeeper Role</h5>
+            <p><strong>Primary Responsibilities:</strong> Create and manage store operations</p>
+            <h6>Essential Permissions:</h6>
+            <ul>
+                <li><strong>Purchase:</strong> ViewPurchase, CreatePurchase, UpdatePurchase, ReceivePurchase</li>
+                <li><strong>Issue:</strong> ViewIssue, CreateIssue, ProcessIssue</li>
+                <li><strong>Store:</strong> ViewStore, ViewOwnStore</li>
+                <li><strong>Item:</strong> ViewItem</li>
+                <li><strong>Vendor:</strong> ViewVendor</li>
+                <li><strong>Barcode:</strong> ViewBarcode, GenerateBarcode, PrintBarcode</li>
+                <li><strong>Stock:</strong> ViewStock, ViewStockMovement</li>
+                <li><strong>Reports:</strong> ViewStockReport, ExportReports</li>
+            </ul>
+            <p class="mb-0"><strong>Note:</strong> Storekeepers initiate requests but cannot approve their own submissions.</p>
+        </div>
+        break;
+
+    case "AD_DD_Store":
+        <div class="alert alert-info">
+            <h5><i class="fas fa-clipboard-check"></i> AD/DD Store Role</h5>
+            <p><strong>Primary Responsibilities:</strong> Inspect and verify items in Central Store (Level 2 Approval)</p>
+            <h6>Essential Permissions:</h6>
+            <ul>
+                <li><strong>Approval:</strong> ViewApproval, ProcessApproval ⚠️ <em>Required!</em></li>
+                <li><strong>Purchase:</strong> ViewPurchase, InspectPurchase ⚠️ <em>Required!</em></li>
+                <li><strong>Quality:</strong> PerformQualityCheck, QualityCheck</li>
+                <li><strong>Store:</strong> ViewStore, ViewAllStores</li>
+                <li><strong>Item:</strong> ViewItem</li>
+                <li><strong>Stock:</strong> ViewStock</li>
+                <li><strong>Reports:</strong> ViewPurchaseReport, ViewStockReport</li>
+            </ul>
+            <p class="mb-0"><strong>Workflow:</strong> Receive inspection request → Physically inspect → Mark serviceable/unserviceable → Forward to DDG Admin</p>
+        </div>
+        break;
+
+    case "DDG_Admin":
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-user-tie"></i> DDG Admin Role</h5>
+            <p><strong>Primary Responsibilities:</strong> Final approval authority for Central Store (Level 3 Approval)</p>
+            <h6>Essential Permissions:</h6>
+            <ul>
+                <li><strong>Approval:</strong> ViewApproval, ProcessApproval ⚠️ <em>Required!</em></li>
+                <li><strong>Purchase:</strong> ViewPurchase, ApprovePurchase ⚠️ <em>Required!</em></li>
+                <li><strong>WriteOff:</strong> ViewWriteOff, ApproveWriteOff (for control items)</li>
+                <li><strong>Store:</strong> ViewStore, ViewAllStores</li>
+                <li><strong>Stock:</strong> ViewStock, ViewAllReports</li>
+                <li><strong>Financial:</strong> Review budget compliance</li>
+                <li><strong>Reports:</strong> ViewAllReports, ExportReports</li>
+            </ul>
+            <p class="mb-0"><strong>Workflow:</strong> Review inspection report → Verify budget → Final approve/reject → Authorize transfer to Provision</p>
+        </div>
+        break;
+
+    case "DD_Provision":
+        <div class="alert alert-primary">
+            <h5><i class="fas fa-boxes"></i> DD Provision Role</h5>
+            <p><strong>Primary Responsibilities:</strong> Approve distribution from Provision Store (Level 2 Approval)</p>
+            <h6>Essential Permissions:</h6>
+            <ul>
+                <li><strong>Approval:</strong> ViewApproval, ProcessApproval ⚠️ <em>Required!</em></li>
+                <li><strong>Allotment:</strong> ViewAllotmentLetter, ApproveAllotmentLetter ⚠️ <em>Required!</em></li>
+                <li><strong>Issue:</strong> ViewIssue, ApproveIssue</li>
+                <li><strong>Store:</strong> ViewStore (Provision Store access)</li>
+                <li><strong>Item:</strong> ViewItem</li>
+                <li><strong>Stock:</strong> ViewStock, ViewStockMovement</li>
+                <li><strong>Reports:</strong> ViewIssueReport, ViewStockReport</li>
+            </ul>
+            <p class="mb-0"><strong>Workflow:</strong> Review allotment letter → Verify authorization/eligibility → Approve distribution → Items issued to units</p>
+        </div>
+        break;
+
+    default:
+        <div class="alert alert-secondary">
+            <p>No specific recommendations available for this role.</p>
+        </div>
+        break;
+}

@@ -1,0 +1,292 @@
+﻿@model IMS.Application.DTOs.StoreTypeDto
+@{
+    ViewData["Title"] = "Edit Store Type";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-edit"></i> Edit Store Type</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Store Types</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit"></i> Edit Store Type - @Model.Name
+                        </h3>
+                    </div>
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <!-- Code & Name -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code">
+                                            <i class="fas fa-hashtag"></i> Code
+                                        </label>
+                                        <input asp-for="Code" class="form-control" readonly />
+                                        <small class="text-muted">
+                                            <i class="fas fa-lock"></i> Code cannot be changed
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name">
+                                            <i class="fas fa-tag"></i> Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Name" class="form-control" placeholder="e.g., Main Warehouse" required />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label asp-for="Description">
+                                    <i class="fas fa-info-circle"></i> Description
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="3"
+                                          placeholder="Describe the purpose and characteristics of this store type..."></textarea>
+                            </div>
+
+                            <!-- Icon & Color -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Icon">
+                                            <i class="fas fa-icons"></i> Icon Class
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i id="iconPreview" class="@(Model.Icon ?? "fas fa-warehouse")"></i>
+                                                </span>
+                                            </div>
+                                            <input asp-for="Icon" id="iconInput" class="form-control"
+                                                   placeholder="fas fa-warehouse" />
+                                        </div>
+                                        <small class="text-muted">
+                                            Font Awesome class
+                                            <a href="https://fontawesome.com/icons" target="_blank">
+                                                <i class="fas fa-external-link-alt"></i> Browse icons
+                                            </a>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Color">
+                                            <i class="fas fa-palette"></i> Theme Color
+                                        </label>
+                                        <div class="input-group">
+                                            <input asp-for="Color" type="color" class="form-control"
+                                                   style="max-width: 80px;" />
+                                            <input type="text" id="colorHex" class="form-control ml-2"
+                                                   placeholder="#007bff" readonly />
+                                        </div>
+                                        <small class="text-muted">Select a color theme for this store type</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Preview -->
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-eye"></i> Live Preview</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="livePreview" style="padding: 20px;">
+                                        <i id="previewIcon" class="@(Model.Icon ?? "fas fa-warehouse") fa-4x mb-3"
+                                           style="color: @(Model.Color ?? "#007bff");"></i>
+                                        <h4 id="previewName">@Model.Name</h4>
+                                        <p id="previewDescription" class="text-muted">@(Model.Description ?? "No description")</p>
+                                        <code id="previewCode" class="badge badge-secondary">@Model.Code</code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categories -->
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-tags"></i> Allowed Categories
+                                </label>
+                                <select name="selectedCategories" class="form-control select2" multiple>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (var category in ViewBag.Categories as IEnumerable<dynamic>)
+                                        {
+                                            var isSelected = Model.AllowedCategoryIds != null && Model.AllowedCategoryIds.Contains((int)category.Id);
+                                            <option value="@category.Id" selected="@isSelected">@category.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <small class="text-muted">
+                                    Currently assigned: <strong>@Model.CategoryCount</strong> categories
+                                </small>
+                            </div>
+
+                            <!-- Active Status -->
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" asp-for="IsActive" id="activeSwitch" />
+                                    <label class="custom-control-label" for="activeSwitch">
+                                        <i class="fas fa-toggle-on"></i> Active
+                                    </label>
+                                </div>
+                                <small class="text-muted">Inactive store types cannot be assigned to new stores</small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-list"></i> Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Sidebar -->
+            <div class="col-md-4">
+                <!-- Current Stats -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-bar"></i> Current Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6"><i class="fas fa-warehouse"></i> Total Stores:</dt>
+                            <dd class="col-sm-6"><span class="badge badge-primary">@Model.StoreCount</span></dd>
+
+                            <dt class="col-sm-6"><i class="fas fa-tags"></i> Categories:</dt>
+                            <dd class="col-sm-6"><span class="badge badge-info">@Model.CategoryCount</span></dd>
+
+                            <dt class="col-sm-6"><i class="fas fa-toggle-on"></i> Status:</dt>
+                            <dd class="col-sm-6">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge badge-success"><i class="fas fa-check"></i> Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger"><i class="fas fa-times"></i> Inactive</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-6"><i class="fas fa-calendar"></i> Created:</dt>
+                            <dd class="col-sm-6">
+                                <small class="text-muted">
+                                    @(Model.CreatedAt != DateTime.MinValue ? Model.CreatedAt.ToString("MMM dd, yyyy") : "N/A")
+                                </small>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Warning Card -->
+                @if (Model.StoreCount > 0)
+                {
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Important Note</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="small mb-0">
+                                <i class="fas fa-info-circle"></i> This store type is currently assigned to
+                                <strong>@Model.StoreCount</strong> store(s). Changes to categories may affect
+                                existing inventory organization.
+                            </p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Tips Card -->
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-lightbulb"></i> Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="small mb-0">
+                            <li>Choose clear, descriptive names</li>
+                            <li>Use meaningful icons for quick identification</li>
+                            <li>Assign relevant categories to control inventory</li>
+                            <li>Inactive types won't appear in store creation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select categories'
+            });
+
+            // Live preview updates
+            $('#iconInput').on('input', function() {
+                var iconClass = $(this).val() || 'fas fa-warehouse';
+                $('#iconPreview').attr('class', iconClass);
+                $('#previewIcon').attr('class', iconClass + ' fa-4x mb-3');
+            });
+
+            $('input[name="Name"]').on('input', function() {
+                var name = $(this).val() || 'Store Type Name';
+                $('#previewName').text(name);
+            });
+
+            $('textarea[name="Description"]').on('input', function() {
+                var desc = $(this).val() || 'No description';
+                $('#previewDescription').text(desc);
+            });
+
+            $('input[name="Color"]').on('input', function() {
+                var color = $(this).val();
+                $('#colorHex').val(color);
+                $('#previewIcon').css('color', color);
+                $('#livePreview').css('background-color', color + '10');
+            });
+
+            // Initialize color hex display
+            var initialColor = $('input[name="Color"]').val() || '#007bff';
+            $('#colorHex').val(initialColor);
+
+            // Initialize preview background
+            if (initialColor) {
+                $('#livePreview').css('background-color', initialColor + '10');
+            }
+        });
+    </script>
+}

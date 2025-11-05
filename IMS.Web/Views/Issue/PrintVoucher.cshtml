@@ -1,0 +1,181 @@
+﻿@using IMS.Application.DTOs
+@model IssueVoucherDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Issue Voucher - @Model.VoucherNumber</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                margin: 0;
+            }
+
+        .voucher-info {
+            margin-bottom: 20px;
+        }
+
+            .voucher-info table {
+                width: 100%;
+            }
+
+            .voucher-info td {
+                padding: 5px;
+            }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+            .items-table th, .items-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .items-table th {
+                background-color: #f2f2f2;
+            }
+
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+        }
+
+        .signature-box {
+            display: inline-block;
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #000;
+            margin: 60px 20px 5px 20px;
+        }
+        @@media print {
+            .no-print
+
+        {
+            display: none;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ANSAR & VDP</h1>
+        <h2>ISSUE VOUCHER</h2>
+        <h3>@Model.VoucherNumber</h3>
+    </div>
+
+    <div class="voucher-info">
+        <table>
+            <tr>
+                <td><strong>Issue Date:</strong> @Model.IssueDate.ToString("dd-MMM-yyyy")</td>
+                <td><strong>Issue No:</strong> @Model.IssueId</td>
+            </tr>
+            @if (!string.IsNullOrEmpty(Model.MemoNo))
+            {
+                <tr>
+                    <td><strong>Memo No:</strong> @Model.MemoNo</td>
+                    <td><strong>Memo Date:</strong> @(Model.MemoDate?.ToString("dd-MMM-yyyy") ?? "N/A")</td>
+                </tr>
+            }
+            <tr>
+                <td><strong>Issued To:</strong> @Model.IssuedTo</td>
+                <td><strong>Purpose:</strong> @Model.Purpose</td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Details:</strong> @Model.IssuedToDetails</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>S/N</th>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Store</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var sn = 1;
+            }
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@(sn++)</td>
+                    <td>@item.ItemCode</td>
+                    <td>@item.ItemName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Unit</td>
+                    <td>@item.StoreName</td>
+                    <td>@item.Remarks</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3">Total</th>
+                <th>@Model.Items.Sum(i => i.Quantity)</th>
+                <th colspan="3"></th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="qr-code">
+        <img src="data:image/png;base64,@Model.QRCodeImage" alt="QR Code" style="width: 150px; height: 150px;" />
+        <p><small>Scan this QR code to receive items</small></p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <p>Issued By<br>@Model.IssuedBy<br>Date: @Model.IssueDate.ToString("dd-MMM-yyyy")</p>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <p>Received By<br>Name: ________________<br>Date: ________________</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.SignatureImage))
+    {
+        <div style="text-align: center; margin-top: 20px;">
+            <img src="data:image/png;base64,@Model.SignatureImage" alt="Digital Signature" style="max-width: 200px;" />
+            <p>Approved By: @Model.ApprovedBy</p>
+        </div>
+    }
+
+    <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()">Print Voucher</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+</body>
+</html>

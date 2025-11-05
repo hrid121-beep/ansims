@@ -1,0 +1,100 @@
+﻿@model IEnumerable<IMS.Application.DTOs.IssueDto>
+@{
+    ViewData["Title"] = "Pending Receives";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Pending Receives</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Pending</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Issues Pending Receipt</h3>
+                <div class="card-tools">
+                    <small class="text-muted">
+                        These approved issues have not been fully received yet
+                    </small>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Issue No</th>
+                            <th>Issue Date</th>
+                            <th>Issued To</th>
+                            <th>Items</th>
+                            <th>Days Pending</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var issue in Model)
+                            {
+                                var daysPending = (DateTime.Now - issue.IssueDate).Days;
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Issue" asp-action="Details" asp-route-id="@issue.Id">
+                                            @issue.IssueNo
+                                        </a>
+                                    </td>
+                                    <td>@issue.IssueDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@issue.IssuedToType - @issue.IssuedToName</td>
+                                    <td>
+                                        <span class="badge badge-secondary">@issue.Items.Count items</span>
+                                    </td>
+                                    <td>
+                                        @if (daysPending > 30)
+                                        {
+                                            <span class="badge badge-danger">@daysPending days</span>
+                                        }
+                                        else if (daysPending > 15)
+                                        {
+                                            <span class="badge badge-warning">@daysPending days</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-info">@daysPending days</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="CreateFromIssue" asp-route-issueId="@issue.Id"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-check"></i> Receive
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">No pending receives found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,372 @@
+﻿@{
+    ViewData["Title"] = "Import Battalions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Import Battalions</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Battalions</a></li>
+                    <li class="breadcrumb-item active">Import</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Battalions from CSV</h3>
+                    </div>
+                    <form asp-action="Import" method="post" enctype="multipart/form-data" id="importForm">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> CSV Format Requirements</h5>
+                                Your CSV file should contain the following columns:
+                                <ul class="mb-0">
+                                    <li><strong>Code</strong> - Battalion code, e.g., BATT-001 (required)</li>
+                                    <li><strong>Name</strong> - Battalion name (required)</li>
+                                    <li><strong>Type</strong> - Male or Female (required)</li>
+                                    <li><strong>RangeCode</strong> - Code of the range (required)</li>
+                                    <li><strong>CommanderName</strong> - Battalion commander name (required)</li>
+                                    <li><strong>CommanderRank</strong> - Commander rank (optional)</li>
+                                    <li><strong>ContactNumber</strong> - Contact number (optional)</li>
+                                    <li><strong>Email</strong> - Email address (optional)</li>
+                                    <li><strong>HeadquarterAddress</strong> - HQ address (optional)</li>
+                                    <li><strong>ZilaCode</strong> - District code (optional)</li>
+                                    <li><strong>EstablishedDate</strong> - Date in YYYY-MM-DD format (optional)</li>
+                                    <li><strong>PersonnelCount</strong> - Total personnel (optional)</li>
+                                    <li><strong>OfficerCount</strong> - Number of officers (optional)</li>
+                                    <li><strong>EnlistedCount</strong> - Number of enlisted (optional)</li>
+                                    <li><strong>IsActive</strong> - true/false (optional, default: true)</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="file">Select CSV File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="file" name="file" accept=".csv" required>
+                                        <label class="custom-file-label" for="file">Choose file</label>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Maximum file size: 5MB</small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="updateExisting" name="updateExisting">
+                                    <label class="custom-control-label" for="updateExisting">
+                                        Update existing battalions if codes match
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="previewSection" style="display: none;">
+                                <h5>CSV Preview (First 5 rows)</h5>
+                                <div class="table-responsive">
+                                    <table id="previewTable" class="table table-sm table-bordered">
+                                        <thead class="bg-light"></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="callout callout-warning">
+                                <h5>Important Notes:</h5>
+                                <ul class="mb-0">
+                                    <li>The first row should contain column headers</li>
+                                    <li>Range codes must exist in the system</li>
+                                    <li>Battalion codes must be unique</li>
+                                    <li>Type must be either "Male" or "Female"</li>
+                                    <li>Total of 42 male battalions and 2 female battalions expected</li>
+                                    <li>Invalid rows will be skipped and reported</li>
+                                </ul>
+                            </div>
+
+                            <!-- Sample CSV Preview -->
+                            <div class="form-group">
+                                <label>Sample CSV Content:</label>
+                                <pre class="bg-light p-3">Code,Name,Type,RangeCode,CommanderName,CommanderRank,ContactNumber,Email,HeadquarterAddress,ZilaCode,EstablishedDate,PersonnelCount,OfficerCount,EnlistedCount,IsActive
+BATT-001,1st Battalion Ansar,Male,RNG-01,Col. Rahman,Colonel,02-9876543,battalion1@ansarvdp.gov.bd,"Battalion HQ, Savar Cantonment",ZILA-DHK,1975-06-01,500,25,475,true
+BATT-002,2nd Battalion Ansar,Male,RNG-01,Lt Col. Khan,Lieutenant Colonel,02-9876544,battalion2@ansarvdp.gov.bd,"Battalion HQ, Dhaka Cantonment",ZILA-DHK,1976-03-15,480,22,458,true
+BATT-F01,1st Female Battalion,Female,RNG-02,Maj. Sultana,Major,02-9876545,battalion.female1@ansarvdp.gov.bd,"Female Battalion HQ, Dhaka",ZILA-DHK,2010-01-01,200,15,185,true</pre>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success" id="importBtn">
+                                <i class="fas fa-upload"></i> Import Battalions
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <a href="#" class="btn btn-info float-right" onclick="downloadSample()">
+                                <i class="fas fa-download"></i> Download Sample CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Import Progress -->
+                <div class="card card-info" id="progressCard" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Progress</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                 style="width: 0%" id="progressBar"></div>
+                        </div>
+                        <p class="mt-2" id="progressText">Preparing import...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Results -->
+            <div class="col-md-4">
+                <div class="info-box mb-3 bg-info">
+                    <span class="info-box-icon"><i class="fas fa-info-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Battalion Structure</span>
+                        <span class="info-box-number">42 Male + 2 Female</span>
+                    </div>
+                </div>
+
+                <div class="card card-warning" id="resultsCard" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Results</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-7">Total Rows:</dt>
+                            <dd class="col-sm-5" id="totalRows">0</dd>
+
+                            <dt class="col-sm-7 text-success">Imported:</dt>
+                            <dd class="col-sm-5 text-success" id="importedRows">0</dd>
+
+                            <dt class="col-sm-7 text-info">Updated:</dt>
+                            <dd class="col-sm-5 text-info" id="updatedRows">0</dd>
+
+                            <dt class="col-sm-7 text-warning">Skipped:</dt>
+                            <dd class="col-sm-5 text-warning" id="skippedRows">0</dd>
+
+                            <dt class="col-sm-7 text-danger">Failed:</dt>
+                            <dd class="col-sm-5 text-danger" id="failedRows">0</dd>
+                        </dl>
+
+                        <div id="typeBreakdown" style="display: none;">
+                            <hr>
+                            <h6>Type Breakdown:</h6>
+                            <dl class="row small">
+                                <dt class="col-sm-7">Male Battalions:</dt>
+                                <dd class="col-sm-5" id="maleCount">0</dd>
+
+                                <dt class="col-sm-7">Female Battalions:</dt>
+                                <dd class="col-sm-5" id="femaleCount">0</dd>
+                            </dl>
+                        </div>
+
+                        <div id="errorDetails" style="display: none;">
+                            <hr>
+                            <h6>Error Details:</h6>
+                            <ul id="errorList" class="small"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Custom file input
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+
+                // Validate file size
+                if (this.files[0].size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File too large',
+                        text: 'Please select a file smaller than 5MB.'
+                    });
+                    $(this).val('');
+                    $(this).siblings('.custom-file-label').removeClass('selected').html('Choose file');
+                    return;
+                }
+
+                // Preview CSV
+                if (fileName.endsWith('.csv')) {
+                    previewCSV(this.files[0]);
+                } else {
+                    $('#previewSection').hide();
+                    toastr.error('Please select a valid CSV file');
+                }
+            });
+
+            function previewCSV(file) {
+                Papa.parse(file, {
+                    preview: 6, // Header + 5 data rows
+                    complete: function(results) {
+                        var table = $('#previewTable');
+                        var thead = table.find('thead').empty();
+                        var tbody = table.find('tbody').empty();
+
+                        if (results.data.length > 0) {
+                            // Create header row
+                            var headerRow = $('<tr>');
+                            results.data[0].forEach(function(header) {
+                                headerRow.append($('<th>').text(header));
+                            });
+                            thead.append(headerRow);
+
+                            // Create data rows
+                            for (var i = 1; i < results.data.length && i <= 5; i++) {
+                                if (results.data[i] && results.data[i].length > 0) {
+                                    var row = $('<tr>');
+                                    results.data[i].forEach(function(cell) {
+                                        row.append($('<td>').text(cell || ''));
+                                    });
+                                    tbody.append(row);
+                                }
+                            }
+
+                            $('#previewSection').slideDown();
+                            toastr.success('CSV preview loaded successfully');
+                        }
+                    },
+                    error: function(error) {
+                        toastr.error('Error reading CSV file: ' + error.message);
+                    }
+                });
+            }
+
+            // Import form submission
+            $('#importForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $('#importBtn').prop('disabled', true);
+                $('#progressCard').show();
+                $('#resultsCard').show();
+
+                // Reset results
+                $('#totalRows, #importedRows, #updatedRows, #skippedRows, #failedRows').text('0');
+                $('#maleCount, #femaleCount').text('0');
+                $('#errorDetails, #typeBreakdown').hide();
+                $('#errorList').empty();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = (evt.loaded / evt.total) * 100;
+                                $('#progressBar').css('width', percentComplete + '%');
+                                $('#progressText').text('Uploading file... ' + Math.round(percentComplete) + '%');
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: function(result) {
+                        $('#progressBar').css('width', '100%').removeClass('progress-bar-animated');
+                        $('#progressText').text('Import completed!');
+
+                        // Update results
+                        $('#totalRows').text(result.totalRows);
+                        $('#importedRows').text(result.importedCount);
+                        $('#updatedRows').text(result.updatedCount);
+                        $('#skippedRows').text(result.skippedCount);
+                        $('#failedRows').text(result.failedCount);
+
+                        // Type breakdown
+                        if (result.maleCount !== undefined || result.femaleCount !== undefined) {
+                            $('#typeBreakdown').show();
+                            $('#maleCount').text(result.maleCount || 0);
+                            $('#femaleCount').text(result.femaleCount || 0);
+                        }
+
+                        if (result.errors && result.errors.length > 0) {
+                            $('#errorDetails').show();
+                            $('#errorList').empty();
+                            result.errors.forEach(function(error) {
+                                $('#errorList').append('<li>Row ' + error.row + ': ' + error.message + '</li>');
+                            });
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Import Completed',
+                            html: 'Successfully imported <b>' + result.importedCount + '</b> battalions.<br>' +
+                                  'Updated <b>' + result.updatedCount + '</b> existing records.',
+                            showConfirmButton: true,
+                            showCancelButton: true,
+                            confirmButtonText: 'View Battalions',
+                            cancelButtonText: 'Import More'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '@Url.Action("Index", "Battalion")';
+                            }
+                        });
+                    },
+                    error: function(xhr) {
+                        $('#progressBar').removeClass('progress-bar-animated').addClass('bg-danger');
+                        $('#progressText').text('Import failed!');
+
+                        var errorMessage = 'An error occurred during import.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Import Failed',
+                            text: errorMessage
+                        });
+                    },
+                    complete: function() {
+                        $('#importBtn').prop('disabled', false);
+                    }
+                });
+            });
+        });
+
+        function downloadSample() {
+            var csvContent = "Code,Name,Type,RangeCode,CommanderName,CommanderRank,ContactNumber,Email,HeadquarterAddress,ZilaCode,EstablishedDate,PersonnelCount,OfficerCount,EnlistedCount,IsActive\n";
+            csvContent += 'BATT-001,1st Battalion Ansar,Male,RNG-01,Col. Rahman,Colonel,02-9876543,battalion1@ansarvdp.gov.bd,"Battalion HQ, Savar Cantonment",ZILA-DHK,1975-06-01,500,25,475,true\n';
+            csvContent += 'BATT-002,2nd Battalion Ansar,Male,RNG-01,Lt Col. Khan,Lieutenant Colonel,02-9876544,battalion2@ansarvdp.gov.bd,"Battalion HQ, Dhaka Cantonment",ZILA-DHK,1976-03-15,480,22,458,true\n';
+            csvContent += 'BATT-F01,1st Female Battalion,Female,RNG-02,Maj. Sultana,Major,02-9876545,battalion.female1@ansarvdp.gov.bd,"Female Battalion HQ, Dhaka",ZILA-DHK,2010-01-01,200,15,185,true';
+
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "sample_battalions.csv";
+            link.click();
+        }
+    </script>
+}

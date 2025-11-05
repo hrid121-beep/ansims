@@ -1,0 +1,184 @@
+﻿@using IMS.Application
+@using IMS.Application.DTOs
+@model IEnumerable<CycleCountDto>
+@{
+    ViewData["Title"] = "Inventory Cycle Counts";
+    var statistics = ViewBag.Statistics as CycleCountStatisticsDto;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Inventory Cycle Counts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Cycle Counts</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@statistics?.TotalCounts</h3>
+                        <p>Total Counts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@statistics?.CompletedCounts</h3>
+                        <p>Completed</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@statistics?.InProgressCounts</h3>
+                        <p>In Progress</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>@statistics?.AverageCountTime.ToString("F0") min</h3>
+                        <p>Avg. Count Time</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cycle Counts List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Cycle Counts</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Cycle Count
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="cycleCountTable">
+                    <thead>
+                        <tr>
+                            <th>Count Number</th>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Counted By</th>
+                            <th>Progress</th>
+                            <th>Variances</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var count in Model)
+                        {
+                            <tr>
+                                <td>@count.CountNumber</td>
+                                <td>@count.CountDate.ToString("yyyy-MM-dd")</td>
+                                <td>@count.StoreName</td>
+                                <td>@count.CountType</td>
+                                <td>
+                                    @if (count.Status == "Planned")
+                                    {
+                                        <span class="badge badge-secondary">@count.Status</span>
+                                    }
+                                    else if (count.Status == "InProgress")
+                                    {
+                                        <span class="badge badge-warning">@count.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">@count.Status</span>
+                                    }
+                                </td>
+                                <td>@count.CountedByName</td>
+                                <td>
+                                    <div class="progress">
+                                        @{
+                                            var progress = count.TotalItems > 0 ?
+                                            (count.CountedItems * 100 / count.TotalItems) : 0;
+                                        }
+                                        <div class="progress-bar" style="width: @progress%">
+                                            @count.CountedItems / @count.TotalItems
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (count.VarianceItems > 0)
+                                    {
+                                        <span class="badge badge-warning">@count.VarianceItems items</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">No variances</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@count.Id"
+                                       class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (count.Status == "Planned")
+                                    {
+                                        <form asp-action="Start" asp-route-id="@count.Id"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-play"></i> Start
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (count.Status == "InProgress")
+                                    {
+                                        <a asp-action="Count" asp-route-id="@count.Id"
+                                           class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Count
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#cycleCountTable').DataTable({
+                "order": [[1, "desc"]],
+                "pageLength": 25
+            });
+        });
+    </script>
+}

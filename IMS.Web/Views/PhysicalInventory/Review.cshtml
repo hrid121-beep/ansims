@@ -1,0 +1,269 @@
+﻿@using IMS.Application.DTOs
+@using IMS.Domain.Enums
+@model IMS.Application.DTOs.PhysicalInventoryDto
+@{
+    ViewData["Title"] = "Review Physical Inventory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var varianceAnalysis = ViewBag.VarianceAnalysis as VarianceAnalysisDto;
+    var canApprove = ViewBag.CanApprove as bool? ?? false;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">পর্যালোচনা / Review - @Model.ReferenceNumber</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Physical Inventory</a></li>
+                    <li class="breadcrumb-item active">Review</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Variance Summary -->
+        @if (varianceAnalysis != null)
+        {
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-info"><i class="fas fa-boxes"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Items</span>
+                            <span class="info-box-number">@varianceAnalysis.TotalItems</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Items with Variance</span>
+                            <span class="info-box-number">@varianceAnalysis.ItemsWithVariance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-success"><i class="fas fa-plus"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Positive Variance</span>
+                            <span class="info-box-number text-success">+@varianceAnalysis.TotalPositiveVariance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-danger"><i class="fas fa-minus"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Negative Variance</span>
+                            <span class="info-box-number text-danger">-@varianceAnalysis.TotalNegativeVariance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Financial Impact -->
+        <div class="callout callout-warning">
+            <h5><i class="fas fa-money-bill"></i> আর্থিক প্রভাব / Financial Impact</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>System Value:</strong> ৳ @Model.TotalSystemValue.ToString("N2")
+                </div>
+                <div class="col-md-4">
+                    <strong>Physical Value:</strong> ৳ @Model.TotalPhysicalValue.ToString("N2")
+                </div>
+                <div class="col-md-4">
+                    <strong>Total Variance:</strong>
+                    <span class="@(Model.TotalVarianceValue >= 0 ? "text-success" : "text-danger")">
+                        ৳ @Model.TotalVarianceValue.ToString("N2")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variance Details -->
+        @if (varianceAnalysis != null && varianceAnalysis.VarianceDetails != null)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">পার্থক্য বিবরণ / Variance Details</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>System Qty</th>
+                                <th>Physical Qty</th>
+                                <th>Variance</th>
+                                <th>Variance %</th>
+                                <th>Value (৳)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in varianceAnalysis.VarianceDetails.Where(v => v.Variance != 0))
+                            {
+                                <tr>
+                                    <td><code>@item.ItemCode</code></td>
+                                    <td>@item.ItemName</td>
+                                    <td>@item.SystemQuantity</td>
+                                    <td>@item.PhysicalQuantity</td>
+                                    <td>
+                                        <span class="@(item.Variance > 0 ? "text-success" : "text-danger")">
+                                            @item.Variance.ToString("+#;-#;0")
+                                        </span>
+                                    </td>
+                                    <td>@item.VariancePercentage.ToString("F2")%</td>
+                                    <td>
+                                        <span class="@(item.VarianceValue > 0 ? "text-success" : "text-danger")">
+                                            ৳ @Math.Abs(item.VarianceValue).ToString("N2")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (Math.Abs(item.VariancePercentage) > 5)
+                                        {
+                                            <button class="btn btn-warning btn-sm" onclick="requestRecount(@item.ItemId)">
+                                                <i class="fas fa-redo"></i> Recount
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Approval Actions -->
+        @if (canApprove && Model.Status == PhysicalInventoryStatus.UnderReview)
+        {
+            <div class="card card-success">
+                <div class="card-header">
+                    <h3 class="card-title">অনুমোদন কার্যক্রম / Approval Actions</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Approve" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="form-group">
+                            <label>অনুমোদন মন্তব্য / Approval Remarks</label>
+                            <textarea name="approvalRemarks" class="form-control" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="autoAdjust" id="autoAdjust">
+                                <label class="custom-control-label" for="autoAdjust">
+                                    স্বয়ংক্রিয় স্টক সমন্বয় / Auto-adjust stock after approval
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> অনুমোদন / Approve
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="showRejectModal()">
+                            <i class="fas fa-times"></i> প্রত্যাখ্যান / Reject
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <!-- Documents Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">নথিপত্র / Documents</h3>
+            </div>
+            <div class="card-body">
+                <a asp-action="Export" asp-route-id="@Model.Id" asp-route-format="excel" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </a>
+                <a asp-action="Export" asp-route-id="@Model.Id" asp-route-format="pdf" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </a>
+                <a asp-action="VarianceReport" asp-route-id="@Model.Id" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Variance Report
+                </a>
+                <button class="btn btn-secondary" onclick="printReport()">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header">
+                    <h4 class="modal-title">Reject Physical Inventory</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea name="rejectionReason" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showRejectModal() {
+            $('#rejectModal').modal('show');
+        }
+
+        function requestRecount(itemId) {
+            if (confirm('Request recount for this item?')) {
+                $.ajax({
+                    url: '@Url.Action("RequestRecount", "PhysicalInventory")',
+                    type: 'POST',
+                    data: {
+                        inventoryId: @Model.Id,
+                        itemIds: [itemId],
+                        __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            toastr.success(result.message);
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            toastr.error(result.message);
+                        }
+                    }
+                });
+            }
+        }
+
+        function printReport() {
+            window.print();
+        }
+    </script>
+}

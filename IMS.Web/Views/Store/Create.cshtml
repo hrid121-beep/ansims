@@ -1,0 +1,439 @@
+﻿@model IMS.Application.DTOs.StoreDto
+@{
+    ViewData["Title"] = "Create Store";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Create New Store</h1>
+                <p class="text-muted">Add a new store to the inventory system</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stores</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Create" method="post" id="createStoreForm">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i> Basic Information
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="Code" class="form-label">
+                                    Store Code <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Code" class="form-control" readonly style="background-color: #f8f9fa;" />
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="generateCode()" title="Generate New Code">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Code" class="text-danger"></span>
+                                <small class="form-text text-muted">Auto-generated unique store code</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Name" class="form-label">
+                                    Store Name <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name" class="form-control" placeholder="Enter store name" required />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="StoreTypeId" class="form-label">Store Type</label>
+                                        <select asp-for="StoreTypeId" asp-items="ViewBag.StoreTypes" class="form-control select2bs4">
+                                            <option value="">-- Select Store Type --</option>
+                                        </select>
+                                        <span asp-validation-for="StoreTypeId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Level" class="form-label">
+                                            Store Level <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Level" asp-items="ViewBag.StoreLevels" class="form-control select2bs4" required>
+                                            <option value="">-- Select Level --</option>
+                                        </select>
+                                        <span asp-validation-for="Level" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Capacity" class="form-label">Capacity (sq ft)</label>
+                                        <div class="input-group">
+                                            <input asp-for="Capacity" type="number" class="form-control" step="0.01" placeholder="0.00" />
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">sq ft</span>
+                                            </div>
+                                        </div>
+                                        <span asp-validation-for="Capacity" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="OperatingHours" class="form-label">Operating Hours</label>
+                                        <input asp-for="OperatingHours" class="form-control" placeholder="e.g., 9:00 AM - 5:00 PM" />
+                                        <span asp-validation-for="OperatingHours" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="icheck-primary">
+                                    <input asp-for="IsActive" type="checkbox" id="IsActive" checked />
+                                    <label for="IsActive">Active Store</label>
+                                </div>
+                                <small class="form-text text-muted">Uncheck to create as inactive store</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Assignment -->
+                <div class="col-md-6">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-sitemap"></i> Organization Assignment
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="RangeId" class="form-label">Range</label>
+                                        <select asp-for="RangeId" asp-items="ViewBag.Ranges" class="form-control select2bs4" id="RangeId">
+                                            <option value="">-- Select Range --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BattalionId" class="form-label">Battalion</label>
+                                        <select asp-for="BattalionId" asp-items="ViewBag.Battalions" class="form-control select2bs4" id="BattalionId">
+                                            <option value="">-- Select Battalion --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ZilaId" class="form-label">Zila (District)</label>
+                                        <select asp-for="ZilaId" asp-items="ViewBag.Zilas" class="form-control select2bs4" id="ZilaId">
+                                            <option value="">-- Select Zila --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="UpazilaId" class="form-label">Upazila</label>
+                                        <select asp-for="UpazilaId" asp-items="ViewBag.Upazilas" class="form-control select2bs4" id="UpazilaId">
+                                            <option value="">-- Select Upazila --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Location" class="form-label">Full Address</label>
+                                <textarea asp-for="Location" class="form-control" rows="3" placeholder="Enter complete address"></textarea>
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Contact Information -->
+                <div class="col-md-6">
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-address-book"></i> Contact Information
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="ManagerId" class="form-label">Store Manager</label>
+                                <select asp-for="ManagerId" asp-items="ViewBag.Users" class="form-control select2bs4">
+                                    <option value="">-- Select Manager --</option>
+                                </select>
+                                <small class="form-text text-muted">Assign a user as store manager</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ContactNumber" class="form-label">Contact Number</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                            </div>
+                                            <input asp-for="ContactNumber" class="form-control" placeholder="+880..." />
+                                        </div>
+                                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Email" class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                            </div>
+                                            <input asp-for="Email" type="email" class="form-control" placeholder="store@example.com" />
+                                        </div>
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="col-md-6">
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-sticky-note"></i> Additional Information
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="Remarks" class="form-label">Remarks / Notes</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="6" 
+                                          placeholder="Enter any additional notes, special instructions, or remarks about this store..."></textarea>
+                                <small class="form-text text-muted">Optional notes about the store</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save"></i> Create Store
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-lg ml-2" onclick="saveAndAddItems()">
+                                        <i class="fas fa-plus"></i> Create & Add Items
+                                    </button>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                    <button type="reset" class="btn btn-warning btn-lg ml-2">
+                                        <i class="fas fa-redo"></i> Reset Form
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- Select2 -->
+    <script src="~/adminlte/plugins/select2/js/select2.full.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Generate initial code
+            generateCode();
+
+            // Setup cascading dropdowns
+            $('#RangeId').change(function() {
+                loadBattalions();
+            });
+
+            $('#ZilaId').change(function() {
+                loadUpazilas();
+            });
+
+            // Form validation
+            $('#createStoreForm').on('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        function generateCode() {
+            $.get('@Url.Action("GenerateStoreCode", "Store")', function(data) {
+                if (data) {
+                    $('#Code').val(data);
+                }
+            }).fail(function() {
+                // Fallback code generation
+                var timestamp = new Date().getTime().toString().substr(-6);
+                $('#Code').val('ST' + timestamp);
+            });
+        }
+
+        function loadBattalions() {
+            var rangeId = $('#RangeId').val();
+            var battalionDropdown = $('#BattalionId');
+            
+            battalionDropdown.empty().append('<option value="">-- Loading... --</option>');
+            
+            if (rangeId) {
+                $.get('@Url.Action("GetBattalionsByRange", "Store")', { rangeId: rangeId })
+                    .done(function(data) {
+                        battalionDropdown.empty().append('<option value="">-- Select Battalion --</option>');
+                        $.each(data, function(index, item) {
+                            battalionDropdown.append($('<option></option>')
+                                .attr('value', item.value)
+                                .text(item.text));
+                        });
+                        battalionDropdown.trigger('change');
+                    })
+                    .fail(function() {
+                        battalionDropdown.empty().append('<option value="">-- Select Battalion --</option>');
+                        toastr.error('Failed to load battalions');
+                    });
+            } else {
+                battalionDropdown.empty().append('<option value="">-- Select Battalion --</option>');
+            }
+        }
+
+        function loadUpazilas() {
+            var zilaId = $('#ZilaId').val();
+            var upazilaDropdown = $('#UpazilaId');
+            
+            upazilaDropdown.empty().append('<option value="">-- Loading... --</option>');
+            
+            if (zilaId) {
+                $.get('@Url.Action("GetUpazilasByZila", "Store")', { zilaId: zilaId })
+                    .done(function(data) {
+                        upazilaDropdown.empty().append('<option value="">-- Select Upazila --</option>');
+                        $.each(data, function(index, item) {
+                            upazilaDropdown.append($('<option></option>')
+                                .attr('value', item.value)
+                                .text(item.text));
+                        });
+                        upazilaDropdown.trigger('change');
+                    })
+                    .fail(function() {
+                        upazilaDropdown.empty().append('<option value="">-- Select Upazila --</option>');
+                        toastr.error('Failed to load upazilas');
+                    });
+            } else {
+                upazilaDropdown.empty().append('<option value="">-- Select Upazila --</option>');
+            }
+        }
+
+        function validateForm() {
+            var isValid = true;
+            var errors = [];
+
+            // Check required fields
+            if (!$('#Name').val().trim()) {
+                errors.push('Store name is required');
+                $('#Name').addClass('is-invalid');
+                isValid = false;
+            } else {
+                $('#Name').removeClass('is-invalid').addClass('is-valid');
+            }
+
+            if (!$('#Level').val()) {
+                errors.push('Store level is required');
+                isValid = false;
+            }
+
+            // Validate email format if provided
+            var email = $('#Email').val();
+            if (email && !isValidEmail(email)) {
+                errors.push('Invalid email format');
+                $('#Email').addClass('is-invalid');
+                isValid = false;
+            } else {
+                $('#Email').removeClass('is-invalid');
+            }
+
+            // Show errors if any
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: 'Please fix the following errors:<br>• ' + errors.join('<br>• ')
+                });
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            var emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function saveAndAddItems() {
+            if (validateForm()) {
+                // Add a hidden input to indicate redirect to add items
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'redirectToAddItems',
+                    value: 'true'
+                }).appendTo('#createStoreForm');
+                
+                $('#createStoreForm').submit();
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/adminlte/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+}

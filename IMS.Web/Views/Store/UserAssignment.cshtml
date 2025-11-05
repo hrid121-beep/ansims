@@ -1,0 +1,260 @@
+﻿@using IMS.Application.DTOs
+@model IMS.Web.Models.StoreUserAssignmentViewModel
+
+@{
+    ViewData["Title"] = "User Store Assignment";
+    var stores = ViewBag.Stores as IEnumerable<StoreDto> ?? Enumerable.Empty<StoreDto>();
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>User Store Assignment</h1>
+                <p class="text-muted">Manage user access to stores</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Store" asp-action="Index">Stores</a></li>
+                    <li class="breadcrumb-item active">User Assignment</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Store Selection -->
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-warehouse"></i> Select Store</h3>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="UserAssignment">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="StoreId">Store:</label>
+                                <select asp-for="StoreId" class="form-control select2bs4" onchange="this.form.submit()">
+                                    <option value="">-- Select Store to Manage --</option>
+                                    @foreach (var store in stores)
+                                    {
+                                        <option value="@store.Id" selected="@(Model.StoreId == store.Id ? "selected" : null)">
+                                            @store.Name (@store.Code)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-search"></i> Load Store Users
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.StoreId > 0)
+        {
+            <div class="row">
+                <!-- Currently Assigned Users -->
+                <div class="col-md-6">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-users"></i>
+                                Assigned Users - @Model.StoreName
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-light">@(Model.AssignedUsers?.Count() ?? 0) users</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.AssignedUsers?.Any() == true)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>User</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                                <th width="80">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var user in Model.AssignedUsers)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            <strong>@user.FullName</strong>
+                                                            <br><small class="text-muted">@user.UserName</small>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-primary">@user.Role</span>
+                                                    </td>
+                                                    <td>
+                                                        @if (user.IsActive)
+                                                        {
+                                                            <span class="badge badge-success">
+                                                                <i class="fas fa-check"></i> Active
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-secondary">Inactive</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-danger btn-sm remove-user"
+                                                                data-userid="@user.Id" data-storeid="@Model.StoreId"
+                                                                data-username="@user.FullName" title="Remove User">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    No users are currently assigned to this store.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assign New Users -->
+                <div class="col-md-6">
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-user-plus"></i> Assign New Users
+                            </h3>
+                        </div>
+                        <form asp-action="AssignUsers" method="post" id="assignUsersForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="storeId" value="@Model.StoreId" />
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Available Users:</label>
+                                    <select name="userIds" class="form-control select2bs4" multiple="multiple"
+                                            data-placeholder="Select users to assign to this store" style="width: 100%;">
+                                        @if (Model.AvailableUsers != null)
+                                        {
+                                            @foreach (var user in Model.AvailableUsers.Where(u => !Model.AssignedUsers.Any(au => au.Id.ToString() == u.Value)))
+                                            {
+                                                <option value="@user.Value">@user.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Select one or more users to assign to this store
+                                    </small>
+                                </div>
+
+                                @if (!Model.AvailableUsers.Any(u => !Model.AssignedUsers.Any(au => au.Id.ToString() == u.Value)))
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        All available users are already assigned to this store.
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-success"
+                                        @(!Model.AvailableUsers.Any(u => !Model.AssignedUsers.Any(au => au.Id.ToString() == u.Value)) ? "disabled" : "")>
+                                    <i class="fas fa-plus"></i> Assign Selected Users
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Remove user functionality
+            $('.remove-user').on('click', function() {
+                var userId = $(this).data('userid');
+                var storeId = $(this).data('storeid');
+                var userName = $(this).data('username');
+                var row = $(this).closest('tr');
+
+                Swal.fire({
+                    title: 'Remove User?',
+                    html: `Are you sure you want to remove <strong>${userName}</strong> from this store?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, remove user!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        removeUserFromStore(userId, storeId, row);
+                    }
+                });
+            });
+        });
+
+        function removeUserFromStore(userId, storeId, row) {
+            $.ajax({
+                url: '@Url.Action("RemoveUserFromStore", "Store")',
+                type: 'POST',
+                data: {
+                    storeId: storeId,
+                    userId: userId,
+                    __RequestVerificationToken: $('#assignUsersForm input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(result) {
+                    if (result.success) {
+                        row.fadeOut(function() {
+                            row.remove();
+                        });
+                        toastr.success('User removed successfully from store');
+
+                        // Refresh the page to update available users
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        toastr.error(result.message || 'Failed to remove user');
+                    }
+                },
+                error: function() {
+                    toastr.error('An error occurred while removing the user');
+                }
+            });
+        }
+    </script>
+}

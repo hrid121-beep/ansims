@@ -1,0 +1,19 @@
+﻿@model IEnumerable<IMS.Application.DTOs.NotificationDto>
+
+@if (!Model.Any())
+{
+    <span class="dropdown-item dropdown-header">No new notifications</span>
+}
+else
+{
+    <span class="dropdown-item dropdown-header">@Model.Count() Notifications</span>
+    @foreach (var notification in Model.Take(5))
+    {
+        <div class="dropdown-divider"></div>
+        <a href="@Url.Action("Index", "Notification")" class="dropdown-item @(!notification.IsRead ? "font-weight-bold" : "")">
+            <i class="@notification.Icon @notification.CssClass mr-2"></i> @notification.Title
+            <span class="float-right text-muted text-sm">@notification.TimeAgo</span>
+            <p class="text-sm text-muted mb-0">@notification.Message</p>
+        </a>
+    }
+}

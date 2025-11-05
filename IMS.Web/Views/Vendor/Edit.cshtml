@@ -1,0 +1,304 @@
+﻿@model IMS.Application.DTOs.VendorDto
+@{
+    ViewData["Title"] = "Edit Vendor";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-edit text-warning"></i>
+                    Edit Vendor
+                </h1>
+                <small class="text-muted">Update vendor information</small>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Vendors</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <form asp-action="Edit" id="vendorEditForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <!-- Vendor Header Card -->
+                    <div class="card card-outline card-primary shadow">
+                        <div class="card-header bg-gradient-primary">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-building mr-2"></i>
+                                Editing: @Model.Name
+                            </h3>
+                            <div class="card-tools">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light btn-sm">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information Card -->
+                    <div class="card card-outline card-success shadow">
+                        <div class="card-header bg-gradient-success">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Basic Information
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">
+                                            <i class="fas fa-building text-primary"></i>
+                                            Vendor Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Name" class="form-control" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="VendorType" class="control-label">
+                                            <i class="fas fa-tag text-primary"></i>
+                                            Vendor Type <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="VendorType" class="form-control select2">
+                                            <option value="">Select Vendor Type</option>
+                                            <option value="Supplier">Supplier</option>
+                                            <option value="Manufacturer">Manufacturer</option>
+                                            <option value="Service Provider">Service Provider</option>
+                                            <option value="Distributor">Distributor</option>
+                                        </select>
+                                        <span asp-validation-for="VendorType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Card -->
+                    <div class="card card-outline card-info shadow">
+                        <div class="card-header bg-gradient-info">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-address-book mr-2"></i>
+                                Contact Information
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ContactPerson" class="control-label">
+                                            <i class="fas fa-user text-primary"></i>
+                                            Contact Person
+                                        </label>
+                                        <input asp-for="ContactPerson" class="form-control" />
+                                        <span asp-validation-for="ContactPerson" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Email" class="control-label">
+                                            <i class="fas fa-envelope text-primary"></i>
+                                            Email Address
+                                        </label>
+                                        <input asp-for="Email" class="form-control" type="email" />
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Phone" class="control-label">
+                                            <i class="fas fa-phone text-primary"></i>
+                                            Phone Number
+                                        </label>
+                                        <input asp-for="Phone" class="form-control" />
+                                        <span asp-validation-for="Phone" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Mobile" class="control-label">
+                                            <i class="fas fa-mobile-alt text-primary"></i>
+                                            Mobile Number
+                                        </label>
+                                        <input asp-for="Mobile" class="form-control" />
+                                        <span asp-validation-for="Mobile" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Address" class="control-label">
+                                    <i class="fas fa-map-marker-alt text-primary"></i>
+                                    Address
+                                </label>
+                                <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Information Card -->
+                    <div class="card card-outline card-warning shadow">
+                        <div class="card-header bg-gradient-warning">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-briefcase mr-2"></i>
+                                Business Information
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="TIN" class="control-label">
+                                            <i class="fas fa-file-invoice text-primary"></i>
+                                            TIN (Tax ID)
+                                        </label>
+                                        <input asp-for="TIN" class="form-control" />
+                                        <span asp-validation-for="TIN" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BIN" class="control-label">
+                                            <i class="fas fa-id-card text-primary"></i>
+                                            BIN (Business ID)
+                                        </label>
+                                        <input asp-for="BIN" class="form-control" />
+                                        <span asp-validation-for="BIN" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Card -->
+                    <div class="card card-outline card-secondary shadow">
+                        <div class="card-header bg-gradient-secondary">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-toggle-on mr-2"></i>
+                                Status Settings
+                            </h3>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input asp-for="IsActive" class="custom-control-input" />
+                                    <label asp-for="IsActive" class="custom-control-label">
+                                        <strong>Active Status</strong>
+                                        <br><small class="text-muted">Deactivate to temporarily disable this vendor</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Update Vendor
+                                    </button>
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Back to List
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select an option',
+                allowClear: true
+            });
+
+            // Form validation
+            $('#vendorEditForm').on('submit', function(e) {
+                var isValid = true;
+
+                $('input[required], select[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    toastr.error('Please fill in all required fields');
+                }
+            });
+
+            // Show messages
+            @if (TempData["Success"] != null)
+            {
+                    <text>
+                    toastr.success('@TempData["Success"]');
+                    </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                    <text>
+                    toastr.error('@TempData["Error"]');
+                    </text>
+            }
+        });
+    </script>
+}

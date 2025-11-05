@@ -1,0 +1,465 @@
+﻿@using IMS.Domain.Enums
+@model IEnumerable<IMS.Application.DTOs.BattalionDto>
+@{
+    ViewData["Title"] = "Battalion Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Battalion Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Battalions</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Success/Error Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle"></i>
+                <strong>Success!</strong> @TempData["Success"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error!</strong> @TempData["Error"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Battalion List</h3>
+                        <div class="card-tools">
+                            <a asp-action="Create" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add New Battalion
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search and Filter Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    </div>
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Search battalions by name, code, commander...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="typeFilter" class="form-control">
+                                    <option value="">All Types</option>
+                                    <option value="Male">Male Battalions</option>
+                                    <option value="Female">Female Battalions</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-secondary btn-block" id="clearFilters">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="battalionListContainer">
+                            <table id="battalionTable" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Range</th>
+                                        <th>Commander</th>
+                                        <th>Personnel</th>
+                                        <th>Stores</th>
+                                        <th>Status</th>
+                                        <th width="180">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var battalion in Model)
+                                        {
+                                            <tr>
+                                                <td>@(battalion.Code ?? "-")</td>
+                                                <td>
+                                                    <a asp-action="Details" asp-route-id="@battalion.Id" class="text-decoration-none">
+                                                        @(battalion.Name ?? "-")
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-@(battalion.Type == BattalionType.Male ? "primary" : "pink")">
+                                                        <i class="fas fa-@(battalion.Type == BattalionType.Male ? "male" : "female")"></i>
+                                                        @battalion.Type
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if (battalion.RangeId.HasValue && !string.IsNullOrEmpty(battalion.RangeName))
+                                                    {
+                                                        <a asp-controller="Range" asp-action="Details" asp-route-id="@battalion.RangeId"
+                                                           class="text-decoration-none" title="View Range Details">
+                                                            @battalion.RangeName
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Not Assigned</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(battalion.CommanderName))
+                                                    {
+                                                        <span title="@(battalion.CommanderRank ?? "Rank not specified")">
+                                                            @battalion.CommanderName
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Not Assigned</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-info" title="Total Personnel">@battalion.PersonnelCount</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-success" title="Assigned Stores">@battalion.StoreCount</span>
+                                                </td>
+                                                <td>
+                                                    @if (battalion.IsActive)
+                                                    {
+                                                        <span class="badge badge-success">Active</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger">Inactive</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a asp-action="Details" asp-route-id="@battalion.Id"
+                                                           class="btn btn-info btn-xs" title="View Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a asp-action="Edit" asp-route-id="@battalion.Id"
+                                                           class="btn btn-warning btn-xs" title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-danger btn-xs delete-btn"
+                                                                data-id="@battalion.Id"
+                                                                data-name="@battalion.Name"
+                                                                data-code="@battalion.Code"
+                                                                data-stores="@battalion.StoreCount"
+                                                                data-personnel="@battalion.PersonnelCount"
+                                                                title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted">
+                                                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                                <br>No battalions found.
+                                                <br><a asp-action="Create" class="btn btn-primary btn-sm mt-2">Create First Battalion</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Delete Battalion
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-shield-alt fa-4x text-danger mb-3"></i>
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="text-danger">You are about to delete the following battalion:</h6>
+                        <div class="alert alert-light border">
+                            <strong id="deleteBattalionName"></strong>
+                            <span class="badge badge-secondary" id="deleteBattalionCode"></span>
+                        </div>
+
+                        <div id="deleteWarning" class="mt-3">
+                            <!-- Warning content will be inserted here -->
+                        </div>
+
+                        <div class="mt-3">
+                            <h6 class="text-muted">What happens when you delete this battalion?</h6>
+                            <ul class="text-muted small">
+                                <li>The battalion will be permanently removed from the system</li>
+                                <li>All associated data will be updated accordingly</li>
+                                <li>This action cannot be undone</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Yes, Delete Battalion
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            var table;
+
+            // Initialize DataTable
+            table = $('#battalionTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        text: '<i class="fas fa-copy"></i> Copy',
+                        className: 'btn btn-default btn-sm'
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-default btn-sm'
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-default btn-sm'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-default btn-sm'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Print',
+                        className: 'btn btn-default btn-sm'
+                    }
+                ],
+                "order": [[1, "asc"]], // Sort by name by default
+                "columnDefs": [
+                    { "orderable": false, "targets": 8 } // Disable sorting on Actions column
+                ],
+                "language": {
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ battalions per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ battalions",
+                    "infoEmpty": "Showing 0 to 0 of 0 battalions",
+                    "infoFiltered": "(filtered from _MAX_ total battalions)",
+                    "emptyTable": "No battalions available",
+                    "zeroRecords": "No matching battalions found"
+                }
+            });
+
+            // Add buttons to the table
+            table.buttons().container().appendTo('#battalionTable_wrapper .col-md-6:eq(0)');
+
+            // FIXED: Use event delegation for delete buttons to work on all pages
+            $(document).on('click', '.delete-btn', function() {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var code = $(this).data('code');
+                var stores = parseInt($(this).data('stores')) || 0;
+                var personnel = parseInt($(this).data('personnel')) || 0;
+
+                // Set battalion info
+                $('#deleteBattalionName').text(name);
+                $('#deleteBattalionCode').text(code);
+
+                // Generate warning based on associated data
+                var warningHtml = '';
+                var canDelete = true;
+
+                if (stores > 0 || personnel > 0) {
+                    warningHtml = '<div class="alert alert-warning">';
+                    warningHtml += '<h6><i class="fas fa-exclamation-triangle"></i> This battalion has associated data:</h6>';
+                    warningHtml += '<ul class="mb-0">';
+
+                    if (stores > 0) {
+                        warningHtml += '<li><strong>' + stores + '</strong> Store(s) assigned</li>';
+                        canDelete = false;
+                    }
+                    if (personnel > 0) {
+                        warningHtml += '<li><strong>' + personnel + '</strong> Personnel assigned</li>';
+                    }
+
+                    warningHtml += '</ul>';
+
+                    if (!canDelete) {
+                        warningHtml += '<hr><p class="text-danger mb-0">';
+                        warningHtml += '<i class="fas fa-ban"></i> ';
+                        warningHtml += 'Please remove all store assignments before deleting this battalion.';
+                        warningHtml += '</p>';
+                    }
+
+                    warningHtml += '</div>';
+                } else {
+                    warningHtml = '<div class="alert alert-success">';
+                    warningHtml += '<i class="fas fa-check-circle"></i> ';
+                    warningHtml += 'This battalion has no associated data and can be safely deleted.';
+                    warningHtml += '</div>';
+                }
+
+                $('#deleteWarning').html(warningHtml);
+
+                // Configure delete button
+                if (canDelete) {
+                    $('#confirmDeleteBtn')
+                        .removeClass('disabled')
+                        .prop('disabled', false)
+                        .off('click')
+                        .on('click', function() {
+                            performDelete(id, name);
+                        });
+                } else {
+                    $('#confirmDeleteBtn')
+                        .addClass('disabled')
+                        .prop('disabled', true)
+                        .off('click');
+                }
+
+                $('#deleteModal').modal('show');
+            });
+
+            // Custom search functionality
+            $('#searchInput').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            // Type filter
+            $('#typeFilter').on('change', function() {
+                var filterValue = this.value;
+                if (filterValue === '') {
+                    table.column(2).search('').draw();
+                } else {
+                    table.column(2).search(filterValue).draw();
+                }
+            });
+
+            // Status filter
+            $('#statusFilter').on('change', function() {
+                var filterValue = this.value;
+                if (filterValue === '') {
+                    table.column(7).search('').draw();
+                } else {
+                    table.column(7).search(filterValue).draw();
+                }
+            });
+
+            // Clear filters
+            $('#clearFilters').on('click', function() {
+                $('#searchInput').val('');
+                $('#typeFilter').val('');
+                $('#statusFilter').val('');
+                table.search('').columns().search('').draw();
+            });
+
+            // Perform delete function
+            function performDelete(id, name) {
+                // Show loading state
+                $('#confirmDeleteBtn').html('<i class="fas fa-spinner fa-spin"></i> Deleting...').prop('disabled', true);
+
+                // Prepare form data
+                var form = $('<form></form>');
+                form.attr('method', 'post');
+                form.attr('action', '@Url.Action("Delete")/' + id);
+                form.append('@Html.AntiForgeryToken()');
+
+                // Hide modal first
+                $('#deleteModal').modal('hide');
+
+                // Show progress alert
+                Swal.fire({
+                    title: 'Deleting Battalion...',
+                    text: 'Please wait while we delete ' + name,
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit form
+                setTimeout(function() {
+                    $('body').append(form);
+                    form.submit();
+                }, 1000);
+            }
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Refresh delete button state when modal is hidden
+            $('#deleteModal').on('hidden.bs.modal', function() {
+                $('#confirmDeleteBtn').html('<i class="fas fa-trash"></i> Yes, Delete Battalion').prop('disabled', false);
+            });
+        });
+    </script>
+}

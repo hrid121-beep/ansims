@@ -1,0 +1,338 @@
+@model IMS.Web.Controllers.WriteOffReportViewModel
+@{
+    ViewData["Title"] = "Write-Off Report";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Write-Off Report</h1>
+                <p class="text-muted">Analysis of inventory write-offs and disposals</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Write-Off Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Filters Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Report Filters
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Report" id="reportFilterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="date" name="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input type="date" name="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                @Html.DropDownList("status", (SelectList)ViewBag.StatusList, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Generate Report
+                                    </button>
+                                    <a href="@Url.Action("Report")" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <hr />
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Export Options</h6>
+                        <button type="button" class="btn btn-danger" onclick="window.print()">
+                            <i class="fas fa-file-pdf"></i> Print / PDF
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.TotalCount</h3>
+                        <p>Total Write-Offs</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.ApprovedCount</h3>
+                        <p>Approved</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.PendingCount</h3>
+                        <p>Pending Approval</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>৳@Model.TotalValue.ToString("N2")</h3>
+                        <p>Total Value (Approved)</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Write-Off Summary by Reason -->
+        @if (Model.ReasonSummary != null && Model.ReasonSummary.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-pie"></i> Write-Offs by Reason
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Reason</th>
+                                <th class="text-center">Count</th>
+                                <th class="text-right">Total Value (৳)</th>
+                                <th class="text-center">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reason in Model.ReasonSummary)
+                            {
+                                var percentage = Model.TotalValue > 0 ? (reason.TotalValue / Model.TotalValue * 100) : 0;
+                                <tr>
+                                    <td><strong>@reason.Reason</strong></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-info">@reason.Count</span>
+                                    </td>
+                                    <td class="text-right">@reason.TotalValue.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" role="progressbar"
+                                                 style="width: @percentage%"
+                                                 aria-valuenow="@percentage"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                                @percentage.ToString("F1")%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active">
+                                <th>Total</th>
+                                <th class="text-center">@Model.ReasonSummary.Sum(r => r.Count)</th>
+                                <th class="text-right">@Model.ReasonSummary.Sum(r => r.TotalValue).ToString("N2")</th>
+                                <th class="text-center">100%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Monthly Trend -->
+        @if (Model.MonthlySummary != null && Model.MonthlySummary.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Monthly Trend
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th class="text-center">Write-Offs Count</th>
+                                <th class="text-right">Total Value (৳)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var month in Model.MonthlySummary)
+                            {
+                                var monthName = new DateTime(month.Year, month.Month, 1).ToString("MMMM yyyy");
+                                <tr>
+                                    <td><strong>@monthName</strong></td>
+                                    <td class="text-center">@month.Count</td>
+                                    <td class="text-right">@month.TotalValue.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active">
+                                <th>Total</th>
+                                <th class="text-center">@Model.MonthlySummary.Sum(m => m.Count)</th>
+                                <th class="text-right">@Model.MonthlySummary.Sum(m => m.TotalValue).ToString("N2")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Detailed Write-Off List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i> Detailed Write-Off List
+                </h3>
+            </div>
+            <div class="card-body">
+                <table id="writeOffTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Write-Off No</th>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Reason</th>
+                            <th class="text-right">Total Value (৳)</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var writeOff in Model.WriteOffs)
+                        {
+                            <tr>
+                                <td><strong>@writeOff.WriteOffNo</strong></td>
+                                <td>@writeOff.WriteOffDate.ToString("dd MMM yyyy")</td>
+                                <td>@(writeOff.StoreName ?? "N/A")</td>
+                                <td>@writeOff.Reason</td>
+                                <td class="text-right">@writeOff.TotalValue.ToString("N2")</td>
+                                <td class="text-center">
+                                    @switch (writeOff.Status)
+                                    {
+                                        case "Draft":
+                                            <span class="badge badge-secondary">Draft</span>
+                                            break;
+                                        case "Pending":
+                                            <span class="badge badge-warning">Pending</span>
+                                            break;
+                                        case "Approved":
+                                            <span class="badge badge-success">Approved</span>
+                                            break;
+                                        case "Rejected":
+                                            <span class="badge badge-danger">Rejected</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-secondary">@writeOff.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@writeOff.Id"
+                                       class="btn btn-sm btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Print" asp-route-id="@writeOff.Id"
+                                       class="btn btn-sm btn-secondary" title="Print" target="_blank">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#writeOffTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                order: [[1, 'desc']],
+                dom: 'Bfrtip',
+                buttons: []
+            });
+        });
+
+        function exportToExcel() {
+            // This would need server-side implementation
+            alert('Excel export functionality - implement server-side action');
+        }
+    </script>
+
+    <!-- Print styles -->
+    <style>
+        @@media print {
+            .no-print, .btn, .breadcrumb, .card-tools, .sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+}

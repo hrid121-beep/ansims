@@ -1,0 +1,350 @@
+﻿@model IMS.Application.DTOs.BattalionDto
+@using IMS.Domain.Enums
+@{
+    ViewData["Title"] = "Battalion Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stores = ViewBag.Stores as IEnumerable<IMS.Application.DTOs.StoreDto> ?? new List<IMS.Application.DTOs.StoreDto>();
+    var statistics = ViewBag.Statistics as Dictionary<string, object> ?? new Dictionary<string, object>();
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Battalion Details - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    @if (Model.RangeId.HasValue)
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Range" asp-action="Details" asp-route-id="@Model.RangeId">@Model.RangeName</a></li>
+                    }
+                    <li class="breadcrumb-item"><a asp-action="Index">Battalions</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Battalion Info -->
+            <div class="col-md-4">
+                <div class="card card-primary card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt fa-5x text-primary mb-3"></i>
+                        </div>
+                        <h3 class="profile-username text-center">@Model.Name</h3>
+                        <p class="text-muted text-center">
+                            <span class="badge badge-@(Model.Type == BattalionType.Male ? "primary" : "pink") badge-lg">
+                                <i class="fas fa-@(Model.Type == BattalionType.Male ? "male" : "female")"></i>
+                                @Model.Type Battalion
+                            </span>
+                        </p>
+                        <p class="text-center text-muted">@Model.Code</p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>Range</b>
+                                @if (Model.RangeId.HasValue && !string.IsNullOrEmpty(Model.RangeName))
+                                {
+                                    <a asp-controller="Range" asp-action="Details" asp-route-id="@Model.RangeId" class="float-right">
+                                        @Model.RangeName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="float-right">-</span>
+                                }
+                            </li>
+                            <li class="list-group-item">
+                                <b>Commander</b>
+                                <span class="float-right">@(Model.CommanderName ?? "-")</span>
+                            </li>
+                            @if (!string.IsNullOrEmpty(Model.CommanderRank))
+                            {
+                                <li class="list-group-item">
+                                    <b>Rank</b>
+                                    <span class="float-right">@Model.CommanderRank</span>
+                                </li>
+                            }
+                            <li class="list-group-item">
+                                <b>Contact</b>
+                                <span class="float-right">@(Model.ContactNumber ?? "-")</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b>
+                                <span class="float-right">
+                                    @if (!string.IsNullOrEmpty(Model.Email))
+                                    {
+                                        <a href="mailto:@Model.Email">@Model.Email</a>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Status</b>
+                                <span class="float-right">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="text-center">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a asp-action="AssignStore" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Assign Store
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Tabs -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header p-2">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item"><a class="nav-link active" href="#general" data-toggle="tab">General</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#personnel" data-toggle="tab">Personnel</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#stores" data-toggle="tab">Stores</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#activity" data-toggle="tab">Activity</a></li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- General Tab -->
+                            <div class="tab-pane active" id="general">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Location</dt>
+                                    <dd class="col-sm-8">@(Model.Location ?? "-")</dd>
+
+                                    <dt class="col-sm-4">Established Date</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.EstablishedDate.HasValue)
+                                        {
+                                            @Model.EstablishedDate.Value.ToString("dd-MMM-yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4">Operational Status</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.OperationalStatus.HasValue)
+                                        {
+                                            <span class="badge badge-info">@Model.OperationalStatus</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4">Remarks</dt>
+                                    <dd class="col-sm-8">@(Model.Remarks ?? "-")</dd>
+                                </dl>
+
+                                <hr>
+                                <h5>Audit Information</h5>
+                                <dl class="row">
+                                    <dt class="col-sm-4">Created</dt>
+                                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @Model.CreatedBy</dd>
+
+                                    @if (Model.UpdatedAt.HasValue)
+                                    {
+                                        <dt class="col-sm-4">Last Updated</dt>
+                                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedBy ?? "-")</dd>
+                                    }
+                                </dl>
+                            </div>
+
+                            <!-- Personnel Tab -->
+                            <div class="tab-pane" id="personnel">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Total Personnel</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge badge-info">@Model.TotalPersonnel</span>
+                                    </dd>
+
+                                    <dt class="col-sm-4">Officers</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge badge-primary">@Model.OfficerCount</span>
+                                    </dd>
+
+                                    <dt class="col-sm-4">Enlisted</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge badge-secondary">@Model.EnlistedCount</span>
+                                    </dd>
+                                </dl>
+
+                            </div>
+
+                            <!-- Stores Tab -->
+                            <div class="tab-pane" id="stores">
+                                @if (stores.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Store Code</th>
+                                                    <th>Store Name</th>
+                                                    <th>Location</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var store in stores)
+                                                {
+                                                    <tr>
+                                                        <td>@store.Code</td>
+                                                        <td>
+                                                            <a asp-controller="Store" asp-action="Details" asp-route-id="@store.Id">
+                                                                @store.Name
+                                                            </a>
+                                                        </td>
+                                                        <td>@(store.Location ?? "-")</td>
+                                                        <td>
+                                                            @if (store.IsActive)
+                                                            {
+                                                                <span class="badge badge-success">Active</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge badge-danger">Inactive</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <form asp-action="RemoveStore" method="post" class="d-inline">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="battalionId" value="@Model.Id" />
+                                                                <input type="hidden" name="storeId" value="@store.Id" />
+                                                                <button type="submit" class="btn btn-danger btn-xs"
+                                                                        onclick="return confirm('Are you sure you want to remove this store?')">
+                                                                    <i class="fas fa-times"></i> Remove
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No stores assigned to this battalion.
+                                        <a asp-action="AssignStore" asp-route-id="@Model.Id" class="btn btn-primary btn-sm float-right">
+                                            <i class="fas fa-plus"></i> Assign Store
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Activity Tab -->
+                            <div class="tab-pane" id="activity">
+                                <div class="timeline">
+                                    <div>
+                                        <i class="fas fa-plus bg-primary"></i>
+                                        <div class="timeline-item">
+                                            <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd-MMM-yyyy")</span>
+                                            <h3 class="timeline-header">Battalion Created</h3>
+                                            <div class="timeline-body">
+                                                Battalion was created by @Model.CreatedBy
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (Model.UpdatedAt.HasValue)
+                                    {
+                                        <div>
+                                            <i class="fas fa-edit bg-warning"></i>
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fas fa-clock"></i> @Model.UpdatedAt.Value.ToString("dd-MMM-yyyy")</span>
+                                                <h3 class="timeline-header">Battalion Updated</h3>
+                                                <div class="timeline-body">
+                                                    Last updated by @(Model.UpdatedBy ?? "System")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="row mt-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.TotalPersonnel</h3>
+                        <p>Total Personnel</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.StoreCount</h3>
+                        <p>Assigned Stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.OfficerCount</h3>
+                        <p>Officers</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.EnlistedCount</h3>
+                        <p>Enlisted Personnel</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+

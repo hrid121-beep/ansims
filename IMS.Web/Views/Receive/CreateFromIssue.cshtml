@@ -1,0 +1,390 @@
+﻿@using IMS.Application.DTOs
+@model ReceiveDto
+@{
+    ViewData["Title"] = "Receive from Issue";
+    var issue = ViewBag.Issue as IssueDto;
+    var existingReceives = ViewBag.ExistingReceives as IEnumerable<ReceiveDto>;
+    var hasPendingItems = ViewBag.HasPendingItems ?? true;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Receive from Issue #@issue.IssueNo</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Create from Issue</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Issue Information -->
+        <div class="row">
+            <div class="col-12">
+                <div class="callout callout-info">
+                    <h5><i class="fas fa-info"></i> Issue Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-2">Issue No:</dt>
+                        <dd class="col-sm-4">@issue.IssueNo</dd>
+
+                        <dt class="col-sm-2">Voucher No:</dt>
+                        <dd class="col-sm-4">@issue.VoucherNumber</dd>
+
+                        <dt class="col-sm-2">Issue Date:</dt>
+                        <dd class="col-sm-4">@issue.IssueDate.ToString("dd-MMM-yyyy")</dd>
+
+                        <dt class="col-sm-2">Issued To:</dt>
+                        <dd class="col-sm-4">@issue.IssuedToType - @issue.IssuedToName</dd>
+
+                        <dt class="col-sm-2">Purpose:</dt>
+                        <dd class="col-sm-4">@issue.Purpose</dd>
+
+                        <dt class="col-sm-2">Approved By:</dt>
+                        <dd class="col-sm-4">@issue.ApprovedBy</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        @if (existingReceives != null && existingReceives.Any())
+        {
+            <!-- Previous Receives -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-history"></i> Previous Receives</h5>
+                        <p>This issue has been partially received @existingReceives.Count() time(s).</p>
+                        <ul>
+                            @foreach (var receive in existingReceives)
+                            {
+                                <li>
+                                    Receive #@receive.ReceiveNo on @receive.ReceiveDate.ToString("dd-MMM-yyyy")
+                                    - @receive.TotalQuantity items (@receive.Status)
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!hasPendingItems)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> All items from this issue have been received.
+            </div>
+        }
+        else
+        {
+            <!-- Receive Form -->
+            <form asp-action="CreateFromIssue" method="post" id="receiveForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="issueId" value="@issue.Id" />
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Receive Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Receive No</label>
+                                    <input asp-for="ReceiveNo" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="ReceiveDate"></label>
+                                    <input asp-for="ReceiveDate" type="date" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Receiver Name</label>
+                                    <input asp-for="ReceiverBadgeNo" class="form-control" placeholder="Badge No" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Overall Condition</label>
+                                    <select asp-for="OverallCondition" class="form-control">
+                                        <option value="Good">All Good</option>
+                                        <option value="Partial Damage">Some Damaged</option>
+                                        <option value="Major Damage">Major Damage</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="AssessmentNotes">Condition Assessment Notes</label>
+                            <textarea asp-for="AssessmentNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Items to Receive</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-sm btn-info" id="scanItemsBtn">
+                                <i class="fas fa-barcode"></i> Scan Items
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th width="100">Issued Qty</th>
+                                    <th width="100">Already Received</th>
+                                    <th width="100">Pending</th>
+                                    <th width="120">Receive Qty</th>
+                                    <th width="150">Condition</th>
+                                    <th>Damage Notes</th>
+                                    <th width="80">Photo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    var item = Model.Items[i];
+                                    var pendingQty = item.IssuedQuantity - item.ReceivedQuantity;
+
+                                    <tr data-item-id="@item.ItemId">
+                                        <td>
+                                            @item.ItemName (@item.ItemCode)
+                                            <input type="hidden" name="Items[@i].ItemId" value="@item.ItemId" />
+                                            <input type="hidden" name="Items[@i].StoreId" value="@item.StoreId" />
+                                            <input type="hidden" name="Items[@i].BarcodeNumber" value="@item.BarcodeNumber" />
+                                        </td>
+                                        <td class="text-center">@item.IssuedQuantity</td>
+                                        <td class="text-center">@item.ReceivedQuantity</td>
+                                        <td class="text-center pending-qty">@pendingQty</td>
+                                        <td>
+                                            <input type="number" name="Items[@i].Quantity"
+                                                   class="form-control receive-qty"
+                                                   value="@(pendingQty > 0 ? pendingQty : 0)"
+                                                   max="@pendingQty" min="0" step="0.01" />
+                                        </td>
+                                        <td>
+                                            <select name="Items[@i].Condition" class="form-control condition-select">
+                                                <option value="Good">Good</option>
+                                                <option value="Minor Damage">Minor Damage</option>
+                                                <option value="Major Damage">Major Damage</option>
+                                                <option value="Unusable">Unusable</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="Items[@i].DamageDescription"
+                                                   class="form-control damage-notes" disabled />
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-secondary photo-btn" disabled>
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Complete Receive
+                        </button>
+                        <a asp-action="Index" class="btn btn-default">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        }
+    </div>
+</section>
+
+<!-- Photo Upload Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Capture Damage Photo</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <video id="camera" width="100%" autoplay></video>
+                    <canvas id="photoCanvas" style="display:none;"></canvas>
+                    <img id="photoPreview" style="display:none; width:100%;" />
+                </div>
+                <div class="mt-3">
+                    <button type="button" class="btn btn-primary" id="captureBtn">
+                        <i class="fas fa-camera"></i> Capture
+                    </button>
+                    <button type="button" class="btn btn-warning" id="retakeBtn" style="display:none;">
+                        <i class="fas fa-redo"></i> Retake
+                    </button>
+                    <input type="file" id="fileInput" accept="image/*" class="form-control mt-2" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="savePhotoBtn" style="display:none;">Save Photo</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentItemId = null;
+        let stream = null;
+
+        $(document).ready(function() {
+            // Condition change
+            $('.condition-select').change(function() {
+                const row = $(this).closest('tr');
+                const condition = $(this).val();
+
+                if (condition !== 'Good') {
+                    row.find('.damage-notes').prop('disabled', false);
+                    row.find('.photo-btn').prop('disabled', false);
+                    row.addClass('table-warning');
+                } else {
+                    row.find('.damage-notes').prop('disabled', true).val('');
+                    row.find('.photo-btn').prop('disabled', true);
+                    row.removeClass('table-warning');
+                }
+            });
+
+            // Quantity validation
+            $('.receive-qty').on('input', function() {
+                const max = parseFloat($(this).attr('max'));
+                const val = parseFloat($(this).val());
+
+                if (val > max) {
+                    $(this).val(max);
+                    toastr.warning('Cannot receive more than pending quantity');
+                }
+            });
+
+            // Photo button
+            $('.photo-btn').click(function() {
+                currentItemId = $(this).closest('tr').data('item-id');
+                $('#photoModal').modal('show');
+                startCamera();
+            });
+
+            // Camera functions
+            async function startCamera() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('camera').srcObject = stream;
+                } catch (err) {
+                    console.error('Camera access denied:', err);
+                    $('#camera').hide();
+                    $('#fileInput').show();
+                }
+            }
+
+            function stopCamera() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }
+
+            // Capture photo
+            $('#captureBtn').click(function() {
+                const video = document.getElementById('camera');
+                const canvas = document.getElementById('photoCanvas');
+                const context = canvas.getContext('2d');
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0);
+
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                $('#photoPreview').attr('src', dataUrl).show();
+                $('#camera').hide();
+                $('#captureBtn').hide();
+                $('#retakeBtn').show();
+                $('#savePhotoBtn').show();
+            });
+
+            // Retake photo
+            $('#retakeBtn').click(function() {
+                $('#photoPreview').hide();
+                $('#camera').show();
+                $('#captureBtn').show();
+                $('#retakeBtn').hide();
+                $('#savePhotoBtn').hide();
+            });
+
+            // Save photo
+            $('#savePhotoBtn').click(function() {
+                const photoData = $('#photoPreview').attr('src');
+
+                // In real implementation, upload to server
+                // For now, just close modal
+                $(`tr[data-item-id="${currentItemId}"] .photo-btn`)
+                    .removeClass('btn-secondary')
+                    .addClass('btn-success')
+                    .html('<i class="fas fa-check"></i>');
+
+                $('#photoModal').modal('hide');
+                toastr.success('Photo saved');
+            });
+
+            // File upload
+            $('#fileInput').change(function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#photoPreview').attr('src', e.target.result).show();
+                        $('#camera').hide();
+                        $('#savePhotoBtn').show();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Modal close
+            $('#photoModal').on('hidden.bs.modal', function() {
+                stopCamera();
+                $('#photoPreview').hide();
+                $('#camera').show();
+                $('#captureBtn').show();
+                $('#retakeBtn').hide();
+                $('#savePhotoBtn').hide();
+            });
+
+            // Form validation
+            $('#receiveForm').submit(function(e) {
+                let hasItems = false;
+                $('.receive-qty').each(function() {
+                    if (parseFloat($(this).val()) > 0) {
+                        hasItems = true;
+                        return false;
+                    }
+                });
+
+                if (!hasItems) {
+                    e.preventDefault();
+                    toastr.error('Please enter at least one item to receive');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

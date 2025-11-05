@@ -1,0 +1,678 @@
+﻿@model IMS.Application.DTOs.CategoryDto
+@{
+    ViewData["Title"] = $"Category Details - {Model.Name}";
+    var subCategories = ViewBag.SubCategories as IEnumerable<IMS.Application.DTOs.SubCategoryDto>;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Category Details
+                </h1>
+                <small class="text-muted">Complete information about @Model.Name category</small>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Categories</a></li>
+                    <li class="breadcrumb-item active">@Model.Name</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Category Information -->
+            <div class="col-lg-8">
+                <!-- Category Overview Card -->
+                <div class="card card-outline card-info shadow">
+                    <div class="card-header bg-gradient-info">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-layer-group mr-2"></i>
+                            Category Overview
+                        </h3>
+                        <div class="card-tools">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit mr-1"></i>
+                                Edit Category
+                            </a>
+                            <button type="button" class="btn btn-tool text-white" data-card-widget="maximize">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Category Header -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-info rounded-circle mr-4 d-flex align-items-center justify-content-center shadow" style="width: 80px; height: 80px;">
+                                        <i class="fas fa-layer-group text-white fa-2x"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h2 class="mb-2 font-weight-bold">@Model.Name</h2>
+                                        <div class="d-flex align-items-center mb-2">
+                                            @if (Model.IsActive)
+                                            {
+                                                <span class="badge badge-success badge-pill px-3 py-2 mr-3">
+                                                    <i class="fas fa-check mr-1"></i>
+                                                    Active
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary badge-pill px-3 py-2 mr-3">
+                                                    <i class="fas fa-ban mr-1"></i>
+                                                    Inactive
+                                                </span>
+                                            }
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-alt mr-1"></i>
+                                                Created on @Model.CreatedAt.ToString("dd MMMM yyyy")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Section -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5 class="text-secondary mb-3">
+                                    <i class="fas fa-align-left text-info mr-2"></i>
+                                    Description
+                                </h5>
+                                <div class="bg-light p-4 rounded border-left border-info" style="border-left-width: 4px !important;">
+                                    @if (!string.IsNullOrEmpty(Model.Description))
+                                    {
+                                        <p class="mb-0 text-dark">@Model.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted font-italic mb-0">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            No description provided for this category
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub Categories Section -->
+                <div class="card card-outline card-success shadow mt-3">
+                    <div class="card-header bg-gradient-success">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-sitemap mr-2"></i>
+                            Sub Categories (@(subCategories?.Count() ?? 0))
+                        </h3>
+                        <div class="card-tools">
+                            <a asp-controller="SubCategory" asp-action="Create" asp-route-categoryId="@Model.Id" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus mr-1"></i>
+                                Add Sub Category
+                            </a>
+                            <button type="button" class="btn btn-tool text-white" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (subCategories != null && subCategories.Any())
+                        {
+                            <div class="row">
+                                @foreach (var subCategory in subCategories)
+                                {
+                                    <div class="col-lg-6 col-md-6 mb-3">
+                                        <div class="card card-outline @(subCategory.IsActive ? "card-success" : "card-secondary") h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="card-title mb-0 font-weight-bold">
+                                                        <i class="fas fa-stream text-@(subCategory.IsActive ? "success" : "secondary") mr-1"></i>
+                                                        @subCategory.Name
+                                                    </h6>
+                                                    <span class="badge badge-@(subCategory.IsActive ? "success" : "secondary")">
+                                                        @(subCategory.IsActive ? "Active" : "Inactive")
+                                                    </span>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(subCategory.Description))
+                                                {
+                                                    <p class="card-text text-muted small mb-2">@subCategory.Description</p>
+                                                }
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar-alt mr-1"></i>
+                                                        @subCategory.CreatedAt.ToString("dd MMM yyyy")
+                                                    </small>
+                                                    <div class="btn-group">
+                                                        <a asp-controller="SubCategory" asp-action="Details" asp-route-id="@subCategory.Id"
+                                                           class="btn btn-info btn-xs" data-toggle="tooltip" title="View Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a asp-controller="SubCategory" asp-action="Edit" asp-route-id="@subCategory.Id"
+                                                           class="btn btn-warning btn-xs" data-toggle="tooltip" title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-sitemap fa-5x text-muted mb-4"></i>
+                                <h4 class="text-muted">No Sub Categories</h4>
+                                <p class="text-muted mb-4">This category doesn't have any sub categories yet. Create one to organize your items better.</p>
+                                <a asp-controller="SubCategory" asp-action="Create" asp-route-categoryId="@Model.Id" class="btn btn-success btn-lg">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Create First Sub Category
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Items in Category (Placeholder) -->
+                <div class="card card-outline card-warning shadow mt-3">
+                    <div class="card-header bg-gradient-warning">
+                        <h3 class="card-title text-dark">
+                            <i class="fas fa-boxes mr-2"></i>
+                            Items in Category
+                        </h3>
+                        <div class="card-tools">
+                            <a asp-controller="Item" asp-action="Index" asp-route-categoryId="@Model.Id" class="btn btn-light btn-sm">
+                                <i class="fas fa-external-link-alt mr-1"></i>
+                                View All Items
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning">
+                                        <i class="fas fa-boxes"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Items</span>
+                                        <span class="info-box-number" id="totalItems">-</span>
+                                        <span class="info-box-more">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Active Items</span>
+                                        <span class="info-box-number" id="activeItems">-</span>
+                                        <span class="info-box-more">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info">
+                                        <i class="fas fa-chart-line"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Stock Value</span>
+                                        <span class="info-box-number" id="stockValue">-</span>
+                                        <span class="info-box-more">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card card-outline card-primary shadow-sm">
+                    <div class="card-header bg-gradient-primary">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Quick Actions
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-edit text-warning mr-3"></i>
+                                    <div>
+                                        <strong>Edit Category</strong>
+                                        <br><small class="text-muted">Modify name, description, or status</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="SubCategory" asp-action="Create" asp-route-categoryId="@Model.Id" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-plus text-success mr-3"></i>
+                                    <div>
+                                        <strong>Add Sub Category</strong>
+                                        <br><small class="text-muted">Create a new sub category</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Item" asp-action="Index" asp-route-categoryId="@Model.Id" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-boxes text-info mr-3"></i>
+                                    <div>
+                                        <strong>View Category Items</strong>
+                                        <br><small class="text-muted">Browse all items in this category</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Item" asp-action="Create" asp-route-categoryId="@Model.Id" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-plus-circle text-primary mr-3"></i>
+                                    <div>
+                                        <strong>Add New Item</strong>
+                                        <br><small class="text-muted">Create a new item in this category</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-action="Index" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-list text-secondary mr-3"></i>
+                                    <div>
+                                        <strong>All Categories</strong>
+                                        <br><small class="text-muted">Return to categories list</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Statistics -->
+                <div class="card card-outline card-success shadow-sm">
+                    <div class="card-header bg-gradient-success">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            Statistics
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info">
+                                <i class="fas fa-sitemap"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Sub Categories</span>
+                                <span class="info-box-number">@(subCategories?.Count() ?? 0)</span>
+                                <span class="info-box-more">@(subCategories?.Count() == 1 ? "sub category" : "sub categories")</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Active Sub Categories</span>
+                                <span class="info-box-number">@(subCategories?.Count(s => s.IsActive) ?? 0)</span>
+                                <span class="info-box-more">currently active</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning">
+                                <i class="fas fa-calendar-alt"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Category Age</span>
+                                <span class="info-box-number">@((DateTime.Now - Model.CreatedAt).Days)</span>
+                                <span class="info-box-more">days old</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Status -->
+                <div class="card @(Model.IsActive ? "card-success" : "card-secondary") card-outline shadow-sm">
+                    <div class="card-header bg-gradient-@(Model.IsActive ? "success" : "secondary")">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-toggle-@(Model.IsActive ? "on" : "off") mr-2"></i>
+                            Category Status
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.IsActive)
+                        {
+                            <div class="callout callout-success">
+                                <h5><i class="fas fa-check-circle mr-2"></i>Active Category</h5>
+                                <p class="mb-2">This category is active and available for:</p>
+                                <ul class="list-unstyled mb-0">
+                                    <li><i class="fas fa-check text-success mr-2"></i>Item classification</li>
+                                    <li><i class="fas fa-check text-success mr-2"></i>Dropdown selections</li>
+                                    <li><i class="fas fa-check text-success mr-2"></i>Report generation</li>
+                                    <li><i class="fas fa-check text-success mr-2"></i>Sub category creation</li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="callout callout-danger">
+                                <h5><i class="fas fa-ban mr-2"></i>Inactive Category</h5>
+                                <p class="mb-2">This category is inactive and:</p>
+                                <ul class="list-unstyled mb-0">
+                                    <li><i class="fas fa-times text-danger mr-2"></i>Hidden from item forms</li>
+                                    <li><i class="fas fa-times text-danger mr-2"></i>Not available in dropdowns</li>
+                                    <li><i class="fas fa-info-circle text-info mr-2"></i>Existing items remain linked</li>
+                                    <li><i class="fas fa-info-circle text-info mr-2"></i>Can be reactivated anytime</li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .category-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-lg {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        #bulkActionsBar {
+            animation: slideDown 0.3s ease;
+        }
+
+        @@keyframes slideDown {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,123,255,.075);
+        }
+
+        .btn-group .btn {
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+            .btn-group .btn:last-child {
+                border-right: none;
+            }
+
+        .custom-switch-lg .custom-control-input ~ .custom-control-label {
+            padding-left: 3rem;
+            font-size: 1.1rem;
+        }
+
+            .custom-switch-lg .custom-control-input ~ .custom-control-label::before {
+                width: 2.5rem;
+                height: 1.5rem;
+                border-radius: 0.75rem;
+            }
+
+            .custom-switch-lg .custom-control-input ~ .custom-control-label::after {
+                width: 1.25rem;
+                height: 1.25rem;
+                border-radius: 50%;
+            }
+
+        .timeline-inverse .timeline-item {
+            margin-bottom: 1rem;
+        }
+
+        .info-box {
+            transition: transform 0.2s ease;
+        }
+
+            .info-box:hover {
+                transform: translateY(-2px);
+            }
+
+        .card {
+            transition: box-shadow 0.3s ease;
+        }
+
+            .card:hover {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+            }
+
+        .border-left {
+            border-left: 4px solid;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Common functions for all views
+
+            // Character counter for description (Create/Edit)
+            $('#Description').on('input', function() {
+                var currentLength = $(this).val().length;
+                var maxLength = 500;
+                $('#charCount, #descriptionCount').text(currentLength + '/' + maxLength);
+
+                if (currentLength > maxLength * 0.8) {
+                    $('#charCount, #descriptionCount').removeClass('text-muted').addClass('text-warning');
+                }
+                if (currentLength > maxLength * 0.95) {
+                    $('#charCount, #descriptionCount').removeClass('text-warning').addClass('text-danger');
+                }
+                if (currentLength <= maxLength * 0.8) {
+                    $('#charCount, #descriptionCount').removeClass('text-warning text-danger').addClass('text-muted');
+                }
+            });
+
+            // Character counter for name (Edit)
+            $('#Name').on('input', function() {
+                const currentLength = $(this).val().length;
+                $('#nameCount').text(currentLength);
+
+                if (currentLength > 80) {
+                    $('#nameCounter').removeClass('bg-light').addClass('bg-warning');
+                } else {
+                    $('#nameCounter').removeClass('bg-warning').addClass('bg-light');
+                }
+            });
+
+            // Status switch handler (Create/Edit)
+            $('#IsActiveSwitch').on('change', function() {
+                var isActive = $(this).is(':checked');
+                var statusText = $('#statusText');
+                var statusIndicator = $('#statusIndicator');
+                var statusWarning = $('#statusWarning');
+                var statusInfo = $('#statusInfo');
+                var parentCard = $(this).closest('.card');
+
+                if (isActive) {
+                    statusText.removeClass('text-danger').addClass('text-success')
+                             .text('Active - Available for selection');
+                    if (statusIndicator.length) {
+                        statusIndicator.removeClass('badge-secondary').addClass('badge-success')
+                                     .html('<i class="fas fa-check mr-1"></i>Active');
+                    }
+                    if (parentCard.length) {
+                        parentCard.removeClass('card-secondary').addClass('card-success');
+                    }
+                    statusWarning.addClass('d-none');
+                    statusInfo.removeClass('d-none');
+                } else {
+                    statusText.removeClass('text-success').addClass('text-danger')
+                             .text('Inactive - Hidden from selection');
+                    if (statusIndicator.length) {
+                        statusIndicator.removeClass('badge-success').addClass('badge-secondary')
+                                     .html('<i class="fas fa-ban mr-1"></i>Inactive');
+                    }
+                    if (parentCard.length) {
+                        parentCard.removeClass('card-success').addClass('card-secondary');
+                    }
+                    statusInfo.addClass('d-none');
+                    statusWarning.removeClass('d-none');
+                }
+            });
+
+            // Form validation and submission (Create/Edit)
+            $('form').on('submit', function(e) {
+                var isValid = true;
+                var $this = $(this);
+
+                // Clear previous validation states
+                $('.is-invalid, .is-valid').removeClass('is-invalid is-valid');
+
+                // Validate required fields
+                $this.find('input[required], select[required], textarea[required]').each(function() {
+                    if (!$(this).val().trim()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).addClass('is-valid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    toastr.error('Please fill in all required fields correctly', 'Validation Error');
+                    return false;
+                }
+
+                // Show loading state
+                var submitBtn = $this.find('button[type="submit"]');
+                var originalText = submitBtn.html();
+                var loadingText = submitBtn.attr('id') === 'updateBtn' ?
+                    '<i class="fas fa-spinner fa-spin mr-2"></i>Updating Category...' :
+                    '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Category...';
+
+                submitBtn.html(loadingText).prop('disabled', true);
+            });
+
+            // Real-time validation feedback (Create/Edit)
+            $('input, select, textarea').on('input blur', function() {
+                var $this = $(this);
+                var value = $this.val().trim();
+
+                if ($this.is('[required]')) {
+                    if (value) {
+                        $this.removeClass('is-invalid').addClass('is-valid');
+                    } else if ($this.is(':focus') === false) {
+                        $this.removeClass('is-valid').addClass('is-invalid');
+                    }
+                }
+            });
+
+            // Reset form enhancement (Create/Edit)
+            $('button[type="reset"]').on('click', function() {
+                setTimeout(function() {
+                    $('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+                    $('#IsActiveSwitch').prop('checked', true).trigger('change');
+                    $('#charCount, #descriptionCount').text('0/500').removeClass('text-warning text-danger').addClass('text-muted');
+                    $('#nameCount').text('0');
+                    $('#nameCounter').removeClass('bg-warning').addClass('bg-light');
+                }, 100);
+                toastr.info('Form has been reset', 'Info');
+            });
+
+            // DETAILS PAGE SPECIFIC SCRIPTS (Only for Details view)
+            if ($('#totalItems').length && window.location.pathname.includes('/Details/')) {
+                // Load category statistics
+                loadCategoryStats();
+                loadSubCategoryCount();
+
+                function loadCategoryStats() {
+                    // Get category ID from URL or data attribute
+                    const pathParts = window.location.pathname.split('/');
+                    const categoryId = pathParts[pathParts.length - 1];
+
+                    $.get('@Url.Action("GetCategoryStats", "Category")', { categoryId: categoryId })
+                        .done(function(data) {
+                            $('#totalItems').text(data.totalItems || 0);
+                            $('#activeItems').text(data.activeItems || 0);
+                            $('#stockValue').text(data.stockValue || '৳0.00');
+
+                            // Update "more" text
+                            $('.info-box-more').each(function(index) {
+                                switch(index) {
+                                    case 0:
+                                        $(this).text(data.totalItems === 1 ? 'item' : 'items');
+                                        break;
+                                    case 1:
+                                        $(this).text('currently active');
+                                        break;
+                                    case 2:
+                                        $(this).text('estimated value');
+                                        break;
+                                }
+                            });
+                        })
+                        .fail(function() {
+                            $('#totalItems, #activeItems').text('N/A');
+                            $('#stockValue').text('Error');
+                        });
+                }
+
+                function loadSubCategoryCount() {
+                    // Get category ID from URL
+                    const pathParts = window.location.pathname.split('/');
+                    const categoryId = pathParts[pathParts.length - 1];
+
+                    $.get('@Url.Action("GetSubCategoryCount", "Category")', { categoryId: categoryId })
+                        .done(function(data) {
+                            $('#subCategoryCount').text(data.count || 0);
+                            $('.info-box-more').last().text(data.count === 1 ? 'sub category' : 'sub categories');
+                        })
+                        .fail(function() {
+                            $('#subCategoryCount').text('N/A');
+                            $('.info-box-more').last().text('Error loading');
+                        });
+                }
+            }
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

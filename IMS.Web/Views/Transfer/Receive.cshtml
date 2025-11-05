@@ -1,0 +1,262 @@
+@model IMS.Web.Models.TransferReceiptViewModel
+@{
+    ViewData["Title"] = "Receive Transfer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-inbox"></i> Receive Transfer
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Transfers</a></li>
+                    <li class="breadcrumb-item active">Receive</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="ConfirmReceipt" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="TransferId" />
+            <input type="hidden" asp-for="TransferNo" />
+            <input type="hidden" asp-for="FromStoreName" />
+            <input type="hidden" asp-for="ToStoreName" />
+            <input type="hidden" asp-for="TransferDate" />
+            <input type="hidden" asp-for="Status" />
+
+            <div class="row">
+                <!-- Transfer Summary -->
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline sticky-top" style="top: 20px;">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i> Transfer Details
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Transfer No:</dt>
+                                <dd class="col-sm-7">
+                                    <strong class="text-primary">@Model.TransferNo</strong>
+                                </dd>
+
+                                <dt class="col-sm-5">Date:</dt>
+                                <dd class="col-sm-7">@Model.TransferDate.ToString("dd-MMM-yyyy")</dd>
+
+                                <dt class="col-sm-5">From Store:</dt>
+                                <dd class="col-sm-7">
+                                    <i class="fas fa-store text-info"></i> @Model.FromStoreName
+                                </dd>
+
+                                <dt class="col-sm-5">To Store:</dt>
+                                <dd class="col-sm-7">
+                                    <i class="fas fa-store-alt text-success"></i> @Model.ToStoreName
+                                </dd>
+
+                                <dt class="col-sm-5">Status:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge badge-warning">@Model.Status</span>
+                                </dd>
+
+                                <dt class="col-sm-5">Total Items:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge badge-info">@Model.Items.Count</span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Instructions Card -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-lightbulb"></i> Instructions
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <ol class="pl-3 mb-0">
+                                <li>Verify each item against physical stock</li>
+                                <li>Update received quantity if different</li>
+                                <li>Enter storage location for each item</li>
+                                <li>Add remarks for any discrepancies</li>
+                                <li>Click "Confirm Receipt" when done</li>
+                            </ol>
+                            <div class="alert alert-warning mt-3 mb-0">
+                                <small>
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> Stock will be added to your store upon confirmation
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="col-md-8">
+                    <div class="card card-success card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-boxes"></i> Items to Receive
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="callout callout-info">
+                                <i class="fas fa-info-circle"></i> Verify quantities received and update if there are any discrepancies. Rows will be highlighted if received quantity differs from transferred quantity.
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th style="width: 5%">#</th>
+                                            <th style="width: 25%">Item Name</th>
+                                            <th style="width: 12%">Transferred</th>
+                                            <th style="width: 15%">Received <span class="text-danger">*</span></th>
+                                            <th style="width: 18%">Location</th>
+                                            <th style="width: 25%">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.Items.Count; i++)
+                                        {
+                                            <tr>
+                                                <td class="text-center">
+                                                    <strong>@(i + 1)</strong>
+                                                    <input type="hidden" asp-for="Items[i].ItemId" />
+                                                    <input type="hidden" asp-for="Items[i].ItemName" />
+                                                    <input type="hidden" asp-for="Items[i].TransferredQuantity" />
+                                                </td>
+                                                <td>
+                                                    <strong>@Model.Items[i].ItemName</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-primary badge-lg" style="font-size: 1em;">
+                                                        @Model.Items[i].TransferredQuantity
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <input asp-for="Items[i].ReceivedQuantity" type="number"
+                                                           class="form-control form-control-lg received-qty"
+                                                           min="0" step="0.01"
+                                                           required
+                                                           style="font-weight: bold; text-align: center;" />
+                                                    <span asp-validation-for="Items[i].ReceivedQuantity" class="text-danger"></span>
+                                                </td>
+                                                <td>
+                                                    <input asp-for="Items[i].Location" type="text"
+                                                           class="form-control"
+                                                           placeholder="e.g., Shelf A1" />
+                                                </td>
+                                                <td>
+                                                    <input asp-for="Items[i].Remarks" type="text"
+                                                           class="form-control item-remarks"
+                                                           placeholder="Any notes..." />
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="bg-light">
+                                        <tr>
+                                            <th colspan="2">Total Items</th>
+                                            <th class="text-center">
+                                                <span class="badge badge-primary">@Model.Items.Sum(i => i.TransferredQuantity)</span>
+                                            </th>
+                                            <th colspan="3">@Model.Items.Count items</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Confirm Receipt & Update Stock
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.TransferId" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg float-right">
+                                <i class="fas fa-list"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Highlight discrepancies when received quantity differs from transferred
+            function checkDiscrepancy(input) {
+                var row = $(input).closest('tr');
+                var transferred = parseFloat(row.find('input[name$=".TransferredQuantity"]').val());
+                var received = parseFloat($(input).val());
+
+                if (received !== transferred && !isNaN(received)) {
+                    row.addClass('table-warning');
+                    row.find('.item-remarks').attr('placeholder', 'Please explain discrepancy');
+
+                    // Add visual indicator
+                    if (received < transferred) {
+                        $(input).addClass('border-danger');
+                    } else {
+                        $(input).addClass('border-warning');
+                    }
+                } else {
+                    row.removeClass('table-warning');
+                    row.find('.item-remarks').attr('placeholder', 'Any notes...');
+                    $(input).removeClass('border-danger border-warning');
+                }
+            }
+
+            // Check discrepancy on input change
+            $('.received-qty').on('input', function() {
+                checkDiscrepancy(this);
+            });
+
+            // Initialize check for all inputs on page load
+            $('.received-qty').each(function() {
+                checkDiscrepancy(this);
+            });
+
+            // Confirm before submit if there are discrepancies
+            $('form').on('submit', function(e) {
+                var hasDiscrepancy = $('.table-warning').length > 0;
+                if (hasDiscrepancy) {
+                    var remarksProvided = true;
+                    $('.table-warning .item-remarks').each(function() {
+                        if ($(this).val().trim() === '') {
+                            remarksProvided = false;
+                        }
+                    });
+
+                    if (!remarksProvided) {
+                        e.preventDefault();
+                        alert('Please provide remarks for all items with quantity discrepancies.');
+                        return false;
+                    }
+
+                    if (!confirm('You have quantity discrepancies. Are you sure you want to proceed?')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,396 @@
+﻿@using IMS.Application.DTOs
+@using IMS.Domain.Enums
+@model IMS.Application.DTOs.PhysicalInventoryDto
+@{
+    ViewData["Title"] = "Physical Inventory Count";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    বাস্তব গণনা / Physical Count
+                    <small class="text-muted">@Model.ReferenceNumber</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Physical Inventory</a></li>
+                    <li class="breadcrumb-item active">Count</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Organization Info -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-info">
+                    <h5><i class="fas fa-building"></i> সংস্থা তথ্য / Organization Info</h5>
+                    <div class="row">
+                        @if (!string.IsNullOrEmpty(Model.RangeName))
+                        {
+                            <div class="col-md-3">
+                                <strong>Range:</strong> @Model.RangeName
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.BattalionName))
+                        {
+                            <div class="col-md-3">
+                                <strong>Battalion:</strong> @Model.BattalionName
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ZilaName))
+                        {
+                            <div class="col-md-3">
+                                <strong>জেলা/Zila:</strong> @Model.ZilaName
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.UpazilaName))
+                        {
+                            <div class="col-md-3">
+                                <strong>উপজেলা/Upazila:</strong> @Model.UpazilaName
+                            </div>
+                        }
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-3">
+                            <strong>Store:</strong> @Model.StoreName
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Fiscal Year:</strong> @Model.FiscalYear
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Count Date:</strong> @Model.CountDate.ToString("dd MMM yyyy")
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Count Type:</strong>
+                            <span class="badge badge-info">@Model.CountType</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Details.Count</h3>
+                        <p>মোট আইটেম / Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="countedItems">@Model.Details.Count(d => d.Status == CountStatus.Counted)</h3>
+                        <p>গণনা সম্পন্ন / Counted</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="pendingItems">@Model.Details.Count(d => d.Status == CountStatus.Pending)</h3>
+                        <p>বাকি আছে / Pending</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="varianceItems">@Model.Details.Count(d => d.Variance != 0)</h3>
+                        <p>পার্থক্য / Variance</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Count Form -->
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calculator"></i>
+                    আইটেম গণনা এন্ট্রি / Item Count Entry
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-warning btn-sm" onclick="saveAllCounts()">
+                        <i class="fas fa-save"></i> Save Progress
+                    </button>
+                    @if (User.IsInRole("Auditor"))
+                    {
+                        <button type="button" class="btn btn-info btn-sm" onclick="markForAudit()">
+                            <i class="fas fa-flag"></i> Mark for Audit
+                        </button>
+                    }
+                    <button type="button" class="btn btn-success btn-sm" onclick="completeCount()">
+                        <i class="fas fa-check-circle"></i> Complete Count
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Category-wise Tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#all">
+                            All Items (@Model.Details.Count)
+                        </a>
+                    </li>
+                    @foreach (var category in Model.Details.GroupBy(d => d.CategoryName))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#cat-@category.Key.Replace(" ", "")">
+                                @category.Key (@category.Count())
+                            </a>
+                        </li>
+                    }
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content mt-3">
+                    <div id="all" class="tab-pane fade show active">
+                        @Html.Partial("_CountTable", Model.Details)
+                    </div>
+                    @foreach (var category in Model.Details.GroupBy(d => d.CategoryName))
+                    {
+                        <div id="cat-@category.Key.Replace(" ", "")" class="tab-pane fade">
+                            @Html.Partial("_CountTable", category.ToList())
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>গণনাকারী / Counted By:</label>
+                            <input type="text" class="form-control" value="@User.Identity.Name" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>যাচাইকারী / Verified By:</label>
+                            <input type="text" id="verifiedBy" class="form-control" placeholder="Enter verifier name">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Chain Display -->
+        @if (ViewBag.ApprovalChain != null)
+        {
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-signature"></i>
+                        অনুমোদন শৃঙ্খল / Approval Chain
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        @foreach (var approval in ViewBag.ApprovalChain as List<ApprovalDto>)
+                        {
+                            <div>
+                                <i class="fas fa-user-check bg-@(approval.IsApproved ? "success" : "warning")"></i>
+                                <div class="timeline-item">
+                                    <span class="time">
+                                        <i class="fas fa-clock"></i>
+                                        @(approval.ApprovedDate?.ToString("dd MMM yyyy") ?? "Pending")
+                                    </span>
+                                    <h3 class="timeline-header">@approval.RoleDescription</h3>
+                                    <div class="timeline-body">
+                                        @if (approval.IsApproved)
+                                        {
+                                            <strong>Approved by:</strong> 
+                                            @approval.ApprovedBy
+                                
+                                            <br>
+                                            <strong>Remarks:</strong>
+ 
+                                            @approval.Remarks
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">Awaiting approval</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        var inventoryId = @Model.Id;
+
+        function completeCount() {
+            var pending = parseInt($('#pendingItems').text());
+            var verifiedBy = $('#verifiedBy').val();
+
+            if (!verifiedBy) {
+                toastr.error('দয়া করে যাচাইকারীর নাম লিখুন / Please enter verifier name');
+                return;
+            }
+
+            if (pending > 0) {
+                Swal.fire({
+                    title: 'অসম্পূর্ণ গণনা / Incomplete Count',
+                    html: `এখনও ${pending} টি আইটেম গণনা করা হয়নি।<br>Still ${pending} items are not counted.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Continue Anyway',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitForApproval(verifiedBy);
+                    }
+                });
+            } else {
+                submitForApproval(verifiedBy);
+            }
+        }
+
+        function submitForApproval(verifiedBy) {
+            $.ajax({
+                url: '@Url.Action("SubmitForApproval", "PhysicalInventory")',
+                type: 'POST',
+                data: {
+                    inventoryId: inventoryId,
+                    verifiedBy: verifiedBy,
+                    __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()
+                },
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire({
+                            title: 'সফল / Success',
+                            text: result.message,
+                            icon: 'success'
+                        }).then(() => {
+                            window.location.href = result.redirectUrl || '@Url.Action("Review", new { id = Model.Id })';
+                        });
+                    } else {
+                        toastr.error(result.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error submitting for approval');
+                }
+            });
+        }
+
+        function saveAllCounts() {
+            var counts = [];
+            $('.count-table tbody tr').each(function() {
+                var detailId = $(this).data('detail-id');
+                var physicalQty = $(this).find('.physical-qty').val();
+                var location = $(this).find('.location').val();
+                var batch = $(this).find('.batch').val();
+                var remarks = $(this).find('.remarks').val();
+                var itemId = $(this).find('.physical-qty').data('item-id');
+
+                if (physicalQty) {
+                    counts.push({
+                        DetailId: detailId,
+                        ItemId: itemId,
+                        PhysicalQuantity: parseFloat(physicalQty),
+                        LocationCode: location,
+                        BatchNumbers: batch,
+                        Remarks: remarks
+                    });
+                }
+            });
+
+            if (counts.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("SaveCount", "PhysicalInventory")',
+                    type: 'POST',
+                    data: {
+                        inventoryId: inventoryId,
+                        counts: counts,
+                        __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            toastr.success(result.message);
+                            updateSummary();
+                        } else {
+                            toastr.error(result.message);
+                        }
+                    }
+                });
+            }
+        }
+
+        function calculateVariance(input) {
+            var row = $(input).closest('tr');
+            var systemQty = parseFloat(row.find('.system-qty').text());
+            var physicalQty = parseFloat($(input).val()) || 0;
+            var unitPrice = parseFloat(row.data('unit-price')) || 0;
+            var variance = physicalQty - systemQty;
+            var varianceValue = variance * unitPrice;
+
+            var varianceText = variance > 0 ? '+' + variance : variance.toString();
+            var varianceClass = variance > 0 ? 'text-success' : variance < 0 ? 'text-danger' : '';
+
+            row.find('.variance span').text(varianceText)
+                .removeClass('text-success text-danger')
+                .addClass(varianceClass);
+
+            if (varianceValue !== 0) {
+                row.find('.variance-value').html('৳ ' + Math.abs(varianceValue).toFixed(2))
+                    .addClass(varianceValue > 0 ? 'text-success' : 'text-danger');
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            var total = 0;
+            var counted = 0;
+            var pending = 0;
+            var variance = 0;
+
+            $('.count-table tbody tr:visible').each(function() {
+                total++;
+                if ($(this).find('.physical-qty').val()) {
+                    counted++;
+                } else {
+                    pending++;
+                }
+
+                var v = parseFloat($(this).find('.variance span').text()) || 0;
+                if (v !== 0) variance++;
+            });
+
+            $('#countedItems').text(counted);
+            $('#pendingItems').text(pending);
+            $('#varianceItems').text(variance);
+        }
+    </script>
+}

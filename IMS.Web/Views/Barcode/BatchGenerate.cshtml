@@ -1,0 +1,473 @@
+﻿@{
+    ViewData["Title"] = "Batch Generate Barcodes";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-layer-group"></i> Batch Generate Barcodes
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Barcodes</a></li>
+                    <li class="breadcrumb-item active">Batch Generate</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-filter"></i> Filter Items
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Store</label>
+                                    <select id="storeFilter" class="form-control select2">
+                                        <option value="">All Stores</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select id="categoryFilter" class="form-control select2">
+                                        <option value="">All Categories</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Sub Category</label>
+                                    <select id="subCategoryFilter" class="form-control select2">
+                                        <option value="">All Sub Categories</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Filter</label>
+                                    <select id="criteriaFilter" class="form-control">
+                                        <option value="all">All Items</option>
+                                        <option value="no_barcode">Items without Barcodes</option>
+                                        <option value="active_only">Active Items Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label>Search Items</label>
+                                    <input type="text" id="itemSearch" class="form-control"
+                                           placeholder="Search by item name or code...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <div>
+                                        <button type="button" class="btn btn-primary btn-block" onclick="loadItems()">
+                                            <i class="fas fa-search"></i> Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list"></i> Select Items
+                            <span class="badge badge-primary ml-2" id="selectedCount">0 selected</span>
+                        </h3>
+                        <div class="card-tools">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-default" onclick="selectAll()">
+                                    <i class="fas fa-check-square"></i> All
+                                </button>
+                                <button type="button" class="btn btn-default" onclick="deselectAll()">
+                                    <i class="far fa-square"></i> None
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover" id="itemsTable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th width="40">
+                                            <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll()">
+                                        </th>
+                                        <th>Item Code</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Store</th>
+                                        <th>Status</th>
+                                        <th width="100">Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <i class="fas fa-info-circle"></i> Click "Apply" to load items
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <button type="button" class="btn btn-success" onclick="generateBarcodes()" id="generateBtn">
+                                <i class="fas fa-barcode"></i> Generate Selected Barcodes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cog"></i> Generation Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Barcode Type</label>
+                            <select id="barcodeType" class="form-control">
+                                <option value="QRCode" selected>QR Code</option>
+                                <option value="Barcode">Linear Barcode</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="autoSerial" checked>
+                            <label class="form-check-label" for="autoSerial">
+                                Auto-generate serial numbers
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="autoPrint">
+                            <label class="form-check-label" for="autoPrint">
+                                Auto-print after generation
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-lightbulb"></i> Tips
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i>
+                                <small>Select items to generate barcodes for</small>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i>
+                                <small>Set quantity for each item (1-100)</small>
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check text-success"></i>
+                                <small>Filter by category or store to find items</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card card-success" id="summaryCard" style="display: none;">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-check-circle"></i> Generation Summary
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Items Selected:</dt>
+                            <dd class="col-sm-6"><span id="summaryItems">0</span></dd>
+
+                            <dt class="col-sm-6">Total Barcodes:</dt>
+                            <dd class="col-sm-6"><span id="summaryBarcodes">0</span></dd>
+
+                            <dt class="col-sm-6">Status:</dt>
+                            <dd class="col-sm-6">
+                                <span class="badge badge-success">Ready</span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="progressModal" tabindex="-1" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-spinner fa-spin"></i> Generating Barcodes
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3" style="height: 30px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                         role="progressbar" style="width: 0%" id="progressBar">
+                        <span id="progressText">0%</span>
+                    </div>
+                </div>
+                <div id="currentItem" class="text-center">
+                    <p>Preparing...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedItems = [];
+        let itemsTable = null;
+
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('#categoryFilter').on('change', loadSubCategories);
+            loadStores();
+            loadCategories();
+        });
+
+        function loadStores() {
+            $.get('@Url.Action("GetStores", "Store")')
+                .done(function(data) {
+                    let options = '<option value="">All Stores</option>';
+                    data.forEach(item => {
+                        options += `<option value="${item.value}">${item.text}</option>`;
+                    });
+                    $('#storeFilter').html(options);
+                });
+        }
+
+        function loadCategories() {
+            $.get('@Url.Action("GetCategories", "Barcode")')
+                .done(function(data) {
+                    let options = '<option value="">All Categories</option>';
+                    data.forEach(item => {
+                        options += `<option value="${item.value}">${item.text}</option>`;
+                    });
+                    $('#categoryFilter').html(options);
+                });
+        }
+
+        function loadSubCategories() {
+            const categoryId = $('#categoryFilter').val();
+            $('#subCategoryFilter').html('<option value="">All Sub Categories</option>');
+
+            if (!categoryId) return;
+
+            $.get('@Url.Action("GetSubCategories", "Category")', { categoryId: categoryId })
+                .done(function(data) {
+                    let options = '<option value="">All Sub Categories</option>';
+                    data.forEach(item => {
+                        options += `<option value="${item.value}">${item.text}</option>`;
+                    });
+                    $('#subCategoryFilter').html(options);
+                });
+        }
+
+        function loadItems() {
+            const filters = {
+                storeId: $('#storeFilter').val(),
+                categoryId: $('#categoryFilter').val(),
+                subCategoryId: $('#subCategoryFilter').val(),
+                criteria: $('#criteriaFilter').val(),
+                search: $('#itemSearch').val()
+            };
+
+            $('#itemsTableBody').html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
+
+            $.post('@Url.Action("GetFilteredItems", "Barcode")', filters)
+                .done(function(data) {
+                    displayItems(data);
+                })
+                .fail(function() {
+                    $('#itemsTableBody').html('<tr><td colspan="7" class="text-center text-danger">Error loading items</td></tr>');
+                });
+        }
+
+        function displayItems(items) {
+            if ($.fn.DataTable.isDataTable('#itemsTable')) {
+                $('#itemsTable').DataTable().destroy();
+            }
+
+            $('#itemsTableBody').empty();
+
+            if (!items || items.length === 0) {
+                $('#itemsTableBody').append('<tr><td colspan="7" class="text-center text-muted">No items found</td></tr>');
+                return;
+            }
+
+            items.forEach(item => {
+                const row = `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="item-checkbox" value="${item.id}"
+                                   ${selectedItems.includes(item.id) ? 'checked' : ''}
+                                   onchange="updateSelection()">
+                        </td>
+                        <td>${item.code || 'N/A'}</td>
+                        <td>${item.name}</td>
+                        <td>${item.categoryName || 'N/A'}</td>
+                        <td>${item.storeName || 'N/A'}</td>
+                        <td>
+                            ${item.hasBarcodes ?
+                                '<span class="badge badge-success">Has Barcodes</span>' :
+                                '<span class="badge badge-warning">No Barcodes</span>'}
+                        </td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm quantity-input"
+                                   min="1" max="100" value="1" data-item-id="${item.id}">
+                        </td>
+                    </tr>
+                `;
+                $('#itemsTableBody').append(row);
+            });
+
+            itemsTable = $('#itemsTable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 25
+            });
+        }
+
+        function updateSelection() {
+            selectedItems = [];
+            $('.item-checkbox:checked').each(function() {
+                selectedItems.push(parseInt($(this).val()));
+            });
+
+            $('#selectedCount').text(selectedItems.length + ' selected');
+
+            if (selectedItems.length > 0) {
+                let totalBarcodes = 0;
+                selectedItems.forEach(id => {
+                    const qty = parseInt($(`.quantity-input[data-item-id="${id}"]`).val()) || 1;
+                    totalBarcodes += qty;
+                });
+
+                $('#summaryItems').text(selectedItems.length);
+                $('#summaryBarcodes').text(totalBarcodes);
+                $('#summaryCard').fadeIn();
+            } else {
+                $('#summaryCard').fadeOut();
+            }
+        }
+
+        function selectAll() {
+            $('.item-checkbox').prop('checked', true);
+            updateSelection();
+        }
+
+        function deselectAll() {
+            $('.item-checkbox').prop('checked', false);
+            selectedItems = [];
+            updateSelection();
+        }
+
+        function toggleSelectAll() {
+            const checked = $('#selectAllCheck').prop('checked');
+            $('.item-checkbox').prop('checked', checked);
+            updateSelection();
+        }
+
+        function generateBarcodes() {
+            if (selectedItems.length === 0) {
+                Swal.fire('No Items Selected', 'Please select at least one item', 'warning');
+                return;
+            }
+
+            const batchItems = selectedItems.map(id => ({
+                itemId: id,
+                quantity: parseInt($(`.quantity-input[data-item-id="${id}"]`).val()) || 1
+            }));
+
+            $('#progressModal').modal('show');
+            processGeneration(batchItems, 0);
+        }
+
+        function processGeneration(items, index) {
+            if (index >= items.length) {
+                completeGeneration();
+                return;
+            }
+
+            const item = items[index];
+            const progress = ((index + 1) / items.length) * 100;
+
+            $('#progressBar').css('width', progress + '%');
+            $('#progressText').text(Math.round(progress) + '%');
+            $('#currentItem').html(`<p>Processing item ${index + 1} of ${items.length}...</p>`);
+
+            $.post('@Url.Action("GenerateBatchBarcodesAsync", "Barcode")', {
+                itemId: item.itemId,
+                quantity: item.quantity,
+                generatedBy: '@User.Identity.Name'
+            })
+            .done(function() {
+                setTimeout(() => processGeneration(items, index + 1), 500);
+            })
+            .fail(function() {
+                setTimeout(() => processGeneration(items, index + 1), 500);
+            });
+        }
+
+        function completeGeneration() {
+            $('#progressModal').modal('hide');
+            Swal.fire({
+                icon: 'success',
+                title: 'Generation Complete',
+                text: `Successfully generated barcodes for ${selectedItems.length} items`,
+                confirmButtonText: 'View Barcodes'
+            }).then(() => {
+                window.location.href = '@Url.Action("Index")';
+            });
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .quantity-input {
+            max-width: 80px;
+        }
+    </style>
+}

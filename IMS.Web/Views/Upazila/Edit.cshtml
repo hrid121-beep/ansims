@@ -1,0 +1,398 @@
+﻿@model IMS.Application.DTOs.UpazilaDto
+@{
+    ViewData["Title"] = "Edit Sub-district";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Edit Sub-district - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Sub-districts</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Sub-district Information</h3>
+                    </div>
+                    <form asp-action="Edit" method="post">
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="CreatedAt" type="hidden" />
+                        <input asp-for="CreatedBy" type="hidden" />
+
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label">Code <span class="text-danger">*</span></label>
+                                        <input asp-for="Code" class="form-control" readonly />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                        <small class="form-text text-muted">Code cannot be changed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ZilaId" class="control-label">District <span class="text-danger">*</span></label>
+                                        <select asp-for="ZilaId" class="form-control select2" asp-items="ViewBag.Zilas">
+                                            <option value="">Select District</option>
+                                        </select>
+                                        <span asp-validation-for="ZilaId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">Name (English) <span class="text-danger">*</span></label>
+                                        <input asp-for="Name" class="form-control" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NameBangla" class="control-label">Name (Bengali)</label>
+                                        <input asp-for="NameBangla" class="form-control" />
+                                        <span asp-validation-for="NameBangla" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Officer Information Section -->
+                            <div class="card card-outline card-secondary">
+                                <div class="card-header">
+                                    <h5 class="card-title">Officer Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="UpazilaOfficerName" class="control-label">Upazila Officer Name</label>
+                                                <input asp-for="UpazilaOfficerName" class="form-control" />
+                                                <span asp-validation-for="UpazilaOfficerName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="OfficerDesignation" class="control-label">Officer Designation</label>
+                                                <input asp-for="OfficerDesignation" class="form-control" />
+                                                <span asp-validation-for="OfficerDesignation" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="UpazilaChairmanName" class="control-label">Chairman Name</label>
+                                                <input asp-for="UpazilaChairmanName" class="form-control" />
+                                                <span asp-validation-for="UpazilaChairmanName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="VDPOfficerName" class="control-label">VDP Officer Name</label>
+                                                <input asp-for="VDPOfficerName" class="form-control" />
+                                                <span asp-validation-for="VDPOfficerName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ContactNumber" class="control-label">Contact Number</label>
+                                        <input asp-for="ContactNumber" class="form-control" />
+                                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Email" class="control-label">Email Address</label>
+                                        <input asp-for="Email" class="form-control" type="email" />
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="OfficeAddress" class="control-label">Office Address</label>
+                                <textarea asp-for="OfficeAddress" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="OfficeAddress" class="text-danger"></span>
+                            </div>
+
+                            <!-- Geographic Information -->
+                            <div class="card card-outline card-info">
+                                <div class="card-header">
+                                    <h5 class="card-title">Geographic Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="NumberOfUnions" class="control-label">Number of Unions</label>
+                                                <input asp-for="NumberOfUnions" class="form-control" type="number" min="0" />
+                                                <span asp-validation-for="NumberOfUnions" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="NumberOfVillages" class="control-label">Number of Villages</label>
+                                                <input asp-for="NumberOfVillages" class="form-control" type="number" min="0" />
+                                                <span asp-validation-for="NumberOfVillages" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="Area" class="control-label">Area (km²)</label>
+                                                <input asp-for="Area" class="form-control" type="number" step="0.01" min="0" />
+                                                <span asp-validation-for="Area" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="Population" class="control-label">Population</label>
+                                                <input asp-for="Population" class="form-control" type="number" min="0" />
+                                                <span asp-validation-for="Population" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- VDP Information -->
+                            <div class="card card-outline card-warning">
+                                <div class="card-header">
+                                    <h5 class="card-title">VDP Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="HasVDPUnit" class="control-label">Has VDP Unit</label>
+                                                <select asp-for="HasVDPUnit" class="form-control" id="hasVDPUnit">
+                                                    <option value="false">No</option>
+                                                    <option value="true">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="vdpMemberSection">
+                                            <div class="form-group">
+                                                <label asp-for="VDPMemberCount" class="control-label">VDP Member Count</label>
+                                                <input asp-for="VDPMemberCount" class="form-control" type="number" min="0" />
+                                                <span asp-validation-for="VDPMemberCount" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="IsActive" class="control-label">Status</label>
+                                        <select asp-for="IsActive" class="form-control">
+                                            <option value="true">Active</option>
+                                            <option value="false">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks" class="control-label">Remarks</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update Sub-district
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Audit Information -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Audit Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">Created:</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</dd>
+
+                            <dt class="col-sm-4">Created By:</dt>
+                            <dd class="col-sm-8">@Model.CreatedBy</dd>
+
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <dt class="col-sm-4">Updated:</dt>
+                                <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd MMM yyyy HH:mm")</dd>
+
+                                <dt class="col-sm-4">Updated By:</dt>
+                                <dd class="col-sm-8">@Model.UpdatedBy</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Stats</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="description-block border-right">
+                                    <h5 class="description-header">@(Model.StoreCount)</h5>
+                                    <span class="description-text">STORES</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="description-block">
+                                    <h5 class="description-header">@(Model.VDPMemberCount ?? 0)</h5>
+                                    <span class="description-text">VDP MEMBERS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // VDP Section Toggle
+            function toggleVDPSection() {
+                if ($('#hasVDPUnit').val() === 'true') {
+                    $('#vdpMemberSection').slideDown();
+                } else {
+                    $('#vdpMemberSection').slideUp();
+                }
+            }
+
+            $('#hasVDPUnit').change(toggleVDPSection);
+            toggleVDPSection(); // Initialize on page load
+
+            // Name validation (check for duplicates in same district)
+            $('#Name').blur(function() {
+                var name = $(this).val();
+                var zilaId = $('#ZilaId').val();
+                var excludeId = $('#Id').val();
+                
+                if (name && zilaId) {
+                    var checkNameUrl = '@Url.Action("CheckNameExists")';
+                    $.get(checkNameUrl, { 
+                        name: name, 
+                        zilaId: zilaId, 
+                        excludeId: excludeId 
+                    }, function(isValid) {
+                        if (!isValid) {
+                            $('#Name').addClass('is-invalid');
+                            $('#Name').siblings('.text-danger').text('This sub-district name already exists in this district');
+                        } else {
+                            $('#Name').removeClass('is-invalid');
+                            $('#Name').siblings('.text-danger').text('');
+                        }
+                    });
+                }
+            });
+
+            // Email validation
+            $('#Email').blur(function() {
+                var email = $(this).val();
+                if (email) {
+                    var emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                    if (!emailRegex.test(email)) {
+                        $(this).addClass('is-invalid');
+                        $(this).siblings('.text-danger').text('Please enter a valid email address');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $(this).siblings('.text-danger').text('');
+                    }
+                }
+            });
+
+            // Contact number validation (optional - customize as needed)
+            $('#ContactNumber').blur(function() {
+                var contactNumber = $(this).val();
+                if (contactNumber) {
+                    // Bangladesh phone number pattern (customize as needed)
+                    var phoneRegex = /^(\+?88)?01[3-9]\d{8}$/;
+                    if (!phoneRegex.test(contactNumber.replace(/[\s-]/g, ''))) {
+                        $(this).addClass('is-invalid');
+                        $(this).siblings('.text-danger').text('Please enter a valid phone number');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $(this).siblings('.text-danger').text('');
+                    }
+                }
+            });
+
+            // Form submission validation
+            $('form').on('submit', function(e) {
+                var isValid = true;
+                
+                // Check required fields
+                if (!$('#Name').val()) {
+                    $('#Name').addClass('is-invalid');
+                    $('#Name').siblings('.text-danger').text('Name is required');
+                    isValid = false;
+                }
+                
+                if (!$('#ZilaId').val()) {
+                    $('#ZilaId').addClass('is-invalid');
+                    $('#ZilaId').siblings('.text-danger').text('District is required');
+                    isValid = false;
+                }
+
+                // Check if any field has is-invalid class
+                if ($('.is-invalid').length > 0) {
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fix the validation errors before submitting.');
+                }
+            });
+        });
+    </script>
+}

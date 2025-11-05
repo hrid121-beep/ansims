@@ -1,0 +1,308 @@
+@model IMS.Application.DTOs.ApprovalWorkflowDto
+@{
+    ViewData["Title"] = "Create Approval Workflow";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Create Approval Workflow</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Approval Settings</a></li>
+                    <li class="breadcrumb-item active">Create Workflow</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="CreateWorkflow" method="post" id="workflowForm">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Workflow Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name">Workflow Name <span class="text-danger">*</span></label>
+                                        <input asp-for="Name" class="form-control" placeholder="e.g., High Value Purchase Approval" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="EntityType">Entity Type <span class="text-danger">*</span></label>
+                                        <select asp-for="EntityType" asp-items="ViewBag.EntityTypes" class="form-control">
+                                            <option value="">-- Select Entity Type --</option>
+                                        </select>
+                                        <span asp-validation-for="EntityType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MinAmount">Minimum Amount (৳)</label>
+                                        <input asp-for="MinAmount" type="number" step="0.01" class="form-control"
+                                               placeholder="Leave blank for all amounts" />
+                                        <span asp-validation-for="MinAmount" class="text-danger"></span>
+                                        <small class="form-text text-muted">Lower bound of applicable amount range</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MaxAmount">Maximum Amount (৳)</label>
+                                        <input asp-for="MaxAmount" type="number" step="0.01" class="form-control"
+                                               placeholder="Leave blank for no upper limit" />
+                                        <span asp-validation-for="MaxAmount" class="text-danger"></span>
+                                        <small class="form-text text-muted">Upper bound (blank = unlimited)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Approval Levels</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-sm btn-success" id="addLevel">
+                                    <i class="fas fa-plus"></i> Add Level
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="levelsContainer">
+                                @if (Model.Levels != null && Model.Levels.Any())
+                                {
+                                    @for (int i = 0; i < Model.Levels.Count; i++)
+                                    {
+                                        var level = Model.Levels[i];
+                                        <div class="level-row card mb-3">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">
+                                                    <span class="level-title">Level <span class="level-number">@(i + 1)</span></span>
+                                                    <button type="button" class="btn btn-sm btn-danger float-right remove-level">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <input type="hidden" class="level-input" name="Levels[@i].Level" value="@(i + 1)" />
+
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label>Approver Role <span class="text-danger">*</span></label>
+                                                            <select name="Levels[@i].ApproverRole" class="form-control">
+                                                                <option value="">-- Select Role --</option>
+                                                                <option value="StoreManager" selected="@(level.ApproverRole == "StoreManager")">Store Manager</option>
+                                                                <option value="StoreKeeper" selected="@(level.ApproverRole == "StoreKeeper")">Store Keeper</option>
+                                                                <option value="UpazilaCommander" selected="@(level.ApproverRole == "UpazilaCommander")">Upazila Commander</option>
+                                                                <option value="ZilaCommander" selected="@(level.ApproverRole == "ZilaCommander")">Zila Commander</option>
+                                                                <option value="RangeDIG" selected="@(level.ApproverRole == "RangeDIG")">Range DIG</option>
+                                                                <option value="DirectorOps" selected="@(level.ApproverRole == "DirectorOps")">Director Operations</option>
+                                                                <option value="DirectorGeneral" selected="@(level.ApproverRole == "DirectorGeneral")">Director General</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label>Threshold Amount (৳)</label>
+                                                            <input type="number" step="0.01" name="Levels[@i].ThresholdAmount"
+                                                                   class="form-control" value="@level.ThresholdAmount" placeholder="Optional" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <label>Timeout (Hours)</label>
+                                                            <input type="number" name="Levels[@i].TimeoutHours"
+                                                                   class="form-control" value="@(level.TimeoutHours ?? 24)" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label>&nbsp;</label>
+                                                            <div class="custom-control custom-checkbox">
+                                                                <input type="checkbox" class="custom-control-input"
+                                                                       name="Levels[@i].CanEscalate" id="escalate_@i"
+                                                                       value="true" checked="@level.CanEscalate" />
+                                                                <label class="custom-control-label" for="escalate_@i">
+                                                                    Can Escalate
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Workflow
+                            </button>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Level Row Template -->
+<template id="levelRowTemplate">
+    <div class="level-row card mb-3">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <span class="level-title">Level <span class="level-number">1</span></span>
+                <button type="button" class="btn btn-sm btn-danger float-right remove-level">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <input type="hidden" class="level-input" name="Levels[INDEX].Level" value="LEVEL_NUM" />
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Approver Role <span class="text-danger">*</span></label>
+                        <select name="Levels[INDEX].ApproverRole" class="form-control">
+                            <option value="">-- Select Role --</option>
+                            <option value="StoreManager">Store Manager</option>
+                            <option value="StoreKeeper">Store Keeper</option>
+                            <option value="UpazilaCommander">Upazila Commander</option>
+                            <option value="ZilaCommander">Zila Commander</option>
+                            <option value="RangeDIG">Range DIG</option>
+                            <option value="DirectorOps">Director Operations</option>
+                            <option value="DirectorGeneral">Director General</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Threshold Amount (৳)</label>
+                        <input type="number" step="0.01" name="Levels[INDEX].ThresholdAmount"
+                               class="form-control" placeholder="Optional" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Timeout (Hours)</label>
+                        <input type="number" name="Levels[INDEX].TimeoutHours"
+                               class="form-control" value="24" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" name="Levels[INDEX].CanEscalate"
+                                   id="escalate_INDEX" value="true" checked />
+                            <label class="custom-control-label" for="escalate_INDEX">
+                                Can Escalate
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let levelCounter = @(Model.Levels?.Count ?? 1);
+
+        $(function () {
+            // Add Level
+            $('#addLevel').click(function () {
+                const template = document.getElementById('levelRowTemplate').content.cloneNode(true);
+                const levelRow = $(template).find('.level-row');
+
+                // Update indices
+                levelRow.html(levelRow.html().replaceAll('INDEX', levelCounter));
+                levelRow.find('.level-number').text(levelCounter + 1);
+                levelRow.find('.level-input').val(levelCounter + 1);
+                levelRow.find('.level-title').attr('data-level', levelCounter + 1);
+
+                // Fix checkbox ID
+                levelRow.find('input[type="checkbox"]').attr('id', 'escalate_' + levelCounter);
+                levelRow.find('label[for^="escalate_"]').attr('for', 'escalate_' + levelCounter);
+
+                $('#levelsContainer').append(levelRow);
+                levelCounter++;
+                renumberLevels();
+            });
+
+            // Remove Level
+            $(document).on('click', '.remove-level', function () {
+                if ($('.level-row').length > 1) {
+                    $(this).closest('.level-row').remove();
+                    renumberLevels();
+                } else {
+                    alert('At least one approval level is required!');
+                }
+            });
+
+            function renumberLevels() {
+                $('.level-row').each(function (index) {
+                    $(this).find('.level-number').text(index + 1);
+                    $(this).find('.level-input').val(index + 1);
+
+                    // Update all name attributes
+                    $(this).find('input, select').each(function () {
+                        const name = $(this).attr('name');
+                        if (name) {
+                            $(this).attr('name', name.replace(/\[\d+\]/, '[' + index + ']'));
+                        }
+                    });
+
+                    // Update checkbox ID
+                    const checkbox = $(this).find('input[type="checkbox"]');
+                    const newId = 'escalate_' + index;
+                    checkbox.attr('id', newId);
+                    $(this).find('label[for^="escalate_"]').attr('for', newId);
+                });
+
+                levelCounter = $('.level-row').length;
+            }
+        });
+    </script>
+}

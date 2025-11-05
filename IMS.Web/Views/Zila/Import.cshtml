@@ -1,0 +1,166 @@
+﻿@{
+    ViewData["Title"] = "Import Districts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Import Districts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Districts</a></li>
+                    <li class="breadcrumb-item active">Import</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Districts from CSV</h3>
+                    </div>
+                    <form asp-action="Import" method="post" enctype="multipart/form-data" id="importForm">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> CSV Format Requirements</h5>
+                                Your CSV file should contain the following columns:
+                                <ul class="mb-0">
+                                    <li><strong>Code</strong> - District code, e.g., ZILA-DHK (required)</li>
+                                    <li><strong>Name</strong> - District name in English (required)</li>
+                                    <li><strong>NameBangla</strong> - District name in Bengali</li>
+                                    <li><strong>RangeId</strong> - ID of the parent Range (required)</li>
+                                    <li><strong>Division</strong> - Division name</li>
+                                    <li><strong>DistrictOfficerName</strong> - Name of District Officer</li>
+                                    <li><strong>ContactNumber</strong> - Contact number</li>
+                                    <li><strong>Email</strong> - Email address</li>
+                                    <li><strong>OfficeAddress</strong> - Office address</li>
+                                    <li><strong>Area</strong> - Area in square kilometers</li>
+                                    <li><strong>Population</strong> - Population count</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="file">Select CSV File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" name="file" class="custom-file-input" id="csvFile" accept=".csv" required>
+                                        <label class="custom-file-label" for="csvFile">Choose file</label>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Maximum file size: 5MB</small>
+                            </div>
+
+                            <div class="form-group">
+                                <a href="/templates/zila_import_template.csv" class="btn btn-info btn-sm">
+                                    <i class="fas fa-download"></i> Download Sample Template
+                                </a>
+                            </div>
+
+                            <div id="previewSection" style="display: none;">
+                                <h5>Preview (First 5 rows)</h5>
+                                <div class="table-responsive">
+                                    <table id="previewTable" class="table table-sm table-bordered">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success" id="importBtn" disabled>
+                                <i class="fas fa-file-import"></i> Import Districts
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Ensure all required columns are present</li>
+                            <li>District codes must be unique</li>
+                            <li>RangeId must match existing Ranges</li>
+                            <li>Leave optional fields empty if not applicable</li>
+                            <li>Dates should be in YYYY-MM-DD format</li>
+                            <li>Contact numbers should be in 01XXXXXXXXX format</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        $(function() {
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+
+                if (fileName.endsWith('.csv')) {
+                    previewCSV(this.files[0]);
+                    $('#importBtn').prop('disabled', false);
+                } else {
+                    $('#importBtn').prop('disabled', true);
+                    $('#previewSection').hide();
+                }
+            });
+
+            function previewCSV(file) {
+                Papa.parse(file, {
+                    preview: 5,
+                    complete: function(results) {
+                        var table = $('#previewTable');
+                        var thead = table.find('thead').empty();
+                        var tbody = table.find('tbody').empty();
+
+                        if (results.data.length > 0) {
+                            var headerRow = $('<tr>');
+                            results.data[0].forEach(function(header) {
+                                headerRow.append($('<th>').text(header));
+                            });
+                            thead.append(headerRow);
+                        }
+
+                        for (var i = 1; i < results.data.length && i <= 5; i++) {
+                            var row = $('<tr>');
+                            results.data[i].forEach(function(cell) {
+                                row.append($('<td>').text(cell));
+                            });
+                            tbody.append(row);
+                        }
+
+                        $('#previewSection').show();
+                    }
+                });
+            }
+
+            $('#importForm').on('submit', function(e) {
+                $('#importBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Importing...');
+            });
+        });
+    </script>
+}

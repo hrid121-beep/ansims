@@ -1,0 +1,380 @@
+﻿@using IMS.Application.DTOs
+@model IssueDto
+@{
+    ViewData["Title"] = "Approve Issue";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Approve Issue</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Issues</a></li>
+                    <li class="breadcrumb-item active">Approve</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Column - Issue Details -->
+            <div class="col-md-8">
+                <!-- Issue Information -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Issue Details - #@Model.IssueNo</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon"><i class="far fa-calendar-alt"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Issue Date</span>
+                                        <span class="info-box-number">@Model.IssueDate.ToString("dd-MMM-yyyy")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon"><i class="fas fa-user"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Requested By</span>
+                                        <span class="info-box-number">@Model.CreatedBy</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <dl class="row">
+                            <dt class="col-sm-4">Issued To:</dt>
+                            <dd class="col-sm-8">@Model.IssuedToType - @Model.IssuedToName</dd>
+
+                            <dt class="col-sm-4">Purpose:</dt>
+                            <dd class="col-sm-8">@Model.Purpose</dd>
+
+                            <dt class="col-sm-4">Total Items:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge badge-primary">@Model.Items.Count</span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Issue Items</h3>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-hover text-nowrap">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Store</th>
+                                    <th>Requested</th>
+                                    <th>Available</th>
+                                    <th>Unit</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@item.ItemName</strong>
+                                            <br />
+                                            <small class="text-muted">@item.ItemCode</small>
+                                        </td>
+                                        <td>@item.StoreName</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.CurrentStock</td>
+                                        <td>@item.Unit</td>
+                                        <td>
+                                            @if (item.CurrentStock >= item.Quantity)
+                                            {
+                                                <span class="badge badge-success">Available</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Insufficient</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Approval Form -->
+            <div class="col-md-4">
+                <!-- Approval Decision -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Decision</h3>
+                    </div>
+                    <form id="approvalForm">
+                        <div class="card-body">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="issueId" value="@Model.Id" />
+
+                            <div class="form-group">
+                                <label>Comments</label>
+                                <textarea id="comments" class="form-control" rows="3"
+                                          placeholder="Optional approval comments..."></textarea>
+                            </div>
+
+                            <!-- Digital Signature -->
+                            <div class="form-group">
+                                <label>Digital Signature <span class="text-danger">*</span></label>
+                                <div class="border rounded p-2 bg-white">
+                                    <canvas id="signatureCanvas" width="320" height="150"
+                                            style="border: 1px solid #dee2e6; width: 100%;"></canvas>
+                                    <button type="button" class="btn btn-default btn-sm mt-2" id="clearSignature">
+                                        <i class="fas fa-eraser"></i> Clear Signature
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Signer Name</label>
+                                <input type="text" id="signerName" class="form-control"
+                                       value="@User.Identity.Name" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Badge ID <span class="text-danger">*</span></label>
+                                <input type="text" id="signerBadgeId" class="form-control" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Designation</label>
+                                <input type="text" id="signerDesignation" class="form-control"
+                                       value="Officer" />
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-success btn-block" id="approveBtn">
+                                <i class="fas fa-check"></i> Approve Issue
+                            </button>
+                            <button type="button" class="btn btn-danger btn-block" id="rejectBtn">
+                                <i class="fas fa-times"></i> Reject Issue
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-default btn-block">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stock Verification</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Items.All(i => i.CurrentStock >= i.Quantity))
+                        {
+                            <div class="alert alert-success">
+                                <i class="icon fas fa-check"></i>
+                                All items are available in stock
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="icon fas fa-exclamation-triangle"></i>
+                                Some items have insufficient stock
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h4 class="modal-title">Reject Issue</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Rejection Reason <span class="text-danger">*</span></label>
+                    <textarea id="rejectionReason" class="form-control" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmReject">
+                    <i class="fas fa-times"></i> Reject Issue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/signature_pad.min.js"></script>
+    <script>
+        $(function () {
+            // Signature canvas
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            // Canvas events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            function startDrawing(e) {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            $('#clearSignature').click(function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+
+            // Approve button
+            $('#approveBtn').click(function () {
+                if (!validateForm()) return;
+
+                const signatureData = canvas.toDataURL('image/png');
+
+                Swal.fire({
+                    title: 'Confirm Approval',
+                    text: 'Are you sure you want to approve this issue?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, approve it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("Approve")', {
+                            id: $('#issueId').val(),
+                            comments: $('#comments').val(),
+                            signature: {
+                                signatureData: signatureData.split(',')[1],
+                                signerName: $('#signerName').val(),
+                                signerBadgeId: $('#signerBadgeId').val(),
+                                signerDesignation: $('#signerDesignation').val()
+                            }
+                        }).done(function (data) {
+                            if (data.success) {
+                                toastr.success('Issue approved successfully!');
+                                window.location.href = data.redirectUrl;
+                            } else {
+                                toastr.error(data.message);
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Reject button
+            $('#rejectBtn').click(function () {
+                $('#rejectModal').modal('show');
+            });
+
+            $('#confirmReject').click(function () {
+                const reason = $('#rejectionReason').val();
+                if (!reason) {
+                    toastr.error('Please provide rejection reason');
+                    return;
+                }
+
+                $.post('@Url.Action("Reject")', {
+                    id: $('#issueId').val(),
+                    reason: reason
+                }).done(function (data) {
+                    if (data.success) {
+                        toastr.success('Issue rejected');
+                        window.location.href = '@Url.Action("Index")';
+                    }
+                });
+            });
+
+            function validateForm() {
+                if (!$('#signerBadgeId').val()) {
+                    toastr.error('Please enter badge ID');
+                    return false;
+                }
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const hasSignature = imageData.data.some(channel => channel !== 0 && channel !== 255);
+
+                if (!hasSignature) {
+                    toastr.error('Please provide digital signature');
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    </script>
+    <script>
+        function approveIssue() {
+            $.ajax({
+                url: '@Url.Action("ApproveIssue", "Issue")',
+                type: 'POST',
+                data: $('#approveForm').serialize(),
+                success: function(result) {
+                    Swal.fire({
+                        title: 'Approved!',
+                        text: 'Issue has been approved. Generate voucher now?',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Generate Voucher',
+                        cancelButtonText: 'View Issue'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Navigate to voucher generation
+                            window.location.href = '@Url.Action("GenerateVoucher", new { id = Model.Id })';
+                        } else {
+                            // Navigate to details
+                            window.location.href = '@Url.Action("Details", new { id = Model.Id })';
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

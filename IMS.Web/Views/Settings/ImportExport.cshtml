@@ -1,0 +1,365 @@
+@{
+    ViewData["Title"] = "Import/Export";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-sync"></i> Import / Export Data
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">System</li>
+                    <li class="breadcrumb-item active">Import/Export</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Export Data Section -->
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-export"></i> Export Data
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="callout callout-info">
+                            <h5><i class="fas fa-info-circle"></i> Export Information</h5>
+                            <p class="mb-0">Export your data to Excel, CSV, or PDF format for reporting or backup purposes.</p>
+                        </div>
+
+                        <form asp-action="ExportData" method="post" id="exportForm">
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group">
+                                <label>Select Data Type <span class="text-danger">*</span></label>
+                                <select class="form-control" name="dataType" required>
+                                    <option value="">-- Select Data Type --</option>
+                                    <optgroup label="Master Data">
+                                        <option value="Items">Items</option>
+                                        <option value="Stores">Stores</option>
+                                        <option value="Suppliers">Suppliers</option>
+                                        <option value="Users">Users</option>
+                                        <option value="Categories">Categories</option>
+                                        <option value="Brands">Brands</option>
+                                    </optgroup>
+                                    <optgroup label="Transactions">
+                                        <option value="PurchaseOrders">Purchase Orders</option>
+                                        <option value="Requisitions">Requisitions</option>
+                                        <option value="Issues">Issues</option>
+                                        <option value="Transfers">Transfers</option>
+                                        <option value="Returns">Returns</option>
+                                        <option value="StockAdjustments">Stock Adjustments</option>
+                                    </optgroup>
+                                    <optgroup label="Reports">
+                                        <option value="StockMovements">Stock Movements</option>
+                                        <option value="CurrentStock">Current Stock Levels</option>
+                                        <option value="PendingApprovals">Pending Approvals</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Export Format <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="custom-control custom-radio">
+                                            <input class="custom-control-input" type="radio" name="format" id="formatExcel" value="excel" checked />
+                                            <label for="formatExcel" class="custom-control-label">
+                                                <i class="fas fa-file-excel text-success"></i> Excel (.xlsx)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="custom-control custom-radio">
+                                            <input class="custom-control-input" type="radio" name="format" id="formatCSV" value="csv" />
+                                            <label for="formatCSV" class="custom-control-label">
+                                                <i class="fas fa-file-csv text-info"></i> CSV
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="custom-control custom-radio">
+                                            <input class="custom-control-input" type="radio" name="format" id="formatPDF" value="pdf" />
+                                            <label for="formatPDF" class="custom-control-label">
+                                                <i class="fas fa-file-pdf text-danger"></i> PDF
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Date Range (Optional)</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="date" class="form-control" name="fromDate" placeholder="From Date" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="date" class="form-control" name="toDate" placeholder="To Date" />
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Leave empty to export all data</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="includeInactive" />
+                                    Include Inactive Records
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" id="exportBtn">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Export Templates -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i> Quick Export Templates
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Export commonly used reports with one click:</p>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-success btn-sm mb-2" onclick="quickExport('CurrentStock', 'excel')">
+                                <i class="fas fa-boxes"></i> Current Stock Report (Excel)
+                            </button>
+                            <button class="btn btn-outline-info btn-sm mb-2" onclick="quickExport('StockMovements', 'excel')">
+                                <i class="fas fa-exchange-alt"></i> Stock Movements (Last 30 Days)
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm mb-2" onclick="quickExport('PendingApprovals', 'excel')">
+                                <i class="fas fa-clock"></i> Pending Approvals Report
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="quickExport('Items', 'excel')">
+                                <i class="fas fa-list"></i> All Items Master List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Data Section -->
+            <div class="col-md-6">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-import"></i> Import Data
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="callout callout-warning">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Important</h5>
+                            <p class="mb-0">Please ensure your data file follows the correct format. Invalid data may cause import errors.</p>
+                        </div>
+
+                        <form asp-action="ImportData" method="post" enctype="multipart/form-data" id="importForm">
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group">
+                                <label>Select Data Type <span class="text-danger">*</span></label>
+                                <select class="form-control" name="dataType" id="importDataType" required>
+                                    <option value="">-- Select Data Type --</option>
+                                    <optgroup label="Master Data">
+                                        <option value="Items">Items</option>
+                                        <option value="Stores">Stores</option>
+                                        <option value="Suppliers">Suppliers</option>
+                                        <option value="Users">Users</option>
+                                        <option value="Categories">Categories</option>
+                                        <option value="Brands">Brands</option>
+                                    </optgroup>
+                                    <optgroup label="Transactions">
+                                        <option value="PurchaseOrders">Purchase Orders</option>
+                                        <option value="Requisitions">Requisitions</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Upload File <span class="text-danger">*</span></label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="importFile" name="file" accept=".xlsx,.xls,.csv" required />
+                                    <label class="custom-file-label" for="importFile">Choose file...</label>
+                                </div>
+                                <small class="form-text text-muted">Supported formats: Excel (.xlsx, .xls), CSV (.csv)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Import Options</label>
+                                <div>
+                                    <label>
+                                        <input type="radio" name="importMode" value="add" checked />
+                                        Add New Records Only
+                                    </label>
+                                    <br />
+                                    <label>
+                                        <input type="radio" name="importMode" value="update" />
+                                        Update Existing Records
+                                    </label>
+                                    <br />
+                                    <label>
+                                        <input type="radio" name="importMode" value="replace" />
+                                        Replace All (Delete & Import)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="validateOnly" id="validateOnly" />
+                                    Validate Only (Don't Import)
+                                </label>
+                                <br />
+                                <small class="text-muted">Check your file for errors without importing</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-block" id="importBtn">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Download Templates -->
+                <div class="card card-secondary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-download"></i> Download Import Templates
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Download blank templates with correct format:</p>
+
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action" onclick="downloadTemplate('Items')">
+                                <i class="fas fa-box text-primary"></i> Items Template
+                                <span class="badge badge-secondary float-right">Excel</span>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" onclick="downloadTemplate('Stores')">
+                                <i class="fas fa-warehouse text-info"></i> Stores Template
+                                <span class="badge badge-secondary float-right">Excel</span>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" onclick="downloadTemplate('Suppliers')">
+                                <i class="fas fa-truck text-success"></i> Suppliers Template
+                                <span class="badge badge-secondary float-right">Excel</span>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" onclick="downloadTemplate('Users')">
+                                <i class="fas fa-users text-warning"></i> Users Template
+                                <span class="badge badge-secondary float-right">Excel</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Imports -->
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i> Recent Import History
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Data Type</th>
+                                        <th>Status</th>
+                                        <th>Records</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">
+                                            <small>No import history available</small>
+                                        </td>
+                                    </tr>
+                                    <!-- Example:
+                                    <tr>
+                                        <td><small>11/01/2025 14:30</small></td>
+                                        <td>Items</td>
+                                        <td><span class="badge badge-success">Success</span></td>
+                                        <td>150</td>
+                                    </tr>
+                                    -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Custom file input label update
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+            });
+
+            // Export form submission
+            $('#exportForm').on('submit', function(e) {
+                var btn = $('#exportBtn');
+                btn.prop('disabled', true);
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                setTimeout(function() {
+                    btn.prop('disabled', false);
+                    btn.html('<i class="fas fa-download"></i> Export Data');
+                }, 3000);
+            });
+
+            // Import form submission
+            $('#importForm').on('submit', function(e) {
+                var validateOnly = $('#validateOnly').is(':checked');
+                var btn = $('#importBtn');
+
+                if (!validateOnly) {
+                    if (!confirm('Are you sure you want to import this data? Existing records may be affected.')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                btn.prop('disabled', true);
+                btn.html('<i class="fas fa-spinner fa-spin"></i> ' + (validateOnly ? 'Validating...' : 'Importing...'));
+            });
+        });
+
+        function quickExport(dataType, format) {
+            var form = $('#exportForm');
+            form.find('select[name="dataType"]').val(dataType);
+            form.find('input[name="format"][value="' + format + '"]').prop('checked', true);
+            form.submit();
+        }
+
+        function downloadTemplate(dataType) {
+            // Implement template download logic
+            alert('Downloading template for: ' + dataType);
+            // window.location.href = '/Settings/DownloadTemplate?type=' + dataType;
+        }
+    </script>
+}

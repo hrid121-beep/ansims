@@ -1,0 +1,408 @@
+@model IEnumerable<IMS.Application.DTOs.StockAdjustmentDto>
+@{
+    ViewData["Title"] = "Stock Adjustment Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stats = ViewBag.Statistics as Dictionary<string, int>;
+    var fromDate = ViewBag.FromDate as DateTime?;
+    var toDate = ViewBag.ToDate as DateTime?;
+
+    var adjustments = Model?.ToList() ?? new List<IMS.Application.DTOs.StockAdjustmentDto>();
+    var totalCount = adjustments.Count();
+    var pendingCount = adjustments.Count(a => a.Status == "Pending");
+    var approvedCount = adjustments.Count(a => a.Status == "Approved");
+    var rejectedCount = adjustments.Count(a => a.Status == "Rejected");
+    var totalIncreaseQty = adjustments.Where(a => a.AdjustmentType == "Increase").Sum(a => a.AdjustmentQuantity ?? 0);
+    var totalDecreaseQty = adjustments.Where(a => a.AdjustmentType == "Decrease").Sum(a => a.AdjustmentQuantity ?? 0);
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-chart-line text-info"></i> Adjustment Report
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Adjustments</a></li>
+                    <li class="breadcrumb-item active">Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Date Filter Card -->
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Report" method="get" class="form-inline">
+                    <div class="form-group mr-3">
+                        <label for="fromDate" class="mr-2">From Date:</label>
+                        <input type="date" name="fromDate" id="fromDate" class="form-control"
+                               value="@(fromDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd"))">
+                    </div>
+                    <div class="form-group mr-3">
+                        <label for="toDate" class="mr-2">To Date:</label>
+                        <input type="date" name="toDate" id="toDate" class="form-control"
+                               value="@(toDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Generate Report
+                    </button>
+                    <button type="button" class="btn btn-success ml-2" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-info ml-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Report Period Info -->
+        <div class="card card-info">
+            <div class="card-body">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt"></i>
+                    Report Period: <strong>@fromDate?.ToString("dd MMM yyyy")</strong> to <strong>@toDate?.ToString("dd MMM yyyy")</strong>
+                </h5>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-balance-scale"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Adjustments</span>
+                        <span class="info-box-number">@totalCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending</span>
+                        <span class="info-box-number">@pendingCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Approved</span>
+                        <span class="info-box-number">@approvedCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Rejected</span>
+                        <span class="info-box-number">@rejectedCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantity Summary -->
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Increase Quantity</span>
+                        <span class="info-box-number">+@totalIncreaseQty.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Decrease Quantity</span>
+                        <span class="info-box-number">-@totalDecreaseQty.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Report Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Detailed Adjustment Records</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped table-hover" id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Adjustment No</th>
+                            <th>Date</th>
+                            <th>Item</th>
+                            <th>Store</th>
+                            <th>Old Qty</th>
+                            <th>New Qty</th>
+                            <th>Adjustment</th>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (adjustments.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var item in adjustments.OrderByDescending(a => a.AdjustmentDate))
+                            {
+                                var statusClass = item.Status switch
+                                {
+                                    "Pending" => "badge-warning",
+                                    "Approved" => "badge-success",
+                                    "Rejected" => "badge-danger",
+                                    _ => "badge-secondary"
+                                };
+
+                                <tr>
+                                    <td>@serial</td>
+                                    <td>
+                                        <strong><code>@item.AdjustmentNo</code></strong>
+                                    </td>
+                                    <td>@item.AdjustmentDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>
+                                        <small class="text-muted">@item.ItemCode</small><br>
+                                        @item.ItemName
+                                    </td>
+                                    <td>@item.StoreName</td>
+                                    <td class="text-right">@item.OldQuantity</td>
+                                    <td class="text-right">@item.NewQuantity</td>
+                                    <td class="text-right">
+                                        @if (item.AdjustmentType == "Increase")
+                                        {
+                                            <span class="font-weight-bold text-success">+@item.AdjustmentQuantity</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-weight-bold text-danger">-@item.AdjustmentQuantity</span>
+                                        }
+                                        <br>
+                                        <small class="text-muted">@item.AdjustmentPercentage</small>
+                                    </td>
+                                    <td>
+                                        @if (item.AdjustmentType == "Increase")
+                                        {
+                                            <span class="badge badge-primary"><i class="fas fa-arrow-up"></i> Increase</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary"><i class="fas fa-arrow-down"></i> Decrease</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@(item.Reason?.Length > 30 ? item.Reason.Substring(0, 30) + "..." : item.Reason)</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusClass">@item.Status</span>
+                                    </td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i> No adjustment records found for the selected period.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-light">
+                            <th colspan="7" class="text-right">Total Adjustments:</th>
+                            <th class="text-right">
+                                <span class="text-success">+@totalIncreaseQty.ToString("N2")</span><br>
+                                <span class="text-danger">-@totalDecreaseQty.ToString("N2")</span>
+                            </th>
+                            <th colspan="3"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary by Reason -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Adjustments by Type</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="typeChart" style="height:250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-bar"></i> Adjustments by Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" style="height:250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#reportTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 50,
+                "order": [[2, "desc"]], // Sort by date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": [0] } // Disable sorting on serial
+                ],
+                "buttons": ["copy", "csv", "excel", "pdf", "print"]
+            }).buttons().container().appendTo('#reportTable_wrapper .col-md-6:eq(0)');
+
+            // Type Chart
+            var increaseCount = @adjustments.Count(a => a.AdjustmentType == "Increase");
+            var decreaseCount = @adjustments.Count(a => a.AdjustmentType == "Decrease");
+
+            var typeCtx = document.getElementById('typeChart').getContext('2d');
+            var typeChart = new Chart(typeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Increase', 'Decrease'],
+                    datasets: [{
+                        data: [increaseCount, decreaseCount],
+                        backgroundColor: ['#28a745', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Status Chart
+            var statusCtx = document.getElementById('statusChart').getContext('2d');
+            var statusChart = new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pending', 'Approved', 'Rejected'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [@pendingCount, @approvedCount, @rejectedCount],
+                        backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        function exportToExcel() {
+            var table = $('#reportTable').DataTable();
+            table.button('.buttons-excel').trigger();
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        @@media print {
+            .main-header, .main-sidebar, .content-header, .card-tools, .btn, .breadcrumb {
+                display: none !important;
+            }
+
+            .card {
+                border: 1px solid #000 !important;
+                page-break-inside: avoid;
+            }
+
+            .info-box {
+                box-shadow: none !important;
+            }
+        }
+
+        .form-inline .form-group {
+            margin-bottom: 10px;
+        }
+
+        @@media (max-width: 768px) {
+            .form-inline .form-group {
+                display: block;
+                margin-right: 0 !important;
+                width: 100%;
+            }
+
+            .form-inline .form-control {
+                width: 100%;
+            }
+
+            .form-inline .btn {
+                width: 100%;
+                margin-top: 10px;
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+}

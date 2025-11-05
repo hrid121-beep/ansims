@@ -1,0 +1,163 @@
+﻿@{
+    ViewData["Title"] = "Copy Configuration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Copy Store Configuration</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Store Configuration</a></li>
+                    <li class="breadcrumb-item active">Copy</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Copy Configuration Between Stores</h3>
+            </div>
+            <form asp-action="Copy" method="post">
+                <div class="card-body">
+                    @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p>@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        This will copy all configuration settings from source store to target store.
+                        Existing configurations in target store will not be overwritten.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sourceStoreId">Source Store <span class="text-danger">*</span></label>
+                        <select name="sourceStoreId" id="sourceStoreId" class="form-control select2" required>
+                            <option value="">-- Select Source Store --</option>
+                            @if (ViewBag.Stores != null)
+                            {
+                                @foreach (var store in ViewBag.Stores as SelectList)
+                                {
+                                    <option value="@store.Value">@store.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetStoreId">Target Store <span class="text-danger">*</span></label>
+                        <select name="targetStoreId" id="targetStoreId" class="form-control select2" required>
+                            <option value="">-- Select Target Store --</option>
+                            @if (ViewBag.Stores != null)
+                            {
+                                @foreach (var store in ViewBag.Stores as SelectList)
+                                {
+                                    <option value="@store.Value">@store.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div id="configPreview" class="d-none">
+                        <h5>Configuration Preview</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Configuration Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="configList">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary" onclick="return validateCopy()">
+                        <i class="fas fa-copy"></i> Copy Configuration
+                    </button>
+                    <a asp-action="Index" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('#sourceStoreId').change(function() {
+                var storeId = $(this).val();
+                if (storeId) {
+                    loadStoreConfigs(storeId);
+                } else {
+                    $('#configPreview').addClass('d-none');
+                }
+            });
+        });
+
+        function loadStoreConfigs(storeId) {
+            $.ajax({
+                url: '@Url.Action("GetStoreConfigs", "StoreConfiguration")',
+                data: { storeId: storeId },
+                success: function(data) {
+                    if (data && data.length > 0) {
+                        var html = '';
+                        data.forEach(function(config) {
+                            html += '<tr>';
+                            html += '<td>' + config.configKey + '</td>';
+                            html += '<td>' + config.configValue + '</td>';
+                            html += '</tr>';
+                        });
+                        $('#configList').html(html);
+                        $('#configPreview').removeClass('d-none');
+                    } else {
+                        $('#configList').html('<tr><td colspan="2" class="text-center">No configurations found</td></tr>');
+                        $('#configPreview').removeClass('d-none');
+                    }
+                },
+                error: function() {
+                    alert('Error loading configurations');
+                }
+            });
+        }
+
+        function validateCopy() {
+            var source = $('#sourceStoreId').val();
+            var target = $('#targetStoreId').val();
+
+            if (!source || !target) {
+                alert('Please select both source and target stores');
+                return false;
+            }
+
+            if (source === target) {
+                alert('Source and target stores cannot be the same');
+                return false;
+            }
+
+            return confirm('Are you sure you want to copy configurations from source to target store?');
+        }
+    </script>
+}

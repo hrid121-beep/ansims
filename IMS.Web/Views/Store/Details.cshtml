@@ -1,0 +1,642 @@
+﻿@model IMS.Application.DTOs.StoreDto
+@using IMS.Domain.Enums
+@{
+    ViewData["Title"] = "Store Details";
+    var storeStock = ViewBag.StoreStock as IEnumerable<IMS.Application.DTOs.StoreStockDto> ?? Enumerable.Empty<IMS.Application.DTOs.StoreStockDto>();
+    var assignedUsers = ViewBag.AssignedUsers as IEnumerable<IMS.Application.DTOs.UserDto> ?? Enumerable.Empty<IMS.Application.DTOs.UserDto>();
+    var recentTransactions = ViewBag.RecentTransactions as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var inventorySummary = ViewBag.InventorySummary;
+    var totalValue = ViewBag.TotalValue ?? 0m;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>@Model.Name</h1>
+                <p class="text-muted">Store Details & Management</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stores</a></li>
+                    <li class="breadcrumb-item active">@Model.Name</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <!-- Primary Actions -->
+                <div class="btn-group" role="group">
+                    <a asp-action="AddItemsToStore" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add Items
+                    </a>
+                    <a asp-action="ManageUsers" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                </div>
+
+                <!-- Inventory Operations -->
+                @if (User.IsInRole("Admin") || User.IsInRole("StoreManager") ||
+                                User.IsInRole("StoreKeeper") || User.IsInRole("Auditor"))
+                {
+                    <div class="btn-group ml-2" role="group">
+                        <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-clipboard-check"></i> Inventory Operations
+                        </button>
+                        <div class="dropdown-menu">
+                            @if (User.IsInRole("Admin") || User.IsInRole("StoreManager") || User.IsInRole("StoreKeeper"))
+                            {
+                                <a class="dropdown-item" asp-controller="PhysicalInventory"
+                                   asp-action="Initiate" asp-route-storeId="@Model.Id">
+                                    <i class="fas fa-clipboard-check text-info"></i> Start Physical Count
+                                </a>
+                                <a class="dropdown-item" asp-controller="StockAdjustment"
+                                   asp-action="Create" asp-route-storeId="@Model.Id">
+                                    <i class="fas fa-balance-scale text-warning"></i> Stock Adjustment
+                                </a>
+                                <div class="dropdown-divider"></div>
+                            }
+                            <a class="dropdown-item" asp-controller="PhysicalInventory"
+                               asp-action="Index" asp-route-storeId="@Model.Id">
+                                <i class="fas fa-history text-secondary"></i> Count History
+                            </a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+                            {
+                                <a class="dropdown-item" asp-controller="Reports"
+                                   asp-action="InventoryValuation" asp-route-storeId="@Model.Id">
+                                    <i class="fas fa-chart-line text-success"></i> Valuation Report
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Quick Actions -->
+                <div class="btn-group ml-2" role="group">
+                    <button class="btn btn-secondary btn-sm" onclick="printStoreDetails()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <a asp-controller="StockEntry" asp-action="Create"
+                       asp-route-storeId="@Model.Id" class="btn btn-dark btn-sm">
+                        <i class="fas fa-dolly"></i> Stock Entry
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Store Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.ItemCount</h3>
+                        <p>Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <a asp-action="AddItemsToStore" asp-route-id="@Model.Id" class="small-box-footer">
+                        Add Items <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>৳ @totalValue.ToString("N0")</h3>
+                        <p>Stock Value</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <a href="#stock" data-toggle="tab" class="small-box-footer">
+                        View Stock <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.AssignedUserCount</h3>
+                        <p>Assigned Users</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a asp-action="ManageUsers" asp-route-id="@Model.Id" class="small-box-footer">
+                        Manage Users <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@((Model.UsedCapacity ?? 0) > 0 && (Model.Capacity ?? 0) > 0 ? ((Model.UsedCapacity ?? 0) / (Model.Capacity ?? 1) * 100).ToString("F0") : "0")%</h3>
+                        <p>Capacity Used</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <a href="#info" data-toggle="tab" class="small-box-footer">
+                        View Details <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabbed Content -->
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="store-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="info-tab" data-toggle="pill" href="#info" role="tab">
+                            <i class="fas fa-info-circle"></i> Information
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="stock-tab" data-toggle="pill" href="#stock" role="tab">
+                            <i class="fas fa-boxes"></i> Current Stock
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="users-tab" data-toggle="pill" href="#users" role="tab">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="transactions-tab" data-toggle="pill" href="#transactions" role="tab">
+                            <i class="fas fa-exchange-alt"></i> Transactions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="store-tabContent">
+
+                    <!-- Store Information Tab -->
+                    <div class="tab-pane fade show active" id="info" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card card-outline card-info">
+                                    <div class="card-header">
+                                        <h3 class="card-title"><i class="fas fa-building"></i> Basic Information</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th width="35%">Store Code:</th>
+                                                <td><span class="badge badge-secondary">@Model.Code</span></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Store Name:</th>
+                                                <td><strong>@Model.Name</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Store Type:</th>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(Model.StoreTypeName))
+                                                    {
+                                                        <span class="badge badge-info">@Model.StoreTypeName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Not specified</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Level:</th>
+                                                <td><span class="badge badge-primary">@Model.Level</span></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Status:</th>
+                                                <td>
+                                                    @if (Model.IsActive)
+                                                    {
+                                                        <span class="badge badge-success"><i class="fas fa-check"></i> Active</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger"><i class="fas fa-times"></i> Inactive</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Operating Hours:</th>
+                                                <td>@(Model.OperatingHours ?? "Not specified")</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card card-outline card-success">
+                                    <div class="card-header">
+                                        <h3 class="card-title"><i class="fas fa-map-marker-alt"></i> Location & Contact</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            @if (!string.IsNullOrEmpty(Model.RangeName))
+                                            {
+                                                <tr>
+                                                    <th width="35%">Range:</th>
+                                                    <td><span class="badge badge-dark">@Model.RangeName</span></td>
+                                                </tr>
+                                            }
+                                            @if (!string.IsNullOrEmpty(Model.BattalionName))
+                                            {
+                                                <tr>
+                                                    <th>Battalion:</th>
+                                                    <td><span class="badge badge-dark">@Model.BattalionName</span></td>
+                                                </tr>
+                                            }
+                                            @if (!string.IsNullOrEmpty(Model.ZilaName))
+                                            {
+                                                <tr>
+                                                    <th>Zila:</th>
+                                                    <td>@Model.ZilaName</td>
+                                                </tr>
+                                            }
+                                            @if (!string.IsNullOrEmpty(Model.UpazilaName))
+                                            {
+                                                <tr>
+                                                    <th>Upazila:</th>
+                                                    <td>@Model.UpazilaName</td>
+                                                </tr>
+                                            }
+                                            <tr>
+                                                <th>Address:</th>
+                                                <td>@(Model.Location ?? "Not specified")</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Store Keeper:</th>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(Model.ManagerName))
+                                                    {
+                                                        <span class="badge badge-info">@Model.ManagerName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-warning">Not Assigned</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Contact:</th>
+                                                <td>@(Model.ContactNumber ?? "Not provided")</td>
+                                            </tr>
+                                            @if (!string.IsNullOrEmpty(Model.Email))
+                                            {
+                                                <tr>
+                                                    <th>Email:</th>
+                                                    <td><a href="mailto:@Model.Email">@Model.Email</a></td>
+                                                </tr>
+                                            }
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.Capacity.HasValue && Model.Capacity > 0)
+                        {
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="card card-outline card-warning">
+                                        <div class="card-header">
+                                            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Capacity Information</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            @{
+                                                var totalCapacity = Model.Capacity.Value;
+                                                var usedCapacity = Model.UsedCapacity ?? 0;
+                                                var availableCapacity = totalCapacity - usedCapacity;
+                                                var percentage = totalCapacity > 0 ? (usedCapacity / totalCapacity * 100) : 0;
+                                                var progressClass = percentage > 80 ? "bg-danger" : percentage > 60 ? "bg-warning" : "bg-success";
+                                            }
+                                            <div class="progress progress-lg">
+                                                <div class="progress-bar @progressClass" style="width: @percentage%">
+                                                    @percentage.ToString("F1")%
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    Used: <strong>@usedCapacity.ToString("N2")</strong> sq ft /
+                                                    Total: <strong>@totalCapacity.ToString("N2")</strong> sq ft /
+                                                    Available: <strong>@availableCapacity.ToString("N2")</strong> sq ft
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Stock Tab -->
+                    <div class="tab-pane fade" id="stock" role="tabpanel">
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <h5><i class="fas fa-boxes"></i> Current Stock Items</h5>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="float-right">
+                                    <a asp-action="AddItemsToStore" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus"></i> Add Items
+                                    </a>
+                                    <button class="btn btn-info btn-sm" onclick="exportStock()">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table id="stockTable" class="table table-bordered table-striped table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Item Code</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Min Stock</th>
+                                        <th>Max Stock</th>
+                                        <th>Reorder Level</th>
+                                        <th>Unit</th>
+                                        <th>Value</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in storeStock)
+                                    {
+                                        var rowClass = item.Quantity <= item.MinimumStock ? "table-warning" : "";
+                                        <tr class="@rowClass">
+                                            <td><code>@item.ItemCode</code></td>
+                                            <td><strong>@item.ItemName</strong></td>
+                                            <td><span class="badge badge-light">@item.CategoryName</span></td>
+                                            <td>
+                                                <span class="badge badge-dark badge-lg">@item.Quantity</span>
+                                                @if (item.Quantity <= item.MinimumStock)
+                                                {
+                                                    <i class="fas fa-exclamation-triangle text-warning ml-1" title="Low Stock"></i>
+                                                }
+                                            </td>
+                                            <td>@item.MinimumStock</td>
+                                            <td>@item.MaximumStock</td>
+                                            <td>@item.ReorderLevel</td>
+                                            <td><small class="text-muted">@item.Unit</small></td>
+                                            <td><strong>৳ @item.TotalValue?.ToString("N2")</strong></td>
+                                            <td>
+                                                @if (item.Quantity == 0)
+                                                {
+                                                    <span class="badge badge-danger">Out of Stock</span>
+                                                }
+                                                else if (item.Quantity <= item.MinimumStock)
+                                                {
+                                                    <span class="badge badge-warning">Low Stock</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">In Stock</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" onclick="updateStockLevels(@item.ItemId)" title="Update Stock Levels">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div class="tab-pane fade" id="users" role="tabpanel">
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <h5><i class="fas fa-users"></i> Assigned Users</h5>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="float-right">
+                                    <a asp-action="ManageUsers" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-users"></i> Manage Users
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (assignedUsers.Any())
+                                    {
+                                        @foreach (var user in assignedUsers)
+                                        {
+                                            <tr>
+                                                <td><strong>@user.UserName</strong></td>
+                                                <td>@user.FullName</td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(user.Email))
+                                                    {
+                                                        <a href="mailto:@user.Email">@user.Email</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Not provided</span>
+                                                    }
+                                                </td>
+                                                <td>@(user.PhoneNumber ?? "Not provided")</td>
+                                                <td><span class="badge badge-primary">@user.Role</span></td>
+                                                <td>
+                                                    @if (user.IsActive)
+                                                    {
+                                                        <span class="badge badge-success"><i class="fas fa-check"></i> Active</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger"><i class="fas fa-times"></i> Inactive</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                <i class="fas fa-users"></i> No users assigned to this store
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Tab -->
+                    <div class="tab-pane fade" id="transactions" role="tabpanel">
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <h5><i class="fas fa-exchange-alt"></i> Recent Transactions</h5>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>Reference</th>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Direction</th>
+                                        <th>User</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (recentTransactions.Any())
+                                    {
+                                        @foreach (dynamic trans in recentTransactions)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <small>@trans.Date?.ToString("dd/MM/yyyy")</small><br>
+                                                    <small class="text-muted">@trans.Date?.ToString("HH:mm")</small>
+                                                </td>
+                                                <td><span class="badge badge-info">@trans.Type</span></td>
+                                                <td><code>@trans.ReferenceNumber</code></td>
+                                                <td>
+                                                    <strong>@trans.ItemName</strong><br>
+                                                    <small class="text-muted">@trans.ItemCode</small>
+                                                </td>
+                                                <td><span class="badge badge-dark">@trans.Quantity</span></td>
+                                                <td>
+                                                    @if (trans.Direction == "In")
+                                                    {
+                                                        <span class="badge badge-success"><i class="fas fa-arrow-down"></i> IN</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger"><i class="fas fa-arrow-up"></i> OUT</span>
+                                                    }
+                                                </td>
+                                                <td><small>@trans.User</small></td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">
+                                                <i class="fas fa-exchange-alt"></i> No recent transactions
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable for stock items only if there are items
+            @if (storeStock.Any())
+            {
+                    <text>
+                    $('#stockTable').DataTable({
+                        responsive: true,
+                        autoWidth: false,
+                        order: [[3, 'asc']], // Sort by current stock
+                        pageLength: 25,
+                        dom: 'Bfrtip',
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                text: '<i class="fas fa-file-excel"></i> Excel',
+                                className: 'btn btn-success btn-sm'
+                            },
+                            {
+                                extend: 'pdf',
+                                text: '<i class="fas fa-file-pdf"></i> PDF',
+                                className: 'btn btn-danger btn-sm'
+                            },
+                            {
+                                extend: 'print',
+                                text: '<i class="fas fa-print"></i> Print',
+                                className: 'btn btn-info btn-sm'
+                            }
+                        ],
+                        language: {
+                            search: "Search items:",
+                            lengthMenu: "Show _MENU_ items per page",
+                            info: "Showing _START_ to _END_ of _TOTAL_ items",
+                            infoEmpty: "No items available",
+                            emptyTable: "No stock items found"
+                        }
+                    });
+                    </text>
+            }
+
+            // Handle tab switching
+            $('.nav-link[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+                // Redraw DataTable when stock tab is shown
+                if ($(e.target).attr('href') === '#stock') {
+                    var table = $('#stockTable').DataTable();
+                    if (table) {
+                        table.columns.adjust().responsive.recalc();
+                    }
+                }
+            });
+        });
+
+        function updateStockLevels(itemId) {
+            window.location.href = '@Url.Action("UpdateStockLevels", "Store")' + '?storeId=@Model.Id&itemId=' + itemId;
+        }
+
+        function exportStock() {
+            window.location.href = '@Url.Action("ExportStoreStock", "Store", new { id = Model.Id })';
+        }
+
+        function printStoreDetails() {
+            window.print();
+        }
+    </script>
+}

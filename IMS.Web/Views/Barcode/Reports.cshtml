@@ -1,0 +1,1132 @@
+﻿@{
+    ViewData["Title"] = "Barcode Reports & Analytics";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="fas fa-chart-line"></i> Barcode Reports & Analytics
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Barcodes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Dashboard Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1" id="totalBarcodes">@(ViewBag.TotalBarcodes ?? 0)</h4>
+                        <p class="mb-0">Total Barcodes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-barcode fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1" id="totalScans">@(ViewBag.TotalScans ?? 0)</h4>
+                        <p class="mb-0">Total Scans</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-qrcode fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1" id="activeToday">@(ViewBag.ActiveToday ?? 0)</h4>
+                        <p class="mb-0">Active Today</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-1" id="neverScanned">@(ViewBag.NeverScanned ?? 0)</h4>
+                        <p class="mb-0">Never Scanned</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Panel -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-filter"></i> Report Filters
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetFilters()">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <form id="filterForm">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Date Range</label>
+                        <select id="dateRange" class="form-select" onchange="updateDateRange()">
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="this_week">This Week</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="this_year">This Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2" id="customDateFrom" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" id="dateFrom" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-2" id="customDateTo" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" id="dateTo" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Store</label>
+                        <select id="storeFilter" class="form-select">
+                            <option value="">All Stores</option>
+                            @if (ViewBag.Stores != null)
+                            {
+                                @foreach (var store in ViewBag.Stores)
+                                {
+                                    <option value="@store.Value">@store.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Category</label>
+                        <select id="categoryFilter" class="form-select">
+                            <option value="">All Categories</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.Value">@category.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <div class="form-group mb-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Tabs -->
+<div class="card">
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs nav-fill" id="reportTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                    <i class="fas fa-chart-pie"></i> Overview
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="usage-tab" data-bs-toggle="tab" data-bs-target="#usage" type="button" role="tab">
+                    <i class="fas fa-chart-line"></i> Usage Analytics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">
+                    <i class="fas fa-tachometer-alt"></i> Performance
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab">
+                    <i class="fas fa-boxes"></i> Inventory Impact
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="detailed-tab" data-bs-toggle="tab" data-bs-target="#detailed" type="button" role="tab">
+                    <i class="fas fa-table"></i> Detailed Reports
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="reportTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Barcode Generation Trend</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="generationTrendChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Barcode Types Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="typesDistributionChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Top Scanned Items</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Scans</th>
+                                                <th>Last Scan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topScannedItems">
+                                            <!-- Data will be loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Recent Activity</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActivity" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- Activity timeline will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Analytics Tab -->
+            <div class="tab-pane fade" id="usage" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Scan Activity Over Time</h6>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <input type="radio" class="btn-check" name="timeScale" id="hourly" value="hourly">
+                                        <label class="btn btn-outline-primary" for="hourly">Hourly</label>
+                                        <input type="radio" class="btn-check" name="timeScale" id="daily" value="daily" checked>
+                                        <label class="btn btn-outline-primary" for="daily">Daily</label>
+                                        <input type="radio" class="btn-check" name="timeScale" id="weekly" value="weekly">
+                                        <label class="btn btn-outline-primary" for="weekly">Weekly</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="scanActivityChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Usage Statistics</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-primary" id="avgScansPerDay">0</h4>
+                                        <small class="text-muted">Avg Scans/Day</small>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-success" id="peakHour">--:--</h4>
+                                        <small class="text-muted">Peak Hour</small>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-info" id="activeUsers">0</h4>
+                                        <small class="text-muted">Active Users</small>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-warning" id="errorRate">0%</h4>
+                                        <small class="text-muted">Error Rate</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <h6>Top Locations</h6>
+                                <div id="topLocations">
+                                    <!-- Top locations will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Heatmap: Scan Activity by Hour and Day</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="scanHeatmap" style="height: 300px;">
+                                    <!-- Heatmap will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Tab -->
+            <div class="tab-pane fade" id="performance" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h2 class="text-success" id="scanSuccessRate">98.5%</h2>
+                                <p class="mb-0">Scan Success Rate</p>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-success" style="width: 98.5%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h2 class="text-info" id="avgScanTime">1.2s</h2>
+                                <p class="mb-0">Avg Scan Time</p>
+                                <small class="text-muted">Target: &lt; 2s</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h2 class="text-primary" id="systemUptime">99.9%</h2>
+                                <p class="mb-0">System Uptime</p>
+                                <small class="text-muted">Last 30 days</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Error Analysis</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="errorAnalysisChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Response Time Trend</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="responseTimeChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Performance Issues</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Issue Type</th>
+                                                <th>Description</th>
+                                                <th>Affected Users</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="performanceIssues">
+                                            <!-- Performance issues will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Impact Tab -->
+            <div class="tab-pane fade" id="inventory" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Inventory Tracking Efficiency</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="inventoryEfficiencyChart" width="400" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Impact Metrics</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Items Tracked</span>
+                                        <strong id="itemsTracked">0</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Accuracy Improvement</span>
+                                        <strong class="text-success" id="accuracyImprovement">+15%</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Time Saved</span>
+                                        <strong class="text-info" id="timeSaved">2.5h/day</strong>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Error Reduction</span>
+                                        <strong class="text-primary" id="errorReduction">-45%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Stock Movement Analysis</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="stockMovementChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Discrepancy Trends</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="discrepancyChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Reports Tab -->
+            <div class="tab-pane fade" id="detailed" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Generate Detailed Reports</h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" class="btn btn-outline-primary" onclick="refreshReportData()">
+                            <i class="fas fa-sync"></i> Refresh Data
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportAllReports()">
+                            <i class="fas fa-download"></i> Export All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Quick Reports</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-outline-primary" onclick="generateReport('daily_summary')">
+                                        <i class="fas fa-calendar-day"></i> Daily Summary
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" onclick="generateReport('weekly_analysis')">
+                                        <i class="fas fa-calendar-week"></i> Weekly Analysis
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="generateReport('monthly_trends')">
+                                        <i class="fas fa-calendar-alt"></i> Monthly Trends
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning" onclick="generateReport('unused_barcodes')">
+                                        <i class="fas fa-exclamation-triangle"></i> Unused Barcodes
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="generateReport('error_analysis')">
+                                        <i class="fas fa-bug"></i> Error Analysis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Report Results</h6>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportCurrentReport('pdf')">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportCurrentReport('excel')">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportCurrentReport('csv')">
+                                            <i class="fas fa-file-csv"></i> CSV
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="reportResults">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                        <p>Select a report from the left panel to view results</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script>
+        let charts = {};
+        let currentReportType = null;
+
+        $(document).ready(function() {
+            initializeCharts();
+            loadDashboardData();
+
+            // Set default date range
+            updateDateRange();
+
+            // Load initial data
+            applyFilters();
+
+            // Handle time scale changes for usage analytics
+            $('input[name="timeScale"]').change(function() {
+                updateScanActivityChart();
+            });
+        });
+
+        function initializeCharts() {
+            // Generation Trend Chart
+            const genTrendCtx = document.getElementById('generationTrendChart').getContext('2d');
+            charts.generationTrend = new Chart(genTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Barcodes Generated',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Types Distribution Chart
+            const typesCtx = document.getElementById('typesDistributionChart').getContext('2d');
+            charts.typesDistribution = new Chart(typesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['QR Code', 'Linear Barcode', 'Data Matrix'],
+                    datasets: [{
+                        data: [65, 30, 5],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 205, 86, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Scan Activity Chart
+            const scanActivityCtx = document.getElementById('scanActivityChart').getContext('2d');
+            charts.scanActivity = new Chart(scanActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Scans',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Error Analysis Chart
+            const errorCtx = document.getElementById('errorAnalysisChart').getContext('2d');
+            charts.errorAnalysis = new Chart(errorCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Scan Errors', 'Generation Errors', 'Print Errors', 'System Errors'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(201, 203, 207, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Response Time Chart
+            const responseCtx = document.getElementById('responseTimeChart').getContext('2d');
+            charts.responseTime = new Chart(responseCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Response Time (ms)',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Inventory Efficiency Chart
+            const inventoryCtx = document.getElementById('inventoryEfficiencyChart').getContext('2d');
+            charts.inventoryEfficiency = new Chart(inventoryCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Efficiency %',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Stock Movement Chart
+            const stockCtx = document.getElementById('stockMovementChart').getContext('2d');
+            charts.stockMovement = new Chart(stockCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Receipts', 'Issues', 'Transfers', 'Adjustments'],
+                    datasets: [{
+                        label: 'Movements',
+                        data: [120, 95, 75, 30],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Discrepancy Chart
+            const discrepancyCtx = document.getElementById('discrepancyChart').getContext('2d');
+            charts.discrepancy = new Chart(discrepancyCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Discrepancies',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadDashboardData() {
+            $.get('@Url.Action("GetDashboardData", "Barcode")')
+                .done(function(data) {
+                    $('#totalBarcodes').text(data.totalBarcodes || 0);
+                    $('#totalScans').text(data.totalScans || 0);
+                    $('#activeToday').text(data.activeToday || 0);
+                    $('#neverScanned').text(data.neverScanned || 0);
+
+                    // Update usage statistics
+                    $('#avgScansPerDay').text(data.avgScansPerDay || 0);
+                    $('#peakHour').text(data.peakHour || '--:--');
+                    $('#activeUsers').text(data.activeUsers || 0);
+                    $('#errorRate').text((data.errorRate || 0) + '%');
+                })
+                .fail(function() {
+                    console.error('Failed to load dashboard data');
+                });
+        }
+
+        function updateDateRange() {
+            const dateRange = $('#dateRange').val();
+            if (dateRange === 'custom') {
+                $('#customDateFrom, #customDateTo').show();
+            } else {
+                $('#customDateFrom, #customDateTo').hide();
+
+                // Set dates based on selection
+                const today = new Date();
+                let fromDate, toDate = today;
+
+                switch(dateRange) {
+                    case 'today':
+                        fromDate = today;
+                        break;
+                    case 'yesterday':
+                        fromDate = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                        toDate = fromDate;
+                        break;
+                    case 'this_week':
+                        fromDate = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'last_week':
+                        fromDate = new Date(today.getTime() - (today.getDay() + 7) * 24 * 60 * 60 * 1000);
+                        toDate = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'this_month':
+                        fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        break;
+                    case 'last_month':
+                        fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        toDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                        break;
+                    case 'this_year':
+                        fromDate = new Date(today.getFullYear(), 0, 1);
+                        break;
+                }
+
+                $('#dateFrom').val(fromDate.toISOString().split('T')[0]);
+                $('#dateTo').val(toDate.toISOString().split('T')[0]);
+            }
+        }
+
+        function applyFilters() {
+            const filters = {
+                dateRange: $('#dateRange').val(),
+                dateFrom: $('#dateFrom').val(),
+                dateTo: $('#dateTo').val(),
+                storeId: $('#storeFilter').val(),
+                categoryId: $('#categoryFilter').val()
+            };
+
+            // Update all charts and data with filters
+            updateChartData(filters);
+            updateTopScannedItems(filters);
+            updateRecentActivity(filters);
+            updateTopLocations(filters);
+        }
+
+        function updateChartData(filters) {
+            $.post('@Url.Action("GetChartData", "Barcode")', filters)
+                .done(function(data) {
+                    // Update generation trend chart
+                    if (data.generationTrend) {
+                        charts.generationTrend.data.labels = data.generationTrend.labels;
+                        charts.generationTrend.data.datasets[0].data = data.generationTrend.data;
+                        charts.generationTrend.update();
+                    }
+
+                    // Update scan activity chart
+                    if (data.scanActivity) {
+                        charts.scanActivity.data.labels = data.scanActivity.labels;
+                        charts.scanActivity.data.datasets[0].data = data.scanActivity.data;
+                        charts.scanActivity.update();
+                    }
+
+                    // Update other charts...
+                })
+                .fail(function() {
+                    console.error('Failed to update chart data');
+                });
+        }
+
+        function updateTopScannedItems(filters) {
+            $.post('@Url.Action("GetTopScannedItems", "Barcode")', filters)
+                .done(function(data) {
+                    let html = '';
+                    data.forEach(item => {
+                        html += `
+                            <tr>
+                                <td>${item.itemName}</td>
+                                <td><span class="badge bg-primary">${item.scanCount}</span></td>
+                                <td><small class="text-muted">${item.lastScan}</small></td>
+                            </tr>
+                        `;
+                    });
+                    $('#topScannedItems').html(html);
+                })
+                .fail(function() {
+                    $('#topScannedItems').html('<tr><td colspan="3" class="text-center text-muted">Failed to load data</td></tr>');
+                });
+        }
+
+        function updateRecentActivity(filters) {
+            $.post('@Url.Action("GetRecentActivity", "Barcode")', filters)
+                .done(function(data) {
+                    let html = '<div class="timeline">';
+                    data.forEach(activity => {
+                        html += `
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-${activity.type === 'scan' ? 'success' : 'primary'}"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">${activity.title}</h6>
+                                    <p class="timeline-description">${activity.description}</p>
+                                    <small class="text-muted">${activity.time}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    $('#recentActivity').html(html);
+                })
+                .fail(function() {
+                    $('#recentActivity').html('<div class="text-center text-muted">Failed to load activity data</div>');
+                });
+        }
+
+        function updateTopLocations(filters) {
+            $.post('@Url.Action("GetTopLocations", "Barcode")', filters)
+                .done(function(data) {
+                    let html = '';
+                    data.forEach((location, index) => {
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>${location.name}</span>
+                                <span class="badge bg-secondary">${location.scanCount}</span>
+                            </div>
+                        `;
+                    });
+                    $('#topLocations').html(html);
+                })
+                .fail(function() {
+                    $('#topLocations').html('<div class="text-center text-muted">No data available</div>');
+                });
+        }
+
+        function updateScanActivityChart() {
+            const timeScale = $('input[name="timeScale"]:checked').val();
+            // Update chart based on time scale
+            // This would typically make an AJAX call to get data for the selected time scale
+        }
+
+        function resetFilters() {
+            $('#filterForm')[0].reset();
+            $('#dateRange').val('today');
+            updateDateRange();
+            applyFilters();
+        }
+
+        function generateReport(reportType) {
+            currentReportType = reportType;
+
+            $('#reportResults').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                    <p>Generating ${reportType.replace('_', ' ')} report...</p>
+                </div>
+            `);
+
+            $.post('@Url.Action("GenerateReport", "Barcode")', {
+                reportType: reportType,
+                filters: {
+                    dateRange: $('#dateRange').val(),
+                    dateFrom: $('#dateFrom').val(),
+                    dateTo: $('#dateTo').val(),
+                    storeId: $('#storeFilter').val(),
+                    categoryId: $('#categoryFilter').val()
+                }
+            })
+            .done(function(data) {
+                displayReportResults(data);
+            })
+            .fail(function() {
+                $('#reportResults').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Failed to generate report. Please try again.
+                    </div>
+                `);
+            });
+        }
+
+        function displayReportResults(data) {
+            let html = `
+                <div class="mb-3">
+                    <h6>${data.title}</h6>
+                    <small class="text-muted">Generated on ${new Date().toLocaleString()}</small>
+                </div>
+            `;
+
+            if (data.summary) {
+                html += `
+                    <div class="row mb-4">
+                        ${data.summary.map(item => `
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h4 class="text-primary">${item.value}</h4>
+                                        <p class="mb-0">${item.label}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            if (data.table) {
+                html += `
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    ${data.table.headers.map(header => `<th>${header}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.table.rows.map(row => `
+                                    <tr>
+                                        ${row.map(cell => `<td>${cell}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            $('#reportResults').html(html);
+        }
+
+        function exportCurrentReport(format) {
+            if (!currentReportType) {
+                toastr.warning('Please generate a report first');
+                return;
+            }
+
+            const url = `@Url.Action("ExportReport", "Barcode")?reportType=${currentReportType}&format=${format}`;
+            window.open(url, '_blank');
+        }
+
+        function exportAllReports() {
+            window.open('@Url.Action("ExportAllReports", "Barcode")', '_blank');
+        }
+
+        function refreshReportData() {
+            loadDashboardData();
+            applyFilters();
+            toastr.success('Report data refreshed');
+        }
+    </script>
+
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -35px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .timeline-item:not(:last-child):before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 17px;
+            width: 2px;
+            height: calc(100% + 15px);
+            background-color: #dee2e6;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-description {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #007bff;
+            }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .card-header h6 {
+            margin-bottom: 0;
+        }
+
+        .btn-check:checked + .btn-outline-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #fff;
+        }
+    </style>
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" rel="stylesheet" />
+}

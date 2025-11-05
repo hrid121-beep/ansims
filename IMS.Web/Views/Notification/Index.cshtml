@@ -1,0 +1,154 @@
+﻿@model IEnumerable<IMS.Application.DTOs.NotificationDto>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Notifications</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+                    <li class="breadcrumb-item active">Notifications</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Notifications</h3>
+                <div class="card-tools">
+                    @if (Model.Any(n => !n.IsRead))
+                    {
+                        <button type="button" class="btn btn-sm btn-primary" onclick="markAllNotificationsAsRead()">
+                            <i class="fas fa-check-double"></i> Mark All as Read
+                        </button>
+                    }
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteAllRead()">
+                        <i class="fas fa-trash"></i> Delete Read
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Any())
+                {
+                    <div class="text-center p-5">
+                        <i class="far fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No notifications</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <tbody>
+                                @foreach (var notification in Model)
+                                {
+                                    <tr class="@(!notification.IsRead ? "bg-light" : "")">
+                                        <td class="text-center" style="width: 50px;">
+                                            <i class="@notification.Icon @notification.CssClass fa-lg"></i>
+                                        </td>
+                                        <td>
+                                            <h6 class="mb-1 @(!notification.IsRead ? "font-weight-bold" : "")">
+                                                @if (!string.IsNullOrEmpty(notification.Url))
+                                                {
+                                                    <a href="@notification.Url" class="text-dark">@notification.Title</a>
+                                                }
+                                                else
+                                                {
+                                                    @notification.Title
+                                                }
+                                            </h6>
+                                            <p class="mb-0">@notification.Message</p>
+                                            <small class="text-muted">
+                                                <i class="far fa-clock"></i> @notification.TimeAgo
+                                                @if (notification.IsRead && notification.ReadAt.HasValue)
+                                                {
+                                                    <span class="ml-2">• Read @notification.ReadAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                                                }
+                                            </small>
+                                        </td>
+                                        <td class="text-right" style="width: 100px;">
+                                            @if (!notification.IsRead)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        onclick="markAsRead(@notification.Id)">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            }
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteNotification(@notification.Id)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function markAsRead(id) {
+            $.post('@Url.Action("MarkAsRead", "Notification")', { id: id }, function(result) {
+                if (result.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        function deleteNotification(id) {
+            Swal.fire({
+                title: 'Delete notification?',
+                text: "This action cannot be undone",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("Delete", "Notification")', { id: id }, function(result) {
+                        if (result.success) {
+                            toastr.success('Notification deleted');
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+
+        function deleteAllRead() {
+            Swal.fire({
+                title: 'Delete all read notifications?',
+                text: "This will permanently delete all read notifications",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("DeleteAllRead", "Notification")', function(result) {
+                        if (result.success) {
+                            toastr.success('All read notifications deleted');
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

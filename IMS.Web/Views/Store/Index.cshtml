@@ -1,0 +1,616 @@
+﻿@model IEnumerable<IMS.Application.DTOs.StoreDto>
+@{
+    ViewData["Title"] = "Store Management";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Store Management</h1>
+                <p class="text-muted">Manage stores, inventory, and assignments</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Stores</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Store
+                </a>
+                <div class="btn-group float-right">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                        <i class="fas fa-cog"></i> Bulk Actions
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" onclick="bulkActivate()">
+                            <i class="fas fa-check"></i> Activate Selected
+                        </a>
+                        <a class="dropdown-item" href="#" onclick="bulkDeactivate()">
+                            <i class="fas fa-times"></i> Deactivate Selected
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="#" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Delete Selected
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <a asp-action="Create" class="small-box-footer">
+                        Add New Store <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(s => s.IsActive)</h3>
+                        <p>Active Stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <a href="#" onclick="filterActive()" class="small-box-footer">
+                        View Active <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Sum(s => s.ItemCount)</h3>
+                        <p>Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <a asp-action="StockLevels" class="small-box-footer">
+                        View Stock <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Sum(s => s.AssignedUserCount)</h3>
+                        <p>Assigned Users</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a asp-action="UserAssignment" class="small-box-footer">
+                        Manage Users <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stores Table -->
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-list"></i> Store Directory</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="maximize">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filterStatus">Filter by Status:</label>
+                            <select id="filterStatus" class="form-control select2bs4">
+                                <option value="">All Stores</option>
+                                <option value="Active">Active Only</option>
+                                <option value="Inactive">Inactive Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filterType">Filter by Type:</label>
+                            <select id="filterType" class="form-control select2bs4">
+                                <option value="">All Types</option>
+                                @foreach (var storeType in Model.Where(s => !string.IsNullOrEmpty(s.StoreTypeName)).Select(s => s.StoreTypeName).Distinct())
+                                {
+                                    <option value="@storeType">@storeType</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filterLevel">Filter by Level:</label>
+                            <select id="filterLevel" class="form-control select2bs4">
+                                <option value="">All Levels</option>
+                                @foreach (var level in Model.Select(s => s.Level).Distinct().OrderBy(l => l))
+                                {
+                                    <option value="@level">@level</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="storesTable" class="table table-bordered table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th width="30">
+                                    <div class="icheck-primary">
+                                        <input type="checkbox" id="selectAll">
+                                        <label for="selectAll"></label>
+                                    </div>
+                                </th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Level</th>
+                                <th>Location</th>
+                                <th>Manager</th>
+                                <th>Items</th>
+                                <th>Capacity</th>
+                                <th>Users</th>
+                                <th>Status</th>
+                                <th width="120">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var store in Model)
+                            {
+                                <tr data-id="@store.Id">
+                                    <td>
+                                        <div class="icheck-primary">
+                                            <input type="checkbox" class="store-checkbox" id="check_@store.Id" value="@store.Id">
+                                            <label for="check_@store.Id"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">@store.Code</span>
+                                    </td>
+                                    <td>
+                                        <strong>@store.Name</strong>
+                                        @if (!string.IsNullOrEmpty(store.Remarks))
+                                        {
+                                            <br>
+                                            <small class="text-muted">@store.Remarks.Substring(0, Math.Min(50, store.Remarks.Length))...</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(store.StoreTypeName))
+                                        {
+                                            <span class="badge badge-info">@store.StoreTypeName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">@store.Level</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(store.BattalionName))
+                                        {
+                                            <small class="d-block"><i class="fas fa-shield-alt text-dark"></i> @store.BattalionName</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(store.ZilaName))
+                                        {
+                                            <small class="d-block"><i class="fas fa-map-marker-alt text-danger"></i> @store.ZilaName</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(store.UpazilaName))
+                                        {
+                                            <small class="text-muted">@store.UpazilaName</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(store.ManagerName))
+                                        {
+                                            <div><strong>@store.ManagerName</strong></div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone"></i> @store.ContactNumber
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning">Not Assigned</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-dark badge-lg">@store.ItemCount</span>
+                                        @if (store.ItemCount == 0)
+                                        {
+                                            <br>
+                                            <small class="text-muted">Empty</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (store.Capacity.HasValue && store.UsedCapacity.HasValue)
+                                        {
+                                            var percentage = store.Capacity.Value > 0 ? (store.UsedCapacity.Value / store.Capacity.Value) * 100 : 0;
+                                            var progressClass = percentage > 80 ? "bg-danger" : percentage > 60 ? "bg-warning" : "bg-success";
+
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar @progressClass" style="width: @percentage%"></div>
+                                            </div>
+                                            <small class="text-muted">@percentage.ToString("F0")% used</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not set</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">@store.AssignedUserCount</span>
+                                    </td>
+                                    <td>
+                                        @if (store.IsActive)
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check"></i> Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-times"></i> Inactive
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@store.Id"
+                                               class="btn btn-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@store.Id"
+                                               class="btn btn-primary" title="Edit Store">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="ManageUsers" asp-route-id="@store.Id"
+                                               class="btn btn-warning" title="Manage Users">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-danger delete-store"
+                                                    data-id="@store.Id" data-name="@store.Name" title="Delete Store">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <span class="text-muted">
+                            Total: @Model.Count() stores | Active: @Model.Count(s => s.IsActive) | Inactive: @Model.Count(s => !s.IsActive)
+                        </span>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="float-right">
+                            <button class="btn btn-secondary btn-sm" onclick="refreshData()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Hidden form for CSRF token -->
+<form id="deleteForm" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        var storesTable;
+        var csrfToken = $('#deleteForm input[name="__RequestVerificationToken"]').val();
+
+        $(document).ready(function() {
+            // Initialize DataTable
+            storesTable = $('#storesTable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                processing: true,
+                pageLength: 25,
+                order: [[1, 'asc']], // Sort by store code
+                dom: 'Blfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-success btn-sm'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Print',
+                        className: 'btn btn-info btn-sm'
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-eye"></i> Columns',
+                        className: 'btn btn-secondary btn-sm'
+                    }
+                ],
+                columnDefs: [
+                    { orderable: false, targets: [0, 11] }, // Disable sorting for checkbox and actions
+                    { searchable: false, targets: [0, 11] }
+                ],
+                language: {
+                    search: "Search stores:",
+                    lengthMenu: "Show _MENU_ stores per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ stores",
+                    infoEmpty: "No stores available",
+                    emptyTable: "No stores found"
+                }
+            });
+
+            // Initialize Select2 for filters
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select option...'
+            });
+
+            // Filter functionality
+            $('#filterStatus, #filterType, #filterLevel').on('change', function() {
+                applyFilters();
+            });
+
+            // Select all functionality
+            $('#selectAll').on('click', function() {
+                var checked = this.checked;
+                $('.store-checkbox').prop('checked', checked);
+            });
+
+            // Individual checkbox change
+            $('.store-checkbox').on('change', function() {
+                var totalBoxes = $('.store-checkbox').length;
+                var checkedBoxes = $('.store-checkbox:checked').length;
+
+                $('#selectAll').prop('checked', totalBoxes === checkedBoxes);
+                $('#selectAll').prop('indeterminate', checkedBoxes > 0 && checkedBoxes < totalBoxes);
+            });
+
+            // Delete confirmation
+            $('.delete-store').on('click', function(e) {
+                e.preventDefault();
+                var storeId = $(this).data('id');
+                var storeName = $(this).data('name');
+
+                Swal.fire({
+                    title: 'Delete Store?',
+                    html: `Are you sure you want to delete <strong>${storeName}</strong>?<br><br>
+                           <small class="text-warning">This action cannot be undone!</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteStore(storeId);
+                    }
+                });
+            });
+        });
+
+        function applyFilters() {
+            var statusFilter = $('#filterStatus').val();
+            var typeFilter = $('#filterType').val();
+            var levelFilter = $('#filterLevel').val();
+
+            // Apply status filter
+            if (statusFilter) {
+                storesTable.column(10).search(statusFilter);
+            } else {
+                storesTable.column(10).search('');
+            }
+
+            // Apply type filter
+            if (typeFilter) {
+                storesTable.column(3).search(typeFilter);
+            } else {
+                storesTable.column(3).search('');
+            }
+
+            // Apply level filter
+            if (levelFilter) {
+                storesTable.column(4).search(levelFilter);
+            } else {
+                storesTable.column(4).search('');
+            }
+
+            storesTable.draw();
+        }
+
+        function clearFilters() {
+            $('#filterStatus, #filterType, #filterLevel').val('').trigger('change');
+            storesTable.search('').columns().search('').draw();
+        }
+
+        function filterActive() {
+            $('#filterStatus').val('Active').trigger('change');
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        function deleteStore(storeId) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Store")',
+                type: 'POST',
+                data: {
+                    id: storeId,
+                    __RequestVerificationToken: csrfToken
+                },
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire('Deleted!', result.message || 'Store has been deleted.', 'success');
+                        storesTable.row($(`tr[data-id="${storeId}"]`)).remove().draw();
+                    } else {
+                        Swal.fire('Error!', result.message || 'Failed to delete store.', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error!', 'An error occurred while deleting the store.', 'error');
+                }
+            });
+        }
+
+        function bulkActivate() {
+            var selectedIds = getSelectedStoreIds();
+            if (selectedIds.length === 0) {
+                toastr.warning('Please select stores to activate');
+                return;
+            }
+
+            bulkUpdateStatus(selectedIds, true, 'activate');
+        }
+
+        function bulkDeactivate() {
+            var selectedIds = getSelectedStoreIds();
+            if (selectedIds.length === 0) {
+                toastr.warning('Please select stores to deactivate');
+                return;
+            }
+
+            bulkUpdateStatus(selectedIds, false, 'deactivate');
+        }
+
+        function bulkDelete() {
+            var selectedIds = getSelectedStoreIds();
+            if (selectedIds.length === 0) {
+                toastr.warning('Please select stores to delete');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Delete Selected Stores?',
+                text: `Are you sure you want to delete ${selectedIds.length} selected stores?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete them!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performBulkDelete(selectedIds);
+                }
+            });
+        }
+
+        function getSelectedStoreIds() {
+            var selectedIds = [];
+            $('.store-checkbox:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+            return selectedIds;
+        }
+
+        function bulkUpdateStatus(ids, isActive, action) {
+            $.ajax({
+                url: '@Url.Action("BulkUpdateStatus", "Store")',
+                type: 'POST',
+                data: {
+                    ids: ids,
+                    isActive: isActive,
+                    __RequestVerificationToken: csrfToken
+                },
+                success: function(result) {
+                    if (result.success) {
+                        toastr.success(result.message || `Successfully ${action}d ${result.count} stores`);
+                        setTimeout(function() { refreshData(); }, 1500);
+                    } else {
+                        toastr.error(result.message || `Failed to ${action} stores`);
+                    }
+                },
+                error: function() {
+                    toastr.error(`An error occurred while trying to ${action} stores`);
+                }
+            });
+        }
+
+        function performBulkDelete(ids) {
+            $.ajax({
+                url: '@Url.Action("BulkDelete", "Store")',
+                type: 'POST',
+                data: {
+                    ids: ids,
+                    __RequestVerificationToken: csrfToken
+                },
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire('Deleted!', result.message || `${result.count} stores have been deleted.`, 'success');
+                        setTimeout(function() { refreshData(); }, 1500);
+                    } else {
+                        Swal.fire('Error!', result.message || 'Failed to delete stores.', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error!', 'An error occurred while deleting stores.', 'error');
+                }
+            });
+        }
+    </script>
+}

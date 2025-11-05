@@ -1,0 +1,149 @@
+﻿@model IMS.Application.DTOs.IssueDto
+@{
+    ViewData["Title"] = "Quick Issue";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-bolt text-warning"></i> Quick Issue
+                    <small class="text-muted">Fast-track emergency items</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Issues</a></li>
+                    <li class="breadcrumb-item active">Quick Issue</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="QuickIssue" method="post" id="quickIssueForm">
+            @Html.AntiForgeryToken()
+
+            <div class="card card-warning card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Emergency Issue Form
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Issue To Section -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Issue Type <span class="text-danger">*</span></label>
+                                <select asp-for="IssuedToType" class="form-control select2" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Battalion">Battalion</option>
+                                    <option value="Individual">Individual (Emergency)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group" id="battalionDiv">
+                                <label>Battalion</label>
+                                <select asp-for="IssuedToBattalionId" class="form-control select2">
+                                    <option value="">-- Select Battalion --</option>
+                                    @foreach (var battalion in ViewBag.Battalions)
+                                    {
+                                        <option value="@battalion.Value">@battalion.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="individualDiv" style="display:none;">
+                            <div class="form-group">
+                                <label>Individual Name</label>
+                                <input asp-for="IssuedToIndividualName" class="form-control" placeholder="Enter name" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Common Items Selection -->
+                    <div class="card card-default mt-3">
+                        <div class="card-header bg-light">
+                            <h3 class="card-title">Select Items (Common/Emergency)</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered" id="quickItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th width="40%">Item</th>
+                                        <th width="20%">Available</th>
+                                        <th width="20%">Quantity</th>
+                                        <th width="20%">Store</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Pre-populated common items -->
+                                    <tr>
+                                        <td>
+                                            <select class="form-control item-select" name="Items[0].ItemId">
+                                                @foreach (var item in ViewBag.Items)
+                                                {
+                                                    <option value="@item.Value">@item.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td><span class="badge badge-success available-qty">0</span></td>
+                                        <td><input type="number" class="form-control" name="Items[0].Quantity" min="1" required /></td>
+                                        <td>
+                                            <select class="form-control" name="Items[0].StoreId">
+                                                @foreach (var store in ViewBag.Stores)
+                                                {
+                                                    <option value="@store.Value">@store.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-sm btn-info" onclick="addQuickItem()">
+                                <i class="fas fa-plus"></i> Add More
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-bolt"></i> Submit Quick Issue
+                    </button>
+                    <a asp-action="Index" class="btn btn-default">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('.select2').select2();
+
+            $('#IssuedToType').change(function() {
+                var type = $(this).val();
+                if(type === 'Individual') {
+                    $('#battalionDiv').hide();
+                    $('#individualDiv').show();
+                } else {
+                    $('#battalionDiv').show();
+                    $('#individualDiv').hide();
+                }
+            });
+        });
+
+        function addQuickItem() {
+            var index = $('#quickItemsTable tbody tr').length;
+            // Add row logic
+        }
+    </script>
+}

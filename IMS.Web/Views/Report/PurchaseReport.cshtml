@@ -1,0 +1,543 @@
+@model IEnumerable<IMS.Application.DTOs.PurchaseDto>
+@{
+    ViewData["Title"] = "Purchase Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Calculate summary statistics
+    var purchases = Model ?? new List<IMS.Application.DTOs.PurchaseDto>();
+    var totalPurchaseValue = purchases.Sum(p => p.TotalAmount - p.Discount);
+    var totalOrders = purchases.Count();
+    var vendors = ViewBag.Vendors as SelectList;
+    var activeVendorCount = purchases.Select(p => p.VendorId).Distinct().Count();
+    var pendingDeliveries = purchases.Count(p => p.Status != "Delivered" && p.Status != "Completed");
+
+    // Month names for chart labels
+    var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+    // Chart data - Vendor performance
+    var vendorStats = purchases
+        .Where(p => !string.IsNullOrEmpty(p.VendorName))
+        .GroupBy(p => p.VendorName)
+        .Select(g => new {
+            VendorName = g.Key,
+            TotalValue = g.Sum(p => p.TotalAmount - p.Discount),
+            OrderCount = g.Count()
+        })
+        .OrderByDescending(v => v.TotalValue)
+        .Take(5)
+        .ToList();
+
+    // Chart data - Monthly trend (last 6 months)
+    var monthlyStats = purchases
+        .GroupBy(p => new { p.PurchaseDate.Year, p.PurchaseDate.Month })
+        .Select(g => new {
+            Year = g.Key.Year,
+            Month = g.Key.Month,
+            TotalValue = g.Sum(p => p.TotalAmount - p.Discount),
+            OrderCount = g.Count()
+        })
+        .OrderBy(m => m.Year).ThenBy(m => m.Month)
+        .ToList();
+
+    // Chart data - Category breakdown (from purchase items)
+    var categoryStats = purchases
+        .SelectMany(p => p.Items)
+        .GroupBy(i => i.ItemName?.Split('-').FirstOrDefault()?.Trim() ?? "Other")
+        .Select(g => new {
+            Category = g.Key,
+            TotalValue = g.Sum(i => i.TotalPrice),
+            ItemCount = g.Count()
+        })
+        .OrderByDescending(c => c.TotalValue)
+        .Take(5)
+        .ToList();
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Purchase Report</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Purchase Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="PurchaseReport" method="get">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date:</label>
+                                <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date:</label>
+                                <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Vendor:</label>
+                                <select id="vendorId" name="vendorId" class="form-control">
+                                    @if (vendors != null)
+                                    {
+                                        @foreach (var item in vendors)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Widgets -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-shopping-cart"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Purchases</span>
+                        <span class="info-box-number">৳@totalPurchaseValue.ToString("N2")</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Net Purchase Amount
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Purchase Orders</span>
+                        <span class="info-box-number">@totalOrders</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Total Orders
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-users"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Active Vendors</span>
+                        <span class="info-box-number">@activeVendorCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Vendors Used
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-truck"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending Deliveries</span>
+                        <span class="info-box-number">@pendingDeliveries</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <span class="progress-description">
+                            Awaiting Delivery
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top Vendors by Purchase Volume</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="vendorChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Purchase Trend</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Orders Table with DataTable -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Purchase Order Details</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="purchaseTable">
+                    <thead>
+                        <tr>
+                            <th>PO Number</th>
+                            <th>Date</th>
+                            <th>Vendor</th>
+                            <th>Items</th>
+                            <th class="text-right">Total Amount</th>
+                            <th class="text-right">Discount</th>
+                            <th class="text-right">Net Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (purchases.Any())
+                        {
+                            @foreach (var purchase in purchases)
+                            {
+                                <tr>
+                                    <td><strong>@purchase.PurchaseOrderNo</strong></td>
+                                    <td>@purchase.PurchaseDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@(purchase.VendorName ?? "Marketplace")</td>
+                                    <td class="text-center">@purchase.Items.Count</td>
+                                    <td class="text-right">৳@purchase.TotalAmount.ToString("N2")</td>
+                                    <td class="text-right">৳@purchase.Discount.ToString("N2")</td>
+                                    <td class="text-right">৳@((purchase.TotalAmount - purchase.Discount).ToString("N2"))</td>
+                                    <td>
+                                        @if (purchase.Status == "Approved")
+                                        {
+                                            <span class="badge badge-success">Approved</span>
+                                        }
+                                        else if (purchase.Status == "Pending")
+                                        {
+                                            <span class="badge badge-warning">Pending</span>
+                                        }
+                                        else if (purchase.Status == "Draft")
+                                        {
+                                            <span class="badge badge-secondary">Draft</span>
+                                        }
+                                        else if (purchase.Status == "Rejected")
+                                        {
+                                            <span class="badge badge-danger">Rejected</span>
+                                        }
+                                        else if (purchase.Status == "Delivered" || purchase.Status == "Completed")
+                                        {
+                                            <span class="badge badge-info">Delivered</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-light">@purchase.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="Purchase" asp-action="Details" asp-route-id="@purchase.Id"
+                                           class="btn btn-xs btn-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No purchase records found for the selected period.</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-light font-weight-bold">
+                            <td colspan="6" class="text-right">Total:</td>
+                            <td class="text-right">৳@totalPurchaseValue.ToString("N2")</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Purchase by Category</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-responsive">
+                            <canvas id="categoryChart" height="150"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="chart-legend clearfix">
+                            @{
+                                var colors = new[] { "text-danger", "text-success", "text-warning", "text-info", "text-primary" };
+                                var colorIndex = 0;
+                            }
+                            @foreach (var category in categoryStats)
+                            {
+                                <li><i class="far fa-circle @colors[colorIndex++ % colors.Length]"></i> @category.Category (৳@category.TotalValue.ToString("N2"))</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            $('#purchaseTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[1, "desc"]], // Sort by date descending
+                "language": {
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+
+            // Vendor Chart
+            var vendorChartCanvas = $('#vendorChart').get(0).getContext('2d');
+            var vendorChartData = {
+                labels: [@Html.Raw(string.Join(",", vendorStats.Select(v => "'" + v.VendorName + "'")))],
+                datasets: [{
+                    label: 'Purchase Amount (৳)',
+                    backgroundColor: 'rgba(60,141,188,0.9)',
+                    borderColor: 'rgba(60,141,188,0.8)',
+                    data: [@string.Join(",", vendorStats.Select(v => v.TotalValue))]
+                }]
+            };
+            new Chart(vendorChartCanvas, {
+                type: 'bar',
+                data: vendorChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return '৳' + value.toLocaleString();
+                                }
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return 'Amount: ৳' + tooltipItem.yLabel.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Monthly Trend Chart
+            var monthlyChartCanvas = $('#monthlyChart').get(0).getContext('2d');
+            var monthlyChartData = {
+                labels: [@Html.Raw(string.Join(",", monthlyStats.Select(m => "'" + monthNames[m.Month - 1] + " " + m.Year + "'")))],
+                datasets: [{
+                    label: 'Purchase Amount (৳)',
+                    borderColor: 'rgba(60,141,188,1)',
+                    backgroundColor: 'rgba(60,141,188,0.3)',
+                    fill: true,
+                    data: [@string.Join(",", monthlyStats.Select(m => m.TotalValue))]
+                }]
+            };
+            new Chart(monthlyChartCanvas, {
+                type: 'line',
+                data: monthlyChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return '৳' + value.toLocaleString();
+                                }
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return 'Amount: ৳' + tooltipItem.yLabel.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Chart
+            var categoryChartCanvas = $('#categoryChart').get(0).getContext('2d');
+            var categoryChartData = {
+                labels: [@Html.Raw(string.Join(",", categoryStats.Select(c => "'" + c.Category + "'")))],
+                datasets: [{
+                    data: [@string.Join(",", categoryStats.Select(c => c.TotalValue))],
+                    backgroundColor: ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc']
+                }]
+            };
+            new Chart(categoryChartCanvas, {
+                type: 'doughnut',
+                data: categoryChartData,
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var label = data.labels[tooltipItem.index] || '';
+                                var value = data.datasets[0].data[tooltipItem.index] || 0;
+                                return label + ': ৳' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Export to CSV
+        function exportToCSV() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var vendorId = document.getElementById('vendorId').value;
+
+            var url = '@Url.Action("ExportPurchaseReportCsv", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (vendorId) params.push('vendorId=' + vendorId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = document.getElementById('fromDate').value;
+            var toDate = document.getElementById('toDate').value;
+            var vendorId = document.getElementById('vendorId').value;
+
+            var url = '@Url.Action("ExportPurchaseReportPdf", "Report")' + '?';
+            var params = [];
+
+            if (fromDate) params.push('fromDate=' + fromDate);
+            if (toDate) params.push('toDate=' + toDate);
+            if (vendorId) params.push('vendorId=' + vendorId);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, form {
+                display: none !important;
+            }
+
+            .btn {
+                display: none !important;
+            }
+        }
+    </style>
+}

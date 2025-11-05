@@ -1,0 +1,93 @@
+﻿@model IEnumerable<IMS.Application.DTOs.StockAdjustmentDto>
+@{
+    ViewData["Title"] = "Stock Adjustments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Stock Adjustments</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Stock Adjustments</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Stock Adjustments</h3>
+                <div class="card-tools">
+                    <a asp-action="Adjustment" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Adjustment
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Adjustment No</th>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Type</th>
+                            <th>Total Items</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var adjustment in Model)
+                        {
+                            <tr>
+                                <td>@adjustment.AdjustmentNo</td>
+                                <td>@adjustment.AdjustmentDate.ToString("dd/MM/yyyy")</td>
+                                <td>@adjustment.StoreName</td>
+                                <td>@adjustment.AdjustmentType</td>
+                                <td>@adjustment.Items.Count</td>
+                                <td>
+                                    <span class="badge @GetStatusBadge(adjustment.Status)">@adjustment.Status</span>
+                                </td>
+                                <td>@adjustment.CreatedBy</td>
+                                <td>
+                                    <a asp-action="AdjustmentDetails" asp-route-id="@adjustment.Id"
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (adjustment.Status == "Pending")
+                                    {
+                                        <button onclick="approveAdjustment(@adjustment.Id)"
+                                                class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetStatusBadge(string status) => status switch
+    {
+        "Pending" => "badge-warning",
+        "Approved" => "badge-success",
+        "Rejected" => "badge-danger",
+        _ => "badge-secondary"
+    };
+}

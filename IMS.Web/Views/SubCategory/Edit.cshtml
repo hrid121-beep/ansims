@@ -1,0 +1,433 @@
+﻿@model IMS.Application.DTOs.SubCategoryDto
+@{
+    ViewData["Title"] = "Edit Sub Category";
+    var itemCount = Model.ItemCount;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-8">
+                <h1 class="m-0">
+                    <i class="fas fa-edit text-warning"></i>
+                    Edit Sub Category
+                </h1>
+                <p class="mb-0 text-muted">
+                    Modify sub category information for: <strong>@Model.Name</strong>
+                </p>
+            </div>
+            <div class="col-sm-4">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/" class="text-primary">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-primary">Sub Categories</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Category" asp-action="Details" asp-route-id="@Model.CategoryId" class="text-primary">@Model.CategoryName</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Edit Form -->
+            <div class="col-lg-8">
+                <div class="card card-warning card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-layer-group"></i>
+                            Sub Category Information
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-info">
+                                ID: @Model.Id
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Edit" method="post" id="editSubCategoryForm">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            <input type="hidden" asp-for="Id" />
+
+                            <!-- Category Selection -->
+                            <div class="form-group">
+                                <label asp-for="CategoryId" class="control-label">
+                                    <i class="fas fa-tags text-primary"></i>
+                                    Parent Category
+                                </label>
+                                <select asp-for="CategoryId" class="form-control select2" asp-items="ViewBag.Categories" id="categorySelect">
+                                    <option value="">-- Select Parent Category --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Choose the parent category for this sub category
+                                </small>
+                            </div>
+
+                            <div class="row">
+                                <!-- Sub Category Name -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">
+                                            <i class="fas fa-layer-group text-info"></i>
+                                            Sub Category Name
+                                        </label>
+                                        <input asp-for="Name" class="form-control" placeholder="Enter sub category name" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Sub Category Code -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label">
+                                            <i class="fas fa-qrcode text-secondary"></i>
+                                            Sub Category Code
+                                        </label>
+                                        <input asp-for="Code" class="form-control" placeholder="Enter unique code" />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                        <small class="form-text text-muted">
+                                            Unique identifier for this sub category
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label asp-for="Description" class="control-label">
+                                    <i class="fas fa-align-left text-success"></i>
+                                    Description
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="4"
+                                          placeholder="Enter detailed description of this sub category"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Provide a clear description to help users understand this sub category's purpose
+                                </small>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-group mt-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn btn-warning btn-lg" id="saveBtn">
+                                            <i class="fas fa-save"></i>
+                                            Update Sub Category
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-lg ml-2" onclick="resetForm()">
+                                            <i class="fas fa-undo"></i>
+                                            Reset
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Panel -->
+            <div class="col-lg-4">
+                <!-- Quick Stats -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Quick Statistics
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-boxes text-primary"></i>
+                                    Total Items
+                                </span>
+                                <span class="badge badge-primary badge-pill">@itemCount</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-calendar text-info"></i>
+                                    Created Date
+                                </span>
+                                <small class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    Status
+                                </span>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i>
+                            Quick Actions
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a asp-controller="Item" asp-action="Index" asp-route-subCategoryId="@Model.Id"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-eye text-primary mr-3"></i>
+                                    <div>
+                                        <strong>View Items</strong>
+                                        <br><small class="text-muted">Browse all items in this sub category</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Item" asp-action="Create" asp-route-subCategoryId="@Model.Id"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-plus text-success mr-3"></i>
+                                    <div>
+                                        <strong>Add New Item</strong>
+                                        <br><small class="text-muted">Create a new item in this sub category</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Category" asp-action="Details" asp-route-id="@Model.CategoryId"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-tags text-info mr-3"></i>
+                                    <div>
+                                        <strong>View Parent Category</strong>
+                                        <br><small class="text-muted">@Model.CategoryName details</small>
+                                    </div>
+                                </div>
+                            </a>
+                            @if (itemCount == 0)
+                            {
+                                <button type="button" class="list-group-item list-group-item-action text-danger"
+                                        onclick="confirmDelete()">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-trash mr-3"></i>
+                                        <div>
+                                            <strong>Delete Sub Category</strong>
+                                            <br><small class="text-muted">Remove this sub category</small>
+                                        </div>
+                                    </div>
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-info-circle text-warning mr-3"></i>
+                                        <div>
+                                            <strong>Cannot Delete</strong>
+                                            <br><small class="text-muted">Sub category has @itemCount items</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help & Tips -->
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Tips & Guidelines
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Use descriptive names for clarity</li>
+                            <li><i class="fas fa-check text-success"></i> Keep codes unique and meaningful</li>
+                            <li><i class="fas fa-check text-success"></i> Choose the correct parent category</li>
+                            <li><i class="fas fa-check text-success"></i> Add detailed descriptions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the sub category "<strong>@Model.Name</strong>"?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning"></i>
+                    This action cannot be undone!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Sub Category
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for category dropdown
+            $('#categorySelect').select2({
+                theme: 'bootstrap',
+                placeholder: "-- Select Parent Category --",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Form validation enhancement
+            $('#editSubCategoryForm').on('submit', function(e) {
+                var isValid = true;
+                var errorMessages = [];
+
+                // Validate required fields
+                if (!$('#Name').val().trim()) {
+                    errorMessages.push('Sub Category Name is required');
+                    isValid = false;
+                }
+
+                if (!$('#CategoryId').val()) {
+                    errorMessages.push('Parent Category must be selected');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+
+                    // Show validation errors
+                    var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
+                    alertHtml += '<strong>Please fix the following errors:</strong><ul>';
+                    errorMessages.forEach(function(msg) {
+                        alertHtml += '<li>' + msg + '</li>';
+                    });
+                    alertHtml += '</ul>';
+                    alertHtml += '<button type="button" class="close" data-dismiss="alert">';
+                    alertHtml += '<span aria-hidden="true">&times;</span></button></div>';
+
+                    $('.card-body').prepend(alertHtml);
+                }
+            });
+
+            // Auto-generate code based on name (optional)
+            $('#Name').on('blur', function() {
+                var name = $(this).val();
+                var code = $('#Code').val();
+
+                if (name && !code) {
+                    var generatedCode = name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase();
+                    $('#Code').val(generatedCode);
+                }
+            });
+        });
+
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all changes?')) {
+                $('#editSubCategoryForm')[0].reset();
+                $('#categorySelect').val('@Model.CategoryId').trigger('change');
+
+                // Remove any validation errors
+                $('.alert-danger').remove();
+                $('.text-danger').text('');
+            }
+        }
+
+        function confirmDelete() {
+            $('#deleteModal').modal('show');
+        }
+
+        // Auto-save draft functionality (optional)
+        var autoSaveTimer;
+        $('#editSubCategoryForm input, #editSubCategoryForm textarea, #editSubCategoryForm select').on('change keyup', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(function() {
+                // Could implement auto-save to localStorage here
+                console.log('Auto-saving draft...');
+            }, 2000);
+        });
+    </script>
+
+    <style>
+        .card-outline {
+            border-top: 3px solid;
+        }
+
+        .list-group-item-action:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            transition: all 0.2s;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .select2-container--bootstrap .select2-selection--single {
+            height: calc(2.25rem + 2px);
+            padding: 0.375rem 0.75rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+    </style>
+}

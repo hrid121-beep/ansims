@@ -1,0 +1,238 @@
+﻿@using IMS.Application.DTOs
+@using IMS.Domain.Enums
+@model IEnumerable<PhysicalInventoryHistoryDto>
+@{
+    ViewData["Title"] = "Physical Inventory History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">ইতিহাস / History</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Physical Inventory</a></li>
+                    <li class="breadcrumb-item active">History</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter -->
+        <div class="card card-default collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">Filters</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="History">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
+                                    <option value="">All Stores</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Item</label>
+                                <input type="text" name="itemSearch" class="form-control" 
+                                       placeholder="Item code or name"
+                                       value="@ViewBag.ItemName">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Fiscal Year</label>
+                                <select name="fiscalYear" class="form-control">
+                                    <option value="">All Years</option>
+                                    <option value="2024-25">2024-25</option>
+                                    <option value="2023-24">2023-24</option>
+                                    <option value="2022-23">2022-23</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <a asp-action="History" class="btn btn-default">Reset</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Inventory Timeline</h3>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        @{
+                            var groupedByYear = Model.GroupBy(h => h.FiscalYear).OrderByDescending(g => g.Key);
+                            foreach (var yearGroup in groupedByYear)
+                            {
+                                <!-- Year Label -->
+                                <div class="time-label">
+                                    <span class="bg-primary">@yearGroup.Key</span>
+                                </div>
+
+                                @foreach (var history in yearGroup.OrderByDescending(h => h.CountDate))
+                                {
+                                    <!-- Timeline item -->
+                                    <div>
+                                        @{
+                                            var iconClass = history.Status switch
+                                            {
+                                                PhysicalInventoryStatus.Approved => "bg-success",
+                                                PhysicalInventoryStatus.Rejected => "bg-danger",
+                                                PhysicalInventoryStatus.InProgress => "bg-warning",
+                                                _ => "bg-info"
+                                            };
+                                        }
+                                        <i class="fas fa-clipboard-check @iconClass"></i>
+                                        <div class="timeline-item">
+                                            <span class="time">
+                                                <i class="fas fa-clock"></i> @history.CountDate.ToString("dd MMM yyyy")
+                                            </span>
+                                            <h3 class="timeline-header">
+                                                <a asp-action="Details" asp-route-id="@history.Id">
+                                                    @history.ReferenceNumber
+                                                </a>
+                                                - @history.StoreName
+                                            </h3>
+                                            <div class="timeline-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p>
+                                                            <strong>Count Type:</strong> @history.CountType<br>
+                                                            <strong>Total Items:</strong> @history.TotalItems<br>
+                                                            <strong>Status:</strong> 
+                                                            <span class="badge @(history.Status == PhysicalInventoryStatus.Approved ? "badge-success" : "badge-warning")">
+                                                                @history.Status
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p>
+                                                            <strong>Total Variance:</strong> 
+                                                            <span class="@(history.TotalVariance >= 0 ? "text-success" : "text-danger")">
+                                                                @history.TotalVariance.ToString("+#;-#;0")
+                                                            </span><br>
+                                                            <strong>Variance Value:</strong> ৳ @history.TotalVarianceValue.ToString("N2")<br>
+                                                            <strong>Approved By:</strong> @(history.ApprovedBy ?? "Pending")
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-footer">
+                                                <a asp-action="Details" asp-route-id="@history.Id" class="btn btn-primary btn-sm">
+                                                    View Details
+                                                </a>
+                                                <a asp-action="VarianceReport" asp-route-id="@history.Id" class="btn btn-info btn-sm">
+                                                    Variance Report
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        <!-- End timeline -->
+                        <div>
+                            <i class="fas fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Variance Trend Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No history records found. Try adjusting your search criteria.
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            @if (Model != null && Model.Any())
+            {
+                <text>
+                var trendData = @Html.Raw(Json.Serialize(Model.OrderBy(h => h.CountDate)
+                    .Select(h => new { 
+                        date = h.CountDate.ToString("MMM yyyy"), 
+                        variance = h.TotalVarianceValue 
+                    })));
+
+                var ctx = document.getElementById('trendChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(d => d.date),
+                        datasets: [{
+                            label: 'Variance Value (৳)',
+                            data: trendData.map(d => d.variance),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Physical Inventory Variance Trend'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+        });
+    </script>
+}

@@ -1,0 +1,141 @@
+@model IEnumerable<IMS.Domain.Entities.SignatoryPreset>
+@{
+    ViewData["Title"] = "Signatory Presets Management";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-user-tie"></i> Signatory Presets</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="~/">Home</a></li>
+                    <li class="breadcrumb-item active">Signatory Presets</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-list"></i> All Signatory Presets</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add New Preset
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-check-circle"></i> @TempData["Success"]
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                    </div>
+                }
+
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No signatory presets found. Click "Add New Preset" to create one.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>Preset Name</th>
+                                    <th>Signatory Name</th>
+                                    <th>Designation (EN)</th>
+                                    <th>Designation (BN)</th>
+                                    <th>Department</th>
+                                    <th style="width: 80px;">Order</th>
+                                    <th style="width: 100px;">Default</th>
+                                    <th style="width: 80px;">Status</th>
+                                    <th style="width: 200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderBy(p => p.DisplayOrder))
+                                {
+                                    <tr class="@(item.IsDefault ? "table-success" : "")">
+                                        <td>@item.Id</td>
+                                        <td>
+                                            <strong>@item.PresetNameBn</strong><br />
+                                            <small class="text-muted">@item.PresetName</small>
+                                        </td>
+                                        <td>@item.SignatoryName</td>
+                                        <td>@item.SignatoryDesignation</td>
+                                        <td>@item.SignatoryDesignationBn</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.Department))
+                                            {
+                                                <span class="badge badge-info">@item.Department</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">@item.DisplayOrder</td>
+                                        <td class="text-center">
+                                            @if (item.IsDefault)
+                                            {
+                                                <span class="badge badge-success"><i class="fas fa-check"></i> Default</span>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="SetDefault" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-success"
+                                                            onclick="return confirm('Set this preset as default?')">
+                                                        <i class="fas fa-star"></i> Set Default
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger" title="Delete"
+                                                            onclick="return confirm('Are you sure you want to delete this preset?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

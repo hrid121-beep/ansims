@@ -1,0 +1,128 @@
+@model IMS.Domain.Entities.SignatoryPreset
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-md-6">
+        <!-- Preset Name -->
+        <div class="form-group">
+            <label asp-for="PresetName" class="control-label">
+                Preset Name <span class="text-danger">*</span>
+            </label>
+            <input asp-for="PresetName" class="form-control" placeholder="e.g., Director General (Admin)" />
+            <span asp-validation-for="PresetName" class="text-danger"></span>
+        </div>
+
+        <!-- Preset Name (Bengali) -->
+        <div class="form-group">
+            <label asp-for="PresetNameBn" class="control-label">
+                Preset Name (Bengali)
+            </label>
+            <input asp-for="PresetNameBn" class="form-control" placeholder="যেমন: মহাপরিচালক (প্রশাসন)" />
+            <span asp-validation-for="PresetNameBn" class="text-danger"></span>
+        </div>
+
+        <!-- Signatory Name -->
+        <div class="form-group">
+            <label asp-for="SignatoryName" class="control-label">
+                Signatory Name <span class="text-danger">*</span>
+            </label>
+            <input asp-for="SignatoryName" class="form-control" placeholder="Full name of the signatory" />
+            <span asp-validation-for="SignatoryName" class="text-danger"></span>
+        </div>
+
+        <!-- Signatory Designation -->
+        <div class="form-group">
+            <label asp-for="SignatoryDesignation" class="control-label">
+                Designation <span class="text-danger">*</span>
+            </label>
+            <input asp-for="SignatoryDesignation" class="form-control" placeholder="e.g., Director General" />
+            <span asp-validation-for="SignatoryDesignation" class="text-danger"></span>
+        </div>
+
+        <!-- Signatory Designation (Bengali) -->
+        <div class="form-group">
+            <label asp-for="SignatoryDesignationBn" class="control-label">
+                Designation (Bengali)
+            </label>
+            <input asp-for="SignatoryDesignationBn" class="form-control" placeholder="যেমন: মহাপরিচালক" />
+            <span asp-validation-for="SignatoryDesignationBn" class="text-danger"></span>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-md-6">
+        <!-- Signatory ID -->
+        <div class="form-group">
+            <label asp-for="SignatoryId" class="control-label">
+                Signatory ID
+            </label>
+            <input asp-for="SignatoryId" class="form-control" placeholder="Official ID number" />
+            <span asp-validation-for="SignatoryId" class="text-danger"></span>
+        </div>
+
+        <!-- Department -->
+        <div class="form-group">
+            <label asp-for="Department" class="control-label">
+                Department
+            </label>
+            <input asp-for="Department" class="form-control" placeholder="e.g., Administration, Finance" />
+            <span asp-validation-for="Department" class="text-danger"></span>
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+            <label asp-for="SignatoryPhone" class="control-label">
+                Phone Number
+            </label>
+            <input asp-for="SignatoryPhone" class="form-control" type="tel" placeholder="e.g., +880-1234-567890" />
+            <span asp-validation-for="SignatoryPhone" class="text-danger"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label asp-for="SignatoryEmail" class="control-label">
+                Email Address
+            </label>
+            <input asp-for="SignatoryEmail" class="form-control" type="email" placeholder="signatory@ansar-vdp.gov.bd" />
+            <span asp-validation-for="SignatoryEmail" class="text-danger"></span>
+        </div>
+
+        <!-- Display Order -->
+        <div class="form-group">
+            <label asp-for="DisplayOrder" class="control-label">
+                Display Order <span class="text-danger">*</span>
+            </label>
+            <input asp-for="DisplayOrder" class="form-control" type="number" min="1" />
+            <small class="form-text text-muted">Lower numbers appear first in dropdown lists</small>
+            <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <hr />
+
+        <!-- Default Preset Checkbox -->
+        <div class="form-group">
+            <div class="custom-control custom-checkbox">
+                <input asp-for="IsDefault" class="custom-control-input" type="checkbox" />
+                <label asp-for="IsDefault" class="custom-control-label">
+                    <strong>Set as Default Preset</strong>
+                    <small class="text-muted">(Will be automatically selected in new documents)</small>
+                </label>
+            </div>
+        </div>
+
+        <!-- Active Status Checkbox -->
+        <div class="form-group">
+            <div class="custom-control custom-checkbox">
+                <input asp-for="IsActive" class="custom-control-input" type="checkbox" checked />
+                <label asp-for="IsActive" class="custom-control-label">
+                    <strong>Active</strong>
+                    <small class="text-muted">(Inactive presets won't appear in selection lists)</small>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>

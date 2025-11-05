@@ -1,0 +1,267 @@
+@{
+    ViewData["Title"] = "Settings Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Settings Dashboard</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Administration</a></li>
+                    <li class="breadcrumb-item active">Settings Dashboard</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Administration Section -->
+        <h5 class="mb-3"><i class="fas fa-user-shield"></i> ADMINISTRATION</h5>
+        <div class="row">
+            <!-- User Management -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>Users</h3>
+                        <p>Manage system users and accounts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a asp-action="Users" class="small-box-footer">
+                        View Users <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Role Management -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>Roles</h3>
+                        <p>Configure roles and hierarchy</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <a asp-action="Roles" class="small-box-footer">
+                        View Roles <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Permissions -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>Permissions</h3>
+                        <p>Manage access control policies</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <a asp-controller="Permission" asp-action="Index" class="small-box-footer">
+                        Manage Permissions <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Store Assignment -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>Stores</h3>
+                        <p>Assign users to stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <a asp-controller="Store" asp-action="Assignments" class="small-box-footer">
+                        Manage Assignments <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Section -->
+        <h5 class="mb-3 mt-4"><i class="fas fa-server"></i> SYSTEM</h5>
+        <div class="row">
+            <!-- System Settings -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3>Settings</h3>
+                        <p>System-wide configuration</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <a asp-controller="Settings" asp-action="Index" class="small-box-footer">
+                        Configure Settings <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Approval Settings -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-teal">
+                    <div class="inner">
+                        <h3>Approvals</h3>
+                        <p>Configure approval workflows</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <a asp-controller="ApprovalSettings" asp-action="Index" class="small-box-footer">
+                        Approval Settings <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Backup & Restore -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>Backup</h3>
+                        <p>Database backup and restore</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <a asp-controller="Settings" asp-action="Backup" class="small-box-footer">
+                        Manage Backups <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Activity Logs -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>Logs</h3>
+                        <p>View activity and audit trails</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <a asp-action="Logs" class="small-box-footer">
+                        View Logs <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Import/Export -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-orange">
+                    <div class="inner">
+                        <h3>Import/Export</h3>
+                        <p>Data import and export tools</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <a asp-controller="Settings" asp-action="ImportExport" class="small-box-footer">
+                        Import/Export Data <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>Data</h3>
+                        <p>Bulk update and manage data</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <a asp-action="DataManagement" class="small-box-footer">
+                        Manage Data <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>Info</h3>
+                        <p>System version and diagnostics</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <a asp-controller="Settings" asp-action="SystemInfo" class="small-box-footer">
+                        View System Info <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">System Statistics</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Users</span>
+                                        <span class="info-box-number">@ViewBag.TotalUsers</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-user-shield"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">System Roles</span>
+                                        <span class="info-box-number">18</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-warehouse"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Active Stores</span>
+                                        <span class="info-box-number">@ViewBag.TotalStores</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-12">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-shield-alt"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Permissions</span>
+                                        <span class="info-box-number">475+</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,315 @@
+@model IEnumerable<IMS.Application.DTOs.StockAdjustmentDto>
+@{
+    ViewData["Title"] = ViewBag.Title ?? "Stock Adjustments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stats = ViewBag.Statistics as Dictionary<string, int>;
+
+    var adjustments = Model?.ToList() ?? new List<IMS.Application.DTOs.StockAdjustmentDto>();
+    var totalCount = adjustments.Count();
+    var pendingCount = adjustments.Count(a => a.Status == "Pending");
+    var approvedCount = adjustments.Count(a => a.Status == "Approved");
+    var rejectedCount = adjustments.Count(a => a.Status == "Rejected");
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-sliders-h text-secondary"></i> Stock Adjustments
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">Adjustments</li>
+                    <li class="breadcrumb-item active">All Adjustments</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-balance-scale"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Adjustments</span>
+                        <span class="info-box-number">@totalCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending</span>
+                        <span class="info-box-number">@pendingCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Approved</span>
+                        <span class="info-box-number">@approvedCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Rejected</span>
+                        <span class="info-box-number">@rejectedCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Adjustment Records</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Adjustment
+                    </a>
+                    <a asp-action="Report" class="btn btn-info btn-sm">
+                        <i class="fas fa-chart-line"></i> Report
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped table-hover" id="adjustmentTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Adjustment No</th>
+                            <th>Date</th>
+                            <th>Item</th>
+                            <th>Store</th>
+                            <th>Old Qty</th>
+                            <th>New Qty</th>
+                            <th>Adjustment</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (adjustments.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var item in adjustments.OrderByDescending(a => a.AdjustmentDate))
+                            {
+                                var statusClass = item.Status switch
+                                {
+                                    "Pending" => "badge-warning",
+                                    "Approved" => "badge-success",
+                                    "Rejected" => "badge-danger",
+                                    _ => "badge-secondary"
+                                };
+
+                                <tr>
+                                    <td>@serial</td>
+                                    <td>
+                                        <strong><code>@item.AdjustmentNo</code></strong>
+                                    </td>
+                                    <td>@item.AdjustmentDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>
+                                        <small class="text-muted">@item.ItemCode</small><br>
+                                        @item.ItemName
+                                    </td>
+                                    <td>@item.StoreName</td>
+                                    <td class="text-right">@item.OldQuantity</td>
+                                    <td class="text-right">@item.NewQuantity</td>
+                                    <td class="text-right">
+                                        @if (item.AdjustmentType == "Increase")
+                                        {
+                                            <span class="font-weight-bold text-success">+@item.AdjustmentQuantity</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-weight-bold text-danger">-@item.AdjustmentQuantity</span>
+                                        }
+                                        <br>
+                                        <small class="text-muted">@item.AdjustmentPercentage</small>
+                                    </td>
+                                    <td>
+                                        @if (item.AdjustmentType == "Increase")
+                                        {
+                                            <span class="badge badge-primary"><i class="fas fa-arrow-up"></i> Increase</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary"><i class="fas fa-arrow-down"></i> Decrease</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusClass">@item.Status</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (item.Status == "Pending" && (User.IsInRole("Admin") || User.IsInRole("Manager")))
+                                            {
+                                                <button type="button" class="btn btn-sm btn-success approve-btn"
+                                                        data-id="@item.Id" data-no="@item.AdjustmentNo" title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger reject-btn"
+                                                        data-id="@item.Id" data-no="@item.AdjustmentNo" title="Reject">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i> No adjustment records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Approve" method="post">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-check-circle"></i> Approve Adjustment
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="approveId">
+                    <p>Are you sure you want to approve adjustment <strong id="approveNo"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> This will update the stock levels immediately.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-times-circle"></i> Reject Adjustment
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="rejectId">
+                    <p>Reject adjustment <strong id="rejectNo"></strong>?</p>
+                    <div class="form-group">
+                        <label for="reason">Reason for Rejection <span class="text-danger">*</span></label>
+                        <textarea name="reason" id="reason" class="form-control" rows="3"
+                                  placeholder="Please provide a reason for rejection..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban"></i> Reject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#adjustmentTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 10] } // Disable sorting on serial and actions
+                ]
+            });
+
+            // Approve button click
+            $('.approve-btn').click(function() {
+                var id = $(this).data('id');
+                var no = $(this).data('no');
+                $('#approveId').val(id);
+                $('#approveNo').text(no);
+                $('#approveModal').modal('show');
+            });
+
+            // Reject button click
+            $('.reject-btn').click(function() {
+                var id = $(this).data('id');
+                var no = $(this).data('no');
+                $('#rejectId').val(id);
+                $('#rejectNo').text(no);
+                $('#rejectModal').modal('show');
+            });
+        });
+    </script>
+}

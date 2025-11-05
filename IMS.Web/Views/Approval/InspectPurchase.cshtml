@@ -1,0 +1,277 @@
+﻿@model IMS.Web.Models.PurchaseInspectionViewModel
+@{
+    ViewData["Title"] = "Inspect Purchase Order";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-search"></i> Inspect Purchase Order
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Approval" asp-action="Index">Approvals</a></li>
+                    <li class="breadcrumb-item active">Inspect Purchase</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Inspector Note:</strong> Please physically inspect all items before approving. Mark items as Serviceable or Unserviceable.
+        </div>
+
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Purchase Order: @Model.PurchaseOrderNo</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong>PO Number:</strong><br>
+                        <span class="badge badge-primary">@Model.PurchaseOrderNo</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Vendor:</strong><br>
+                        @Model.VendorName
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Total Amount:</strong><br>
+                        ৳ @Model.TotalAmount.ToString("N2")
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Inspection Date:</strong><br>
+                        @Model.InspectionDate.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+
+                <hr>
+
+                <form id="inspectionForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="PurchaseId" />
+                    <input type="hidden" asp-for="PurchaseOrderNo" />
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>Item Code</th>
+                                    <th>Item Name</th>
+                                    <th width="100">Quantity</th>
+                                    <th width="150">Condition</th>
+                                    <th width="100">Transfer?</th>
+                                    <th>Inspection Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr>
+                                        <td>@(i + 1)</td>
+                                        <td>
+                                            @Model.Items[i].ItemCode
+                                            <input type="hidden" name="Items[@i].ItemId" value="@Model.Items[i].ItemId" />
+                                            <input type="hidden" name="Items[@i].ItemCode" value="@Model.Items[i].ItemCode" />
+                                            <input type="hidden" name="Items[@i].ItemName" value="@Model.Items[i].ItemName" />
+                                        </td>
+                                        <td>@Model.Items[i].ItemName</td>
+                                        <td>
+                                            @Model.Items[i].Quantity
+                                            <input type="hidden" name="Items[@i].Quantity" value="@Model.Items[i].Quantity" />
+                                        </td>
+                                        <td>
+                                            <select name="Items[@i].Condition" class="form-control form-control-sm condition-select" data-index="@i">
+                                                <option value="Serviceable" selected>✓ Serviceable</option>
+                                                <option value="Unserviceable">✗ Unserviceable</option>
+                                                <option value="Needs Repair">🔧 Needs Repair</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input transfer-checkbox"
+                                                       name="Items[@i].ApprovedForTransfer"
+                                                       id="transfer@i"
+                                                       checked />
+                                                <label class="custom-control-label" for="transfer@i"></label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="Items[@i].InspectionRemarks"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Optional remarks..." />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Summary</th>
+                                    <th id="totalQty">@Model.Items.Sum(i => i.Quantity)</th>
+                                    <th colspan="3">
+                                        <span class="badge badge-success" id="serviceableCount">@Model.Items.Count</span> Serviceable |
+                                        <span class="badge badge-danger" id="unserviceableCount">0</span> Unserviceable
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label>Inspector's Overall Remarks</label>
+                        <textarea name="InspectorRemarks" class="form-control" rows="3"
+                                  placeholder="Enter your inspection summary and recommendations..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Inspector Signature</label>
+                        <input type="text" name="InspectorName" class="form-control"
+                               value="@User.Identity.Name" readonly />
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Important:</strong> By submitting this inspection, you confirm that you have physically verified all items.
+                        Serviceable items will be transferred to Provision Store. Unserviceable items will be quarantined for vendor return.
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-success btn-lg" onclick="submitInspection()">
+                    <i class="fas fa-check-circle"></i> Submit Inspection & Forward to DDG Admin
+                </button>
+                <a asp-controller="Approval" asp-action="Index" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            updateSummary();
+
+            $('.condition-select').on('change', function() {
+                var index = $(this).data('index');
+                var condition = $(this).val();
+                var transferCheckbox = $('#transfer' + index);
+
+                if (condition === 'Unserviceable') {
+                    transferCheckbox.prop('checked', false);
+                    transferCheckbox.closest('tr').addClass('table-danger');
+                } else {
+                    transferCheckbox.prop('checked', true);
+                    transferCheckbox.closest('tr').removeClass('table-danger');
+                }
+
+                updateSummary();
+            });
+
+            $('.transfer-checkbox').on('change', updateSummary);
+        });
+
+        function updateSummary() {
+            var serviceableCount = 0;
+            var unserviceableCount = 0;
+
+            $('.condition-select').each(function() {
+                if ($(this).val() === 'Serviceable' || $(this).val() === 'Needs Repair') {
+                    serviceableCount++;
+                } else {
+                    unserviceableCount++;
+                }
+            });
+
+            $('#serviceableCount').text(serviceableCount);
+            $('#unserviceableCount').text(unserviceableCount);
+        }
+
+        function submitInspection() {
+            var serviceableCount = parseInt($('#serviceableCount').text());
+            var unserviceableCount = parseInt($('#unserviceableCount').text());
+
+            if (serviceableCount === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Serviceable Items',
+                    text: 'All items are marked as unserviceable. Are you sure you want to continue?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Continue',
+                    cancelButtonText: 'Review Again'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performSubmit();
+                    }
+                });
+            } else {
+                performSubmit();
+            }
+        }
+
+        function performSubmit() {
+            var formData = $('#inspectionForm').serializeArray();
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            Swal.fire({
+                title: 'Submitting Inspection...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("SubmitInspection", "Approval")',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Inspection Completed!',
+                            text: 'Items have been forwarded to DDG Admin for final approval.',
+                            timer: 3000
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Index", "Approval")';
+                        });
+                    } else {
+                        Swal.fire('Error', response.message || 'Failed to submit inspection', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire('Error', 'Failed to submit inspection. Please try again.', 'error');
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .table-danger {
+        background-color: #f8d7da !important;
+    }
+
+    .custom-switch .custom-control-label::before {
+        height: 1.5rem;
+        width: 2.75rem;
+    }
+
+    .custom-switch .custom-control-label::after {
+        height: 1.25rem;
+        width: 1.25rem;
+    }
+</style>

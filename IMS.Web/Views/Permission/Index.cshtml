@@ -1,0 +1,509 @@
+﻿@model IEnumerable<IMS.Application.DTOs.RoleWithPermissionsDto>
+@{
+    ViewData["Title"] = "Role Permissions Management";
+}
+@section Styles {
+    <style>
+        /* Fix alert readability */
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460 !important;
+        }
+
+            .alert-info h5,
+            .alert-info .icon,
+            .alert-info i {
+                color: #0c5460 !important;
+            }
+
+        /* Card header colors with proper contrast */
+        .card-warning .card-header {
+            background-color: #f39c12;
+            color: #ffffff !important;
+        }
+
+        .card-info .card-header {
+            background-color: #17a2b8;
+            color: #ffffff !important;
+        }
+
+        .card-primary .card-header {
+            background-color: #007bff;
+            color: #ffffff !important;
+        }
+
+        .card-success .card-header {
+            background-color: #28a745;
+            color: #ffffff !important;
+        }
+
+        .card-danger .card-header {
+            background-color: #dc3545;
+            color: #ffffff !important;
+        }
+
+        .card-secondary .card-header {
+            background-color: #6c757d;
+            color: #ffffff !important;
+        }
+
+            /* Fix card-tools visibility - all text and icons white */
+            .card-warning .card-header .card-tools *,
+            .card-info .card-header .card-tools *,
+            .card-primary .card-header .card-tools *,
+            .card-success .card-header .card-tools *,
+            .card-danger .card-header .card-tools *,
+            .card-secondary .card-header .card-tools * {
+                color: #ffffff !important;
+            }
+
+        /* Fix badges in card-tools */
+        .card-header .card-tools .badge {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Fix buttons in card-tools */
+        .card-header .card-tools .btn {
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+            .card-header .card-tools .btn:hover {
+                background-color: rgba(255, 255, 255, 0.2) !important;
+            }
+
+        /* Ensure card title is visible */
+        .card-header .card-title,
+        .card-header .card-title i {
+            color: #ffffff !important;
+        }
+    </style>
+}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-user-shield"></i> Role Permissions Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Administration</a></li>
+                    <li class="breadcrumb-item active">Permissions</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Info Alert -->
+        <div class="alert alert-info alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h5><i class="icon fas fa-info"></i> Permission Management</h5>
+            Manage role-based permissions for the approval system. Approval roles (AD/DD Store, DDG Admin, DD Provision) require specific permissions.
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Roles</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Enum.GetValues(typeof(IMS.Domain.Enums.Permission)).Length</h3>
+                        <p>Total Permissions</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Where(r => r.RoleName.Contains("Store") || r.RoleName.Contains("Admin") || r.RoleName.Contains("Provision")).Count()</h3>
+                        <p>Approval Roles</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Where(r => r.RoleName == "Admin").Count()</h3>
+                        <p>Admin Roles</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">System Roles and Permissions</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-sm btn-success" onclick="initializeDefaultPermissions()">
+                        <i class="fas fa-sync-alt"></i> Initialize Default Permissions
+                    </button>
+                    <button type="button" class="btn btn-sm btn-info" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var role in Model.OrderBy(r => GetRoleOrder(r.RoleName)))
+                    {
+                        var roleColor = GetRoleCardColor(role.RoleName);
+                        var roleIcon = GetRoleIcon(role.RoleName);
+
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="card @roleColor shadow">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="@roleIcon"></i> @role.RoleName
+                                    </h3>
+                                    @if (role.RoleName != "Admin")
+                                    {
+                                        <div class="card-tools">
+                                            <a asp-action="Edit" asp-route-roleId="@role.RoleId"
+                                               class="btn btn-xs btn-light" title="Edit Permissions">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="card-tools">
+                                            <span class="badge badge-light">All Access</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-body">
+                                    <!-- Permission Count -->
+                                    <div class="info-box bg-light mb-3">
+                                        <span class="info-box-icon bg-primary">
+                                            <i class="fas fa-key"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Active Permissions</span>
+                                            <span class="info-box-number">
+                                                @role.Permissions.Count(p => p.IsGranted)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Permission Categories -->
+                                    <div class="permission-summary" style="max-height: 200px; overflow-y: auto;">
+                                        @{
+                                            var categories = role.Permissions
+                                            .Where(p => p.IsGranted)
+                                            .GroupBy(p => p.Category)
+                                            .OrderBy(g => g.Key);
+                                        }
+                                        @if (categories.Any())
+                                        {
+                                            @foreach (var category in categories)
+                                            {
+                                                <div class="mb-2">
+                                                    <span class="badge badge-info">@category.Key</span>
+                                                    <span class="badge badge-light">@category.Count()</span>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted small">No permissions assigned</p>
+                                        }
+                                    </div>
+
+                                    <!-- Role-specific Info -->
+                                    @if (IsApprovalRole(role.RoleName))
+                                    {
+                                        <div class="mt-2">
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-clipboard-check"></i> Approval Role
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer">
+                                    @if (role.RoleName != "Admin")
+                                    {
+                                        <a asp-action="Edit" asp-route-roleId="@role.RoleId"
+                                           class="btn btn-sm btn-primary btn-block">
+                                            <i class="fas fa-edit"></i> Edit Permissions
+                                        </a>
+                                        <button class="btn btn-sm btn-secondary btn-block mt-1"
+                                                onclick="copyPermissions('@role.RoleId', '@role.RoleName')">
+                                            <i class="fas fa-copy"></i> Copy Permissions
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-danger btn-block" disabled>
+                                            <i class="fas fa-lock"></i> Admin - Cannot Edit
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Roles Quick Reference -->
+        <div class="card card-warning collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i> Approval Roles Quick Reference
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Central Store (3-Tier Approval)</h5>
+                        <ul>
+                            <li><strong>Storekeeper:</strong> Create GRN, Submit for approval</li>
+                            <li><strong>AD_DD_Store:</strong> Inspect items (ViewApproval, ProcessApproval, InspectPurchase)</li>
+                            <li><strong>DDG_Admin:</strong> Final approval (ViewApproval, ProcessApproval, ApprovePurchase)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Provision Store (2-Tier Approval)</h5>
+                        <ul>
+                            <li><strong>Storekeeper:</strong> Create Allotment Letters, Issue Vouchers</li>
+                            <li><strong>DD_Provision:</strong> Approve distribution (ViewApproval, ProcessApproval, ApproveAllotmentLetter)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Copy Permissions Modal -->
+<div class="modal fade" id="copyPermissionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title"><i class="fas fa-copy"></i> Copy Permissions</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This will copy all permissions from <strong id="sourceRoleName"></strong> to the selected target role.
+                </div>
+                <form id="copyPermissionsForm">
+                    <input type="hidden" id="sourceRoleId" />
+                    <div class="form-group">
+                        <label>Copy to Role:</label>
+                        <select id="targetRoleId" class="form-control">
+                            <option value="">-- Select Target Role --</option>
+                            @foreach (var role in Model.Where(r => r.RoleName != "Admin"))
+                            {
+                                <option value="@role.RoleId">@role.RoleName</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmCopyPermissions()">
+                    <i class="fas fa-copy"></i> Copy Permissions
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function initializeDefaultPermissions() {
+            Swal.fire({
+                title: 'Initialize Default Permissions?',
+                html: 'This will set default permissions for all roles based on their responsibilities.<br><br><strong>Roles affected:</strong><ul style="text-align:left;"><li>Storekeeper</li><li>AD_DD_Store</li><li>DDG_Admin</li><li>DD_Provision</li><li>Manager</li></ul>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, initialize!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("InitializeDefaultPermissions")',
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: response.message,
+                                    timer: 3000
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error!', 'Failed to initialize permissions', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function copyPermissions(sourceRoleId, sourceRoleName) {
+            $('#sourceRoleId').val(sourceRoleId);
+            $('#sourceRoleName').text(sourceRoleName);
+            $('#targetRoleId').val('');
+            $('#copyPermissionsModal').modal('show');
+        }
+
+        function confirmCopyPermissions() {
+            const sourceRoleId = $('#sourceRoleId').val();
+            const targetRoleId = $('#targetRoleId').val();
+
+            if (!targetRoleId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Target Selected',
+                    text: 'Please select a target role'
+                });
+                return;
+            }
+
+            if (sourceRoleId === targetRoleId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Selection',
+                    text: 'Source and target roles cannot be the same'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirm Copy',
+                text: 'Are you sure you want to copy permissions?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, copy!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("CopyPermissions")',
+                        type: 'POST',
+                        data: {
+                            sourceRoleId: sourceRoleId,
+                            targetRoleId: targetRoleId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: response.message,
+                                    timer: 2000
+                                }).then(() => {
+                                    $('#copyPermissionsModal').modal('hide');
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while copying permissions', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+@functions {
+    string GetRoleCardColor(string roleName)
+    {
+        return roleName switch
+        {
+            "Admin" => "card-danger",
+            "DDG_Admin" => "card-warning",
+            "AD_DD_Store" => "card-info",
+            "DD_Provision" => "card-primary",
+            "Storekeeper" => "card-success",
+            "Manager" => "card-secondary",
+            _ => "card-default"
+        };
+    }
+
+    string GetRoleIcon(string roleName)
+    {
+        return roleName switch
+        {
+            "Admin" => "fas fa-user-shield",
+            "DDG_Admin" => "fas fa-user-tie",
+            "AD_DD_Store" => "fas fa-clipboard-check",
+            "DD_Provision" => "fas fa-boxes",
+            "Storekeeper" => "fas fa-warehouse",
+            "Manager" => "fas fa-user-cog",
+            _ => "fas fa-user"
+        };
+    }
+
+    int GetRoleOrder(string roleName)
+    {
+        return roleName switch
+        {
+            "Admin" => 1,
+            "DDG_Admin" => 2,
+            "AD_DD_Store" => 3,
+            "DD_Provision" => 4,
+            "Manager" => 5,
+            "Storekeeper" => 6,
+            _ => 99
+        };
+    }
+
+    bool IsApprovalRole(string roleName)
+    {
+        return roleName is "DDG_Admin" or "AD_DD_Store" or "DD_Provision";
+    }
+}

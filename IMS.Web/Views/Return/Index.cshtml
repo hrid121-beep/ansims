@@ -1,0 +1,147 @@
+﻿@model IEnumerable<IMS.Application.DTOs.ReturnDto>
+@{
+    ViewData["Title"] = "Returns";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Returns Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Returns</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Stats Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Returns</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(r => r.IsRestocked)</h3>
+                        <p>Restocked</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(r => !r.IsRestocked)</h3>
+                        <p>Pending Restock</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(r => r.Reason == "Damage")</h3>
+                        <p>Damaged Returns</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Return List</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Create Return
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="returnsTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Return No</th>
+                            <th>Date</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Returned By</th>
+                            <th>Reason</th>
+                            <th>Restocked</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.ReturnNo</td>
+                                <td>@item.ReturnDate.ToString("dd-MMM-yyyy")</td>
+                                <td>@item.ItemName</td>
+                                <td>@item.Quantity</td>
+                                <td>
+                                    <span class="badge badge-info">@item.ReturnedByType</span>
+                                    @item.ReturnedBy
+                                </td>
+                                <td>@item.Reason</td>
+                                <td>
+                                    @if (item.IsRestocked)
+                                    {
+                                        <span class="badge badge-success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">No</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $("#returnsTable").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "buttons": ["copy", "csv", "excel", "pdf", "print"]
+            }).buttons().container().appendTo('#returnsTable_wrapper .col-md-6:eq(0)');
+        });
+    </script>
+}

@@ -1,0 +1,360 @@
+﻿@model IMS.Application.DTOs.ReceiveDto
+@{
+    ViewData["Title"] = "Verify Received Items";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Verify Received Items</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Verify Items</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Receive Information -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Receive Information
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-warning">@Model.Status</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Receive No:</strong> @Model.ReceiveNo
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Date:</strong> @Model.ReceiveDate.ToString("dd-MMM-yyyy")
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Type:</strong> @Model.ReceiveType
+                            </div>
+                            <div class="col-md-3">
+                                <strong>From:</strong> @Model.ReceivedFromName
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.OriginalIssueNo))
+                        {
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <strong>Original Issue:</strong> @Model.OriginalIssueNo
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Voucher No:</strong> @Model.OriginalVoucherNo
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Verification Form -->
+        <form asp-action="VerifyItems" method="post" id="verifyForm">
+            <input type="hidden" name="id" value="@Model.Id" />
+            
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-check-circle"></i> Item Verification
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" onclick="scanItems()">
+                            <i class="fas fa-barcode"></i> Scan Items
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px">#</th>
+                                    <th>Item Code</th>
+                                    <th>Item Name</th>
+                                    <th>Expected Qty</th>
+                                    <th>Received Qty</th>
+                                    <th>Condition</th>
+                                    <th>Damage Photo</th>
+                                    <th>Remarks</th>
+                                    <th style="width: 100px">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rowIndex = 0;
+                                }
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr id="row-@rowIndex" class="item-row">
+                                        <td>@(rowIndex + 1)</td>
+                                        <td>
+                                            <input type="hidden" name="items[@rowIndex].ItemId" value="@item.ItemId" />
+                                            <span class="item-code">@item.ItemCode</span>
+                                        </td>
+                                        <td>@item.ItemName</td>
+                                        <td>
+                                            <span class="expected-qty">@item.Quantity</span>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="items[@rowIndex].ReceivedQuantity" 
+                                                   class="form-control form-control-sm received-qty" 
+                                                   value="@(item.ReceivedQuantity ?? item.Quantity)"
+                                                   min="0" max="@item.Quantity" step="0.01" />
+                                        </td>
+                                        <td>
+                                            <select name="items[@rowIndex].Condition"
+                                                    class="form-control form-control-sm condition-select">
+                                                @{
+                                                    var conditions = new[] { "Good", "Damaged", "Expired" };
+                                                    foreach (var cond in conditions)
+                                                    {
+                                                        <option value="@cond" selected="@(item.Condition == cond ? "selected" : null)">@cond</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="damage-photo-section" style="display:none;">
+                                                <input type="file" class="damage-photo-input" accept="image/*" />
+                                                <input type="hidden" name="items[@rowIndex].DamagePhoto" class="damage-photo-data" />
+                                                <div class="photo-preview mt-1"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="items[@rowIndex].Remarks" 
+                                                   class="form-control form-control-sm" 
+                                                   value="@item.Remarks" placeholder="Optional remarks" />
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-success verify-btn" 
+                                                    onclick="verifyItem(@rowIndex)">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-info scan-btn" 
+                                                    onclick="scanItem(@rowIndex)">
+                                                <i class="fas fa-barcode"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    rowIndex++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="4">Total</th>
+                                    <th>
+                                        <span id="totalReceived">0</span>
+                                    </th>
+                                    <th colspan="4">
+                                        <span id="verificationStatus"></span>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Verification Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Good Items</span>
+                                    <span class="info-box-number" id="goodCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-exclamation"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Damaged Items</span>
+                                    <span class="info-box-number" id="damagedCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box bg-danger">
+                                <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Expired Items</span>
+                                    <span class="info-box-number" id="expiredCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="form-group">
+                        <label>Verification Notes</label>
+                        <textarea name="notes" class="form-control" rows="3" 
+                                  placeholder="Enter any additional notes about the verification..."></textarea>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Verification
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="completeVerification()">
+                        <i class="fas fa-check-double"></i> Complete Verification
+                    </button>
+                    <a asp-action="Process" asp-route-id="@Model.Id" class="btn btn-default">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize counts
+            updateCounts();
+            
+            // Handle condition change
+            $('.condition-select').change(function() {
+                var row = $(this).closest('tr');
+                var condition = $(this).val();
+                var photoSection = row.find('.damage-photo-section');
+                
+                if (condition === 'Damaged') {
+                    photoSection.show();
+                } else {
+                    photoSection.hide();
+                }
+                
+                updateCounts();
+            });
+            
+            // Handle received quantity change
+            $('.received-qty').on('input', function() {
+                updateCounts();
+                var expected = parseFloat($(this).closest('tr').find('.expected-qty').text());
+                var received = parseFloat($(this).val());
+                
+                if (received > expected) {
+                    $(this).addClass('is-invalid');
+                    toastr.warning('Received quantity cannot exceed expected quantity');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Handle photo upload
+            $('.damage-photo-input').change(function() {
+                var input = this;
+                var row = $(this).closest('tr');
+                
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        row.find('.damage-photo-data').val(e.target.result);
+                        row.find('.photo-preview').html('<img src="' + e.target.result + '" style="max-width:100px;">');
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
+        });
+        
+        function updateCounts() {
+            var totalReceived = 0;
+            var goodCount = 0;
+            var damagedCount = 0;
+            var expiredCount = 0;
+            
+            $('.item-row').each(function() {
+                var qty = parseFloat($(this).find('.received-qty').val()) || 0;
+                var condition = $(this).find('.condition-select').val();
+                
+                totalReceived += qty;
+                
+                if (qty > 0) {
+                    switch(condition) {
+                        case 'Good':
+                            goodCount++;
+                            break;
+                        case 'Damaged':
+                            damagedCount++;
+                            break;
+                        case 'Expired':
+                            expiredCount++;
+                            break;
+                    }
+                }
+            });
+            
+            $('#totalReceived').text(totalReceived.toFixed(2));
+            $('#goodCount').text(goodCount);
+            $('#damagedCount').text(damagedCount);
+            $('#expiredCount').text(expiredCount);
+            
+            // Update verification status
+            var totalItems = $('.item-row').length;
+            if (goodCount + damagedCount + expiredCount === totalItems) {
+                $('#verificationStatus').html('<span class="badge badge-success">All items verified</span>');
+            } else {
+                $('#verificationStatus').html('<span class="badge badge-warning">Verification pending</span>');
+            }
+        }
+        
+        function verifyItem(index) {
+            var row = $('#row-' + index);
+            row.addClass('table-success');
+            row.find('.verify-btn').removeClass('btn-success').addClass('btn-secondary')
+                .html('<i class="fas fa-check-double"></i>');
+            toastr.success('Item verified');
+            updateCounts();
+        }
+        
+        function scanItem(index) {
+            // Placeholder for barcode scanning functionality
+            toastr.info('Barcode scanner would open here');
+        }
+        
+        function scanItems() {
+            // Placeholder for bulk barcode scanning
+            toastr.info('Bulk barcode scanner would open here');
+        }
+        
+        function completeVerification() {
+            var allVerified = true;
+            $('.received-qty').each(function() {
+                if (!$(this).val() || parseFloat($(this).val()) === 0) {
+                    allVerified = false;
+                    return false;
+                }
+            });
+            
+            if (!allVerified) {
+                toastr.warning('Please verify all items before completing');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to complete the verification? This action cannot be undone.')) {
+                $('#verifyForm').attr('action', '@Url.Action("Complete", "Receive")').submit();
+            }
+        }
+    </script>
+}

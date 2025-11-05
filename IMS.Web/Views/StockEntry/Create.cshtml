@@ -1,0 +1,1218 @@
+﻿@using IMS.Application.DTOs
+@model StockEntryDto
+@{
+    ViewData["Title"] = "Create Stock Entry";
+}
+
+@section Styles {
+    <style>
+        /* IMPROVED FONT VISIBILITY */
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .required-field {
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* VALIDATION ERRORS - HIGHLY VISIBLE */
+        #validationSummary {
+            margin-bottom: 1.5rem;
+            border: 2px solid #dc3545;
+            border-radius: 0.5rem;
+            background-color: #f8d7da;
+        }
+
+            #validationSummary h5 {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #721c24;
+            }
+
+        #validationErrors {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #721c24;
+        }
+
+            #validationErrors li {
+                margin: 0.5rem 0;
+            }
+
+        /* INFO ALERT - MORE VISIBLE */
+        #infoAlert {
+            background-color: #d1ecf1;
+            border: 2px solid #17a2b8;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+            #infoAlert strong {
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: #0c5460;
+            }
+
+            #infoAlert ul li {
+                font-weight: 500;
+                color: #0c5460;
+                margin: 0.3rem 0;
+            }
+
+        /* TABLE IMPROVEMENTS */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #itemsTable {
+            min-width: 1400px;
+            white-space: nowrap;
+        }
+
+            #itemsTable th {
+                background-color: #007bff;
+                color: white;
+                font-weight: 700;
+                font-size: 0.95rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                padding: 12px 8px;
+            }
+
+            #itemsTable td {
+                vertical-align: middle;
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+                /* Column Widths */
+                #itemsTable th:nth-child(1), #itemsTable td:nth-child(1) {
+                    min-width: 50px;
+                }
+
+                #itemsTable th:nth-child(2), #itemsTable td:nth-child(2) {
+                    min-width: 180px;
+                }
+
+                #itemsTable th:nth-child(3), #itemsTable td:nth-child(3) {
+                    min-width: 220px;
+                }
+
+                #itemsTable th:nth-child(4), #itemsTable td:nth-child(4) {
+                    min-width: 100px;
+                    text-align: center;
+                }
+
+                #itemsTable th:nth-child(5), #itemsTable td:nth-child(5) {
+                    min-width: 140px;
+                }
+
+                #itemsTable th:nth-child(6), #itemsTable td:nth-child(6) {
+                    min-width: 100px;
+                }
+
+                #itemsTable th:nth-child(7), #itemsTable td:nth-child(7) {
+                    min-width: 100px;
+                    text-align: right;
+                }
+
+                #itemsTable th:nth-child(8), #itemsTable td:nth-child(8) {
+                    min-width: 120px;
+                }
+
+                #itemsTable th:nth-child(9), #itemsTable td:nth-child(9) {
+                    min-width: 120px;
+                }
+
+                #itemsTable th:nth-child(10), #itemsTable td:nth-child(10) {
+                    min-width: 130px;
+                }
+
+                #itemsTable th:nth-child(11), #itemsTable td:nth-child(11) {
+                    min-width: 80px;
+                    text-align: center;
+                }
+
+                #itemsTable th:nth-child(12), #itemsTable td:nth-child(12) {
+                    min-width: 60px;
+                    text-align: center;
+                }
+
+        /* STOCK BADGES - MORE VISIBLE */
+        .stock-badge {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.3rem;
+            font-weight: 700;
+        }
+
+        .stock-ok {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .stock-low {
+            background-color: #ffc107;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .stock-critical {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .stock-out {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* BUTTONS - MORE PROMINENT */
+        .btn {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .quick-actions {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #dee2e6;
+        }
+
+        .scanner-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 0.3rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .scanner-ready {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #17a2b8;
+        }
+
+        /* EMPTY STATE */
+        #emptyState {
+            background-color: #f8f9fa;
+            padding: 3rem;
+            border-radius: 0.5rem;
+        }
+
+            #emptyState i {
+                color: #6c757d;
+            }
+
+            #emptyState h5 {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: #6c757d;
+            }
+
+            #emptyState p {
+                font-size: 1rem;
+                font-weight: 500;
+            }
+
+        /* TOTAL ROW */
+        #itemsTable tfoot th {
+            background-color: #343a40;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Row highlighting */
+        .table-row-new {
+            animation: slideIn 0.3s ease;
+            background-color: #e7f5ff !important;
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: calc(1.5em + 0.75rem + 2px);
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Input visibility */
+        #itemsTable input,
+        #itemsTable select {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .tooltip-icon {
+            color: #17a2b8;
+            cursor: help;
+            font-size: 1rem;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-plus-circle text-primary"></i> Create Stock Entry
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Entries</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Validation Summary -->
+        <div id="validationSummary" style="display:none;">
+            <div class="alert alert-danger alert-dismissible fade show">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h5><i class="icon fas fa-ban"></i> Please fix the following errors:</h5>
+                <div id="validationErrors"></div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" style="border: 2px solid #dc3545; font-size: 1rem; font-weight: 600;">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+            </div>
+        }
+
+        <form asp-action="Create" method="post" id="stockEntryForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="EntryNo" value="@ViewBag.EntryNo" />
+
+            <!-- Stock Entry Details Card -->
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i> Stock Entry Details
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label style="font-weight: 700;">Entry No</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" value="@ViewBag.EntryNo" readonly style="font-weight: 600; background-color: #e9ecef;" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="EntryDate">
+                                    Entry Date <span class="required-field">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                    </div>
+                                    <input asp-for="EntryDate" type="date" class="form-control" required style="font-weight: 600;" />
+                                </div>
+                                <span asp-validation-for="EntryDate" class="text-danger font-weight-bold"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="StoreId">
+                                    Store <span class="required-field">*</span>
+                                    <i class="fas fa-question-circle tooltip-icon" data-toggle="tooltip"
+                                       title="Select the store where stock will be added"></i>
+                                </label>
+                                <select asp-for="StoreId" class="form-control select2" id="storeSelect" required>
+                                    <option value="">-- Select Store --</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores as IEnumerable<dynamic>)
+                                        {
+                                            <option value="@store.Id">@store.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="StoreId" class="text-danger font-weight-bold"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="EntryType">Entry Type</label>
+                                <select asp-for="EntryType" class="form-control" style="font-weight: 600;">
+                                    <option value="Direct">Direct Entry</option>
+                                    <option value="Initial">Initial Stock</option>
+                                    <option value="Found">Found Stock</option>
+                                    <option value="Return">Return Stock</option>
+                                    <option value="Transfer">Transfer In</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Remarks">
+                                    Remarks <small class="text-muted font-weight-bold">(Optional)</small>
+                                </label>
+                                <textarea asp-for="Remarks" class="form-control" rows="2"
+                                          placeholder="Add any notes or comments about this stock entry..." style="font-weight: 500;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Bar -->
+            <div class="quick-actions">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-primary" id="addItemBtn">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+                            <button type="button" class="btn btn-info" id="scanBarcodeBtn">
+                                <i class="fas fa-barcode"></i> Scan Item
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="bulkAddBtn">
+                                <i class="fas fa-list"></i> Bulk Add
+                            </button>
+                            <button type="button" class="btn btn-warning" id="clearAllBtn">
+                                <i class="fas fa-trash-alt"></i> Clear All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <span class="scanner-status scanner-ready" id="scannerStatus">
+                            <i class="fas fa-barcode"></i> Scanner Ready
+                        </span>
+                        <span class="ml-2" style="font-weight: 700; font-size: 1rem;">
+                            Total Items:
+                            <span class="badge badge-primary" style="font-size: 1rem; padding: 0.5rem 0.75rem;" id="totalItemCount">0</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table Card -->
+            <div class="card card-success card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-boxes"></i> Stock Items
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Info Alert -->
+                    <div class="alert m-3" id="infoAlert">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Quick Tips:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Click "Add Item" to manually add items or "Scan Item" to use barcode scanner</li>
+                            <li>Select Category first, then Item will be loaded automatically</li>
+                            <li>"Stock Qty" is the amount you're adding to existing stock</li>
+                            <li>Press Tab to move between fields quickly</li>
+                            <li>Use Ctrl+S to save the form quickly</li>
+                        </ul>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Category <span class="required-field">*</span></th>
+                                    <th>Item <span class="required-field">*</span></th>
+                                    <th>Current Stock</th>
+                                    <th>Stock Qty <span class="required-field">*</span></th>
+                                    <th>Unit Price</th>
+                                    <th>Total</th>
+                                    <th>Location</th>
+                                    <th>Batch No</th>
+                                    <th>Expiry Date</th>
+                                    <th>Barcode</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsContainer">
+                                <!-- Dynamic rows will be added here -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="4" class="text-right">Grand Total:</th>
+                                    <th id="totalQuantity" class="text-center">0.00</th>
+                                    <th></th>
+                                    <th id="totalValue" class="text-right">0.00</th>
+                                    <th colspan="5"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="text-center p-5">
+                        <i class="fas fa-box-open fa-4x mb-3"></i>
+                        <h5>No items added yet</h5>
+                        <p>Click "Add Item" or "Scan Item" to start adding stock items</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="fas fa-save"></i> Save as Draft
+                            </button>
+                            <button type="button" class="btn btn-success btn-lg" id="saveAndCompleteBtn">
+                                <i class="fas fa-check"></i> Save & Complete
+                            </button>
+                            <a asp-action="Index" class="btn btn-default btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <button type="button" class="btn btn-info btn-lg" id="previewBtn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Barcode Scanner Modal -->
+<div class="modal fade" id="barcodeScannerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <h5 class="modal-title" style="font-weight: 700; font-size: 1.3rem;">
+                    <i class="fas fa-barcode"></i> Barcode Scanner
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" style="font-weight: 600;">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Scanner Instructions:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Use a USB/Bluetooth barcode scanner or manually type the code</li>
+                        <li>Scanner should be configured to add Enter/Tab after scanning</li>
+                        <li>For continuous scanning, enable "Continuous Mode"</li>
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 700; font-size: 1.1rem;">Barcode/Item Code</label>
+                    <div class="input-group input-group-lg">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="fas fa-barcode fa-2x"></i>
+                            </span>
+                        </div>
+                        <input type="text" id="barcodeInput" class="form-control form-control-lg"
+                               placeholder="Scan or type barcode/item code" autofocus style="font-weight: 600; font-size: 1.2rem;" />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="searchBarcodeBtn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="scanResult"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="custom-control custom-switch mr-auto">
+                    <input type="checkbox" class="custom-control-input" id="continuousMode">
+                    <label class="custom-control-label" for="continuousMode" style="font-weight: 600;">Continuous Mode</label>
+                </div>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="addScannedItemBtn" disabled>
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+        let itemIndex = 0;
+        let categories = [];
+        let continuousMode = false;
+        let isProcessing = false;
+
+        @if (ViewBag.Categories != null)
+        {
+                <text>categories = @Html.Raw(Json.Serialize(ViewBag.Categories));</text>
+        }
+
+        $(document).ready(function() {
+            initializeForm();
+            bindEvents();
+            setupKeyboardShortcuts();
+            toggleEmptyState();
+        });
+
+        function initializeForm() {
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select an option'
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            if (!$('#EntryDate').val()) {
+                $('#EntryDate').val(new Date().toISOString().split('T')[0]);
+            }
+
+            if (!$('#storeSelect').val()) {
+                $('#storeSelect').focus();
+            }
+        }
+
+        function bindEvents() {
+            $('#addItemBtn').click(addNewItemRow);
+            $('#scanBarcodeBtn').click(openBarcodeScanner);
+            $('#bulkAddBtn').click(openBulkAdd);
+            $('#clearAllBtn').click(clearAllItems);
+            $('#saveAndCompleteBtn').click(saveAndComplete);
+            $('#previewBtn').click(previewEntry);
+            $('#stockEntryForm').submit(validateAndSubmit);
+
+            $(document).on('change', '.category-select', handleCategoryChange);
+            $(document).on('change', '.item-select', handleItemChange);
+            $(document).on('input', '.quantity-input, .price-input', handleQuantityPriceChange);
+            $(document).on('click', '.remove-item', removeItemRow);
+            $(document).on('change', '.barcode-check', handleBarcodeToggle);
+
+            $('#continuousMode').change(function() {
+                continuousMode = $(this).is(':checked');
+                updateScannerStatus();
+            });
+
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    processBarcodeInput($(this).val());
+                }
+            });
+
+            $('#searchBarcodeBtn').click(function() {
+                processBarcodeInput($('#barcodeInput').val());
+            });
+
+            $('#addScannedItemBtn').click(function() {
+                const scannedItem = $('#barcodeScannerModal').data('scannedItem');
+                if (!scannedItem) return;
+
+                addNewItemRow(scannedItem);
+
+                $('#barcodeInput').val('');
+                $('#scanResult').html('');
+
+                if (continuousMode) {
+                    $('#barcodeInput').focus();
+                } else {
+                    $('#barcodeScannerModal').modal('hide');
+                }
+            });
+        }
+
+        function addNewItemRow(scannedData = null) {
+            if (!$('#storeSelect').val()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Store Required',
+                    text: 'Please select a store first!'
+                });
+                return;
+            }
+
+            const rowHtml = createItemRowHtml(itemIndex, scannedData);
+            $('#itemsContainer').append(rowHtml);
+
+            const newRow = $('#itemsContainer tr:last');
+
+            newRow.find('.category-select, .item-select').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            newRow.addClass('table-row-new');
+            setTimeout(() => newRow.removeClass('table-row-new'), 2000);
+
+            if (scannedData) {
+                populateScannedRow(newRow, scannedData);
+            } else {
+                newRow.find('.category-select').select2('open');
+            }
+
+            itemIndex++;
+            updateRowNumbers();
+            toggleEmptyState();
+            updateTotalItemCount();
+        }
+
+        function createItemRowHtml(index, scannedData = null) {
+            return `
+                <tr data-row-index="${index}">
+                    <td class="text-center row-number" style="font-weight: 700;">${index + 1}</td>
+                    <td>
+                        <select name="Items[${index}].CategoryId" class="form-control form-control-sm category-select" required>
+                            <option value="">-- Select --</option>
+                            ${categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="Items[${index}].ItemId" class="form-control form-control-sm item-select" required>
+                            <option value="">-- Select Category First --</option>
+                        </select>
+                    </td>
+                    <td class="text-center">
+                        <span class="current-stock-value" style="font-weight: 700;">0.00</span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="Items[${index}].Quantity"
+                                   class="form-control quantity-input"
+                                   min="0.01" step="0.01" required
+                                   placeholder="0.00" style="font-weight: 600;" />
+                            <div class="input-group-append">
+                                <span class="input-group-text unit-label" style="font-weight: 700;">Unit</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${index}].UnitCost"
+                               class="form-control form-control-sm price-input"
+                               min="0" step="0.01" placeholder="0.00" style="font-weight: 600;" />
+                    </td>
+                    <td class="text-right">
+                        <strong class="item-total" style="font-size: 1rem;">0.00</strong>
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${index}].Location"
+                               class="form-control form-control-sm location-input"
+                               placeholder="A1-B2" />
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${index}].BatchNumber"
+                               class="form-control form-control-sm batch-input"
+                               placeholder="Auto" />
+                    </td>
+                    <td>
+                        <input type="date" name="Items[${index}].ExpiryDate"
+                               class="form-control form-control-sm expiry-input" />
+                    </td>
+                    <td class="text-center">
+                        <input type="checkbox" class="barcode-check"
+                               id="barcode_${index}"
+                               name="Items[${index}].GenerateBarcodes"
+                               value="true" checked>
+                        <input type="number"
+                               name="Items[${index}].BarcodesToGenerate"
+                               class="form-control form-control-sm barcode-count d-inline-block"
+                               style="width: 50px; margin-left: 5px; font-weight: 600;"
+                               value="1" min="0" max="100" />
+                        <input type="hidden" name="Items[${index}].GenerateBarcodes" value="false" />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-item" title="Remove">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function removeItemRow() {
+            const row = $(this).closest('tr');
+            const itemName = row.find('.item-select option:selected').text() || 'this item';
+
+            Swal.fire({
+                title: 'Remove Item?',
+                text: `Are you sure you want to remove ${itemName}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    row.fadeOut(300, function() {
+                        $(this).remove();
+                        updateIndices();
+                        updateRowNumbers();
+                        calculateTotals();
+                        toggleEmptyState();
+                        updateTotalItemCount();
+                    });
+                }
+            });
+        }
+
+        function clearAllItems() {
+            if ($('#itemsContainer tr').length === 0) {
+                Swal.fire('Info', 'No items to clear', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Clear All Items?',
+                text: 'This will remove all items from the list!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, clear all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#itemsContainer').empty();
+                    itemIndex = 0;
+                    calculateTotals();
+                    toggleEmptyState();
+                    updateTotalItemCount();
+                    Swal.fire('Cleared!', 'All items have been removed.', 'success');
+                }
+            });
+        }
+
+        function handleCategoryChange() {
+            const categoryId = $(this).val();
+            const row = $(this).closest('tr');
+            const itemSelect = row.find('.item-select');
+
+            itemSelect.empty().append('<option value="">Loading...</option>');
+            row.find('.current-stock-value').text('0.00');
+            row.find('.unit-label').text('Unit');
+
+            if (!categoryId) {
+                itemSelect.html('<option value="">-- Select Category First --</option>');
+                return;
+            }
+
+            $.ajax({
+                url: '/StockEntry/GetItemsByCategory',
+                type: 'GET',
+                data: { categoryId: categoryId },
+                success: function(response) {
+                    itemSelect.empty().append('<option value="">-- Select Item --</option>');
+
+                    if (response.success && response.items && response.items.length > 0) {
+                        response.items.forEach(item => {
+                            itemSelect.append(`
+                                <option value="${item.id}"
+                                    data-unit-price="${item.unitPrice || 0}"
+                                    data-unit="${item.unit || 'Unit'}">
+                                    ${item.name} (${item.itemCode})
+                                </option>
+                            `);
+                        });
+                    } else {
+                        itemSelect.append('<option value="">No items found</option>');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error loading items:', xhr);
+                    itemSelect.html('<option value="">Error loading items</option>');
+                    Swal.fire('Error', 'Failed to load items', 'error');
+                }
+            });
+        }
+
+        function handleItemChange() {
+            const itemId = $(this).val();
+            const storeId = $('#storeSelect').val();
+            const row = $(this).closest('tr');
+            const selectedOption = $(this).find('option:selected');
+
+            if (!itemId) {
+                row.find('.current-stock-value').text('0.00');
+                row.find('.price-input').val('0.00');
+                row.find('.unit-label').text('Unit');
+                calculateRowTotal(row);
+                return;
+            }
+
+            const unitPrice = selectedOption.data('unit-price') || 0;
+            const unit = selectedOption.data('unit') || 'Unit';
+
+            row.find('.price-input').val(unitPrice.toFixed(2));
+            row.find('.unit-label').text(unit);
+
+            $.ajax({
+                url: '/StockEntry/GetItemStock',
+                type: 'GET',
+                data: { itemId: itemId, storeId: storeId },
+                success: function(response) {
+                    if (response.success) {
+                        const stock = response.currentStock || 0;
+                        row.find('.current-stock-value').text(stock.toFixed(2));
+
+                        if (response.unitPrice !== undefined) {
+                            row.find('.price-input').val(response.unitPrice.toFixed(2));
+                        }
+
+                        if (response.unit) {
+                            row.find('.unit-label').text(response.unit);
+                        }
+
+                        calculateRowTotal(row);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error getting stock info:', xhr);
+                }
+            });
+        }
+
+        function handleQuantityPriceChange() {
+            const row = $(this).closest('tr');
+            calculateRowTotal(row);
+        }
+
+        function handleBarcodeToggle() {
+            const isChecked = $(this).is(':checked');
+            const countInput = $(this).closest('td').find('.barcode-count');
+
+            if (isChecked) {
+                countInput.prop('disabled', false);
+                if (!countInput.val()) countInput.val(1);
+            } else {
+                countInput.prop('disabled', true).val(0);
+            }
+        }
+
+        function calculateRowTotal(row) {
+            const quantity = parseFloat(row.find('.quantity-input').val()) || 0;
+            const unitPrice = parseFloat(row.find('.price-input').val()) || 0;
+            const total = quantity * unitPrice;
+
+            row.find('.item-total').text(total.toFixed(2));
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalQuantity = 0;
+            let totalValue = 0;
+
+            $('#itemsContainer tr').each(function() {
+                totalQuantity += parseFloat($(this).find('.quantity-input').val()) || 0;
+                totalValue += parseFloat($(this).find('.item-total').text()) || 0;
+            });
+
+            $('#totalQuantity').text(totalQuantity.toFixed(2));
+            $('#totalValue').text(totalValue.toFixed(2));
+        }
+
+        function updateIndices() {
+            $('#itemsContainer tr').each(function(index) {
+                $(this).attr('data-row-index', index);
+                $(this).find('input, select').each(function() {
+                    const name = $(this).attr('name');
+                    if (name) {
+                        $(this).attr('name', name.replace(/\[\d+\]/, `[${index}]`));
+                    }
+                });
+
+                const checkbox = $(this).find('.barcode-check');
+                const newId = `barcode_${index}`;
+                checkbox.attr('id', newId);
+            });
+
+            itemIndex = $('#itemsContainer tr').length;
+        }
+
+        function updateRowNumbers() {
+            $('#itemsContainer tr').each(function(index) {
+                $(this).find('.row-number').text(index + 1);
+            });
+        }
+
+        function toggleEmptyState() {
+            const hasItems = $('#itemsContainer tr').length > 0;
+            $('#emptyState').toggle(!hasItems);
+            $('#itemsTable').toggle(hasItems);
+        }
+
+        function updateTotalItemCount() {
+            const count = $('#itemsContainer tr').length;
+            $('#totalItemCount').text(count);
+        }
+
+        function updateScannerStatus() {
+            const status = $('#scannerStatus');
+            if (continuousMode) {
+                status.removeClass('scanner-ready').addClass('scanner-active');
+                status.html('<i class="fas fa-barcode"></i> Continuous Scanning');
+                status.css({'background-color': '#d4edda', 'color': '#155724', 'border-color': '#28a745'});
+            } else {
+                status.removeClass('scanner-active').addClass('scanner-ready');
+                status.html('<i class="fas fa-barcode"></i> Scanner Ready');
+            }
+        }
+
+        function openBarcodeScanner() {
+            if (!$('#storeSelect').val()) {
+                Swal.fire('Warning', 'Please select a store first!', 'warning');
+                return;
+            }
+
+            $('#barcodeInput').val('');
+            $('#scanResult').html('');
+            $('#addScannedItemBtn').prop('disabled', true);
+            $('#barcodeScannerModal').modal('show');
+        }
+
+        $('#barcodeScannerModal').on('shown.bs.modal', function() {
+            $('#barcodeInput').focus();
+            updateScannerStatus();
+        });
+
+        function processBarcodeInput(barcode) {
+            if (!barcode) {
+                showScanResult('Please enter or scan a barcode', 'warning');
+                return;
+            }
+
+            if (isProcessing) return;
+            isProcessing = true;
+
+            showScanResult('<i class="fas fa-spinner fa-spin"></i> Searching...', 'info');
+
+            $.ajax({
+                url: '/StockEntry/GetItemByBarcode',
+                type: 'GET',
+                data: {
+                    barcode: barcode,
+                    storeId: $('#storeSelect').val()
+                },
+                success: function(response) {
+                    isProcessing = false;
+
+                    if (response.success) {
+                        const item = response.item;
+                        showScanResult(`
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="font-weight: 700;">${item.name}</h5>
+                                    <p class="card-text" style="font-weight: 600;">
+                                        <strong>Code:</strong> ${item.itemCode}<br>
+                                        <strong>Category:</strong> ${item.categoryName}<br>
+                                        <strong>Current Stock:</strong>
+                                        <span class="badge badge-info">${item.currentStock} ${item.unit}</span><br>
+                                        <strong>Unit Price:</strong> ${item.unitPrice}
+                                    </p>
+                                </div>
+                            </div>
+                        `, 'success');
+
+                        $('#barcodeScannerModal').data('scannedItem', item);
+                        $('#addScannedItemBtn').prop('disabled', false);
+
+                        if (continuousMode) {
+                            setTimeout(() => {
+                                $('#addScannedItemBtn').click();
+                            }, 500);
+                        }
+                    } else {
+                        showScanResult(response.message || 'Item not found', 'danger');
+                        $('#addScannedItemBtn').prop('disabled', true);
+                    }
+                },
+                error: function(xhr) {
+                    isProcessing = false;
+                    console.error('Barcode lookup error:', xhr);
+                    showScanResult('Error looking up barcode', 'danger');
+                }
+            });
+        }
+
+        function showScanResult(message, type) {
+            const alertClass = `alert-${type}`;
+            $('#scanResult').html(`
+                <div class="alert ${alertClass} alert-dismissible fade show" style="font-weight: 600;">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    ${message}
+                </div>
+            `);
+        }
+
+        function populateScannedRow(row, itemData) {
+            row.find('.category-select').val(itemData.categoryId).trigger('change');
+
+            setTimeout(() => {
+                row.find('.item-select').val(itemData.id).trigger('change');
+                row.find('.quantity-input').val(1).focus().select();
+                row.find('.price-input').val(itemData.unitPrice.toFixed(2));
+                row.find('.location-input').val(itemData.location || '');
+                row.find('.batch-input').val(itemData.batchNumber || '');
+            }, 500);
+        }
+
+        function openBulkAdd() {
+            Swal.fire('Info', 'Bulk add feature coming soon!', 'info');
+        }
+
+        function validateAndSubmit(e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return false;
+            }
+
+            $('#submitBtn').prop('disabled', true)
+                          .html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+            this.submit();
+            return true;
+        }
+
+        function validateForm() {
+            const errors = [];
+
+            if (!$('#storeSelect').val()) {
+                errors.push('Please select a store');
+            }
+
+            if ($('#itemsContainer tr').length === 0) {
+                errors.push('Please add at least one item');
+            }
+
+            $('#itemsContainer tr').each(function(index) {
+                const rowNum = index + 1;
+                const category = $(this).find('.category-select').val();
+                const item = $(this).find('.item-select').val();
+                const quantity = $(this).find('.quantity-input').val();
+
+                if (!category) {
+                    errors.push(`Row ${rowNum}: Please select a category`);
+                }
+                if (!item) {
+                    errors.push(`Row ${rowNum}: Please select an item`);
+                }
+                if (!quantity || parseFloat(quantity) <= 0) {
+                    errors.push(`Row ${rowNum}: Please enter a valid quantity`);
+                }
+            });
+
+            if (errors.length > 0) {
+                showValidationErrors(errors);
+                return false;
+            }
+
+            return true;
+        }
+
+        function showValidationErrors(errors) {
+            if (!errors || errors.length === 0) return;
+
+            let errorHtml = '<ul class="mb-0" style="font-weight: 600;">';
+            errors.forEach(error => {
+                errorHtml += `<li>${error}</li>`;
+            });
+            errorHtml += '</ul>';
+
+            $('#validationErrors').html(errorHtml);
+            $('#validationSummary').show();
+
+            $('html, body').animate({ scrollTop: 0 }, 'fast');
+        }
+
+        function saveAndComplete() {
+            $('#stockEntryForm').append('<input type="hidden" name="CompleteAfterSave" value="true" />');
+            $('#stockEntryForm').submit();
+        }
+
+        function previewEntry() {
+            console.log('Preview not implemented yet');
+            Swal.fire('Info', 'Preview feature coming soon!', 'info');
+        }
+
+        function setupKeyboardShortcuts() {
+            $(document).keydown(function(e) {
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    $('#submitBtn').click();
+                }
+
+                if (e.ctrlKey && e.key === 'a' && !$(e.target).is('input, textarea')) {
+                    e.preventDefault();
+                    $('#addItemBtn').click();
+                }
+
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    $('#scanBarcodeBtn').click();
+                }
+            });
+        }
+    </script>
+}

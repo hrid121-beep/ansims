@@ -1,0 +1,112 @@
+﻿@model IEnumerable<IMS.Application.DTOs.PurchaseDto>
+@{
+    ViewData["Title"] = "Pending Receives";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Pending Receives</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index">Purchase</a></li>
+                    <li class="breadcrumb-item active">Pending Receives</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No pending receives found.
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Approved Purchase Orders - Ready for Receiving</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>PO Number</th>
+                                <th>Vendor</th>
+                                <th>Purchase Date</th>
+                                <th>Expected Delivery</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Days Pending</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var purchase in Model)
+                            {
+                                var daysPending = (DateTime.Now - purchase.PurchaseDate).Days;
+                                var isOverdue = purchase.ExpectedDeliveryDate < DateTime.Now;
+
+                                <tr class="@(isOverdue ? "table-warning" : "")">
+                                    <td>
+                                        <strong>@purchase.PurchaseOrderNo</strong>
+                                        @if (isOverdue)
+                                        {
+                                            <span class="badge badge-danger">Overdue</span>
+                                        }
+                                    </td>
+                                    <td>@(purchase.VendorName ?? "Marketplace")</td>
+                                    <td>@purchase.PurchaseDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @purchase.ExpectedDeliveryDate?.ToString("dd/MM/yyyy")
+                                        @if (isOverdue)
+                                        {
+                                            <br />
+                                            <small class="text-danger">
+                                                @((DateTime.Now - purchase.ExpectedDeliveryDate.Value).Days) days late
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>@purchase.Items.Count items</td>
+                                    <td class="text-right">৳@purchase.TotalAmount.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge badge-@(daysPending > 7 ? "warning" : "info")">
+                                            @daysPending days
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a asp-action="Receive" asp-route-id="@purchase.Id"
+                                           class="btn btn-sm btn-success">
+                                            <i class="fas fa-truck"></i> Receive
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@purchase.Id"
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.table').DataTable({
+                "order": [[3, "asc"]], // Sort by expected delivery date
+                "pageLength": 25
+            });
+        });
+    </script>
+}

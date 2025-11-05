@@ -1,0 +1,1760 @@
+﻿@{
+    string GetUserDisplayName()
+    {
+        var fullName = User.FindFirst("FullName")?.Value;
+        if (!string.IsNullOrEmpty(fullName))
+        {
+            return fullName;
+        }
+        return User.Identity?.Name ?? "Guest";
+    }
+
+    string GetUserRole()
+    {
+        return User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
+    }
+
+    string GetUserAvatar()
+    {
+        var avatar = User.FindFirst("Avatar")?.Value;
+        return !string.IsNullOrEmpty(avatar) ? avatar : "/adminlte/dist/img/user2-160x160.jpg";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="Inventory Management System for Ansar & VDP">
+    <meta name="author" content="IMS Team">
+
+    <title>@ViewData["Title"] - IMS Ansar & VDP</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="~/images/ansar-vdp-logo.png">
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="~/adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/adminlte/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="~/adminlte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+    <!-- Toastr -->
+    <link rel="stylesheet" href="~/adminlte/plugins/toastr/toastr.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/adminlte/dist/css/adminlte.min.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="hold-transition sidebar-mini layout-fixed text-sm">
+    <div class="wrapper">
+
+        <!-- Preloader -->
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="~/images/ansar-vdp-logo.png" alt="Ansar VDP Logo" height="80" width="80">
+            <p class="mt-3 text-white font-weight-bold">Loading IMS...</p>
+        </div>
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-dark">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+
+                @if (User.IsInRole("StoreKeeper") || User.IsInRole("Admin"))
+                {
+                    <li class="nav-item d-none d-md-inline-block">
+                        <a asp-controller="Issue" asp-action="Create" class="nav-link">
+                            <i class="fas fa-plus-circle"></i> Quick Issue
+                        </a>
+                    </li>
+                    <li class="nav-item d-none d-md-inline-block">
+                        <a asp-controller="Receive" asp-action="ScanVoucher" class="nav-link">
+                            <i class="fas fa-qrcode"></i> Scan & Receive
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <!-- Search Form -->
+                <li class="nav-item d-none d-md-inline-block">
+                    <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                        <i class="fas fa-search"></i>
+                    </a>
+                    <div class="navbar-search-block">
+                        <form class="form-inline">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+                                <div class="input-group-append">
+                                    <button class="btn btn-navbar" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+
+                <!-- Barcode Scanner -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="openBarcodeScanner()" title="Barcode Scanner">
+                        <i class="fas fa-barcode"></i>
+                    </a>
+                </li>
+
+                <!-- Quick Actions Dropdown -->
+                @if (User.IsInRole("StoreKeeper") || User.IsInRole("Admin") || User.IsInRole("Officer"))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <i class="fas fa-bolt"></i>
+                            <span class="d-none d-md-inline ml-1">Quick Actions</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                            <span class="dropdown-header">Quick Operations</span>
+                            <div class="dropdown-divider"></div>
+
+                            <a asp-controller="Issue" asp-action="Create" class="dropdown-item">
+                                <i class="fas fa-share mr-2 text-primary"></i> New Issue
+                                <span class="float-right text-muted text-sm">Ctrl+I</span>
+                            </a>
+
+                            <a asp-controller="Receive" asp-action="ScanVoucher" class="dropdown-item">
+                                <i class="fas fa-qrcode mr-2 text-success"></i> Scan & Receive
+                                <span class="float-right text-muted text-sm">Ctrl+S</span>
+                            </a>
+
+                            <a asp-controller="StockEntry" asp-action="Create" class="dropdown-item">
+                                <i class="fas fa-dolly mr-2 text-info"></i> Stock Entry
+                                <span class="float-right text-muted text-sm">Ctrl+E</span>
+                            </a>
+
+                            <a asp-controller="Transfer" asp-action="Create" class="dropdown-item">
+                                <i class="fas fa-exchange-alt mr-2 text-warning"></i> Store Transfer
+                                <span class="float-right text-muted text-sm">Ctrl+T</span>
+                            </a>
+
+                            <a asp-controller="PhysicalInventory" asp-action="QuickCount" class="dropdown-item">
+                                <i class="fas fa-clipboard-check mr-2 text-danger"></i> Quick Count
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <a asp-controller="Barcode" asp-action="Generate" class="dropdown-item">
+                                <i class="fas fa-barcode mr-2"></i> Generate Barcode
+                            </a>
+                        </div>
+                    </li>
+                }
+
+                <!-- Pending Approvals (for Officers/Admin) -->
+                @if (User.IsInRole("Admin") || User.IsInRole("Director") || User.IsInRole("FinanceManager") ||
+                                User.IsInRole("DepartmentHead") || User.IsInRole("StoreManager") ||
+                                User.IsInRole("BattalionCommander") || User.IsInRole("RangeCommander") ||
+                                User.IsInRole("ZilaCommander"))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
+                            <i class="fas fa-tasks"></i>
+                            <span class="badge badge-danger navbar-badge" id="totalPendingCount" style="display:none;">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                            <span class="dropdown-header">
+                                <i class="fas fa-tasks mr-1"></i> Pending Approvals
+                            </span>
+                            <div class="dropdown-divider"></div>
+
+                            <a asp-controller="Approval" asp-action="PendingRequisitions" class="dropdown-item">
+                                <i class="fas fa-file-invoice mr-2 text-info"></i> Requisitions
+                                <span class="badge badge-info float-right" id="pendingRequisitions">0</span>
+                            </a>
+
+                            <a asp-controller="Approval" asp-action="PendingPurchases" class="dropdown-item">
+                                <i class="fas fa-shopping-cart mr-2 text-warning"></i> Purchases
+                                <span class="badge badge-warning float-right" id="pendingPurchases">0</span>
+                            </a>
+
+                            <a asp-controller="Approval" asp-action="PendingIssues" class="dropdown-item">
+                                <i class="fas fa-share mr-2 text-primary"></i> Issues
+                                <span class="badge badge-primary float-right" id="pendingIssues">0</span>
+                            </a>
+
+                            <a asp-controller="Approval" asp-action="PendingAdjustments" class="dropdown-item">
+                                <i class="fas fa-sliders-h mr-2 text-secondary"></i> Adjustments
+                                <span class="badge badge-secondary float-right" id="pendingAdjustments">0</span>
+                            </a>
+
+                            <a asp-controller="Approval" asp-action="Index" class="dropdown-item">
+                                <i class="fas fa-exchange-alt mr-2 text-purple"></i> Transfers
+                                <span class="badge badge-purple float-right" id="pendingTransfers">0</span>
+                            </a>
+
+                            <a asp-controller="Approval" asp-action="Index" class="dropdown-item">
+                                <i class="fas fa-file-alt mr-2 text-navy"></i> Allotment Letters
+                                <span class="badge badge-navy float-right" id="pendingAllotments">0</span>
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+                            <a asp-controller="Approval" asp-action="Index" class="dropdown-item dropdown-footer">
+                                <strong>See All Approvals</strong>
+                            </a>
+                        </div>
+                    </li>
+                }
+
+                <!-- Stock Alerts -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <span class="badge badge-danger navbar-badge" id="stockAlertCount" style="display:none;">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-header bg-warning">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Stock Alerts
+                        </span>
+                        <div class="dropdown-divider"></div>
+                        <div id="stockAlertList" class="overflow-auto" style="max-height: 300px;">
+                            <div class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="StockAlert" asp-action="Index" class="dropdown-item dropdown-footer bg-light">
+                            <strong>View All Stock Alerts</strong>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Notifications -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <i class="far fa-bell"></i>
+                        <span class="badge badge-warning navbar-badge" id="notificationCount" style="display:none;">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-header">
+                            <i class="far fa-bell mr-1"></i> Notifications
+                        </span>
+                        <div class="dropdown-divider"></div>
+                        <div id="notificationList" class="overflow-auto" style="max-height: 300px;">
+                            <div class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="Notification" asp-action="Index" class="dropdown-item dropdown-footer">
+                            <strong>See All Notifications</strong>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Messages (Optional) -->
+                <li class="nav-item dropdown d-none">
+                    <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <i class="far fa-comments"></i>
+                        <span class="badge badge-danger navbar-badge">3</span>
+                    </a>
+                </li>
+
+                <!-- User Account Menu -->
+                <li class="nav-item dropdown user-menu">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <img src="@GetUserAvatar()" class="user-image img-circle elevation-2" alt="User Image">
+                        <span class="d-none d-md-inline">@GetUserDisplayName()</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <!-- User image -->
+                        <li class="user-header bg-primary">
+                            <img src="@GetUserAvatar()" class="img-circle elevation-2" alt="User Image">
+                            <p>
+                                @GetUserDisplayName()
+                                <small>@GetUserRole()</small>
+                            </p>
+                        </li>
+                        <!-- Menu Body -->
+                        <li class="user-body">
+                            <div class="row">
+                                <div class="col-4 text-center">
+                                    <a asp-controller="Dashboard" asp-action="MyTasks">Tasks</a>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <a asp-controller="Dashboard" asp-action="MyReports">Reports</a>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <a asp-controller="Dashboard" asp-action="MyActivity">Activity</a>
+                                </div>
+                            </div>
+                        </li>
+                        <!-- Menu Footer-->
+                        <li class="user-footer">
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-default btn-flat">
+                                <i class="fas fa-user mr-1"></i> Profile
+                            </a>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="float-right">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-default btn-flat">
+                                    <i class="fas fa-sign-out-alt mr-1"></i> Sign out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Fullscreen Toggle -->
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+
+                <!-- Control Sidebar Toggle -->
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <i class="fas fa-th-large"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a asp-controller="Home" asp-action="Index" class="brand-link">
+                <img src="~/images/ansar-vdp-logo.png" alt="Ansar VDP Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">IMS Ansar & VDP</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="@GetUserAvatar()" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">
+                            @GetUserDisplayName()
+                            <br>
+                            <small class="text-muted">
+                                <i class="fa fa-circle text-success"></i> @GetUserRole()
+                            </small>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- SidebarSearch Form -->
+                <div class="form-inline">
+                    <div class="input-group" data-widget="sidebar-search">
+                        <input class="form-control form-control-sidebar" type="search" placeholder="Search Menu" aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-sidebar">
+                                <i class="fas fa-search fa-fw"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent nav-collapse-hide-child" data-widget="treeview" role="menu" data-accordion="false">
+
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a asp-controller="Home" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" || ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <!-- Approval Center (For Officers/Admin) -->
+@*                         @if (User.IsInRole("Officer") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" ? "active" : "")">
+                                    <i class="nav-icon fas fa-check-circle"></i>
+                                    <p>
+                                        Approval Center
+                                        <i class="fas fa-angle-left right"></i>
+                                        <span class="badge badge-danger right" id="approvalBadge" style="display:none;">0</span>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="Index"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                            <i class="fas fa-tachometer-alt nav-icon"></i>
+                                            <p>Dashboard</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="Pending"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Pending" ? "active" : "")">
+                                            <i class="fas fa-clock nav-icon"></i>
+                                            <p>
+                                                Pending Approvals
+                                                <span class="badge badge-warning right" id="pendingCount" style="display:none;">0</span>
+                                            </p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="PendingPurchases"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingPurchases" ? "active" : "")">
+                                            <i class="fas fa-shopping-cart nav-icon"></i>
+                                            <p>Purchase Approvals</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="PendingIssues"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingIssues" ? "active" : "")">
+                                            <i class="fas fa-file-export nav-icon"></i>
+                                            <p>Issue Approvals</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="PendingAdjustments"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingAdjustments" ? "active" : "")">
+                                            <i class="fas fa-sync nav-icon"></i>
+                                            <p>Adjustment Approvals</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="History"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")">
+                                            <i class="fas fa-history nav-icon"></i>
+                                            <p>Approval History</p>
+                                        </a>
+                                    </li>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li class="nav-item">
+                                            <a asp-controller="Approval" asp-action="Configure"
+                                               class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Configure" ? "active" : "")">
+                                                <i class="fas fa-cog nav-icon"></i>
+                                                <p>Configure Workflows</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        } *@
+
+                        @if (User.IsInRole("Officer") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" ? "active" : "")">
+                                    <i class="nav-icon fas fa-check-circle"></i>
+                                    <p>
+                                        Approval Center
+                                        <i class="fas fa-angle-left right"></i>
+                                        <span class="badge badge-danger right" id="approvalBadge" style="display:none;">0</span>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="Index"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                            <i class="fas fa-list nav-icon"></i>
+                                            <p>
+                                                All Pending Approvals
+                                                <span class="badge badge-warning right" id="pendingCount" style="display:none;">0</span>
+                                            </p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Approval" asp-action="History"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")">
+                                            <i class="fas fa-history nav-icon"></i>
+                                            <p>Approval History</p>
+                                        </a>
+                                    </li>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li class="nav-item">
+                                            <a asp-controller="Approval" asp-action="Configure"
+                                               class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Configure" ? "active" : "")">
+                                                <i class="fas fa-cog nav-icon"></i>
+                                                <p>Configure Workflows</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        <!-- ORGANIZATION Section -->
+                        <li class="nav-header">ORGANIZATION</li>
+
+                        <li class="nav-item @(new[] { "Battalion", "Range", "Zila", "Upazila", "Union" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(new[] { "Battalion", "Range", "Zila", "Upazila", "Union" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")">
+                                <i class="nav-icon fas fa-sitemap"></i>
+                                <p>
+                                    Organization Structure
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Range" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Range" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ranges</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Battalion" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Battalion" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Battalions</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Zila" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Zila" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Zilas <span class="bengali-text">(জেলা)</span></p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Upazila" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Upazila" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Upazilas <span class="bengali-text">(উপজেলা)</span></p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Union" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Union" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Unions <span class="bengali-text">(ইউনিয়ন)</span></p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- MASTER DATA Section -->
+                        <li class="nav-header">MASTER DATA</li>
+
+                        <!-- Store Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" ? "active" : "")">
+                                <i class="nav-icon fas fa-warehouse"></i>
+                                <p>
+                                    Store Management
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.LowStockStoreCount > 0)
+                                    {
+                                        <span class="badge badge-warning right">@ViewBag.LowStockStoreCount</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <!-- Main Store List -->
+                                <li class="nav-item">
+                                    <a asp-controller="Store" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Stores</p>
+                                    </a>
+                                </li>
+
+                                <!-- Create New Store -->
+                                <li class="nav-item">
+                                    <a asp-controller="Store" asp-action="Create" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>Add New Store</p>
+                                    </a>
+                                </li>
+
+                                <!-- Stock Monitoring -->
+                                <li class="nav-item">
+                                    <a asp-controller="Store" asp-action="StockLevels" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" && ViewContext.RouteData.Values["action"]?.ToString() == "StockLevels" ? "active" : "")">
+                                        <i class="fas fa-chart-bar nav-icon"></i>
+                                        <p>
+                                            Stock Levels
+                                            @if (ViewBag.CriticalStockCount > 0)
+                                            {
+                                                <span class="badge badge-danger right">@ViewBag.CriticalStockCount</span>
+                                            }
+                                        </p>
+                                    </a>
+                                </li>
+
+                                <!-- User Assignment -->
+                                <li class="nav-item">
+                                    <a asp-controller="Store" asp-action="UserAssignment" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" && (ViewContext.RouteData.Values["action"]?.ToString() == "UserAssignment" || ViewContext.RouteData.Values["action"]?.ToString() == "ManageUsers") ? "active" : "")">
+                                        <i class="fas fa-user-tag nav-icon"></i>
+                                        <p>User Assignment</p>
+                                    </a>
+                                </li>
+
+                                <!-- Store Types Configuration -->
+                                <li class="nav-item">
+                                    <a asp-controller="StoreType" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" ? "active" : "")">
+                                        <i class="fas fa-tags nav-icon"></i>
+                                        <p>Store Types</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Product Catalog -->
+                        <li class="nav-item @(new[] { "Item", "Category", "SubCategory", "Brand", "ItemModel" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(new[] { "Item", "Category", "SubCategory", "Brand", "ItemModel" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")">
+                                <i class="nav-icon fas fa-cube"></i>
+                                <p>
+                                    Product Catalog
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Item" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Item" ? "active" : "")">
+                                        <i class="fas fa-boxes nav-icon"></i>
+                                        <p>Items</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Category" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
+                                        <i class="fas fa-tags nav-icon"></i>
+                                        <p>Categories</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="SubCategory" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SubCategory" ? "active" : "")">
+                                        <i class="fas fa-layer-group nav-icon"></i>
+                                        <p>Sub Categories</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Brand" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Brand" ? "active" : "")">
+                                        <i class="fas fa-copyright nav-icon"></i>
+                                        <p>Brands</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="ItemModel" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "ItemModel" ? "active" : "")">
+                                        <i class="fas fa-cog nav-icon"></i>
+                                        <p>Models</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Vendors -->
+                        <li class="nav-item">
+                            <a asp-controller="Vendor" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Vendor" ? "active" : "")">
+                                <i class="nav-icon fas fa-truck"></i>
+                                <p>Vendors</p>
+                            </a>
+                        </li>
+
+                        <!-- Barcode System -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Barcode" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Barcode" ? "active" : "")">
+                                <i class="nav-icon fas fa-barcode"></i>
+                                <p>
+                                    Barcode System
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Barcode" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Barcode" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Barcodes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Barcode" asp-action="BatchGenerate" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "BatchGenerate" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>Generate Barcodes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Barcode" asp-action="Search" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Search" ? "active" : "")">
+                                        <i class="fas fa-search nav-icon"></i>
+                                        <p>Search Barcode</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                       
+                        <!-- PROCUREMENT Section -->
+                        <li class="nav-header">PROCUREMENT</li>
+
+                        <!-- Requisition Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Requisition" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Requisition" ? "active" : "")">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>
+                                    Requisition
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.PendingRequisitions > 0)
+                                    {
+                                        <span class="badge badge-info right">@ViewBag.PendingRequisitions</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Requisition" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Requisitions</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Requisition" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Requisition</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Requisition" asp-action="FromLowStock" class="nav-link">
+                                        <i class="fas fa-exclamation-triangle nav-icon"></i>
+                                        <p>Low Stock Requisition</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Purchase Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Purchase" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Purchase" ? "active" : "")">
+                                <i class="nav-icon fas fa-shopping-cart"></i>
+                                <p>
+                                    Purchase
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.PendingPurchases > 0)
+                                    {
+                                        <span class="badge badge-warning right">@ViewBag.PendingPurchases</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Purchase" asp-action="Index"
+                                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Purchases</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Purchase" asp-action="Create"
+                                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Purchase</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Purchase" asp-action="FromRequisition"
+                                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "FromRequisition" ? "active" : "")">
+                                        <i class="fas fa-file-invoice nav-icon"></i>
+                                        <p>From Requisition</p>
+                                    </a>
+                                </li>
+                                <!-- Replace current Receive Goods menu item with: -->
+                                @if (User.IsInRole("Manager") || User.IsInRole("Admin") || User.IsInRole("StoreKeeper"))
+                                {
+                                    <li class="nav-item">
+                                        <a asp-controller="Purchase" asp-action="PendingReceives"
+                                           class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingReceives" ? "active" : "")">
+                                            <i class="fas fa-truck nav-icon"></i>
+                                            <p>
+                                                Receive Goods
+                                                @if (ViewBag.PendingReceiveCount > 0)
+                                                {
+                                                    <span class="badge badge-info">@ViewBag.PendingReceiveCount</span>
+                                                }
+                                            </p>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                        
+                        <!-- INVENTORY OPERATIONS Section -->
+                        <li class="nav-header">INVENTORY OPERATIONS</li>
+
+                        <!-- Stock Entry -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockEntry" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockEntry" ? "active" : "")">
+                                <i class="nav-icon fas fa-dolly"></i>
+                                <p>
+                                    Stock Entry
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="StockEntry" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Entries</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="StockEntry" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Entry</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="StockEntry" asp-action="BulkUpload" class="nav-link">
+                                        <i class="fas fa-upload nav-icon"></i>
+                                        <p>Bulk Upload</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="StockEntry" asp-action="StockLevels" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>
+                                            Stock Levels
+                                            @if (ViewBag.LowStockCount > 0)
+                                            {
+                                                <span class="badge badge-warning">@ViewBag.LowStockCount</span>
+                                            }
+                                        </p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Allotment Letter (Provision Store) -->
+                        <li class="nav-item @((ViewContext.RouteData.Values["controller"]?.ToString() == "AllotmentLetter" || ViewContext.RouteData.Values["controller"]?.ToString() == "SignatoryPresets") ? "menu-open" : "")">
+                            <a href="#" class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "AllotmentLetter" || ViewContext.RouteData.Values["controller"]?.ToString() == "SignatoryPresets") ? "active" : "")">
+                                <i class="nav-icon fas fa-file-contract text-info"></i>
+                                <p>
+                                    Allotment Letter
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="AllotmentLetter" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Allotments</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="AllotmentLetter" asp-action="Create" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Allotment</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="SignatoryPresets" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SignatoryPresets" ? "active" : "")">
+                                        <i class="fas fa-user-tie nav-icon"></i>
+                                        <p>Signatory Presets</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Issue Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Issue" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Issue" ? "active" : "")">
+                                <i class="nav-icon fas fa-share"></i>
+                                <p>
+                                    Issue
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.PendingIssues > 0)
+                                    {
+                                        <span class="badge badge-warning right">@ViewBag.PendingIssues</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <!-- All Issues -->
+                                <li class="nav-item">
+                                    <a asp-controller="Issue" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Issues</p>
+                                    </a>
+                                </li>
+
+                                @* Pending Approvals moved to Centralized Approval Center *@
+                                @* @if (User.IsInRole("Officer") || User.IsInRole("Admin"))
+                                {
+                                    <li class="nav-item">
+                                        <a asp-controller="Issue" asp-action="PendingApprovals" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingApprovals" ? "active" : "")">
+                                            <i class="fas fa-clipboard-check nav-icon"></i>
+                                            <p>
+                                                Pending Approvals
+                                                @if (ViewBag.PendingIssues > 0)
+                                                {
+                                                    <span class="badge badge-warning">@ViewBag.PendingIssues</span>
+                                                }
+                                            </p>
+                                        </a>
+                                    </li>
+                                } *@
+
+                                <!-- Create New Issue -->
+                                <li class="nav-item">
+                                    <a asp-controller="Issue" asp-action="Create" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Issue</p>
+                                    </a>
+                                </li>
+
+                                <!-- Quick Issue -->
+                                <li class="nav-item">
+                                    <a asp-controller="Issue" asp-action="QuickIssue" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "QuickIssue" ? "active" : "")">
+                                        <i class="fas fa-bolt nav-icon text-warning"></i>
+                                        <p>Quick Issue</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <hr class="dropdown-divider" style="margin: 5px 0;">
+                                </li>
+
+                                <!-- Issue Vouchers -->
+                                <li class="nav-item">
+                                    <a asp-controller="Issue" asp-action="Vouchers" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Vouchers" ? "active" : "")">
+                                        <i class="fas fa-qrcode nav-icon"></i>
+                                        <p>Issue Vouchers</p>
+                                    </a>
+                                </li>
+
+                                <!-- Physical Handover -->
+                                <li class="nav-item">
+                                    <a asp-controller="Issue" asp-action="PhysicalHandover" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PhysicalHandover" ? "active" : "")">
+                                        <i class="fas fa-handshake nav-icon"></i>
+                                        <p>Physical Handover</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Receive Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Receive" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Receive" ? "active" : "")">
+                                <i class="nav-icon fas fa-inbox"></i>
+                                <p>
+                                    Receive
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Receive" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Receives</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Receive" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Receive</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Receive" asp-action="ScanVoucher" class="nav-link">
+                                        <i class="fas fa-qrcode nav-icon"></i>
+                                        <p>Scan Voucher</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Stock Alerts -->
+                        <li class="nav-item">
+                            <a asp-controller="StockAlert" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockAlert" ? "active" : "")">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>
+                                    Stock Alerts
+                                    @if (ViewBag.StockAlertCount > 0)
+                                    {
+                                        <span class="badge badge-danger right">@ViewBag.StockAlertCount</span>
+                                    }
+                                </p>
+                            </a>
+                        </li>
+
+                        <!-- INVENTORY CONTROL Section -->
+                        <li class="nav-header">INVENTORY CONTROL</li>
+
+                        <!-- Physical Inventory -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "PhysicalInventory" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PhysicalInventory" ? "active" : "")">
+                                <i class="nav-icon fas fa-clipboard-check"></i>
+                                <p>
+                                    Physical Count
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="PhysicalInventory" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-history nav-icon"></i>
+                                        <p>Count History</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="PhysicalInventory" asp-action="Schedule" class="nav-link">
+                                        <i class="fas fa-calendar-plus nav-icon"></i>
+                                        <p>Schedule Count</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="PhysicalInventory" asp-action="Initiate" class="nav-link">
+                                        <i class="fas fa-play-circle nav-icon"></i>
+                                        <p>Start Count</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Stock Adjustments -->
+                        <li class="nav-item @(new[] { "StockAdjustment", "WriteOff", "Damage" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(new[] { "StockAdjustment", "WriteOff", "Damage" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")">
+                                <i class="nav-icon fas fa-sliders-h"></i>
+                                <p>
+                                    Adjustments
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.PendingAdjustments > 0)
+                                    {
+                                        <span class="badge badge-warning right">@ViewBag.PendingAdjustments</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="StockAdjustment" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockAdjustment" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Adjustments</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="StockAdjustment" asp-action="Create" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>
+                                            New Adjustment
+                                            <span class="badge badge-success badge-sm ml-1">Smart</span>
+                                        </p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="WriteOff" asp-action="Create" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" && ViewContext.RouteData.Values["controller"]?.ToString() == "WriteOff" ? "active" : "")">
+                                        <i class="fas fa-layer-group nav-icon"></i>
+                                        <p>
+                                            Bulk Write-off
+                                            <span class="badge badge-info badge-sm ml-1">Multi-Item</span>
+                                        </p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Batch Tracking -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Batch" || ViewContext.RouteData.Values["controller"]?.ToString() == "BatchTracking" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Batch" || ViewContext.RouteData.Values["controller"]?.ToString() == "BatchTracking" ? "active" : "")">
+                                <i class="nav-icon fas fa-layer-group"></i>
+                                <p>
+                                    Batch Tracking
+                                    <i class="fas fa-angle-left right"></i>
+                                    @if (ViewBag.ExpiringBatchCount > 0)
+                                    {
+                                        <span class="badge badge-danger right">@ViewBag.ExpiringBatchCount</span>
+                                    }
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="BatchTracking" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Batches</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="BatchTracking" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>Create Batch</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="BatchTracking" asp-action="ExpiringBatches" class="nav-link">
+                                        <i class="fas fa-calendar-times nav-icon"></i>
+                                        <p>
+                                            Expiring Batches
+                                            @if (ViewBag.ExpiringBatchCount > 0)
+                                            {
+                                                <span class="badge badge-danger">@ViewBag.ExpiringBatchCount</span>
+                                            }
+                                        </p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="BatchTracking" asp-action="History" class="nav-link">
+                                        <i class="fas fa-history nav-icon"></i>
+                                        <p>Batch History</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Add this menu item after Expiry Tracking -->
+                        <li class="nav-item">
+                            <a asp-controller="PersonnelLifeTracking" asp-action="Index" class="nav-link">
+                                <i class="nav-icon fas fa-user-clock"></i>
+                                <p>
+                                    Life Span Tracking
+                                    <span class="badge badge-warning right" id="lifeSpanAlertCount"></span>
+                                </p>
+                            </a>
+                        </li>
+
+                        @* <!-- Stock Reconciliation -->
+                        <li class="nav-item">
+                            <a asp-controller="StockReconciliation" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockReconciliation" ? "active" : "")">
+                                <i class="nav-icon fas fa-calculator"></i>
+                                <p>Stock Reconciliation</p>
+                            </a>
+                        </li> *@
+
+                        @* <!-- Stock Audit Trail -->
+                        <li class="nav-item">
+                            <a asp-controller="StockAudit" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockAudit" ? "active" : "")">
+                                <i class="nav-icon fas fa-clipboard-list"></i>
+                                <p>Stock Audit Trail</p>
+                            </a>
+                        </li> *@
+
+                        <!-- STOCK MOVEMENT Section -->
+                        <li class="nav-header">STOCK MOVEMENT</li>
+
+                        <!-- Transfer Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfer" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfer" ? "active" : "")">
+                                <i class="nav-icon fas fa-exchange-alt"></i>
+                                <p>
+                                    Transfer
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Transfer" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Transfers</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Transfer" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Transfer</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Transfer" asp-action="Track" class="nav-link">
+                                        <i class="fas fa-route nav-icon"></i>
+                                        <p>Track Transfer</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Return Management -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Return" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Return" ? "active" : "")">
+                                <i class="nav-icon fas fa-undo"></i>
+                                <p>
+                                    Return
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Return" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>All Returns</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Return" asp-action="Create" class="nav-link">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <p>New Return</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Return" asp-action="CheckCondition" class="nav-link">
+                                        <i class="fas fa-search nav-icon"></i>
+                                        <p>Check Condition</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Stock Movement History -->
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockMovement" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockMovement" ? "active" : "")">
+                                <i class="nav-icon fas fa-exchange-alt"></i>
+                                <p>
+                                    Stock Movements
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="StockMovement" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "StockMovement" ? "active" : "")">
+                                        <i class="nav-icon fas fa-list"></i>
+                                        <p>Movement History</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="StockMovement" asp-action="Summary" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Summary" && ViewContext.RouteData.Values["controller"]?.ToString() == "StockMovement" ? "active" : "")">
+                                        <i class="nav-icon fas fa-chart-pie"></i>
+                                        <p>Summary Dashboard</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- REPORTS & ANALYTICS Section -->
+                        <li class="nav-header">REPORTS & ANALYTICS</li>
+
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>
+                                    Reports
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="Index" class="nav-link">
+                                        <i class="fas fa-th-large nav-icon"></i>
+                                        <p>All Reports</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="StockReport" class="nav-link">
+                                        <i class="fas fa-boxes nav-icon"></i>
+                                        <p>Stock Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="MovementHistory" class="nav-link">
+                                        <i class="fas fa-exchange-alt nav-icon"></i>
+                                        <p>Movement History</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="ConsumptionReport" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Consumption Analysis</p>
+                                    </a>
+                                </li>
+                                @* <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="ValuationReport" class="nav-link">
+                                        <i class="fas fa-dollar-sign nav-icon"></i>
+                                        <p>Valuation Report</p>
+                                    </a>
+                                </li> *@
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="ExpiryReport" class="nav-link">
+                                        <i class="fas fa-calendar-times nav-icon"></i>
+                                        <p>Expiry Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="ABCAnalysis" class="nav-link">
+                                        <i class="fas fa-sort-amount-down nav-icon"></i>
+                                        <p>ABC Analysis</p>
+                                    </a>
+                                </li>
+                                @* <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="AuditReport" class="nav-link">
+                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                        <p>Audit Trail</p>
+                                    </a>
+                                </li> *@
+                                <li class="nav-item">
+                                    <a asp-controller="StockAdjustment" asp-action="Report" class="nav-link">
+                                        <i class="fas fa-sliders-h nav-icon"></i>
+                                        <p>Adjustment Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="WriteOff" asp-action="Report" class="nav-link">
+                                        <i class="fas fa-trash-alt nav-icon"></i>
+                                        <p>Write-off Report</p>
+                                        <small class="text-muted ml-2">(Includes Damage)</small>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- ADMINISTRATION Section -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-header">ADMINISTRATION</li>
+
+                            <!-- User Management -->
+                            <li class="nav-item @(new[] { "Admin", "Permission" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) && new[] { "Users", "CreateUser", "EditUser", "Roles", "CreateRole", "EditRole" }.Contains(ViewContext.RouteData.Values["action"]?.ToString()) || ViewContext.RouteData.Values["controller"]?.ToString() == "Permission" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(new[] { "Admin", "Permission" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) && new[] { "Users", "CreateUser", "EditUser", "Roles", "CreateRole", "EditRole" }.Contains(ViewContext.RouteData.Values["action"]?.ToString()) || ViewContext.RouteData.Values["controller"]?.ToString() == "Permission" ? "active" : "")">
+                                    <i class="nav-icon fas fa-users-cog"></i>
+                                    <p>
+                                        User Management
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-controller="Admin" asp-action="Users" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" || ViewContext.RouteData.Values["action"]?.ToString() == "CreateUser" || ViewContext.RouteData.Values["action"]?.ToString() == "EditUser" ? "active" : "")">
+                                            <i class="fas fa-users nav-icon"></i>
+                                            <p>Users</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Admin" asp-action="Roles" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Roles" || ViewContext.RouteData.Values["action"]?.ToString() == "CreateRole" || ViewContext.RouteData.Values["action"]?.ToString() == "EditRole" ? "active" : "")">
+                                            <i class="fas fa-user-shield nav-icon"></i>
+                                            <p>Roles</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Permission" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Permission" ? "active" : "")">
+                                            <i class="fas fa-key nav-icon"></i>
+                                            <p>Permissions</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Store" asp-action="UserAssignment" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "UserAssignment" || ViewContext.RouteData.Values["action"]?.ToString() == "ManageUsers" ? "active" : "")">
+                                            <i class="fas fa-warehouse nav-icon"></i>
+                                            <p>Store Assignment</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <!-- System Configuration -->
+                            <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" || ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" && ViewContext.RouteData.Values["action"]?.ToString() == "Configure" || ViewContext.RouteData.Values["action"]?.ToString() == "SettingsDashboard" ? "menu-open" : "")">
+                                <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" || ViewContext.RouteData.Values["controller"]?.ToString() == "Approval" && ViewContext.RouteData.Values["action"]?.ToString() == "Configure" || ViewContext.RouteData.Values["action"]?.ToString() == "SettingsDashboard" ? "active" : "")">
+                                    <i class="nav-icon fas fa-cogs"></i>
+                                    <p>
+                                        System
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li class="nav-item">
+                                            <a asp-controller="Admin" asp-action="SettingsDashboard" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "SettingsDashboard" ? "active" : "")">
+                                                <i class="fas fa-th-large nav-icon text-warning"></i>
+                                                <p>
+                                                    Settings Dashboard
+                                                    <span class="badge badge-success right">New</span>
+                                                </p>
+                                            </a>
+                                        </li>
+                                    }
+                                    <li class="nav-item">
+                                        <a asp-controller="Settings" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                                            <i class="fas fa-tools nav-icon"></i>
+                                            <p>Settings</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="ApprovalSettings" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "ApprovalSettings" ? "active" : "")">
+                                            <i class="fas fa-project-diagram nav-icon"></i>
+                                            <p>Approval Settings</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Settings" asp-action="Backup" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Backup" ? "active" : "")">
+                                            <i class="fas fa-database nav-icon"></i>
+                                            <p>Backup & Restore</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Admin" asp-action="Logs" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Logs" ? "active" : "")">
+                                            <i class="fas fa-history nav-icon"></i>
+                                            <p>Activity Logs</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="Settings" asp-action="ImportExport" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ImportExport" ? "active" : "")">
+                                            <i class="fas fa-sync nav-icon"></i>
+                                            <p>Import/Export</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        <!-- HELP & SUPPORT Section -->
+                        <li class="nav-header">HELP & SUPPORT</li>
+
+                        <li class="nav-item">
+                            <a asp-controller="Help" asp-action="Index" class="nav-link">
+                                <i class="nav-icon fas fa-question-circle"></i>
+                                <p>Help Center</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a asp-controller="Help" asp-action="UserGuide" class="nav-link">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>User Guide</p>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+        <!-- /.content-wrapper -->
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+            <div class="p-3">
+                <h5>Quick Settings</h5>
+                <hr class="mb-2">
+                <div class="mb-4">
+                    <input type="checkbox" id="dark-mode-switch" class="mr-1">
+                    <label for="dark-mode-switch">Dark Mode</label>
+                </div>
+                <div class="mb-4">
+                    <input type="checkbox" id="compact-sidebar" class="mr-1">
+                    <label for="compact-sidebar">Compact Sidebar</label>
+                </div>
+            </div>
+        </aside>
+        <!-- /.control-sidebar -->
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; @DateTime.Now.Year <a href="#">IMS Ansar & VDP</a>.</strong>
+            All rights reserved.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 1.0.0 | <b>Environment:</b> @Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            </div>
+        </footer>
+    </div>
+    <!-- ./wrapper -->
+    <!-- REQUIRED SCRIPTS -->
+    <!-- jQuery -->
+    <script src="~/adminlte/plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="~/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- overlayScrollbars -->
+    <script src="~/adminlte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <!-- DataTables & Plugins -->
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/jszip/jszip.min.js"></script>
+    <script src="~/adminlte/plugins/pdfmake/pdfmake.min.js"></script>
+    <script src="~/adminlte/plugins/pdfmake/vfs_fonts.js"></script>
+    <script src="~/adminlte/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+    <!-- Select2 -->
+    <script src="~/adminlte/plugins/select2/js/select2.full.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="~/adminlte/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Toastr -->
+    <script src="~/adminlte/plugins/toastr/toastr.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="~/adminlte/dist/js/adminlte.min.js"></script>
+    <!-- Site JavaScript -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Initialize DataTables with default settings
+            $('.datatable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            });
+
+            // Load notifications, alerts, and counts
+            loadNotifications();
+            loadStockAlerts();
+            updatePendingCounts();
+
+            // Auto-refresh notifications, alerts, and counts
+            setInterval(function() {
+                loadNotifications();
+                loadStockAlerts();
+                updatePendingCounts();
+            }, 30000); // Every 30 seconds
+
+            // Keyboard shortcuts
+            $(document).keydown(function(e) {
+                if (e.ctrlKey) {
+                    switch(e.which) {
+                        case 73: // Ctrl+I - New Issue
+                            e.preventDefault();
+                            window.location.href = '/Issue/Create';
+                            break;
+                        case 83: // Ctrl+S - Scan & Receive
+                            e.preventDefault();
+                            window.location.href = '/Receive/ScanVoucher';
+                            break;
+                        case 69: // Ctrl+E - Stock Entry
+                            e.preventDefault();
+                            window.location.href = '/StockEntry/Create';
+                            break;
+                        case 84: // Ctrl+T - Transfer
+                            e.preventDefault();
+                            window.location.href = '/Transfer/Create';
+                            break;
+                        // Ctrl+C removed - it conflicts with standard browser copy operation
+                        // case 67: // Ctrl+C - Quick Count
+                        //     e.preventDefault();
+                        //     window.location.href = '/PhysicalInventory/QuickCount';
+                        //     break;
+                    }
+                }
+            });
+
+            // Control Sidebar settings
+            $('#dark-mode-switch').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('body').addClass('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    $('body').removeClass('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+
+            $('#compact-sidebar').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('body').addClass('sidebar-collapse');
+                    localStorage.setItem('compactSidebar', 'true');
+                } else {
+                    $('body').removeClass('sidebar-collapse');
+                    localStorage.setItem('compactSidebar', 'false');
+                }
+            });
+
+            // Load saved preferences
+            if (localStorage.getItem('darkMode') === 'true') {
+                $('body').addClass('dark-mode');
+                $('#dark-mode-switch').prop('checked', true);
+            }
+
+            if (localStorage.getItem('compactSidebar') === 'true') {
+                $('body').addClass('sidebar-collapse');
+                $('#compact-sidebar').prop('checked', true);
+            }
+        });
+
+        // Load stock alerts function
+        function loadStockAlerts() {
+            $.ajax({
+                url: '/StockAlert/GetRecentAlerts',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.alerts && response.alerts.length > 0) {
+                        $('#stockAlertCount').text(response.count).show();
+
+                        var html = '';
+                        $.each(response.alerts, function(i, alert) {
+                            // Add null check for alertLevel
+                            var alertLevel = alert.alertLevel || 'info';
+                            var levelClass = alertLevel.toLowerCase() === 'critical' ? 'danger' :
+                                           alertLevel.toLowerCase() === 'high' ? 'warning' : 'info';
+
+                            html += '<a href="/StockAlert/Index" class="dropdown-item">';
+                            html += '<div class="media">';
+                            html += '<div class="media-body">';
+                            html += '<h3 class="dropdown-item-title">';
+                            html += '<span class="badge badge-' + levelClass + '">' + alertLevel + '</span> ';
+                            html += alert.itemName;
+                            html += '</h3>';
+                            html += '<p class="text-sm">' + alert.storeName + '</p>';
+                            html += '<p class="text-sm">';
+                            html += '<span class="badge badge-dark">' + alert.currentStock + '</span> / ';
+                            html += '<span class="badge badge-secondary">' + alert.minimumStock + '</span>';
+                            html += '</p>';
+                            html += '<p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> ' + alert.timeAgo + '</p>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</a>';
+                            if (i < response.alerts.length - 1) {
+                                html += '<div class="dropdown-divider"></div>';
+                            }
+                        });
+
+                        $('#stockAlertList').html(html);
+                    } else {
+                        $('#stockAlertCount').hide();
+                        $('#stockAlertList').html(
+                            '<div class="text-center p-3 text-muted">' +
+                            '<i class="fas fa-check-circle fa-2x mb-2 text-success"></i>' +
+                            '<p>No critical stock alerts</p>' +
+                            '</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#stockAlertList').html(
+                        '<div class="text-center p-3 text-danger">' +
+                        '<i class="fas fa-exclamation-triangle"></i> Failed to load alerts' +
+                        '</div>'
+                    );
+                }
+            });
+        }
+
+        // Load notifications function
+        function loadNotifications() {
+            $.ajax({
+                url: '/Notification/GetUnread',
+                type: 'GET',
+                success: function(data) {
+                    if (data && data.length > 0) {
+                        $('#notificationCount').text(data.length).show();
+
+                        var html = '';
+                        $.each(data.slice(0, 5), function(i, notification) {
+                            html += '<a href="' + (notification.url || '#') + '" class="dropdown-item">';
+                            html += '<div class="media">';
+                            html += '<div class="media-body">';
+                            html += '<h3 class="dropdown-item-title">';
+                            html += notification.title || 'Notification';
+                            html += '<span class="float-right text-sm text-' + (notification.type || 'info') + '">';
+                            html += '<i class="fas fa-' + (notification.icon || 'info-circle') + '"></i>';
+                            html += '</span>';
+                            html += '</h3>';
+                            html += '<p class="text-sm">' + notification.message + '</p>';
+                            html += '<p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> ' + notification.timeAgo + '</p>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</a>';
+                            if (i < data.length - 1) {
+                                html += '<div class="dropdown-divider"></div>';
+                            }
+                        });
+
+                        $('#notificationList').html(html);
+                    } else {
+                        $('#notificationCount').hide();
+                        $('#notificationList').html(
+                            '<div class="text-center p-3 text-muted">' +
+                            '<i class="far fa-bell-slash fa-2x mb-2"></i>' +
+                            '<p>No new notifications</p>' +
+                            '</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#notificationList').html(
+                        '<div class="text-center p-3 text-danger">' +
+                        '<i class="fas fa-exclamation-triangle"></i> Failed to load notifications' +
+                        '</div>'
+                    );
+                }
+            });
+        }
+
+        // Update pending counts function
+        function updatePendingCounts() {
+            $.ajax({
+                url: '/api/dashboard/pendingcounts',
+                type: 'GET',
+                success: function(data) {
+                    // Update individual counts
+                    $('#pendingRequisitions').text(data.requisitions || 0);
+                    $('#pendingPurchases').text(data.purchases || 0);
+                    $('#pendingIssues').text(data.issues || 0);
+                    $('#pendingAdjustments').text(data.adjustments || 0);
+                    $('#pendingTransfers').text(data.transfers || 0);
+                    $('#pendingAllotments').text(data.allotments || 0);
+
+                    // Calculate and update total
+                    var total = (data.requisitions || 0) +
+                               (data.purchases || 0) +
+                               (data.issues || 0) +
+                               (data.adjustments || 0) +
+                               (data.transfers || 0) +
+                               (data.allotments || 0);
+
+                    if (total > 0) {
+                        $('#totalPendingCount').text(total).show();
+                        $('#approvalBadge').text(total).show();
+                        $('#pendingCount').text(total).show();
+                    } else {
+                        $('#totalPendingCount').hide();
+                        $('#approvalBadge').hide();
+                        $('#pendingCount').hide();
+                    }
+                }
+            });
+        }
+
+        // Barcode scanner function
+        function openBarcodeScanner() {
+            window.location.href = '/Barcode/Scanner';
+        }
+
+        // Toastr configuration
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    </script>
+
+    <!-- Render Notifications -->
+    @await Html.PartialAsync("_Notifications")
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

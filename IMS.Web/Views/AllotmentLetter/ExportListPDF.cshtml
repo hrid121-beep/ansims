@@ -1,0 +1,224 @@
+@model IEnumerable<IMS.Application.DTOs.AllotmentLetterDto>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Allotment Letters Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #006a4e;
+            margin: 0;
+        }
+
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #006a4e;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+
+        .print-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #006a4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-button:hover {
+            background-color: #005a41;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">
+        <i class="fas fa-print"></i> Print / Save as PDF
+    </button>
+
+    <div class="header">
+        <h1>Bangladesh Ansar & VDP</h1>
+        <h2>Allotment Letters Report</h2>
+        <p>Generated on: @ViewBag.GeneratedDate.ToString("dd MMMM yyyy HH:mm")</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Allotment No</th>
+                <th style="width: 8%;">Date</th>
+                <th style="width: 15%;">Issued To</th>
+                <th style="width: 12%;">From Store</th>
+                <th style="width: 5%;">Items</th>
+                <th style="width: 7%;">Allotted</th>
+                <th style="width: 7%;">Issued</th>
+                <th style="width: 8%;">Remaining</th>
+                <th style="width: 8%;">Valid Until</th>
+                <th style="width: 8%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var allotment in Model)
+            {
+                <tr>
+                    <td><strong>@allotment.AllotmentNo</strong></td>
+                    <td>@allotment.AllotmentDate.ToString("dd-MMM-yy")</td>
+                    <td>
+                        @if (allotment.TotalRecipients > 0 && allotment.Recipients != null)
+                        {
+                            if (allotment.TotalRecipients == 1)
+                            {
+                                var recipient = allotment.Recipients.FirstOrDefault();
+                                @(recipient?.RecipientName ?? recipient?.RecipientNameBn ?? "")
+                            }
+                            else
+                            {
+                                <span>Multiple (@allotment.TotalRecipients)</span>
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(allotment.IssuedToBattalionName))
+                        {
+                            @allotment.IssuedToBattalionName
+                        }
+                        else if (!string.IsNullOrEmpty(allotment.IssuedToRangeName))
+                        {
+                            @allotment.IssuedToRangeName
+                        }
+                        else if (!string.IsNullOrEmpty(allotment.IssuedToZilaName))
+                        {
+                            @allotment.IssuedToZilaName
+                        }
+                        else
+                        {
+                            @allotment.IssuedTo
+                        }
+                    </td>
+                    <td>@allotment.FromStoreName</td>
+                    <td style="text-align: center;">@allotment.TotalItems</td>
+                    <td style="text-align: center;">@allotment.TotalQuantity</td>
+                    <td style="text-align: center;">@allotment.TotalIssued</td>
+                    <td style="text-align: center;">@allotment.TotalRemaining</td>
+                    <td>
+                        @allotment.ValidUntil.ToString("dd-MMM-yy")
+                        @if (allotment.IsExpired)
+                        {
+                            <br /><small style="color: #dc3545;">Expired</small>
+                        }
+                    </td>
+                    <td>
+                        @switch (allotment.Status)
+                        {
+                            case "Draft":
+                                <span class="badge badge-warning">Draft</span>
+                                break;
+                            case "Active":
+                                <span class="badge badge-success">Active</span>
+                                break;
+                            case "Completed":
+                                <span class="badge badge-info">Completed</span>
+                                break;
+                            case "Cancelled":
+                            case "Rejected":
+                                <span class="badge badge-danger">@allotment.Status</span>
+                                break;
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4"><strong>Total Records: @Model.Count()</strong></td>
+                <td style="text-align: center;"><strong>@Model.Sum(a => a.TotalItems)</strong></td>
+                <td style="text-align: center;"><strong>@Model.Sum(a => a.TotalQuantity)</strong></td>
+                <td style="text-align: center;"><strong>@Model.Sum(a => a.TotalIssued)</strong></td>
+                <td style="text-align: center;"><strong>@Model.Sum(a => a.TotalRemaining)</strong></td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        <p>&copy; @DateTime.Now.Year Bangladesh Ansar & VDP - Inventory Management System</p>
+        <p>This is a system-generated report</p>
+    </div>
+</body>
+</html>

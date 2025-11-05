@@ -1,0 +1,104 @@
+﻿@model IEnumerable<IMS.Application.DTOs.ApprovalHistoryDto>
+@{
+    ViewData["Title"] = "Approval History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Approval History</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Approval History</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Approval Activities</h3>
+                <div class="card-tools">
+                    <form method="get" class="form-inline">
+                        <input type="date" name="fromDate" class="form-control form-control-sm mr-2"
+                               value="@(ViewBag.FromDate?.ToString("yyyy-MM-dd"))" />
+                        <input type="date" name="toDate" class="form-control form-control-sm mr-2"
+                               value="@(ViewBag.ToDate?.ToString("yyyy-MM-dd"))" />
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Type</th>
+                            <th>Reference</th>
+                            <th>Action</th>
+                            <th>Amount</th>
+                            <th>Processed By</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var history in Model)
+                        {
+                            <tr>
+                                <td>@((history.ProcessedDate != default(DateTime) ? history.ProcessedDate : history.Date).ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td><span class="badge @GetTypeBadge(history.EntityType)">@history.EntityType</span></td>
+                                <td>@history.EntityReference</td>
+                                <td>
+                                    @if (history.Action == "Approved")
+                                    {
+                                        <span class="badge badge-success">Approved</span>
+                                    }
+                                    else if (history.Action == "Rejected")
+                                    {
+                                        <span class="badge badge-danger">Rejected</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">@history.Action</span>
+                                    }
+                                </td>
+                                <td>৳ @history.Amount.ToString("N2")</td>
+                                <td>@(history.ProcessedBy ?? history.UserName ?? "System")</td>
+                                <td>@history.Comments</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (!Model.Any())
+            {
+                <div class="card-body">
+                    <p class="text-muted text-center">No approval history found.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetTypeBadge(string type) => type?.ToUpper() switch
+    {
+        "PURCHASE" => "badge-primary",
+        "ISSUE" => "badge-info",
+        "STOCK_ADJUSTMENT" => "badge-warning",
+        "REQUISITION" => "badge-success",
+        "WRITEOFF" => "badge-danger",
+        _ => "badge-secondary"
+    };
+}

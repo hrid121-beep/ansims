@@ -1,0 +1,181 @@
+﻿@model ReceivePurchaseViewModel
+@{
+    ViewData["Title"] = "Receive Goods";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Receive Goods</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Purchase</a></li>
+                    <li class="breadcrumb-item active">Receive Goods</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <form asp-action="ProcessReceive" method="post">
+            <input type="hidden" asp-for="PurchaseId" />
+
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Purchase Order: @Model.PurchaseOrderNo</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vendor</label>
+                                <input type="text" class="form-control" value="@Model.VendorName" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Receive Date</label>
+                                <input type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Invoice No</label>
+                                <input type="text" asp-for="InvoiceNo" class="form-control" placeholder="Enter invoice number" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Challan No</label>
+                                <input type="text" asp-for="ChallanNo" class="form-control" placeholder="Enter challan number" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Items to Receive</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th width="120">Ordered Qty</th>
+                                <th width="120">Received Qty</th>
+                                <th width="120">Accepted Qty</th>
+                                <th width="120">Rejected Qty</th>
+                                <th width="150">Batch No</th>
+                                <th width="150">Expiry Date</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" asp-for="Items[i].ItemId" />
+                                        <input type="hidden" asp-for="Items[i].ItemName" />
+                                        @Model.Items[i].ItemName
+                                    </td>
+                                    <td>
+                                        <input type="hidden" asp-for="Items[i].OrderedQuantity" />
+                                        @Model.Items[i].OrderedQuantity
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].ReceivedQuantity"
+                                               class="form-control received-qty"
+                                               data-row="@i"
+                                               min="0" max="@Model.Items[i].OrderedQuantity" />
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].AcceptedQuantity"
+                                               class="form-control accepted-qty"
+                                               data-row="@i"
+                                               min="0" />
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].RejectedQuantity"
+                                               class="form-control rejected-qty"
+                                               data-row="@i"
+                                               min="0" readonly />
+                                    </td>
+                                    <td>
+                                        <input type="text" asp-for="Items[i].BatchNo"
+                                               class="form-control" placeholder="Batch #" />
+                                    </td>
+                                    <td>
+                                        <input type="date" asp-for="Items[i].ExpiryDate"
+                                               class="form-control" />
+                                    </td>
+                                    <td>
+                                        <input type="text" asp-for="Items[i].Remarks"
+                                               class="form-control" placeholder="Remarks" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>General Remarks</label>
+                        <textarea asp-for="Remarks" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Receive Goods
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-calculate rejected quantity
+            $('.received-qty, .accepted-qty').on('input', function() {
+                var row = $(this).data('row');
+                var received = parseFloat($('.received-qty[data-row="' + row + '"]').val()) || 0;
+                var accepted = parseFloat($('.accepted-qty[data-row="' + row + '"]').val()) || 0;
+                var rejected = received - accepted;
+
+                if (rejected < 0) rejected = 0;
+                $('.rejected-qty[data-row="' + row + '"]').val(rejected);
+            });
+
+            // Validate before submit
+            $('form').on('submit', function(e) {
+                var hasItems = false;
+                $('.received-qty').each(function() {
+                    if ($(this).val() > 0) hasItems = true;
+                });
+
+                if (!hasItems) {
+                    e.preventDefault();
+                    Swal.fire('Error', 'Please receive at least one item', 'error');
+                }
+            });
+        });
+    </script>
+}

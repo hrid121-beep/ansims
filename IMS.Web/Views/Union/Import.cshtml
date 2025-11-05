@@ -1,0 +1,185 @@
+﻿@{
+    ViewData["Title"] = "Import Unions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Import Unions</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Unions</a></li>
+                    <li class="breadcrumb-item active">Import</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Unions from CSV</h3>
+                    </div>
+                    <form asp-action="Import" method="post" enctype="multipart/form-data" id="importForm">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> CSV Format Requirements</h5>
+                                Your CSV file should contain the following columns:
+                                <ul class="mb-0">
+                                    <li><strong>Code</strong> - Union code, e.g., UN-DHK-SAV-001 (required)</li>
+                                    <li><strong>Name</strong> - Union name in English (required)</li>
+                                    <li><strong>NameBangla</strong> - Union name in Bengali</li>
+                                    <li><strong>UpazilaId</strong> - ID of the parent Upazila (required)</li>
+                                    <li><strong>ChairmanName</strong> - Name of Union Chairman</li>
+                                    <li><strong>ChairmanContact</strong> - Chairman's contact number</li>
+                                    <li><strong>SecretaryName</strong> - Name of Union Secretary</li>
+                                    <li><strong>SecretaryContact</strong> - Secretary's contact number</li>
+                                    <li><strong>VDPOfficerName</strong> - Name of VDP Officer</li>
+                                    <li><strong>VDPOfficerContact</strong> - VDP Officer's contact number</li>
+                                    <li><strong>Email</strong> - Union email address</li>
+                                    <li><strong>OfficeAddress</strong> - Union office address</li>
+                                    <li><strong>NumberOfWards</strong> - Number of wards</li>
+                                    <li><strong>NumberOfVillages</strong> - Number of villages</li>
+                                    <li><strong>NumberOfMouzas</strong> - Number of mouzas</li>
+                                    <li><strong>Area</strong> - Area in square kilometers</li>
+                                    <li><strong>Population</strong> - Total population</li>
+                                    <li><strong>NumberOfHouseholds</strong> - Number of households</li>
+                                    <li><strong>HasVDPUnit</strong> - true/false</li>
+                                    <li><strong>VDPMemberCountMale</strong> - Number of male VDP members</li>
+                                    <li><strong>VDPMemberCountFemale</strong> - Number of female VDP members</li>
+                                    <li><strong>AnsarMemberCount</strong> - Number of Ansar members</li>
+                                    <li><strong>IsRural</strong> - true for rural, false for urban</li>
+                                    <li><strong>IsBorderArea</strong> - true/false</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="file">Select CSV File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" name="file" class="custom-file-input" id="csvFile" accept=".csv" required>
+                                        <label class="custom-file-label" for="csvFile">Choose file</label>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Maximum file size: 5MB</small>
+                            </div>
+
+                            <div class="form-group">
+                                <a href="/templates/union_import_template.csv" class="btn btn-info btn-sm">
+                                    <i class="fas fa-download"></i> Download Sample Template
+                                </a>
+                            </div>
+
+                            <div id="previewSection" style="display: none;">
+                                <h5>Preview (First 5 rows)</h5>
+                                <div class="table-responsive">
+                                    <table id="previewTable" class="table table-sm table-bordered">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success" id="importBtn" disabled>
+                                <i class="fas fa-file-import"></i> Import Unions
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Ensure all required columns are present</li>
+                            <li>Union codes must be unique</li>
+                            <li>UpazilaId must match existing Upazilas</li>
+                            <li>Use true/false for boolean values</li>
+                            <li>Leave optional fields empty if not applicable</li>
+                            <li>Dates should be in YYYY-MM-DD format</li>
+                            <li>Contact numbers should be in 01XXXXXXXXX format</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        $(function() {
+            // Custom file input label
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+
+                if (fileName.endsWith('.csv')) {
+                    previewCSV(this.files[0]);
+                    $('#importBtn').prop('disabled', false);
+                } else {
+                    $('#importBtn').prop('disabled', true);
+                    $('#previewSection').hide();
+                }
+            });
+
+            // Preview CSV
+            function previewCSV(file) {
+                Papa.parse(file, {
+                    preview: 5,
+                    complete: function(results) {
+                        var table = $('#previewTable');
+                        var thead = table.find('thead').empty();
+                        var tbody = table.find('tbody').empty();
+
+                        // Headers
+                        if (results.data.length > 0) {
+                            var headerRow = $('<tr>');
+                            results.data[0].forEach(function(header) {
+                                headerRow.append($('<th>').text(header));
+                            });
+                            thead.append(headerRow);
+                        }
+
+                        // Data rows
+                        for (var i = 1; i < results.data.length && i <= 5; i++) {
+                            var row = $('<tr>');
+                            results.data[i].forEach(function(cell) {
+                                row.append($('<td>').text(cell));
+                            });
+                            tbody.append(row);
+                        }
+
+                        $('#previewSection').show();
+                    }
+                });
+            }
+
+            // Form submission
+            $('#importForm').on('submit', function(e) {
+                $('#importBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Importing...');
+            });
+        });
+    </script>
+}

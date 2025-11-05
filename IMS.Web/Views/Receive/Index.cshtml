@@ -1,0 +1,402 @@
+﻿@model IEnumerable<IMS.Application.DTOs.ReceiveDto>
+@{
+    ViewData["Title"] = "Receives";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Receive Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Receives</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Cards -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@(Model?.Count() ?? 0)</h3>
+                        <p>Total Receives</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@(Model?.Count(r => r.Status == "Completed") ?? 0)</h3>
+                        <p>Completed</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@(Model?.Count(r => r.Status == "Pending" || r.Status == "Processing") ?? 0)</h3>
+                        <p>Pending</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>@(Model?.Sum(r => r.Items?.Count ?? 0) ?? 0)</h3>
+                        <p>Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="card card-default collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">Search & Filter</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Search</label>
+                                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                                       class="form-control" placeholder="Receive No, Name..." />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Receive Type</label>
+                                @{
+                                    var receiveTypes = new List<SelectListItem>
+                                    {
+                                    new SelectListItem("All Types", ""),
+                                    new SelectListItem("Battalion", "Battalion"),
+                                    new SelectListItem("Range", "Range"),
+                                    new SelectListItem("Individual", "Individual"),
+                                    new SelectListItem("External", "External")
+                                    };
+                                    var selectedValue = ViewBag.ReceiveType as string ?? "";
+                                }
+
+                                <select name="receiveType" class="form-control"
+                                        asp-items="@(new SelectList(receiveTypes, "Value", "Text", selectedValue))">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Status</label>
+                                @{
+                                    var statuses = new List<SelectListItem>
+                                    {
+                                        new SelectListItem("All Status", ""),
+                                        new SelectListItem("Draft", "Draft"),
+                                        new SelectListItem("Pending", "Pending"),
+                                        new SelectListItem("Processing", "Processing"),
+                                        new SelectListItem("Completed", "Completed")
+                                    };
+                                    var selectedStatus = ViewBag.Status as string ?? "";
+                                }
+                                <select name="status" class="form-control"
+                                        asp-items="@(new SelectList(statuses, "Value", "Text", selectedStatus))">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" name="fromDate" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" 
+                                       class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" name="toDate" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")" 
+                                       class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Receive List</h3>
+                <div class="card-tools">
+                    <div class="btn-group">
+                        <a asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> New Receive
+                        </a>
+                        <a asp-action="ScanVoucher" class="btn btn-info btn-sm">
+                            <i class="fas fa-qrcode"></i> Scan Voucher
+                        </a>
+                        <a asp-action="QuickReceive" class="btn btn-success btn-sm">
+                            <i class="fas fa-bolt"></i> Quick Receive
+                        </a>
+                        <a asp-action="Pending" class="btn btn-warning btn-sm">
+                            <i class="fas fa-clock"></i> Pending (@(Model?.Count(r => r.Status == "Pending" || r.Status == "Processing") ?? 0))
+                        </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" asp-action="Export" asp-route-format="excel">
+                                    <i class="fas fa-file-excel text-success"></i> Excel
+                                </a>
+                                <a class="dropdown-item" asp-action="Export" asp-route-format="pdf">
+                                    <i class="fas fa-file-pdf text-danger"></i> PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="10%">Receive No</th>
+                            <th width="8%">Date</th>
+                            <th width="8%">Type</th>
+                            <th width="12%">Received From</th>
+                            <th width="12%">Receiving Store</th>
+                            <th width="6%" class="text-center">Items</th>
+                            <th width="8%" class="text-center">Quantity</th>
+                            <th width="7%">Condition</th>
+                            <th width="8%">Linked Issue</th>
+                            <th width="7%">Status</th>
+                            <th width="10%" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            var index = (ViewBag.CurrentPage - 1) * 10 + 1;
+                            @foreach (var receive in Model)
+                            {
+                                <tr>
+                                    <td><strong>@(index++)</strong></td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@receive.Id" class="text-primary">
+                                            <strong>@receive.ReceiveNo</strong>
+                                        </a>
+                                    </td>
+                                    <td>@receive.ReceiveDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="badge badge-info">@receive.ReceiveType</span>
+                                    </td>
+                                    <td>
+                                        <strong>@receive.ReceivedFromName</strong>
+                                        @if (!string.IsNullOrEmpty(receive.ReceivedBy))
+                                        {
+                                            <br /><small class="text-muted">By: @receive.ReceivedBy</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(receive.StoreName))
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-warehouse"></i> @receive.StoreName
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-primary">@(receive.Items?.Count ?? 0)</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>@(receive.Items?.Sum(i => i.ReceivedQuantity ?? 0).ToString("0.##") ?? "0")</strong>
+                                    </td>
+                                    <td>
+                                        @if (receive.OverallCondition == "Good")
+                                        {
+                                            <span class="badge badge-success">Good</span>
+                                        }
+                                        else if (receive.OverallCondition == "Damaged")
+                                        {
+                                            <span class="badge badge-danger">Damaged</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning">Mixed</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (receive.OriginalIssueId.HasValue)
+                                        {
+                                            <a asp-controller="Issue" asp-action="Details" 
+                                               asp-route-id="@receive.OriginalIssueId">
+                                                #@receive.OriginalIssueNo
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (receive.Status == "Completed")
+                                        {
+                                            <span class="badge badge-success">Completed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning">@receive.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@receive.Id"
+                                               class="btn btn-info btn-xs" title="View Details" data-toggle="tooltip">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (receive.Status != "Completed")
+                                            {
+                                                <a asp-action="Process" asp-route-id="@receive.Id"
+                                                   class="btn btn-warning btn-xs" title="Process" data-toggle="tooltip">
+                                                    <i class="fas fa-tasks"></i>
+                                                </a>
+                                            }
+                                            <a asp-action="Print" asp-route-id="@receive.Id"
+                                               target="_blank" class="btn btn-success btn-xs" title="Print" data-toggle="tooltip">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            @if (receive.OverallCondition == "Damaged" || receive.OverallCondition == "Mixed")
+                                            {
+                                                <a asp-controller="Damage" asp-action="CreateFromReceive"
+                                                   asp-route-receiveId="@receive.Id"
+                                                   class="btn btn-danger btn-xs" title="Record Damage" data-toggle="tooltip">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="12" class="text-center text-muted py-5">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p class="mb-0"><strong>No receives found</strong></p>
+                                    <small>Start by creating a new receive or scan a voucher QR code</small>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        <tfoot>
+                            <tr class="bg-light">
+                                <th colspan="6" class="text-right">Totals:</th>
+                                <th class="text-center"><strong>@(Model.Sum(r => r.Items?.Count ?? 0))</strong></th>
+                                <th class="text-center"><strong>@(Model.Sum(r => r.Items?.Sum(i => i.ReceivedQuantity ?? 0) ?? 0).ToString("0.##"))</strong></th>
+                                <th colspan="4"></th>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="card-footer clearfix">
+                    <div class="float-left">
+                        <small class="text-muted">
+                            @if (ViewBag.TotalPages > 1)
+                            {
+                                @:Showing page @ViewBag.CurrentPage of @ViewBag.TotalPages
+                            }
+                            else
+                            {
+                                @:Showing @Model.Count() result(s)
+                            }
+                        </small>
+                    </div>
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <ul class="pagination pagination-sm m-0 float-right">
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-searchTerm="@ViewBag.SearchTerm"
+                                       asp-route-receiveType="@ViewBag.ReceiveType"
+                                       asp-route-status="@ViewBag.Status"
+                                       asp-route-fromDate="@ViewBag.FromDate"
+                                       asp-route-toDate="@ViewBag.ToDate">@i</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Auto-submit search form after date selection
+            $('input[name="fromDate"], input[name="toDate"]').on('change', function() {
+                var fromDate = $('input[name="fromDate"]').val();
+                var toDate = $('input[name="toDate"]').val();
+
+                if (fromDate && toDate) {
+                    $(this).closest('form').submit();
+                }
+            });
+        });
+    </script>
+}

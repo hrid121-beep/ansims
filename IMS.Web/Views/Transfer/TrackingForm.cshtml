@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Track Transfer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Track Transfer</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Transfers</a></li>
+                    <li class="breadcrumb-item active">Track</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-search"></i> Transfer Tracking
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                            </div>
+                        }
+
+                        <div class="callout callout-info">
+                            <h5><i class="fas fa-info-circle"></i> How to Track Your Transfer</h5>
+                            <p>Enter your transfer tracking code below to view real-time status, location updates, and complete timeline of your transfer.</p>
+                            <p class="mb-0"><strong>Format:</strong> <code>TRF-YYYYMMDD-XXXX</code> or <code>TRFYYYYMMDDXXXX</code> <small class="text-muted">(e.g., TRF-20250110-0001 or TRF20250110000001)</small></p>
+                        </div>
+
+                        <form asp-action="Track" method="get" class="mt-4">
+                            <div class="input-group input-group-lg">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="fas fa-barcode"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control form-control-lg"
+                                       id="code" name="code"
+                                       placeholder="TRF20250110000001 or TRF-20250110-0001"
+                                       required
+                                       pattern="TRF-?\d{8}-?\d{4}"
+                                       autocomplete="off"
+                                       style="font-size: 1.2em; letter-spacing: 1px;"
+                                       title="Enter transfer code (e.g., TRF20250110000001 or TRF-20250110-0001)">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Track Now
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted mt-2">
+                                <i class="fas fa-lightbulb"></i> Find your tracking code on the transfer document or receipt.
+                            </small>
+                        </form>
+
+                        <!-- Quick Stats -->
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-truck"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Real-Time</span>
+                                        <span class="info-box-number">Tracking</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-history"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Complete</span>
+                                        <span class="info-box-number">Timeline</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-boxes"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Item</span>
+                                        <span class="info-box-number">Details</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transfers (Optional) -->
+                <div class="card card-secondary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-question-circle"></i> Need Help?
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Where can I find my tracking code?</strong></p>
+                        <ul>
+                            <li>On your transfer receipt</li>
+                            <li>In the confirmation email (if applicable)</li>
+                            <li>Contact your store administrator</li>
+                        </ul>
+
+                        <p class="mb-0"><strong>Having trouble?</strong></p>
+                        <p>Contact support or return to <a asp-action="Index">Transfer List</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-format tracking code to uppercase
+            $('#code').on('input', function() {
+                var value = $(this).val().toUpperCase();
+                $(this).val(value);
+            });
+
+            // Show validation hint
+            $('#code').on('blur', function() {
+                var value = $(this).val();
+                var pattern = /^TRF-?\d{8}-?\d{4}$/;
+
+                if (value && !pattern.test(value)) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<div class="invalid-feedback">Invalid format. Use TRF20250110000001 or TRF-20250110-0001</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // Clear validation on focus
+            $('#code').on('focus', function() {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            });
+        });
+    </script>
+}

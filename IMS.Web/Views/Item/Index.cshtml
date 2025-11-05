@@ -1,0 +1,1027 @@
+﻿@model IEnumerable<IMS.Application.DTOs.ItemDto>
+@{
+    ViewData["Title"] = "Items Management";
+    var lowStockCount = Model.Count(x => x.CurrentStock < x.MinimumStock);
+    var totalItems = Model.Count();
+    var activeItems = Model.Count(x => x.IsActive);
+    var inactiveItems = totalItems - activeItems;
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    @Html.AntiForgeryToken()
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    <i class="fas fa-boxes text-primary"></i> Items Management
+                    <small class="text-muted ml-2">Inventory Catalog</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                    <li class="breadcrumb-item active">Items</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Statistics Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <!-- Total Items -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 class="text-white">@totalItems</h3>
+                        <p class="text-white">Total Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <a href="#" class="small-box-footer text-white" data-filter="all">
+                        View All <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <!-- Active Items -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 class="text-white">@activeItems</h3>
+                        <p class="text-white">Active Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <a href="#" class="small-box-footer text-white" data-filter="active">
+                        View Active <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <!-- Low Stock -->
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 class="text-white">@lowStockCount</h3>
+                        <p class="text-white">Low Stock Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a href="#" class="small-box-footer text-white" data-filter="low-stock">
+                        View Low Stock <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <!-- Inactive Items -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 class="text-white">@inactiveItems</h3>
+                        <p class="text-white">Inactive Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <a href="#" class="small-box-footer text-white" data-filter="inactive">
+                        View Inactive <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list"></i> Items List
+                        </h3>
+                        <div class="card-tools">
+                            <div class="btn-group">
+                                <a asp-action="Create" class="btn btn-success btn-sm">
+                                    <i class="fas fa-plus-circle"></i> Add New Item
+                                </a>
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#importModal">
+                                    <i class="fas fa-file-import"></i> Import
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="exportBtn">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#bulkBarcodeModal">
+                                    <i class="fas fa-barcode"></i> Bulk Barcode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Advanced Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="card collapsed-card card-secondary card-outline">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-filter"></i> Advanced Filters
+                                        </h3>
+                                        <div class="card-tools">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Category</label>
+                                                    <select class="form-control select2" id="filterCategory" style="width: 100%;">
+                                                        <option value="">All Categories</option>
+                                                        @if (ViewBag.FilterCategories != null)
+                                                        {
+                                                            @foreach (var category in ViewBag.FilterCategories as List<string>)
+                                                            {
+                                                                <option value="@category">@category</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Brand</label>
+                                                    <select class="form-control select2" id="filterBrand" style="width: 100%;">
+                                                        <option value="">All Brands</option>
+                                                        @if (ViewBag.FilterBrands != null)
+                                                        {
+                                                            @foreach (var brand in ViewBag.FilterBrands as List<string>)
+                                                            {
+                                                                <option value="@brand">@brand</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Type</label>
+                                                    <select class="form-control select2" id="filterType" style="width: 100%;">
+                                                        <option value="">All Types</option>
+                                                        <option value="Expendable">Expendable</option>
+                                                        <option value="Non-Expendable">Non-Expendable</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Stock Status</label>
+                                                    <select class="form-control select2" id="filterStock" style="width: 100%;">
+                                                        <option value="">All Status</option>
+                                                        <option value="low">Low Stock</option>
+                                                        <option value="normal">Normal Stock</option>
+                                                        <option value="high">High Stock</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <button type="button" class="btn btn-primary btn-block" id="applyFilters">
+                                                    <i class="fas fa-search"></i> Apply Filters
+                                                </button>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <button type="button" class="btn btn-default btn-block" id="resetFilters">
+                                                    <i class="fas fa-undo"></i> Reset Filters
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Bar -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-primary btn-sm active" data-filter="all">
+                                        <i class="fas fa-list"></i> All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" data-filter="low-stock">
+                                        <i class="fas fa-exclamation-triangle"></i> Low Stock
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" data-filter="expendable">
+                                        <i class="fas fa-recycle"></i> Expendable
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-filter="non-expendable">
+                                        <i class="fas fa-tools"></i> Non-Expendable
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default btn-sm" id="refreshTable">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                    <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#columnToggleModal">
+                                        <i class="fas fa-columns"></i> Columns
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="table-responsive">
+                            <table id="itemsTable" class="table table-bordered table-striped table-hover">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th class="text-center" style="width: 40px;">
+                                            <div class="icheck-primary d-inline">
+                                                <input type="checkbox" id="checkAll">
+                                                <label for="checkAll"></label>
+                                            </div>
+                                        </th>
+                                        <th>Item Code</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Sub Category</th>
+                                        <th>Brand</th>
+                                        <th>Type</th>
+                                        <th>Stock</th>
+                                        <th>Min Stock</th>
+                                        <th>Status</th>
+                                        <th style="width: 200px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        var stockPercentage = item.MinimumStock > 0 ? (item.CurrentStock / item.MinimumStock) * 100 : 100;
+                                        var stockClass = item.CurrentStock < item.MinimumStock ? "table-danger" :
+                                        item.CurrentStock <= item.MinimumStock * 1.5m ? "table-warning" : "";
+
+                                        <tr class="@stockClass" data-item-id="@item.Id">
+                                            <td class="text-center">
+                                                <div class="icheck-primary d-inline">
+                                                    <input type="checkbox" class="item-checkbox" id="check@(item.Id)" value="@item.Id">
+                                                    <label for="check@(item.Id)"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-secondary">@item.ItemCode</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="img-circle bg-gradient-primary d-flex align-items-center justify-content-center mr-2" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-box text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>@item.Name</strong>
+                                                        @if (!string.IsNullOrEmpty(item.Description))
+                                                        {
+                                                            <br>
+                                                            <small class="text-muted">@(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.CategoryName))
+                                                {
+                                                    <span class="badge badge-info">@item.CategoryName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.SubCategoryName))
+                                                {
+                                                    <span class="badge badge-secondary">@item.SubCategoryName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.BrandName))
+                                                {
+                                                    <div>
+                                                        <strong>@item.BrandName</strong>
+                                                        @if (!string.IsNullOrEmpty(item.ModelName))
+                                                        {
+                                                            <br>
+                                                            <small class="text-muted">@item.ModelName</small>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.Type == IMS.Domain.Enums.ItemType.Expendable)
+                                                {
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-recycle"></i> Expendable
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-primary">
+                                                        <i class="fas fa-tools"></i> Non-Expendable
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (item.CurrentStock < item.MinimumStock)
+                                                    {
+                                                        <span class="badge badge-danger">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            @item.CurrentStock @item.Unit
+                                                        </span>
+                                                    }
+                                                    else if (item.CurrentStock <= item.MinimumStock * 1.5m)
+                                                    {
+                                                        <span class="badge badge-warning">
+                                                            @item.CurrentStock @item.Unit
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-success">
+                                                            @item.CurrentStock @item.Unit
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <div class="progress progress-xs mt-1">
+                                                    @{
+                                                        var progressColor = stockPercentage < 50 ? "bg-danger"
+                                                        : stockPercentage < 100 ? "bg-warning"
+                                                        : "bg-success";
+                                                        var progressWidth = Math.Min((decimal)(stockPercentage ?? 0m), 100m);
+                                                    }
+                                                    <div class="progress-bar @progressColor" style="width: @progressWidth%"></div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@item.MinimumStock @item.Unit</small>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check-circle"></i> Active
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger">
+                                                        <i class="fas fa-times-circle"></i> Inactive
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.Id"
+                                                       class="btn btn-info btn-sm"
+                                                       data-toggle="tooltip"
+                                                       title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@item.Id"
+                                                       class="btn btn-warning btn-sm"
+                                                       data-toggle="tooltip"
+                                                       title="Edit Item">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button"
+                                                            class="btn btn-success btn-sm"
+                                                            data-toggle="modal"
+                                                            data-target="#stockModal"
+                                                            data-item-id="@item.Id"
+                                                            data-item-name="@item.Name"
+                                                            data-current-stock="@item.CurrentStock"
+                                                            data-unit="@item.Unit"
+                                                            title="Adjust Stock">
+                                                        <i class="fas fa-calculator"></i>
+                                                    </button>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <button type="button"
+                                                                class="btn btn-secondary btn-sm dropdown-toggle"
+                                                                data-toggle="dropdown"
+                                                                aria-expanded="false">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-right">
+                                                            <a class="dropdown-item" href="@Url.Action("GenerateBarcode", "Item", new { id = item.Id })">
+                                                                <i class="fas fa-barcode text-primary"></i> Generate Barcode
+                                                            </a>
+                                                            <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">
+                                                                <i class="fas fa-history text-info"></i> View History
+                                                            </a>
+                                                            <a class="dropdown-item" asp-action="Duplicate" asp-route-id="@item.Id">
+                                                                <i class="fas fa-copy text-secondary"></i> Duplicate Item
+                                                            </a>
+                                                            <div class="dropdown-divider"></div>
+                                                            <a class="dropdown-item text-danger" href="#" onclick="confirmDelete(@item.Id, '@item.Name'); return false;">
+                                                                <i class="fas fa-trash"></i> Delete
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="description-block">
+                                    <span class="description-text">Showing @Model.Count() items</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <button type="button" class="btn btn-default btn-sm" onclick="window.print()">
+                                    <i class="fas fa-print"></i> Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stock Adjustment Modal -->
+<div class="modal fade" id="stockModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-success">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-calculator"></i> Stock Adjustment
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="AdjustStock" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="stockItemId" name="ItemId" />
+
+                    <div class="callout callout-info">
+                        <h5 id="stockItemName"></h5>
+                        <p>Current Stock: <strong><span id="currentStockDisplay"></span></strong></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustmentType">Adjustment Type</label>
+                        <select class="form-control select2" name="AdjustmentType" id="adjustmentType" style="width: 100%;">
+                            <option value="Add">Add Stock</option>
+                            <option value="Remove">Remove Stock</option>
+                            <option value="Set">Set Stock</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="Quantity" id="quantity" min="0" step="0.01" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="unitDisplay"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason</label>
+                        <textarea class="form-control" name="Reason" id="reason" rows="3" placeholder="Enter reason for adjustment..." required></textarea>
+                    </div>
+
+                    <div class="alert alert-info" id="stockPreview" style="display:none;">
+                        <i class="fas fa-info-circle"></i> New Stock: <strong><span id="newStockValue"></span></strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Apply Adjustment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Barcode Modal -->
+<div class="modal fade" id="bulkBarcodeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-warning">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-barcode"></i> Bulk Barcode Generation
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-controller="Barcode" asp-action="BulkGenerate" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <span id="selectedCount">0</span> items selected for barcode generation
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barcodeSize">Barcode Size</label>
+                        <select class="form-control" id="barcodeSize" name="Size">
+                            <option value="small">Small (1" x 0.5")</option>
+                            <option value="medium" selected>Medium (2" x 1")</option>
+                            <option value="large">Large (3" x 1.5")</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barcodeFormat">Format</label>
+                        <select class="form-control" id="barcodeFormat" name="Format">
+                            <option value="CODE128">Code 128</option>
+                            <option value="QR">QR Code</option>
+                            <option value="EAN13">EAN-13</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="selectedItems" name="ItemIds" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="generateBarcodes" disabled>
+                        <i class="fas fa-barcode"></i> Generate Barcodes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-info">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-file-import"></i> Import Items
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="Import" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="importFile">Select Excel File</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="importFile" name="file" accept=".xlsx,.xls" required>
+                            <label class="custom-file-label" for="importFile">Choose file...</label>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Import Instructions:</h6>
+                        <ol class="mb-0">
+                            <li>Download the template first</li>
+                            <li>Fill in the item details</li>
+                            <li>Upload the completed file</li>
+                        </ol>
+                    </div>
+
+                    <a asp-action="DownloadTemplate" class="btn btn-secondary btn-block">
+                        <i class="fas fa-download"></i> Download Template
+                    </a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('=== Items Index Page Initialized ===');
+
+            // Initialize DataTable with enhanced features
+            var table = $('#itemsTable').DataTable({
+                responsive: true,
+                lengthChange: true,
+                autoWidth: false,
+                pageLength: 25,
+                order: [[1, 'asc']],
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'copyHtml5',
+                        className: 'btn btn-secondary btn-sm d-none',
+                        text: '<i class="fas fa-copy"></i>',
+                        titleAttr: 'Copy'
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-success btn-sm d-none',
+                        text: '<i class="fas fa-file-excel"></i>',
+                        titleAttr: 'Excel',
+                        title: 'Items List - ' + new Date().toLocaleDateString(),
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-info btn-sm d-none',
+                        text: '<i class="fas fa-file-csv"></i>',
+                        titleAttr: 'CSV'
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-danger btn-sm d-none',
+                        text: '<i class="fas fa-file-pdf"></i>',
+                        titleAttr: 'PDF'
+                    }
+                ],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search items...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ items",
+                    paginate: {
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>'
+                    }
+                },
+                columnDefs: [
+                    { orderable: false, targets: [0, 10] },
+                    { className: "text-center", targets: [0, 9] }
+                ],
+                drawCallback: function() {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+
+            // Export button functionality
+            $('#exportBtn').on('click', function() {
+                table.button('.buttons-excel').trigger();
+            });
+
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Check all functionality
+            $('#checkAll').on('change', function() {
+                var isChecked = this.checked;
+                $('.item-checkbox:visible').prop('checked', isChecked);
+                updateBulkBarcodeButton();
+            });
+
+            $(document).on('change', '.item-checkbox', function() {
+                updateBulkBarcodeButton();
+                var totalCheckboxes = $('.item-checkbox:visible').length;
+                var checkedCheckboxes = $('.item-checkbox:visible:checked').length;
+                $('#checkAll').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
+            });
+
+            function updateBulkBarcodeButton() {
+                var checked = $('.item-checkbox:checked').length;
+                $('#generateBarcodes').prop('disabled', checked === 0);
+                $('#selectedCount').text(checked);
+                if (checked > 0) {
+                    $('#generateBarcodes').html(`<i class="fas fa-barcode"></i> Generate ${checked} Barcodes`);
+                } else {
+                    $('#generateBarcodes').html('<i class="fas fa-barcode"></i> Generate Barcodes');
+                }
+            }
+
+            // Quick filter buttons
+            $('[data-filter]').on('click', function(e) {
+                e.preventDefault();
+                var filter = $(this).data('filter');
+
+                // Update active state
+                $('.btn-group [data-filter]').removeClass('active');
+                $(this).addClass('active');
+
+                // Apply filter
+                table.columns().search('').draw();
+
+                switch(filter) {
+                    case 'all':
+                        break;
+                    case 'expendable':
+                        table.column(6).search('Expendable').draw();
+                        break;
+                    case 'non-expendable':
+                        table.column(6).search('Non-Expendable').draw();
+                        break;
+                    case 'low-stock':
+                        table.column(7).search('danger|warning', true, false).draw();
+                        break;
+                    case 'active':
+                        table.column(9).search('Active').draw();
+                        break;
+                    case 'inactive':
+                        table.column(9).search('Inactive').draw();
+                        break;
+                }
+            });
+
+            // Advanced filters
+            $('#applyFilters').on('click', function() {
+                var category = $('#filterCategory').val();
+                var brand = $('#filterBrand').val();
+                var type = $('#filterType').val();
+                var stock = $('#filterStock').val();
+
+                table.columns().search('');
+
+                if (category) {
+                    table.column(3).search(category);
+                }
+
+                if (brand) {
+                    table.column(5).search(brand);
+                }
+
+                if (type) {
+                    table.column(6).search(type);
+                }
+
+                if (stock) {
+                    switch(stock) {
+                        case 'low':
+                            table.column(7).search('danger', true, false);
+                            break;
+                        case 'normal':
+                            table.column(7).search('warning', true, false);
+                            break;
+                        case 'high':
+                            table.column(7).search('success', true, false);
+                            break;
+                    }
+                }
+
+                table.draw();
+            });
+
+            $('#resetFilters').on('click', function() {
+                $('.select2').val(null).trigger('change');
+                table.search('').columns().search('').draw();
+                $('.btn-group [data-filter]').removeClass('active');
+                $('[data-filter="all"]').addClass('active');
+            });
+
+            // Refresh table
+            $('#refreshTable').on('click', function() {
+                var btn = $(this);
+                var icon = btn.find('i');
+                icon.addClass('fa-spin');
+
+                setTimeout(function() {
+                    icon.removeClass('fa-spin');
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Table refreshed successfully');
+                    } else {
+                        alert('Table refreshed successfully');
+                    }
+                }, 1000);
+            });
+
+            // Stock adjustment modal
+            var currentStock = 0;
+            $('#stockModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var itemId = button.data('item-id');
+                var itemName = button.data('item-name');
+                currentStock = parseFloat(button.data('current-stock')) || 0;
+                var unit = button.data('unit');
+
+                $('#stockItemId').val(itemId);
+                $('#stockItemName').text(itemName);
+                $('#currentStockDisplay').text(currentStock + ' ' + unit);
+                $('#unitDisplay').text(unit);
+                $('#stockPreview').hide();
+                $('#quantity').val('');
+                $('#reason').val('');
+            });
+
+            // Calculate new stock preview
+            $('#quantity, #adjustmentType').on('change keyup', function() {
+                var quantity = parseFloat($('#quantity').val()) || 0;
+                var type = $('#adjustmentType').val();
+                var newStock = 0;
+
+                switch(type) {
+                    case 'Add':
+                        newStock = currentStock + quantity;
+                        break;
+                    case 'Remove':
+                        newStock = Math.max(0, currentStock - quantity);
+                        break;
+                    case 'Set':
+                        newStock = quantity;
+                        break;
+                }
+
+                if (quantity > 0) {
+                    $('#newStockValue').text(newStock.toFixed(2) + ' ' + $('#unitDisplay').text());
+                    $('#stockPreview').slideDown();
+                } else {
+                    $('#stockPreview').slideUp();
+                }
+            });
+
+            // Bulk barcode modal
+            $('#bulkBarcodeModal').on('show.bs.modal', function() {
+                var selectedIds = $('.item-checkbox:checked').map(function() {
+                    return this.value;
+                }).get();
+                $('#selectedItems').val(selectedIds.join(','));
+            });
+
+            // File input label update
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+            });
+
+            // Tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            console.log('=== Items Index Page Ready ===');
+        });
+
+        // Delete confirmation
+        // Delete confirmation
+        function confirmDelete(id, name) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `Delete item "${name}"? This action cannot be undone!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create and submit form for POST request
+                        var form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/Item/Delete/' + id;
+
+                        // Add anti-forgery token
+                        var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (token) {
+                            var hiddenToken = document.createElement('input');
+                            hiddenToken.type = 'hidden';
+                            hiddenToken.name = '__RequestVerificationToken';
+                            hiddenToken.value = token.value;
+                            form.appendChild(hiddenToken);
+                        }
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            } else {
+                if (confirm(`Are you sure you want to delete "${name}"?`)) {
+                    // Create and submit form for POST request
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/Item/Delete/' + id;
+
+                    // Add anti-forgery token
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (token) {
+                        var hiddenToken = document.createElement('input');
+                        hiddenToken.type = 'hidden';
+                        hiddenToken.name = '__RequestVerificationToken';
+                        hiddenToken.value = token.value;
+                        form.appendChild(hiddenToken);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Fix card visibility */
+        .small-box h3,
+        .small-box p,
+        .small-box .small-box-footer {
+            color: #fff !important;
+        }
+
+        .small-box .icon {
+            font-size: 90px;
+            opacity: 0.3;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .btn-group-sm > .btn, .btn-sm {
+            padding: .25rem .5rem;
+            font-size: .875rem;
+            line-height: 1.5;
+            border-radius: .2rem;
+        }
+
+        .btn-group .btn {
+            margin-right: 2px;
+        }
+
+        .progress-xs {
+            height: 2px;
+        }
+
+        .small-box .icon {
+            transition: all .3s linear;
+        }
+
+        .small-box:hover .icon {
+            font-size: 95px;
+        }
+
+        .dataTables_filter input {
+            margin-left: 0.5em;
+            margin-right: 0.5em;
+        }
+
+        .select2-container--bootstrap4 .select2-selection {
+            min-height: calc(1.5em + 0.75rem + 2px);
+        }
+
+        .badge {
+            font-size: 0.75em;
+        }
+
+        .img-circle {
+            border-radius: 50%;
+        }
+
+        .dropdown-menu {
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        @@media (max-width: 768px) {
+            .btn-group-sm
+
+        {
+            flex-direction: column;
+        }
+
+        .small-box {
+            margin-bottom: 10px;
+        }
+
+        }
+    </style>
+}

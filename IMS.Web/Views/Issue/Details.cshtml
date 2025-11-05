@@ -1,0 +1,844 @@
+@model IMS.Application.DTOs.IssueDto
+@{
+    ViewData["Title"] = $"Issue #{Model.IssueNo}";
+    var statusClass = Model.Status switch
+    {
+        "Draft" => "secondary",
+        "Pending" => "warning",
+        "Approved" => "success",
+        "Rejected" => "danger",
+        "Cancelled" => "dark",
+        "Issued" => "info",
+        "Completed" => "primary",
+        "Partial" => "purple",
+        _ => "secondary"
+    };
+
+    var statusIcon = Model.Status switch
+    {
+        "Draft" => "fa-file",
+        "Pending" => "fa-clock",
+        "Approved" => "fa-check-circle",
+        "Rejected" => "fa-times-circle",
+        "Cancelled" => "fa-ban",
+        "Issued" => "fa-truck",
+        "Completed" => "fa-flag-checkered",
+        _ => "fa-question-circle"
+    };
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-clipboard-list"></i> Issue Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Issues</a></li>
+                    <li class="breadcrumb-item active">@Model.IssueNo</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="btn-group float-right">
+                    @if (Model.Status == "Draft")
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-primary btn-sm" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Submit for Approval
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" id="deleteBtn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    }
+
+                    @if (Model.Status == "Approved" && string.IsNullOrEmpty(Model.VoucherNumber))
+                    {
+                        <a asp-action="GenerateVoucher" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                            <i class="fas fa-qrcode"></i> Generate Voucher
+                        </a>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.VoucherNumber))
+                    {
+                        <a asp-action="PrintVoucher" asp-route-id="@Model.Id" target="_blank" class="btn btn-info btn-sm">
+                            <i class="fas fa-print"></i> Print Voucher
+                        </a>
+                    }
+
+                    @if (Model.Status == "Issued" || Model.Status == "Completed")
+                    {
+                        <a asp-action="ViewReceipt" asp-route-id="@Model.Id" target="_blank" class="btn btn-success btn-sm">
+                            <i class="fas fa-receipt"></i> View Receipt
+                        </a>
+                    }
+
+                    <a asp-action="Index" class="btn btn-default btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Issue Information -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Issue Information - #@Model.IssueNo
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-@statusClass badge-lg">
+                                <i class="fas @statusIcon"></i> @Model.Status
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-calendar-alt"></i> Issue Date:</dt>
+                                    <dd class="col-sm-8">@Model.IssueDate.ToString("dd MMM yyyy")</dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-warehouse"></i> From Store:</dt>
+                                    <dd class="col-sm-8">@Model.FromStoreName</dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-users"></i> Issue Type:</dt>
+                                    <dd class="col-sm-8"><span class="badge badge-info">@Model.IssuedToType</span></dd>
+
+                                    @if (!string.IsNullOrEmpty(Model.MemoNo))
+                                    {
+                                        <dt class="col-sm-4"><i class="fas fa-file-alt"></i> Memo No:</dt>
+                                        <dd class="col-sm-8">@Model.MemoNo</dd>
+                                    }
+                                </dl>
+                            </div>
+
+                            <div class="col-md-6">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-user-tag"></i> Issued To:</dt>
+                                    <dd class="col-sm-8">
+                                        @switch (Model.IssuedToType)
+                                        {
+                                            case "Battalion":
+                                                @Model.IssuedToBattalionName
+                                                break;
+                                            case "Range":
+                                                @Model.IssuedToRangeName
+                                                break;
+                                            case "Zila":
+                                                @Model.IssuedToZilaName
+                                                break;
+                                            case "Upazila":
+                                                @Model.IssuedToUpazilaName
+                                                break;
+                                            case "Individual":
+                                                <text>@Model.IssuedToIndividualName</text>
+                                                <small class="text-muted">(@Model.IssuedToIndividualBadgeNo)</small>
+                                                break;
+                                            default:
+                                                @Model.IssuedToName
+                                                break;
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-user"></i> Issued By:</dt>
+                                    <dd class="col-sm-8">@Model.IssuedBy</dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-bullseye"></i> Purpose:</dt>
+                                    <dd class="col-sm-8">@Model.Purpose</dd>
+
+                                    @if (!string.IsNullOrEmpty(Model.DeliveryLocation))
+                                    {
+                                        <dt class="col-sm-4"><i class="fas fa-map-marker-alt"></i> Location:</dt>
+                                        <dd class="col-sm-8">@Model.DeliveryLocation</dd>
+                                    }
+                                </dl>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Remarks))
+                        {
+                            <hr>
+                            <div class="callout callout-info">
+                                <h5><i class="fas fa-comment-dots"></i> Remarks</h5>
+                                <p>@Model.Remarks</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Issue Items -->
+                <div class="card card-purple card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-boxes"></i> Issue Items
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-light">@Model.TotalItems Items</span>
+                            <span class="badge badge-light ml-1">Qty: @Model.TotalQuantity?.ToString("0.##")</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th width="4%">#</th>
+                                        <th width="10%">Code</th>
+                                        <th width="20%">Item Name</th>
+                                        <th width="12%">Category</th>
+                                        <th width="12%">Store</th>
+                                        <th width="8%" class="text-center">Quantity</th>
+                                        <th width="8%">Unit</th>
+                                        <th width="12%" class="text-right">Unit Price</th>
+                                        <th width="14%" class="text-right">Total Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Items?.Any() == true)
+                                    {
+                                        var index = 1;
+                                        foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td><strong>@(index++)</strong></td>
+                                                <td><span class="badge badge-secondary">@item.ItemCode</span></td>
+                                                <td>
+                                                    <strong>@item.ItemName</strong>
+                                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
+                                                    {
+                                                        <br /><small class="text-muted"><i class="fas fa-barcode"></i> Batch: @item.BatchNumber</small>
+                                                    }
+                                                </td>
+                                                <td>@item.CategoryName</td>
+                                                <td>@item.StoreName</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-primary">@item.Quantity.ToString("0.##")</span>
+                                                </td>
+                                                <td>@item.Unit</td>
+                                                <td class="text-right">
+                                                    @if (item.UnitPrice.HasValue && item.UnitPrice.Value > 0)
+                                                    {
+                                                        <text>৳ @((item.UnitPrice.Value % 1 == 0) ? item.UnitPrice.Value.ToString("N0") : item.UnitPrice.Value.ToString("N2"))</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td class="text-right">
+                                                    @if (item.UnitPrice.HasValue && item.Quantity > 0)
+                                                    {
+                                                        var totalPrice = item.UnitPrice.Value * item.Quantity;
+                                                        <strong class="text-primary">৳ @((totalPrice % 1 == 0) ? totalPrice.ToString("N0") : totalPrice.ToString("N2"))</strong>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted">
+                                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                                <p>No items found</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                @if (Model.TotalValue > 0)
+                                {
+                                    <tfoot>
+                                        <tr class="bg-light">
+                                            <td colspan="8" class="text-right"><strong>Total Value:</strong></td>
+                                            <td class="text-right"><strong class="text-primary">৳ @((Model.TotalValue.Value % 1 == 0) ? Model.TotalValue.Value.ToString("N0") : Model.TotalValue.Value.ToString("N2"))</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Information -->
+                @if (Model.Status == "Approved" || Model.Status == "Rejected")
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="alert alert-@(Model.Status == "Approved" ? "success" : "danger") mb-0">
+                                <div class="row align-items-center">
+                                    <div class="col-md-1 text-center">
+                                        <i class="fas @(Model.Status == "Approved" ? "fa-check-circle" : "fa-times-circle") fa-3x"></i>
+                                    </div>
+                                    <div class="col-md-11">
+                                        <h5>
+                                            <i class="icon fas @(Model.Status == "Approved" ? "fa-check" : "fa-ban")"></i>
+                                            @(Model.Status == "Approved" ? "Approved" : "Rejected")
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <small>Processed By:</small><br>
+                                                <strong>@(Model.ApprovedByName ?? Model.ApprovedBy ?? "N/A")</strong>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small>Date:</small><br>
+                                                <strong>@Model.ApprovedDate?.ToString("dd MMM yyyy HH:mm")</strong>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small>Status:</small><br>
+                                                <strong>@Model.Status</strong>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(Model.ApprovalComments))
+                                        {
+                                            <hr class="my-2">
+                                            <strong>Comments:</strong>
+                                            <p class="mb-0">@Model.ApprovalComments</p>
+                                        }
+                                        @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                                        {
+                                            <hr class="my-2">
+                                            <strong>Rejection Reason:</strong>
+                                            <p class="mb-0">@Model.RejectionReason</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Approval History -->
+                @if (Model.ApprovalHistory?.Any() == true)
+                {
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i> Approval History
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-primary">@Model.ApprovalHistory.Count Levels</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                @foreach (var history in Model.ApprovalHistory.OrderBy(h => h.ActionDate))
+                                {
+                                    var iconClass = history.Action?.ToUpper() switch
+                                    {
+                                        "APPROVED" => "fa-check bg-success",
+                                        "REJECTED" => "fa-times bg-danger",
+                                        "RETURNED" => "fa-undo bg-warning",
+                                        _ => "fa-circle bg-info"
+                                    };
+
+                                    <div>
+                                        <i class="fas @iconClass"></i>
+                                        <div class="timeline-item">
+                                            <span class="time">
+                                                <i class="fas fa-clock"></i> @history.ActionDate.ToString("dd MMM yyyy HH:mm")
+                                            </span>
+                                            <h3 class="timeline-header">
+                                                <strong>Level @history.Level</strong> - @history.Action
+                                            </h3>
+                                            <div class="timeline-body">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Processed By:</dt>
+                                                    <dd class="col-sm-8">@(history.ActionBy ?? "Unknown")</dd>
+
+                                                    @if (!string.IsNullOrEmpty(history.PreviousStatus) || !string.IsNullOrEmpty(history.NewStatus))
+                                                    {
+                                                        <dt class="col-sm-4">Status Change:</dt>
+                                                        <dd class="col-sm-8">
+                                                            <span class="badge badge-secondary">@history.PreviousStatus</span>
+                                                            <i class="fas fa-arrow-right"></i>
+                                                            <span class="badge badge-success">@history.NewStatus</span>
+                                                        </dd>
+                                                    }
+
+                                                    @if (!string.IsNullOrEmpty(history.Comments))
+                                                    {
+                                                        <dt class="col-sm-4">Comments:</dt>
+                                                        <dd class="col-sm-8">@history.Comments</dd>
+                                                    }
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                <div>
+                                    <i class="fas fa-clock bg-gray"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Status Info Box -->
+                <div class="info-box bg-@statusClass">
+                    <span class="info-box-icon"><i class="fas @statusIcon"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Current Status</span>
+                        <span class="info-box-number">@Model.Status</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: @(Model.Status == "Completed" ? "100" : Model.Status == "Approved" ? "75" : Model.Status == "Pending" ? "50" : "25")%"></div>
+                        </div>
+                        <span class="progress-description">
+                            @(Model.Status == "Completed" ? "Process Complete" : Model.Status == "Approved" ? "Waiting for Voucher" : Model.Status == "Pending" ? "Awaiting Approval" : "Draft Mode")
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="card card-warning card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Summary
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><i class="fas fa-boxes text-primary"></i> Total Items</td>
+                                <td class="text-right"><span class="badge badge-primary">@Model.TotalItems</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-weight text-info"></i> Total Quantity</td>
+                                <td class="text-right"><strong>@Model.TotalQuantity?.ToString("0.##")</strong></td>
+                            </tr>
+                            @if (Model.TotalValue > 0)
+                            {
+                                <tr>
+                                    <td><i class="fas fa-dollar-sign text-success"></i> Total Value</td>
+                                    <td class="text-right"><strong class="text-success">৳ @Model.TotalValue?.ToString("N2")</strong></td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.VoucherNumber))
+                            {
+                                <tr>
+                                    <td><i class="fas fa-qrcode text-warning"></i> Voucher No</td>
+                                    <td class="text-right"><span class="badge badge-success">@Model.VoucherNumber</span></td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history"></i> Activity Timeline
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <!-- Created -->
+                            <div>
+                                <i class="fas fa-plus bg-primary"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</span>
+                                    <h3 class="timeline-header">Issue Created</h3>
+                                    <div class="timeline-body">
+                                        Created by @(Model.IssuedBy ?? "System")
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.Status != "Draft")
+                            {
+                                <!-- Submitted -->
+                                <div>
+                                    <i class="fas fa-paper-plane bg-info"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.UpdatedAt?.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header">Submitted for Approval</h3>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.Status == "Approved")
+                            {
+                                <!-- Approved -->
+                                <div>
+                                    <i class="fas fa-check bg-success"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.ApprovedDate?.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header">Approved</h3>
+                                        <div class="timeline-body">
+                                            By @(Model.ApprovedByName ?? Model.ApprovedBy ?? "Officer")
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.Status == "Rejected")
+                            {
+                                <!-- Rejected -->
+                                <div>
+                                    <i class="fas fa-times bg-danger"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.ApprovedDate?.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header text-danger">Rejected</h3>
+                                        <div class="timeline-body">
+                                            By @(Model.ApprovedByName ?? Model.ApprovedBy ?? "Officer")
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.Status == "Completed")
+                            {
+                                <!-- Completed -->
+                                <div>
+                                    <i class="fas fa-flag-checkered bg-success"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @(Model.ReceivedDate.ToString("dd MMM yyyy HH:mm") ?? "--")</span>
+                                        <h3 class="timeline-header">Completed</h3>
+                                    </div>
+                                </div>
+                            }
+
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher Details -->
+                @if (!string.IsNullOrEmpty(Model.VoucherNumber))
+                {
+                    <div class="card card-success card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-qrcode"></i> Voucher Details
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><i class="fas fa-barcode text-success"></i> Voucher No</td>
+                                    <td class="text-right"><strong>@Model.VoucherNumber</strong></td>
+                                </tr>
+                                @if (Model.VoucherGeneratedDate.HasValue)
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-calendar text-primary"></i> Generated Date</td>
+                                        <td class="text-right">@Model.VoucherGeneratedDate.Value.ToString("dd MMM yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.VoucherDocumentPath))
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center pt-2">
+                                            <a href="/@Model.VoucherDocumentPath" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="fas fa-file-pdf"></i> View Document
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Attached Documents -->
+                @if (Model.Attachments?.Any() == true)
+                {
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-paperclip"></i> Attached Documents
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-info">@Model.Attachments.Count</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-striped">
+                                <tbody>
+                                    @foreach (var attachment in Model.Attachments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <i class="fas fa-file text-primary"></i>
+                                                <strong>@attachment.FileName</strong>
+                                                <br />
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i> @attachment.UploadDate.ToString("dd MMM yyyy")
+                                                    | @(attachment.FileSize / 1024.0).ToString("N0") KB
+                                                </small>
+                                            </td>
+                                            <td class="text-right" style="width: 100px;">
+                                                <a href="/@attachment.FilePath" target="_blank" class="btn btn-info btn-xs">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Other Information -->
+                @if (!string.IsNullOrEmpty(Model.AllotmentLetterNo) || !string.IsNullOrEmpty(Model.ParentIssueNo) || Model.MemoDate.HasValue)
+                {
+                    <div class="card card-secondary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info"></i> Additional Information
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm">
+                                @if (!string.IsNullOrEmpty(Model.AllotmentLetterNo))
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-file-alt text-info"></i> Allotment Letter</td>
+                                        <td class="text-right">
+                                            <a asp-controller="AllotmentLetter" asp-action="Details" asp-route-id="@Model.AllotmentLetterId" class="badge badge-info">
+                                                @Model.AllotmentLetterNo
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ParentIssueNo))
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-link text-warning"></i> Parent Issue</td>
+                                        <td class="text-right">
+                                            <a asp-action="Details" asp-route-id="@Model.ParentIssueId" class="badge badge-warning">
+                                                @Model.ParentIssueNo
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (Model.MemoDate.HasValue)
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-calendar-alt text-primary"></i> Memo Date</td>
+                                        <td class="text-right">@Model.MemoDate.Value.ToString("dd MMM yyyy")</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ReceivedBy))
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-user-check text-success"></i> Received By</td>
+                                        <td class="text-right"><strong>@Model.ReceivedBy</strong></td>
+                                    </tr>
+                                }
+                                @if (Model.ReceivedDate != default(DateTime))
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-calendar-check text-success"></i> Received Date</td>
+                                        <td class="text-right">@Model.ReceivedDate.ToString("dd MMM yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                                @if (Model.Status == "Issued" || Model.Status == "Completed")
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center bg-light pt-3">
+                                            <a asp-action="ViewReceipt" asp-route-id="@Model.Id" target="_blank" class="btn btn-success btn-sm">
+                                                <i class="fas fa-receipt"></i> View Handover Receipt
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Digital Signatures -->
+                @if (Model.Signatures?.Any() == true)
+                {
+                    <div class="card card-purple card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-signature"></i> Digital Signatures
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-purple">@Model.Signatures.Count</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var signature in Model.Signatures.OrderBy(s => s.SignedDate))
+                            {
+                                var signatureIcon = signature.SignatureType switch
+                                {
+                                    "Issuer" => "fa-user-tie",
+                                    "Approver" => "fa-user-check",
+                                    "Receiver" => "fa-user-check",
+                                    _ => "fa-signature"
+                                };
+
+                                var signatureColor = signature.SignatureType switch
+                                {
+                                    "Issuer" => "primary",
+                                    "Approver" => "success",
+                                    "Receiver" => "info",
+                                    _ => "secondary"
+                                };
+
+                                <div class="callout callout-@signatureColor">
+                                    <h5>
+                                        <i class="fas @signatureIcon"></i> @signature.SignatureType
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-5">Signed By:</dt>
+                                                <dd class="col-sm-7"><strong>@signature.SignedBy</strong></dd>
+
+                                                @if (!string.IsNullOrEmpty(signature.SignerBadgeId))
+                                                {
+                                                    <dt class="col-sm-5">Badge/ID:</dt>
+                                                    <dd class="col-sm-7">@signature.SignerBadgeId</dd>
+                                                }
+
+                                                @if (!string.IsNullOrEmpty(signature.SignerDesignation))
+                                                {
+                                                    <dt class="col-sm-5">Designation:</dt>
+                                                    <dd class="col-sm-7">@signature.SignerDesignation</dd>
+                                                }
+
+                                                <dt class="col-sm-5">Signed On:</dt>
+                                                <dd class="col-sm-7">@signature.SignedDate.ToString("dd MMM yyyy HH:mm")</dd>
+
+                                                @if (!string.IsNullOrEmpty(signature.IPAddress))
+                                                {
+                                                    <dt class="col-sm-5">IP Address:</dt>
+                                                    <dd class="col-sm-7"><small class="text-muted">@signature.IPAddress</small></dd>
+                                                }
+                                            </dl>
+                                        </div>
+                                        <div class="col-md-6 text-center">
+                                            @if (!string.IsNullOrEmpty(signature.SignatureData))
+                                            {
+                                                <div class="border rounded bg-white p-2">
+                                                    <img src="@signature.SignatureData" alt="Digital Signature"
+                                                         style="max-width: 100%; height: 80px; object-fit: contain;"
+                                                         class="img-fluid" />
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    <i class="fas fa-shield-alt text-success"></i> Verified Signature
+                                                </small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Quick Actions -->
+                @if (Model.Status == "Draft" || Model.Status == "Approved")
+                {
+                    <div class="card card-dark">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-bolt"></i> Quick Actions
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Status == "Approved" && !Model.IsPartialIssue)
+                            {
+                                <a asp-action="CreatePartial" asp-route-id="@Model.Id" class="btn btn-warning btn-block btn-sm mb-2">
+                                    <i class="fas fa-cut"></i> Create Partial Issue
+                                </a>
+                            }
+                            <a asp-action="Duplicate" asp-route-id="@Model.Id" class="btn btn-secondary btn-block btn-sm">
+                                <i class="fas fa-copy"></i> Duplicate Issue
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Submit for Approval
+            $('#submitBtn').click(function() {
+                Swal.fire({
+                    title: 'Submit for Approval?',
+                    text: 'This issue will be sent for approval.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, submit it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("SubmitForApproval", "Issue", new { id = Model.Id })',
+                            { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                            function(response) {
+                                if (response.success) {
+                                    Swal.fire('Success!', 'Issue submitted for approval successfully!', 'success')
+                                        .then(() => location.reload());
+                                } else {
+                                    Swal.fire('Error!', response.message || 'Failed to submit issue', 'error');
+                                }
+                            }).fail(function() {
+                                Swal.fire('Error!', 'An error occurred while submitting', 'error');
+                            });
+                    }
+                });
+            });
+
+            // Delete Issue
+            $('#deleteBtn').click(function() {
+                Swal.fire({
+                    title: 'Delete Issue?',
+                    text: 'This action cannot be undone!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("Delete", "Issue", new { id = Model.Id })',
+                            { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                            function() {
+                                Swal.fire('Deleted!', 'Issue has been deleted.', 'success')
+                                    .then(() => { window.location.href = '@Url.Action("Index")'; });
+                            }).fail(function() {
+                                Swal.fire('Error!', 'Failed to delete issue.', 'error');
+                            });
+                    }
+                });
+            });
+        });
+    </script>
+}

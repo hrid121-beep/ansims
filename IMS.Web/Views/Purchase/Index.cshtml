@@ -1,0 +1,289 @@
+﻿@model IEnumerable<IMS.Application.DTOs.PurchaseDto>
+@{
+    ViewData["Title"] = "Purchase Orders";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Purchase Orders</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+                    <li class="breadcrumb-item active">Purchases</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@ViewBag.TotalPurchases</h3>
+                        <p>Total Purchases</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@ViewBag.PendingApprovals</h3>
+                        <p>Pending Approvals</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>৳@ViewBag.TotalAmount</h3>
+                        <p>Total Amount</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@ViewBag.RejectedCount</h3>
+                        <p>Rejected Orders</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Filters
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Draft" selected="@(ViewBag.Status == "Draft")">Draft</option>
+                                    <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending Approval</option>
+                                    <option value="Approved" selected="@(ViewBag.Status == "Approved")">Approved</option>
+                                    <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+                                    <option value="Completed" selected="@(ViewBag.Status == "Completed")">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Vendor</label>
+                                <select name="vendorId" class="form-control select2">
+                                    <option value="">All Vendors</option>
+                                    @if (ViewBag.Vendors != null)
+                                    {
+                                        @foreach (var vendor in ViewBag.Vendors as SelectList)
+                                        {
+                                            <option value="@vendor.Value" selected="@(vendor.Value == ViewBag.VendorId?.ToString())">@vendor.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <a asp-action="Index" class="btn btn-default">
+                                <i class="fas fa-redo"></i> Clear Filters
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main List Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Purchase Order List</h3>
+                <div class="card-tools">
+                    <div class="btn-group">
+                        <a asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> New Purchase Order
+                        </a>
+                        <button type="button" class="btn btn-info btn-sm" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="purchaseTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>PO Number</th>
+                            <th>Date</th>
+                            <th>Vendor/Source</th>
+                            <th>Type</th>
+                            <th>Items</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id">
+                                        @item.PurchaseOrderNo
+                                    </a>
+                                </td>
+                                <td>@item.PurchaseDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (item.IsMarketplacePurchase)
+                                    {
+                                        <span class="text-muted">Marketplace Purchase</span>
+                                    }
+                                    else
+                                    {
+                                        @item.VendorName
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge badge-@(item.IsMarketplacePurchase ? "info" : "primary")">
+                                        @(item.IsMarketplacePurchase ? "Marketplace" : "Vendor")
+                                    </span>
+                                </td>
+                                <td>@item.Items.Count items</td>
+                                <td class="text-right">৳@item.TotalAmount.ToString("N2")</td>
+                                <td>
+                                    @switch(item.Status)
+                                    {
+                                        case "Draft":
+                                            <span class="badge badge-secondary">Draft</span>
+                                            break;
+                                        case "Pending":
+                                            <span class="badge badge-warning">Pending Approval</span>
+                                            break;
+                                        case "Approved":
+                                            <span class="badge badge-success">Approved</span>
+                                            break;
+                                        case "Rejected":
+                                            <span class="badge badge-danger">Rejected</span>
+                                            break;
+                                        case "Completed":
+                                            <span class="badge badge-info">Completed</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-light">@item.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@item.CreatedBy</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (item.Status == "Draft")
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="@item.Id" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                        <a asp-action="Print" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-default" title="Print">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $("#purchaseTable").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "order": [[1, "desc"]],
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            }).buttons().container().appendTo('#purchaseTable_wrapper .col-md-6:eq(0)');
+
+            $('.select2').select2();
+
+            // Delete confirmation
+            $('.delete-btn').click(function() {
+                const id = $(this).data('id');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete the purchase order!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("Delete")', { id: id }, function() {
+                            location.reload();
+                        });
+                    }
+                });
+            });
+        });
+
+        function exportData() {
+            window.location.href = '@Url.Action("Export")' + window.location.search;
+        }
+    </script>
+}

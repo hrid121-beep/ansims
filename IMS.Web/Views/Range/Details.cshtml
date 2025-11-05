@@ -1,0 +1,393 @@
+﻿@model IMS.Application.DTOs.RangeDto
+@{
+    ViewData["Title"] = "Range Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var battalions = ViewBag.Battalions as IEnumerable<IMS.Application.DTOs.BattalionDto> ?? new List<IMS.Application.DTOs.BattalionDto>();
+    var zilas = ViewBag.Zilas as IEnumerable<IMS.Application.DTOs.ZilaDto> ?? new List<IMS.Application.DTOs.ZilaDto>();
+    var statistics = ViewBag.Statistics as IMS.Application.DTOs.RangeStatisticsDto;
+    var dashboardData = ViewBag.DashboardData as Dictionary<string, object>;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Range Details - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Ranges</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Range Info -->
+            <div class="col-md-4">
+                <div class="card card-primary card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            <i class="fas fa-map-marked-alt fa-5x text-primary mb-3"></i>
+                        </div>
+                        <h3 class="profile-username text-center">@Model.Name</h3>
+                        <p class="text-center text-muted">@Model.Code</p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>Headquarter</b>
+                                <span class="float-right">@(Model.HeadquarterLocation ?? "-")</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Commander</b>
+                                <span class="float-right">@(Model.CommanderName ?? "-")</span>
+                            </li>
+                            @if (!string.IsNullOrEmpty(Model.CommanderRank))
+                            {
+                                <li class="list-group-item">
+                                    <b>Rank</b>
+                                    <span class="float-right">@Model.CommanderRank</span>
+                                </li>
+                            }
+                            <li class="list-group-item">
+                                <b>Contact</b>
+                                <span class="float-right">@(Model.ContactNumber ?? "-")</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b>
+                                <span class="float-right">
+                                    @if (!string.IsNullOrEmpty(Model.Email))
+                                    {
+                                        <a href="mailto:@Model.Email">@Model.Email</a>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Status</b>
+                                <span class="float-right">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="text-center">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a asp-action="Hierarchy" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                                <i class="fas fa-sitemap"></i> View Hierarchy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Card -->
+                @if (statistics != null)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Statistics</h3>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-8">Total Battalions:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-info">@statistics.TotalBattalions</span></dd>
+
+                                <dt class="col-sm-8">Male Battalions:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-primary">@statistics.MaleBattalions</span></dd>
+
+                                <dt class="col-sm-8">Female Battalions:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-pink">@statistics.FemaleBattalions</span></dd>
+
+                                <dt class="col-sm-8">Active Battalions:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-success">@statistics.ActiveBattalions</span></dd>
+
+                                <dt class="col-sm-8">Total Districts:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-warning">@statistics.TotalZilas</span></dd>
+
+                                <dt class="col-sm-8">Total Stores:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-secondary">@statistics.TotalStores</span></dd>
+
+                                <dt class="col-sm-8">Total Personnel:</dt>
+                                <dd class="col-sm-4"><span class="badge badge-dark">@statistics.TotalPersonnel</span></dd>
+                            </dl>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Details Tabs -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header p-2">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item"><a class="nav-link active" href="#general" data-toggle="tab">General</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#battalions" data-toggle="tab">Battalions (@battalions.Count())</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#districts" data-toggle="tab">Districts (@zilas.Count())</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#activity" data-toggle="tab">Activity</a></li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- General Tab -->
+                            <div class="tab-pane active" id="general">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Coverage Area</dt>
+                                    <dd class="col-sm-8">@(Model.CoverageArea ?? "-")</dd>
+
+                                    <dt class="col-sm-4">Remarks</dt>
+                                    <dd class="col-sm-8">@(Model.Remarks ?? "-")</dd>
+                                </dl>
+
+                                <hr>
+                                <h5>Audit Information</h5>
+                                <dl class="row">
+                                    <dt class="col-sm-4">Created</dt>
+                                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @Model.CreatedBy</dd>
+
+                                    @if (Model.UpdatedAt.HasValue)
+                                    {
+                                        <dt class="col-sm-4">Last Updated</dt>
+                                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedBy ?? "-")</dd>
+                                    }
+                                </dl>
+                            </div>
+
+                            <!-- Battalions Tab -->
+                            <div class="tab-pane" id="battalions">
+                                @if (battalions.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Code</th>
+                                                    <th>Name</th>
+                                                    <th>Type</th>
+                                                    <th>Commander</th>
+                                                    <th>Personnel</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var battalion in battalions)
+                                                {
+                                                    <tr>
+                                                        <td>@battalion.Code</td>
+                                                        <td>
+                                                            <a asp-controller="Battalion" asp-action="Details" asp-route-id="@battalion.Id">
+                                                                @battalion.Name
+                                                            </a>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-@(battalion.Type == IMS.Domain.Enums.BattalionType.Male ? "primary" : "pink")">
+                                                                @battalion.Type
+                                                            </span>
+                                                        </td>
+                                                        <td>@(battalion.CommanderName ?? "-")</td>
+                                                        <td>
+                                                            <span class="badge badge-info">@battalion.PersonnelCount</span>
+                                                        </td>
+                                                        <td>
+                                                            @if (battalion.IsActive)
+                                                            {
+                                                                <span class="badge badge-success">Active</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge badge-danger">Inactive</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <a asp-controller="Battalion" asp-action="Details" asp-route-id="@battalion.Id"
+                                                               class="btn btn-info btn-xs">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No battalions assigned to this range.
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Districts Tab -->
+                            <div class="tab-pane" id="districts">
+                                @if (zilas.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Code</th>
+                                                    <th>Name</th>
+                                                    <th>Name (Bangla)</th>
+                                                    <th>Division</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var zila in zilas)
+                                                {
+                                                    <tr>
+                                                        <td>@zila.Code</td>
+                                                        <td>
+                                                            <a asp-controller="Zila" asp-action="Details" asp-route-id="@zila.Id">
+                                                                @zila.Name
+                                                            </a>
+                                                        </td>
+                                                        <td>@(zila.NameBangla ?? "-")</td>
+                                                        <td>@(zila.Division ?? "-")</td>
+                                                        <td>
+                                                            @if (zila.IsActive)
+                                                            {
+                                                                <span class="badge badge-success">Active</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge badge-danger">Inactive</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <a asp-controller="Zila" asp-action="Details" asp-route-id="@zila.Id"
+                                                               class="btn btn-info btn-xs">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No districts assigned to this range.
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Activity Tab -->
+                            <div class="tab-pane" id="activity">
+                                <div class="timeline">
+                                    <div>
+                                        <i class="fas fa-plus bg-primary"></i>
+                                        <div class="timeline-item">
+                                            <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd-MMM-yyyy")</span>
+                                            <h3 class="timeline-header">Range Created</h3>
+                                            <div class="timeline-body">
+                                                Range was created by @Model.CreatedBy
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (Model.UpdatedAt.HasValue)
+                                    {
+                                        <div>
+                                            <i class="fas fa-edit bg-warning"></i>
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fas fa-clock"></i> @Model.UpdatedAt.Value.ToString("dd-MMM-yyyy")</span>
+                                                <h3 class="timeline-header">Range Updated</h3>
+                                                <div class="timeline-body">
+                                                    Last updated by @(Model.UpdatedBy ?? "System")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        @if (statistics != null)
+        {
+            <div class="row mt-3">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>@statistics.TotalBattalions</h3>
+                            <p>Total Battalions</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>@statistics.TotalZilas</h3>
+                            <p>Total Districts</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-map"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>@statistics.TotalStores</h3>
+                            <p>Total Stores</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>@statistics.TotalPersonnel</h3>
+                            <p>Total Personnel</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

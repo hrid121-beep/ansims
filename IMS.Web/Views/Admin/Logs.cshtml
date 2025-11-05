@@ -1,0 +1,387 @@
+@{
+    ViewData["Title"] = "Activity Logs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-history"></i> Activity Logs
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">System</li>
+                    <li class="breadcrumb-item active">Activity Logs</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Total Activities Today</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Active Users</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Failed Login Attempts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>0</h3>
+                        <p>Critical Events</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card card-primary collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Filter Logs
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Activity Type</label>
+                                <select class="form-control" name="activityType">
+                                    <option value="">All Types</option>
+                                    <option value="Login">Login</option>
+                                    <option value="Logout">Logout</option>
+                                    <option value="Create">Create</option>
+                                    <option value="Update">Update</option>
+                                    <option value="Delete">Delete</option>
+                                    <option value="Approve">Approve</option>
+                                    <option value="Reject">Reject</option>
+                                    <option value="Export">Export</option>
+                                    <option value="Import">Import</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Module</label>
+                                <select class="form-control" name="module">
+                                    <option value="">All Modules</option>
+                                    <option value="Purchase">Purchase</option>
+                                    <option value="Inventory">Inventory</option>
+                                    <option value="Issue">Issue</option>
+                                    <option value="Transfer">Transfer</option>
+                                    <option value="Approval">Approval</option>
+                                    <option value="User">User Management</option>
+                                    <option value="Settings">Settings</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>User</label>
+                                <input type="text" class="form-control" name="userName" placeholder="Search by username" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Date Range</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="fromDate" />
+                                    <input type="date" class="form-control" name="toDate" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <button type="button" class="btn btn-default" onclick="resetFilters()">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                            <button type="button" class="btn btn-success float-right" onclick="exportLogs()">
+                                <i class="fas fa-file-excel"></i> Export Logs
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Activity Logs Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Activity Log Entries</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-sm btn-tool" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th width="150">Timestamp</th>
+                                <th width="100">User</th>
+                                <th width="100">Activity</th>
+                                <th width="100">Module</th>
+                                <th>Description</th>
+                                <th width="100">IP Address</th>
+                                <th width="80">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTable">
+                            <!-- Sample data - replace with actual logs -->
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-history fa-3x mb-3"></i>
+                                    <p>No activity logs available</p>
+                                    <small>Activity logs will appear here when users perform actions in the system</small>
+                                </td>
+                            </tr>
+                            <!-- Example rows:
+                            <tr>
+                                <td><small>11/01/2025 14:30:22</small></td>
+                                <td>admin</td>
+                                <td><span class="badge badge-info">Login</span></td>
+                                <td>System</td>
+                                <td>User logged in successfully</td>
+                                <td><small>192.168.1.100</small></td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
+                            </tr>
+                            <tr>
+                                <td><small>11/01/2025 14:25:10</small></td>
+                                <td>storekeeper</td>
+                                <td><span class="badge badge-primary">Create</span></td>
+                                <td>Issue</td>
+                                <td>Created new issue #IS-2025-0045</td>
+                                <td><small>192.168.1.105</small></td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
+                            </tr>
+                            <tr>
+                                <td><small>11/01/2025 14:20:45</small></td>
+                                <td>manager</td>
+                                <td><span class="badge badge-success">Approve</span></td>
+                                <td>Purchase</td>
+                                <td>Approved purchase order PO-2025-0123</td>
+                                <td><small>192.168.1.102</small></td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
+                            </tr>
+                            <tr>
+                                <td><small>11/01/2025 14:18:30</small></td>
+                                <td>admin</td>
+                                <td><span class="badge badge-warning">Update</span></td>
+                                <td>Settings</td>
+                                <td>Updated system settings</td>
+                                <td><small>192.168.1.100</small></td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
+                            </tr>
+                            <tr>
+                                <td><small>11/01/2025 14:15:00</small></td>
+                                <td>unknown</td>
+                                <td><span class="badge badge-danger">Login</span></td>
+                                <td>System</td>
+                                <td>Failed login attempt - Invalid credentials</td>
+                                <td><small>192.168.1.200</small></td>
+                                <td><span class="badge badge-danger"><i class="fas fa-times"></i></span></td>
+                            </tr>
+                            -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info">Showing 0 to 0 of 0 entries</div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <ul class="pagination pagination-sm m-0 float-right">
+                            <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled"><a class="page-link" href="#">»</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Cards -->
+        <div class="row">
+            <!-- Recent Failed Logins -->
+            <div class="col-md-6">
+                <div class="card card-warning card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i> Recent Failed Login Attempts
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Username</th>
+                                        <th>IP Address</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">
+                                            <small>No failed login attempts</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Most Active Users -->
+            <div class="col-md-6">
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users"></i> Most Active Users Today
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Activities</th>
+                                        <th>Last Active</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">
+                                            <small>No activity data available</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Maintenance -->
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-broom"></i> Log Maintenance
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Database Size:</strong> -- MB</p>
+                        <p><strong>Total Log Entries:</strong> 0</p>
+                        <p><strong>Oldest Entry:</strong> N/A</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Clear logs older than:</label>
+                            <div class="input-group">
+                                <select class="form-control" id="clearLogsDays">
+                                    <option value="30">30 days</option>
+                                    <option value="60">60 days</option>
+                                    <option value="90">90 days</option>
+                                    <option value="180">6 months</option>
+                                    <option value="365">1 year</option>
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-danger" onclick="clearOldLogs()">
+                                        <i class="fas fa-trash"></i> Clear Old Logs
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function resetFilters() {
+            $('#filterForm')[0].reset();
+            location.href = '/Admin/Logs';
+        }
+
+        function exportLogs() {
+            alert('Exporting logs... This feature will be implemented.');
+            // Implement actual export logic
+        }
+
+        function clearOldLogs() {
+            var days = $('#clearLogsDays').val();
+            if (confirm('Are you sure you want to delete logs older than ' + days + ' days? This action cannot be undone.')) {
+                alert('Clearing old logs... This feature will be implemented.');
+                // Implement actual clear logic
+            }
+        }
+
+        // Auto-refresh every 30 seconds (optional)
+        // setInterval(function() {
+        //     location.reload();
+        // }, 30000);
+    </script>
+}

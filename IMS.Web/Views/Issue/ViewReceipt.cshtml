@@ -1,0 +1,447 @@
+﻿@using IMS.Application.DTOs
+@model IssueDto
+@{
+    ViewData["Title"] = $"Receipt - {Model.IssueNo}";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receipt - @Model.IssueNo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .receipt-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+            .header h1 {
+                margin: 0 0 10px 0;
+                font-size: 28px;
+            }
+
+            .header h2 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: normal;
+            }
+
+        .status-badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+            .info-section h3 {
+                color: #667eea;
+                border-bottom: 2px solid #667eea;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+            .items-table thead {
+                background-color: #f8f9fa;
+            }
+
+            .items-table th,
+            .items-table td {
+                border: 1px solid #dee2e6;
+                padding: 12px;
+                text-align: left;
+            }
+
+            .items-table th {
+                font-weight: 600;
+                color: #495057;
+            }
+
+            .items-table tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .signature-image {
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fafafa;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+            .signature-image img {
+                max-width: 200px;
+                max-height: 80px;
+            }
+
+        .signature-details {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .qr-section {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+            .qr-section img {
+                max-width: 150px;
+            }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .no-print {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+            .no-print button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                font-size: 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 0 10px;
+            }
+
+                .no-print button:hover {
+                    opacity: 0.9;
+                }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <h1>ANSAR & VDP</h1>
+            <h2>ISSUE RECEIPT</h2>
+            <div class="status-badge">
+                <i class="fas fa-check-circle"></i> COMPLETED
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <h3>Receipt Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Receipt Number</span>
+                        <span class="info-value">@Model.VoucherNumber</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Issue Number</span>
+                        <span class="info-value">@Model.IssueNo</span>
+                    </div>
+
+                    <!-- ADD THIS -->
+                    @if (!string.IsNullOrEmpty(Model.MemoNo))
+                    {
+                        <div class="info-item">
+                            <span class="info-label">Memo Number</span>
+                            <span class="info-value">@Model.MemoNo</span>
+                        </div>
+                    }
+                    @if (Model.MemoDate.HasValue)
+                    {
+                        <div class="info-item">
+                            <span class="info-label">Memo Date</span>
+                            <span class="info-value">@Model.MemoDate.Value.ToString("dd MMM yyyy")</span>
+                        </div>
+                    }
+                    <div class="info-item">
+                        <span class="info-label">Issue Date</span>
+                        <span class="info-value">@Model.IssueDate.ToString("dd MMMM yyyy")</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Receipt Date</span>
+                        <span class="info-value">@(Model.ReceivedDate.ToString("dd MMMM yyyy HH:mm") ?? DateTime.Now.ToString("dd MMMM yyyy HH:mm"))</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Recipient Details</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Received By</span>
+                        <span class="info-value">@(Model.ReceivedBy ?? Model.IssuedToName)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Organization Type</span>
+                        <span class="info-value">
+                            <span class="badge badge-info">@Model.IssuedToType</span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Purpose</span>
+                        <span class="info-value">@Model.Purpose</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.DeliveryLocation))
+                    {
+                        <div class="info-item">
+                            <span class="info-label">Delivery Location</span>
+                            <span class="info-value">@Model.DeliveryLocation</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Items Received</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="15%">Item Code</th>
+                            <th width="30%">Item Name</th>
+                            <th width="15%">Category</th>
+                            <th width="10%">Quantity</th>
+                            <th width="10%">Unit</th>
+                            <th width="15%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items?.Any() == true)
+                        {
+                            var index = 1;
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>@(index++)</td>
+                                    <td><strong>@item.ItemCode</strong></td>
+                                    <td>@item.ItemName</td>
+                                    <td>@item.CategoryName</td>
+                                    <td style="text-align: center;"><strong>@item.Quantity.ToString("0.##")</strong></td>
+                                    <td>@item.Unit</td>
+                                    <td>
+                                        <span class="badge badge-success">Received</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color: #f8f9fa; font-weight: bold;">
+                            <td colspan="4" style="text-align: right;">Total Items:</td>
+                            <td style="text-align: center;">@Model.TotalQuantity?.ToString("0.##")</td>
+                            <td colspan="2">@Model.TotalItems items</td>
+                        </tr>
+                        @if (Model.TotalValue > 0)
+                        {
+                            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                <td colspan="4" style="text-align: right;">Total Value:</td>
+                                <td colspan="3">৳ @Model.TotalValue</td>
+                            </tr>
+                        }
+                    </tfoot>
+                </table>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.QRCode))
+            {
+                <div class="qr-section">
+                    <img src="@Model.QRCode" alt="QR Code" />
+                    <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                        Scan for verification
+                    </p>
+                </div>
+            }
+
+            <div class="signature-section">
+                <div class="signature-box">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">Issued By</h4>
+                    <div class="signature-image">
+                        @if (!string.IsNullOrEmpty(Model.SignaturePath))
+                        {
+                            <img src="@Model.SignaturePath" alt="Issuer Signature" />
+                        }
+                        else
+                        {
+                            <span style="font-style: italic; color: #999;">Digitally Signed</span>
+                        }
+                    </div>
+                    <div class="signature-details">
+                        <strong>@(Model.SignerName ?? Model.IssuedBy ?? "System")</strong><br />
+                        @if (!string.IsNullOrEmpty(Model.SignerBadgeId))
+                        {
+                            <span>Badge: @Model.SignerBadgeId</span>
+                        
+                            <br />
+                        }
+                        <span>Date: @Model.IssueDate.ToString("dd MMM yyyy")</span>
+                    </div>
+                </div>
+
+                <div class="signature-box">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">Received By</h4>
+                    <div class="signature-image">
+                        @if (!string.IsNullOrEmpty(Model.ReceiverSignature))
+                        {
+                            <img src="@Model.ReceiverSignature" alt="Receiver Signature" />
+                        }
+                        else
+                        {
+                            <span style="font-style: italic; color: #999;">Digitally Signed</span>
+                        }
+                    </div>
+                    <div class="signature-details">
+                        <strong>@(Model.ReceivedBy ?? Model.IssuedToName)</strong><br />
+                        @if (!string.IsNullOrEmpty(Model.ReceiverBadgeId))
+                        {
+                            <span>Badge: @Model.ReceiverBadgeId</span>
+                        
+                            <br />
+                        }
+                        <span>Date: @(Model.ReceivedDate.ToString("dd MMM yyyy") ?? DateTime.Now.ToString("dd MMM yyyy"))</span>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Remarks))
+            {
+                <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+                    <strong>Remarks:</strong> @Model.Remarks
+                </div>
+            }
+        </div>
+
+        <div class="footer">
+            <p>
+                This is a digitally generated receipt from ANSAR & VDP Inventory Management System<br />
+                Generated on @DateTime.Now.ToString("dd MMMM yyyy HH:mm")
+            </p>
+        </div>
+
+        <div class="no-print">
+            <button onclick="window.print()">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <button onclick="window.location.href='@Url.Action("Details", "Issue", new { id = Model.Id })'" style="background: #10b981;">
+                <i class="fas fa-arrow-left"></i> Back to Issue Details
+            </button>
+            <button onclick="window.location.href='@Url.Action("Index", "Issue")'" style="background: #3b82f6;">
+                <i class="fas fa-list"></i> Back to Issues List
+            </button>
+            <button onclick="window.close()" style="background: #6c757d;">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+</body>
+</html>

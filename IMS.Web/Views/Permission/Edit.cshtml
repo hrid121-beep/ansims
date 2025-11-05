@@ -1,0 +1,386 @@
+﻿@model IEnumerable<IGrouping<string, IMS.Application.DTOs.PermissionDto>>
+@{
+    ViewData["Title"] = $"Edit Permissions - {ViewBag.RoleName}";
+}
+@section Styles {
+    <style>
+        /* Fix card header text visibility */
+        .card-primary.card-outline > .card-header {
+            background-color: #007bff;
+            color: #ffffff !important;
+        }
+
+            .card-primary.card-outline > .card-header .card-title,
+            .card-primary.card-outline > .card-header .card-title strong,
+            .card-primary.card-outline > .card-header .card-title i {
+                color: #ffffff !important;
+            }
+
+            /* Fix card-tools visibility in card header */
+            .card-primary.card-outline > .card-header .card-tools,
+            .card-primary.card-outline > .card-header .card-tools *,
+            .card-primary.card-outline > .card-header .card-tools .badge,
+            .card-primary.card-outline > .card-header .card-tools .btn {
+                color: #ffffff !important;
+            }
+
+                .card-primary.card-outline > .card-header .card-tools .badge {
+                    background-color: rgba(255, 255, 255, 0.3) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+        /* Fix category card headers */
+        .card.card-primary .card-header,
+        .card.card-success .card-header,
+        .card.card-info .card-header,
+        .card.card-warning .card-header,
+        .card.card-danger .card-header,
+        .card.card-secondary .card-header,
+        .card.card-cyan .card-header,
+        .card.card-indigo .card-header,
+        .card.card-purple .card-header {
+            color: #ffffff !important;
+        }
+
+            .card.card-primary .card-header *,
+            .card.card-success .card-header *,
+            .card.card-info .card-header *,
+            .card.card-warning .card-header *,
+            .card.card-danger .card-header *,
+            .card.card-secondary .card-header *,
+            .card.card-cyan .card-header *,
+            .card.card-indigo .card-header *,
+            .card.card-purple .card-header * {
+                color: #ffffff !important;
+            }
+
+        /* Fix alert info at bottom */
+        .card-footer .alert-info {
+            background-color: #d1ecf1 !important;
+            border-color: #bee5eb !important;
+            color: #0c5460 !important;
+        }
+
+            .card-footer .alert-info i {
+                color: #0c5460 !important;
+            }
+
+        /* Ensure all text in alerts is visible */
+        .alert-info, .alert-info * {
+            color: #0c5460 !important;
+        }
+    </style>
+}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-edit"></i> Edit Role Permissions
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Administration</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Permissions</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+
+        <form asp-action="UpdatePermissions" method="post" id="permissionForm">
+            <input type="hidden" name="roleId" value="@ViewBag.RoleId" />
+
+            <!-- Main Card -->
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-shield"></i>
+                        <strong>@ViewBag.RoleName</strong> Role Permissions
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-sm btn-success mr-1" onclick="selectAll()">
+                            <i class="fas fa-check-square"></i> Select All
+                        </button>
+                        <button type="button" class="btn btn-sm btn-warning mr-1" onclick="deselectAll()">
+                            <i class="fas fa-square"></i> Deselect All
+                        </button>
+                        <span class="badge badge-info mr-2">
+                            <span id="selectedCount">0</span> Selected
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Links -->
+                    <div class="mb-3">
+                        <strong>Quick Jump:</strong>
+                        @foreach (var category in Model.Select(c => c.Key).Distinct().OrderBy(k => k))
+                        {
+                            <a href="#category-@category.Replace(" ", "-")" class="badge badge-secondary mr-1">
+                                @category
+                            </a>
+                        }
+                    </div>
+
+                    <hr>
+
+                    <!-- Permission Categories -->
+                    <div class="row">
+                        @foreach (var category in Model.OrderBy(c => GetCategoryOrder(c.Key)))
+                        {
+                            var categoryId = category.Key.Replace(" ", "-");
+                            var categoryColor = GetCategoryColor(category.Key);
+
+                            <div class="col-12" id="category-@categoryId">
+                                <div class="card @categoryColor shadow-sm mb-3">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="@GetCategoryIcon(category.Key)"></i>
+                                            <strong>@category.Key</strong>
+                                        </h3>
+                                        <div class="card-tools">
+                                            <span class="badge badge-dark">
+                                                @category.Count(p => p.IsGranted) / @category.Count()
+                                            </span>
+                                            <button type="button" class="btn btn-tool" onclick="toggleCategory('@categoryId')">
+                                                <i class="fas fa-check-square"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            @foreach (var permission in category.OrderBy(p => p.Name))
+                                            {
+                                                <div class="col-md-6 col-lg-4">
+                                                    <div class="form-check mb-2">
+                                                        <input type="checkbox"
+                                                               class="form-check-input permission-checkbox category-@categoryId"
+                                                               id="permission_@((int)permission.Permission)"
+                                                               name="selectedPermissions"
+                                                               value="@((int)permission.Permission)"
+                                                               @(permission.IsGranted ? "checked" : "")
+                                                               data-category="@categoryId"
+                                                               onchange="updateCount(); togglePermissionRealtime('@ViewBag.RoleId', @((int)permission.Permission), this.checked);">
+                                                        <label class="form-check-label" for="permission_@((int)permission.Permission)">
+                                                            <strong>@permission.Name</strong>
+                                                            @if (!string.IsNullOrEmpty(permission.Description))
+                                                            {
+                                                                <br>
+                                                                <small class="text-muted">@permission.Description</small>
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Save All Permissions
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <div class="alert alert-info mb-0 d-inline-block">
+                                <i class="fas fa-info-circle"></i>
+                                Changes are saved in real-time. Click "Save All" to batch save.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Role-Specific Recommendations -->
+        @if (ViewBag.RoleName == "Storekeeper" || ViewBag.RoleName == "AD_DD_Store" ||
+                ViewBag.RoleName == "DDG_Admin" || ViewBag.RoleName == "DD_Provision")
+        {
+            <div class="card card-warning collapsed-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-lightbulb"></i> Recommended Permissions for @ViewBag.RoleName
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_RoleRecommendations", (string)ViewBag.RoleName)
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            updateCount();
+        });
+
+        function selectAll() {
+            $('.permission-checkbox').prop('checked', true);
+            updateCount();
+        }
+
+        function deselectAll() {
+            $('.permission-checkbox').prop('checked', false);
+            updateCount();
+        }
+
+        function toggleCategory(categoryId) {
+            const checkboxes = $(`.category-${categoryId}`);
+            const allChecked = checkboxes.filter(':checked').length === checkboxes.length;
+            checkboxes.prop('checked', !allChecked);
+            updateCount();
+        }
+
+        function updateCount() {
+            const checkedCount = $('.permission-checkbox:checked').length;
+            $('#selectedCount').text(checkedCount);
+
+            // Update category badges
+            $('.card').each(function() {
+                const cardId = $(this).attr('id');
+                if (cardId && cardId.startsWith('category-')) {
+                    const categoryId = cardId.replace('category-', '');
+                    const total = $(`.category-${categoryId}`).length;
+                    const checked = $(`.category-${categoryId}:checked`).length;
+                    $(this).find('.badge-dark').first().text(`${checked} / ${total}`);
+                }
+            });
+        }
+
+        function togglePermissionRealtime(roleId, permission, isGranted) {
+            // Real-time permission update via AJAX
+            $.ajax({
+                url: '@Url.Action("TogglePermission")',
+                type: 'POST',
+                data: {
+                    roleId: roleId,
+                    permission: permission,
+                    isGranted: isGranted,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Permission updated', '', {timeOut: 1000, progressBar: true});
+                    } else {
+                        toastr.error(response.message);
+                        $(`#permission_${permission}`).prop('checked', !isGranted);
+                        updateCount();
+                    }
+                },
+                error: function () {
+                    toastr.error('Failed to update permission');
+                    $(`#permission_${permission}`).prop('checked', !isGranted);
+                    updateCount();
+                }
+            });
+        }
+
+        // Prevent form submission on Enter key
+        $('#permissionForm').on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Confirm before leaving with unsaved changes
+        window.addEventListener('beforeunload', function (e) {
+            // Can add logic to check if there are unsaved changes
+        });
+    </script>
+}
+
+@functions {
+    string GetCategoryColor(string category)
+    {
+        return category switch
+        {
+            "Dashboard" => "card-primary",
+            "Purchase" => "card-success",
+            "Issue" => "card-info",
+            "Approval" => "card-warning",
+            "Stock" => "card-secondary",
+            "Store" => "card-cyan",
+            "Item" => "card-indigo",
+            "User" => "card-danger",
+            "Report" => "card-purple",
+            _ => "card-light"
+        };
+    }
+
+    string GetCategoryIcon(string category)
+    {
+        return category switch
+        {
+            "Dashboard" => "fas fa-tachometer-alt",
+            "Category" => "fas fa-tags",
+            "SubCategory" => "fas fa-tag",
+            "Brand" => "fas fa-copyright",
+            "Item" => "fas fa-box",
+            "Store" => "fas fa-warehouse",
+            "Vendor" => "fas fa-truck",
+            "Purchase" => "fas fa-shopping-cart",
+            "Issue" => "fas fa-file-export",
+            "Receive" => "fas fa-file-import",
+            "Transfer" => "fas fa-exchange-alt",
+            "Damage" => "fas fa-exclamation-triangle",
+            "WriteOff" => "fas fa-trash",
+            "Return" => "fas fa-undo",
+            "Barcode" => "fas fa-barcode",
+            "Report" => "fas fa-chart-bar",
+            "User" => "fas fa-users",
+            "Role" => "fas fa-user-shield",
+            "Settings" => "fas fa-cog",
+            "Audit" => "fas fa-clipboard-list",
+            "Notification" => "fas fa-bell",
+            "Stock" => "fas fa-boxes",
+            "Special" => "fas fa-star",
+            "Quality" => "fas fa-check-circle",
+            "Approval" => "fas fa-clipboard-check",
+            "Allotment" => "fas fa-file-signature",
+            _ => "fas fa-circle"
+        };
+    }
+
+    int GetCategoryOrder(string category)
+    {
+        return category switch
+        {
+            "Dashboard" => 1,
+            "Approval" => 2,
+            "Purchase" => 3,
+            "Issue" => 4,
+            "Store" => 5,
+            "Stock" => 6,
+            "Item" => 7,
+            "Allotment" => 8,
+            _ => 99
+        };
+    }
+}

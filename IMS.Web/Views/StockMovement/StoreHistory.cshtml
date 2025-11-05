@@ -1,0 +1,232 @@
+@model IEnumerable<IMS.Application.DTOs.StockMovementDto>
+@{
+    ViewData["Title"] = "Store Movement History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var store = ViewBag.Store as IMS.Application.DTOs.StoreDto;
+    var date = ViewBag.Date as string;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Store Movement History</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Movements</a></li>
+                    <li class="breadcrumb-item active">Store History</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Store Info Card -->
+        <div class="card card-primary card-outline">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3>
+                            <i class="fas fa-warehouse"></i> @store?.Name
+                        </h3>
+                        <p class="text-muted">
+                            <strong>Code:</strong> @store?.Code
+                            @if (!string.IsNullOrEmpty(store?.StoreTypeName))
+                            {
+                                <span class="mx-2">|</span>
+                                <strong>Type:</strong> @store?.StoreTypeName
+                            }
+                            @if (!string.IsNullOrEmpty(store?.Location))
+                            {
+                                <span class="mx-2">|</span>
+                                <strong>Location:</strong> @store?.Location
+                            }
+                        </p>
+                        @if (!string.IsNullOrEmpty(store?.Description))
+                        {
+                            <p>@store.Description</p>
+                        }
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Select Date:</label>
+                            <form method="get" asp-action="StoreHistory" id="dateForm">
+                                <input type="hidden" name="storeId" value="@store?.Id" />
+                                <input type="date" name="date" class="form-control" value="@date"
+                                       onchange="document.getElementById('dateForm').submit()" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Movements</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(m => m.Quantity > 0)</h3>
+                        <p>Stock In Movements</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(m => m.Quantity < 0)</h3>
+                        <p>Stock Out Movements</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Select(m => m.ItemId).Distinct().Count()</h3>
+                        <p>Unique Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movement History -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history"></i> Movement History for @DateTime.Parse(date).ToString("dd MMMM yyyy")
+                </h3>
+                <div class="card-tools">
+                    <a asp-action="Index" class="btn btn-sm btn-default">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Reference</th>
+                                <th class="text-right">Quantity</th>
+                                <th class="text-right">Old Balance</th>
+                                <th class="text-right">New Balance</th>
+                                <th>Moved By</th>
+                                <th width="100">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Any())
+                            {
+                                @foreach (var movement in Model.OrderByDescending(m => m.MovementDate))
+                                {
+                                    <tr>
+                                        <td>@movement.MovementDate.ToString("HH:mm")</td>
+                                        <td>
+                                            @switch (movement.MovementType)
+                                            {
+                                                case "IN":
+                                                    <span class="badge badge-success">Stock In</span>
+                                                    break;
+                                                case "OUT":
+                                                    <span class="badge badge-danger">Stock Out</span>
+                                                    break;
+                                                case "TRANSFER":
+                                                    <span class="badge badge-info">Transfer</span>
+                                                    break;
+                                                case "ADJUSTMENT":
+                                                    <span class="badge badge-warning">Adjustment</span>
+                                                    break;
+                                                case "PHYSICAL_COUNT":
+                                                    <span class="badge badge-primary">Physical Count</span>
+                                                    break;
+                                                case "RETURN":
+                                                    <span class="badge badge-secondary">Return</span>
+                                                    break;
+                                                case "WRITE_OFF":
+                                                    <span class="badge badge-dark">Write-off</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge badge-light">@movement.MovementType</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@movement.ItemCode</small><br />
+                                            <a asp-action="ItemHistory" asp-route-itemId="@movement.ItemId" asp-route-storeId="@store.Id">
+                                                @movement.ItemName
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(movement.ReferenceNo))
+                                            {
+                                                <small class="text-muted">@movement.ReferenceType</small>
+                                                <br />
+                                                @movement.ReferenceNo
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            @if (movement.Quantity > 0)
+                                            {
+                                                <span class="text-success">+@movement.Quantity</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger">@movement.Quantity</span>
+                                            }
+                                        </td>
+                                        <td class="text-right">@movement.OldBalance.ToString("N2")</td>
+                                        <td class="text-right">
+                                            <strong>@movement.NewBalance.ToString("N2")</strong>
+                                        </td>
+                                        <td>@movement.MovedBy</td>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@movement.Id"
+                                               class="btn btn-xs btn-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center">No movements found for this store on this date</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

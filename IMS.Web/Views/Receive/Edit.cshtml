@@ -1,0 +1,656 @@
+@model IMS.Application.DTOs.ReceiveDto
+@{
+    ViewData["Title"] = "Edit Receive";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Edit Receive</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Receives</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Edit" method="post" id="receiveForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ReceiveNo" />
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Basic Information -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Receive Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ReceiveNo">Receive No <span class="text-danger">*</span></label>
+                                        <input asp-for="ReceiveNo" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ReceiveDate">Receive Date <span class="text-danger">*</span></label>
+                                        <input asp-for="ReceiveDate" type="date" class="form-control" required />
+                                        <span asp-validation-for="ReceiveDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="StoreId">Receiving Store <span class="text-danger">*</span></label>
+                                        <select asp-for="StoreId" asp-items="ViewBag.Stores" class="form-control" required>
+                                            <option value="">Select Store</option>
+                                        </select>
+                                        <span asp-validation-for="StoreId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ReceiveType">Receive From Type <span class="text-danger">*</span></label>
+                                        <select asp-for="ReceiveType" asp-items="ViewBag.ReceiveTypes"
+                                                class="form-control" id="receiveType" required>
+                                            <option value="">Select Type</option>
+                                        </select>
+                                        <span asp-validation-for="ReceiveType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="OriginalIssueId">Linked Issue (Optional)</label>
+                                        <div class="input-group">
+                                            <input type="hidden" asp-for="OriginalIssueId" id="originalIssueId" />
+                                            <input type="text" id="originalIssueNo" class="form-control"
+                                                   placeholder="Issue number (if receiving against issue)" readonly />
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" onclick="searchIssue()">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic source selection based on type -->
+                            <div id="battalionSection" class="source-section" style="display:none;">
+                                <div class="form-group">
+                                    <label>Battalion <span class="text-danger">*</span></label>
+                                    <select asp-for="ReceivedFromBattalionId" asp-items="ViewBag.Battalions"
+                                            class="form-control select2">
+                                        <option value="">Select Battalion</option>
+                                    </select>
+                                    <span asp-validation-for="ReceivedFromBattalionId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div id="rangeSection" class="source-section" style="display:none;">
+                                <div class="form-group">
+                                    <label>Range <span class="text-danger">*</span></label>
+                                    <select asp-for="ReceivedFromRangeId" asp-items="ViewBag.Ranges"
+                                            class="form-control select2">
+                                        <option value="">Select Range</option>
+                                    </select>
+                                    <span asp-validation-for="ReceivedFromRangeId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div id="zilaSection" class="source-section" style="display:none;">
+                                <div class="form-group">
+                                    <label>Zila <span class="text-danger">*</span></label>
+                                    <select asp-for="ReceivedFromZilaId" asp-items="ViewBag.Zilas"
+                                            class="form-control select2">
+                                        <option value="">Select Zila</option>
+                                    </select>
+                                    <span asp-validation-for="ReceivedFromZilaId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div id="upazilaSection" class="source-section" style="display:none;">
+                                <div class="form-group">
+                                    <label>Upazila <span class="text-danger">*</span></label>
+                                    <select asp-for="ReceivedFromUpazilaId" asp-items="ViewBag.Upazilas"
+                                            class="form-control select2">
+                                        <option value="">Select Upazila</option>
+                                    </select>
+                                    <span asp-validation-for="ReceivedFromUpazilaId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div id="individualSection" class="source-section" style="display:none;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Individual Name <span class="text-danger">*</span></label>
+                                            <input asp-for="ReceivedFromIndividualName" class="form-control" />
+                                            <span asp-validation-for="ReceivedFromIndividualName" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Badge No <span class="text-danger">*</span></label>
+                                            <input asp-for="ReceivedFromIndividualBadgeNo" class="form-control" />
+                                            <span asp-validation-for="ReceivedFromIndividualBadgeNo" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Mobile</label>
+                                            <input type="text" name="ReceivedFromIndividualMobile" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="externalSection" class="source-section" style="display:none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>External Source Name <span class="text-danger">*</span></label>
+                                            <input type="text" name="ExternalSourceName" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Contact Information</label>
+                                            <input type="text" name="ExternalContact" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="OverallCondition">Overall Condition</label>
+                                        <select asp-for="OverallCondition" asp-items="ViewBag.Conditions"
+                                                class="form-control">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input asp-for="Status" class="form-control" readonly />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks">Remarks</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Section -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Receive Items</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool btn-sm" onclick="addItem()">
+                                    <i class="fas fa-plus"></i> Add Item
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm" id="itemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">#</th>
+                                            <th width="25%">Item</th>
+                                            <th width="20%">Store</th>
+                                            <th width="12%">Quantity</th>
+                                            <th width="13%">Condition</th>
+                                            <th width="20%">Remarks</th>
+                                            <th width="5%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsBody">
+                                        @if (Model.Items != null && Model.Items.Any())
+                                        {
+                                            for (int i = 0; i < Model.Items.Count; i++)
+                                            {
+                                                <tr id="item_@i" class="item-row">
+                                                    <td>@(i + 1)</td>
+                                                    <td>
+                                                        <select name="Items[@i].ItemId" class="form-control form-control-sm item-select select2" required>
+                                                            <option value="">Select Item</option>
+                                                            @foreach (var item in ViewBag.Items)
+                                                            {
+                                                                <option value="@item.Value" selected="@(item.Value == Model.Items[i].ItemId.ToString())">@item.Text</option>
+                                                            }
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select name="Items[@i].StoreId" class="form-control form-control-sm store-select" required>
+                                                            <option value="">Select Store</option>
+                                                            @foreach (var store in ViewBag.Stores)
+                                                            {
+                                                                <option value="@store.Value" selected="@(store.Value == Model.Items[i].StoreId.ToString())">@store.Text</option>
+                                                            }
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" name="Items[@i].Quantity" value="@Model.Items[i].Quantity"
+                                                               class="form-control form-control-sm quantity-input"
+                                                               min="0.01" step="0.01" onchange="updateSummary()" required />
+                                                    </td>
+                                                    <td>
+                                                        <select name="Items[@i].Condition" class="form-control form-control-sm condition-select" onchange="updateSummary()">
+                                                            <option value="Good" selected="@(Model.Items[i].Condition == "Good")">Good</option>
+                                                            <option value="Damaged" selected="@(Model.Items[i].Condition == "Damaged")">Damaged</option>
+                                                            <option value="Expired" selected="@(Model.Items[i].Condition == "Expired")">Expired</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="Items[@i].Remarks" value="@Model.Items[i].Remarks"
+                                                               class="form-control form-control-sm" />
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                                onclick="removeItem('item_@i')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3">Total</th>
+                                            <th><span id="totalQuantity">0</span></th>
+                                            <th colspan="3"></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Receiver Information -->
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Receiver Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Receiver Name</label>
+                                        <input asp-for="ReceiverName" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Receiver Badge No</label>
+                                        <input asp-for="ReceiverBadgeNo" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Receiver Designation</label>
+                                        <input asp-for="ReceiverDesignation" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Actions -->
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Assessment Notes</label>
+                                <textarea asp-for="AssessmentNotes" class="form-control" rows="3"
+                                          placeholder="Enter any assessment notes..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-save"></i> Update Receive
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-block">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            <a asp-action="Index" class="btn btn-default btn-block">Cancel</a>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Summary</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Items</span>
+                                    <span class="info-box-number" id="itemCount">0</span>
+                                </div>
+                            </div>
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Good Condition</span>
+                                    <span class="info-box-number" id="goodCount">0</span>
+                                </div>
+                            </div>
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-exclamation"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Damaged</span>
+                                    <span class="info-box-number" id="damagedCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="card card-info collapsed-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Instructions</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Update receive information</li>
+                                <li><i class="fas fa-check text-success"></i> Modify items if needed</li>
+                                <li><i class="fas fa-check text-success"></i> Update condition assessments</li>
+                                <li><i class="fas fa-info text-info"></i> Only draft receives can be edited</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Issue Search Modal -->
+<div class="modal fade" id="issueSearchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Search Approved Issues</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="issueSearchInput" class="form-control mb-3"
+                       placeholder="Search by issue number...">
+                <div id="issueSearchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Select2 -->
+    <script src="~/adminlte/plugins/select2/js/select2.full.min.js"></script>
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        let itemIndex = @(Model.Items?.Count ?? 0);
+
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Show the correct source section based on receive type
+            const receiveType = '@Model.ReceiveType';
+            if (receiveType) {
+                $('#receiveType').val(receiveType).trigger('change');
+            }
+
+            // Update summary on load
+            updateSummary();
+        });
+
+        function addItem() {
+            const rowNumber = itemIndex + 1;
+            const row = `
+                <tr id="item_${itemIndex}" class="item-row">
+                    <td>${rowNumber}</td>
+                    <td>
+                        <select name="Items[${itemIndex}].ItemId" class="form-control form-control-sm item-select select2"
+                                onchange="updateSummary()" required>
+                            <option value="">Select Item</option>
+                            @foreach (var item in ViewBag.Items)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <select name="Items[${itemIndex}].StoreId" class="form-control form-control-sm store-select" required>
+                            <option value="">Select Store</option>
+                            @foreach (var store in ViewBag.Stores)
+                            {
+                                <option value="@store.Value">@store.Text</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].Quantity"
+                               class="form-control form-control-sm quantity-input"
+                               min="0.01" step="0.01" onchange="updateSummary()" required />
+                    </td>
+                    <td>
+                        <select name="Items[${itemIndex}].Condition"
+                                class="form-control form-control-sm condition-select"
+                                onchange="updateSummary()">
+                            <option value="Good">Good</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Expired">Expired</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${itemIndex}].Remarks"
+                               class="form-control form-control-sm" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm"
+                                onclick="removeItem('item_${itemIndex}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            $('#itemsBody').append(row);
+
+            // Reinitialize Select2 for new elements
+            $(`#item_${itemIndex} .select2`).select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            itemIndex++;
+            updateSummary();
+        }
+
+        function removeItem(rowId) {
+            $('#' + rowId).remove();
+            updateRowNumbers();
+            updateSummary();
+        }
+
+        function updateRowNumbers() {
+            let rowNum = 1;
+            $('.item-row').each(function() {
+                $(this).find('td:first').text(rowNum++);
+            });
+        }
+
+        function updateSummary() {
+            let totalQuantity = 0;
+            let goodCount = 0;
+            let damagedCount = 0;
+            let itemCount = 0;
+
+            $('.item-row').each(function() {
+                const qty = parseFloat($(this).find('.quantity-input').val()) || 0;
+                const condition = $(this).find('.condition-select').val();
+
+                if (qty > 0) {
+                    totalQuantity += qty;
+                    itemCount++;
+
+                    switch(condition) {
+                        case 'Good':
+                            goodCount++;
+                            break;
+                        case 'Damaged':
+                            damagedCount++;
+                            break;
+                    }
+                }
+            });
+
+            $('#totalQuantity').text(totalQuantity.toFixed(2));
+            $('#itemCount').text(itemCount);
+            $('#goodCount').text(goodCount);
+            $('#damagedCount').text(damagedCount);
+        }
+
+        // Handle receive type change
+        $('#receiveType').change(function() {
+            $('.source-section').hide();
+            $('.source-section input, .source-section select').prop('required', false);
+
+            const type = $(this).val();
+            let sectionId = null;
+
+            switch(type) {
+                case 'Battalion':
+                    sectionId = '#battalionSection';
+                    break;
+                case 'Range':
+                    sectionId = '#rangeSection';
+                    break;
+                case 'Zila':
+                    sectionId = '#zilaSection';
+                    break;
+                case 'Upazila':
+                    sectionId = '#upazilaSection';
+                    break;
+                case 'Individual':
+                    sectionId = '#individualSection';
+                    break;
+                case 'External':
+                    sectionId = '#externalSection';
+                    break;
+            }
+
+            if (sectionId) {
+                $(sectionId).show();
+                $(sectionId + ' input, ' + sectionId + ' select').prop('required', true);
+            }
+        });
+
+        // Form validation
+        $('#receiveForm').submit(function(e) {
+            // Check items
+            if ($('#itemsBody tr').length === 0) {
+                e.preventDefault();
+                toastr.error('Please add at least one item to receive.');
+                return false;
+            }
+
+            return true;
+        });
+
+        function searchIssue() {
+            $('#issueSearchModal').modal('show');
+        }
+
+        $('#issueSearchInput').on('input', function() {
+            const searchTerm = $(this).val();
+            if (searchTerm.length > 2) {
+                $.get('/Issue/SearchApproved', { term: searchTerm }, function(data) {
+                    let html = '<div class="list-group">';
+                    data.forEach(issue => {
+                        html += `
+                            <a href="#" class="list-group-item list-group-item-action"
+                               onclick="selectIssue(${issue.id}, '${issue.issueNo}')">
+                                <strong>${issue.issueNo}</strong> - ${issue.issuedTo}
+                                <br><small>Date: ${issue.issueDate}</small>
+                            </a>
+                        `;
+                    });
+                    html += '</div>';
+                    $('#issueSearchResults').html(html);
+                });
+            }
+        });
+
+        function selectIssue(id, issueNo) {
+            $('#originalIssueId').val(id);
+            $('#originalIssueNo').val(issueNo);
+            $('#issueSearchModal').modal('hide');
+        }
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/adminlte/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+
+    <style>
+        .source-section {
+            animation: fadeIn 0.3s;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .info-box-number {
+            font-size: 24px;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: 31px !important;
+        }
+    </style>
+}

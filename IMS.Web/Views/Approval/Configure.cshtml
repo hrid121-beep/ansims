@@ -1,0 +1,83 @@
+﻿@model IEnumerable<IMS.Application.DTOs.ApprovalThresholdDto>
+@{
+    ViewData["Title"] = "Configure Approval Workflows";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Approval Configuration</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Approval Configuration</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Thresholds</h3>
+                        <div class="card-tools">
+                            <button class="btn btn-primary btn-sm" onclick="addThreshold()">
+                                <i class="fas fa-plus"></i> Add Threshold
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Entity Type</th>
+                                    <th>Min Amount</th>
+                                    <th>Max Amount</th>
+                                    <th>Approver Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var threshold in Model)
+                                {
+                                    <tr>
+                                        <td>@threshold.EntityType</td>
+                                        <td>৳ @threshold.MinAmount.ToString("N2")</td>
+                                        <td>
+                                            @if (threshold.MaxAmount.HasValue)
+                                            {
+                                                <text>৳ @threshold.MaxAmount.Value.ToString("N2")</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Unlimited</text>
+                                            }
+                                        </td>
+                                        <td>@threshold.ApproverRole</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" onclick="editThreshold(@threshold.Id)">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteThreshold(@threshold.Id)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//e/Github Projects/zzzSir/ANSAR VDP/IMS/**)",
+      "Bash(dir \"IMS.Web\\Controllers\")",
+      "Bash(findstr \"Notification\")",
+      "Bash(dir /s /b Create.cshtml)",
+      "Bash(find IMS.Web/wwwroot -name \"*.js\" -exec grep -l \"GetUnread\" {} ;)",
+      "Bash(dotnet build IMS.sln --verbosity quiet)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

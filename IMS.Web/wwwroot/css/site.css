@@ -1,0 +1,1518 @@
+﻿/**
+ * AdminLTE v3 - Bangladesh Government Theme
+ * IMS ANSAR & VDP Custom Skin
+ * Version: 3.0.0
+ * 
+ * Built on AdminLTE v3.2.0 framework
+ * Author: IMS Development Team
+ */
+
+/* =============================================
+   1. ADMINLTE COLOR VARIABLES OVERRIDE
+   ============================================= */
+
+:root {
+    /* AdminLTE Primary Color Overrides */
+    --blue: #006a4e;
+    --indigo: #004d38;
+    --purple: #002920;
+    --pink: #f42a41;
+    --red: #f42a41;
+    --orange: #f59e0b;
+    --yellow: #ffc107;
+    --green: #006a4e;
+    --teal: #008060;
+    --cyan: #17a2b8;
+    /* AdminLTE Theme Colors */
+    --primary: #006a4e;
+    --secondary: #6c757d;
+    --success: #006a4e;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #f42a41;
+    --light: #f8f9fa;
+    --dark: #0a2e1f;
+    /* Bangladesh National Colors */
+    --bd-green: #006a4e;
+    --bd-green-dark: #004d38;
+    --bd-green-darker: #002920;
+    --bd-green-light: #008060;
+    --bd-green-lighter: #00a076;
+    --bd-red: #f42a41;
+    --bd-red-dark: #dc2626;
+    --bd-red-light: #ff4d5f;
+    --bd-gold: #ffc107;
+    --bd-gold-light: #ffd54f;
+    --bd-gold-dark: #f59e0b;
+    /* AdminLTE Layout Variables */
+    --sidebar-width: 250px;
+    --sidebar-mini-width: 4.6rem;
+    --control-sidebar-width: 250px;
+    --main-header-height: 3.5rem;
+    --main-header-height-inner: 3.5rem;
+    --main-footer-height: 3.5rem;
+    --box-shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+    --box-shadow: 0 0 1rem rgba(0,0,0,.15);
+    --box-shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
+}
+
+/* =============================================
+   2. ADMINLTE CORE OVERRIDES
+   ============================================= */
+
+/* Body & Typography */
+body {
+    font-family: 'Source Sans Pro', 'Inter', 'SolaimanLipi', 'Kalpurush', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.wrapper {
+    min-height: 100vh;
+}
+
+/* Bengali Font Support */
+.bengali,
+.bn-text {
+    font-family: 'SolaimanLipi', 'Kalpurush', 'Noto Sans Bengali', sans-serif;
+    font-size: 1.1em;
+}
+
+/* =============================================
+   3. ADMINLTE NAVBAR CUSTOMIZATION
+   ============================================= */
+
+/* Main Header Navbar */
+.navbar-white {
+    background: linear-gradient(135deg, var(--bd-green-dark) 0%, var(--bd-green) 100%) !important;
+    border-bottom: 2px solid var(--bd-gold);
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+    .navbar-light .navbar-nav .nav-link:hover,
+    .navbar-light .navbar-nav .nav-link:focus {
+        color: var(--bd-gold-light);
+    }
+
+/* Navbar Brand */
+.navbar-brand {
+    font-weight: 600;
+    color: white !important;
+}
+
+/* Navbar Badges */
+.navbar-badge {
+    background-color: var(--bd-red);
+    color: white;
+    font-size: .6rem;
+    font-weight: 600;
+    padding: 2px 4px;
+    position: absolute;
+    right: 7px;
+    top: 9px;
+}
+
+/* =============================================
+   4. ADMINLTE SIDEBAR CUSTOMIZATION
+   ============================================= */
+
+/* Main Sidebar Container */
+.main-sidebar {
+    background: linear-gradient(180deg, #0a2e1f 0%, #0f3d2a 100%);
+}
+
+/* Sidebar Dark Variant */
+.sidebar-dark-primary {
+    background: linear-gradient(180deg, #0a2e1f 0%, #0f3d2a 100%);
+}
+
+/* Brand Link */
+[class*=sidebar-dark] .brand-link {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-dark) 100%);
+    border-bottom: 2px solid var(--bd-gold);
+    color: white;
+}
+
+    [class*=sidebar-dark] .brand-link:hover {
+        background: linear-gradient(135deg, var(--bd-green-light) 0%, var(--bd-green) 100%);
+        color: white;
+    }
+
+/* User Panel */
+[class*=sidebar-dark] .user-panel {
+    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+    background: rgba(0, 106, 78, 0.05);
+    border-radius: 0.25rem;
+    margin: 0.5rem;
+    padding: 0.75rem;
+}
+
+.user-panel .image img {
+    border: 2px solid var(--bd-gold);
+    padding: 2px;
+    background: white;
+}
+
+/* Sidebar Navigation */
+.nav-sidebar .nav-item > .nav-link {
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+    .nav-sidebar .nav-item > .nav-link:hover {
+        background: rgba(0, 106, 78, 0.1);
+        border-left-color: var(--bd-gold);
+    }
+
+/* Active State */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+[class*=sidebar-dark-] .nav-sidebar > .nav-item > .nav-link.active {
+    background: linear-gradient(90deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    color: #fff;
+    border-left: 3px solid var(--bd-gold);
+}
+
+/* Nav Icons */
+.nav-sidebar .nav-icon {
+    color: var(--bd-gold);
+    transition: all 0.3s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon {
+    color: var(--bd-gold-light);
+    transform: scale(1.1);
+}
+
+/* Treeview Menu */
+.nav-sidebar .nav-treeview > .nav-item > .nav-link {
+    padding-left: 2rem;
+    font-size: 0.9rem;
+}
+
+    .nav-sidebar .nav-treeview > .nav-item > .nav-link:before {
+        content: '•';
+        position: absolute;
+        left: 1.2rem;
+        color: var(--bd-gold);
+    }
+
+/* Sidebar Search */
+.sidebar-search-results .list-group-item {
+    background-color: rgba(0, 106, 78, 0.1);
+    border-left: 3px solid var(--bd-gold);
+}
+
+/* =============================================
+   5. ADMINLTE CONTENT WRAPPER
+   ============================================= */
+
+.content-wrapper {
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Content Header */
+.content-header {
+    padding: 15px .5rem;
+}
+
+    .content-header h1 {
+        font-size: 1.8rem;
+        color: var(--bd-green-dark);
+        font-weight: 600;
+    }
+
+/* Breadcrumb */
+.breadcrumb {
+    background-color: transparent;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.breadcrumb-item.active {
+    color: var(--bd-green);
+}
+
+/* =============================================
+   6. ADMINLTE CARD COMPONENTS
+   ============================================= */
+
+/* Card Base */
+.card {
+    box-shadow: 0 0 20px rgba(0, 106, 78, 0.08);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+    .card:hover {
+        box-shadow: 0 8px 25px rgba(0, 106, 78, 0.15);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+/* Card Header Variants */
+.card-primary .card-header,
+.card-primary:not(.card-outline) > .card-header {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    border-bottom: 2px solid var(--bd-gold);
+    color: white !important;
+}
+
+.card-primary .card-header .card-title,
+.card-primary .card-header h3,
+.card-primary .card-header h4 {
+    color: white !important;
+}
+
+.card-success .card-header {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    color: white !important;
+}
+
+.card-success .card-header .card-title,
+.card-success .card-header h3,
+.card-success .card-header h4 {
+    color: white !important;
+}
+
+.card-warning .card-header {
+    background: linear-gradient(135deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%);
+    color: var(--bd-green-dark) !important;
+}
+
+.card-warning .card-header .card-title,
+.card-warning .card-header h3,
+.card-warning .card-header h4 {
+    color: var(--bd-green-dark) !important;
+}
+
+.card-danger .card-header {
+    background: linear-gradient(135deg, var(--bd-red-dark) 0%, var(--bd-red) 100%);
+    color: white !important;
+}
+
+.card-danger .card-header .card-title,
+.card-danger .card-header h3,
+.card-danger .card-header h4 {
+    color: white !important;
+}
+
+/* Generic Card Header (fallback for cards without color classes) */
+.card-header {
+    color: white;
+}
+
+.card-header .card-title,
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5 {
+    color: inherit;
+}
+
+/* Card Outline - Dark text for better visibility on white background */
+.card-outline .card-header {
+    color: #212529 !important;
+    background-color: white !important;
+}
+
+.card-outline .card-header .card-title,
+.card-outline .card-header h1,
+.card-outline .card-header h2,
+.card-outline .card-header h3,
+.card-outline .card-header h4,
+.card-outline .card-header h5 {
+    color: #212529 !important;
+    font-weight: 600;
+}
+
+/* Card outline variants - colored text matching the outline */
+/*.card-outline.card-primary .card-header .card-title,
+.card-outline.card-primary .card-header h3 {
+    color: var(--bd-green) !important;
+}*/
+
+/*.card-outline.card-info .card-header .card-title,
+.card-outline.card-info .card-header h3 {
+    color: #17a2b8 !important;
+}*/
+
+.card-outline.card-warning .card-header .card-title,
+.card-outline.card-warning .card-header h3 {
+    color: var(--bd-gold-dark) !important;
+}
+
+.card-outline.card-danger .card-header .card-title,
+.card-outline.card-danger .card-header h3 {
+    color: var(--bd-red) !important;
+}
+
+/*.card-outline.card-success .card-header .card-title,
+.card-outline.card-success .card-header h3 {
+    color: var(--bd-green) !important;
+}*/
+
+/*.card-outline.card-secondary .card-header .card-title,
+.card-outline.card-secondary .card-header h3 {
+    color: #6c757d !important;
+}
+*/
+/* Card Tools */
+.card-tools .btn-tool {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+    .card-tools .btn-tool:hover {
+        color: white;
+    }
+
+/* Card Tools for outline cards - dark icons */
+.card-outline .card-tools .btn-tool {
+    color: #6c757d;
+}
+
+    .card-outline .card-tools .btn-tool:hover {
+        color: #212529;
+    }
+
+/* Badge visibility in card-outline */
+.card-outline .card-tools .badge {
+    font-weight: 600;
+}
+
+/* =============================================
+   7. ADMINLTE BUTTON STYLES
+   ============================================= */
+
+/* Button Base - Ensure text is always visible */
+.btn {
+    border-radius: 0.25rem;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Button icon visibility */
+.btn i,
+.btn .fas,
+.btn .far,
+.btn .fab {
+    margin-right: 0.25rem;
+}
+
+/* Primary Button */
+.btn-primary {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    border-color: var(--bd-green-dark) !important;
+    color: white !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: linear-gradient(135deg, var(--bd-green-light) 0%, var(--bd-green) 100%) !important;
+    border-color: var(--bd-green) !important;
+    box-shadow: 0 4px 12px rgba(0, 106, 78, 0.3) !important;
+    color: white !important;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active {
+    background: var(--bd-green-dark) !important;
+    border-color: var(--bd-green-darker) !important;
+    color: white !important;
+}
+
+/* Success Button */
+.btn-success {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    border-color: var(--bd-green) !important;
+    color: white !important;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background: linear-gradient(135deg, var(--bd-green-light) 0%, var(--bd-green) 100%) !important;
+    color: white !important;
+}
+
+/* Info Button */
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%) !important;
+    border-color: #17a2b8 !important;
+    color: white !important;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+    background: linear-gradient(135deg, #20c9e0 0%, #17a2b8 100%) !important;
+    color: white !important;
+}
+
+/* Danger Button */
+.btn-danger {
+    background: linear-gradient(135deg, var(--bd-red-dark) 0%, var(--bd-red) 100%) !important;
+    border-color: var(--bd-red-dark) !important;
+    color: white !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background: linear-gradient(135deg, var(--bd-red) 0%, var(--bd-red-dark) 100%) !important;
+    color: white !important;
+}
+
+/* Warning Button */
+.btn-warning {
+    background: linear-gradient(135deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%) !important;
+    border-color: var(--bd-gold-dark) !important;
+    color: var(--bd-green-dark) !important;
+    font-weight: 700 !important;
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+    background: linear-gradient(135deg, var(--bd-gold) 0%, var(--bd-gold-dark) 100%) !important;
+    color: var(--bd-green-darker) !important;
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background: #6c757d !important;
+    border-color: #6c757d !important;
+    color: white !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background: #5a6268 !important;
+    color: white !important;
+}
+
+/* Button App (AdminLTE Specific) */
+.btn-app {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    border: 1px solid var(--bd-green-dark);
+    color: white;
+}
+
+    .btn-app:hover {
+        background: linear-gradient(135deg, var(--bd-green-light) 0%, var(--bd-green) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+    }
+
+    .btn-app > .fa,
+    .btn-app > .fas,
+    .btn-app > .far,
+    .btn-app > .fab,
+    .btn-app > .fal,
+    .btn-app > .fad,
+    .btn-app > .svg-inline--fa,
+    .btn-app > .ion {
+        color: white;
+    }
+
+/* =============================================
+   8. ADMINLTE FORM CONTROLS
+   ============================================= */
+
+/* Form Labels - Ensure visibility */
+label {
+    color: #212529;
+    font-weight: 500;
+}
+
+.card-body label {
+    color: #212529;
+}
+
+/* Section Headers within card bodies */
+.card-body h4,
+.card-body h5 {
+    color: var(--bd-green-dark);
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Definition Lists - Better visibility */
+.card-body dl dt {
+    color: #495057;
+    font-weight: 600;
+}
+
+.card-body dl dd {
+    color: #212529;
+}
+
+/* Form Control Focus States */
+.form-control:focus {
+    border-color: var(--bd-green);
+    box-shadow: 0 0 0 0.2rem rgba(0, 106, 78, 0.25);
+}
+
+/* Custom Control */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--bd-green);
+    border-color: var(--bd-green);
+}
+
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem rgba(0, 106, 78, 0.25);
+}
+
+/* Custom Switch */
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+    background-color: white;
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--bd-green);
+}
+
+/* Select2 Integration */
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--bd-green);
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--bd-green);
+}
+
+/* =============================================
+   9. ADMINLTE TABLE STYLES
+   ============================================= */
+
+/* Table Headers - Ensure all text is white */
+.table thead th {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    color: white !important;
+    border-color: var(--bd-green-dark) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+}
+
+.table thead tr {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+}
+
+.table thead th,
+.table thead td,
+.table thead th *,
+.table thead td * {
+    color: white !important;
+}
+
+/* Table body text - dark and readable */
+.table tbody td {
+    color: #212529 !important;
+    font-size: 0.9rem;
+}
+
+.table tbody td strong {
+    color: #212529 !important;
+    font-weight: 600;
+}
+
+.table tbody td small,
+.table tbody td .text-muted {
+    color: #6c757d !important;
+    font-size: 0.85rem;
+}
+
+/* Table Hover */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 106, 78, 0.05);
+}
+
+/* Table Striped */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 106, 78, 0.02);
+}
+
+/* DataTables Integration */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--bd-green) !important;
+    border-color: var(--bd-green) !important;
+    color: white !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--bd-green-light) !important;
+    border-color: var(--bd-green-light) !important;
+    color: white !important;
+}
+
+/* =============================================
+   10. ADMINLTE BADGE & LABEL STYLES
+   ============================================= */
+
+/* Badge Styles - High visibility */
+.badge {
+    font-weight: 600 !important;
+    padding: 0.35em 0.65em !important;
+    font-size: 0.875rem !important;
+}
+
+/* Badge Primary */
+.badge-primary {
+    background-color: var(--bd-green) !important;
+    color: white !important;
+}
+
+/* Badge Success */
+.badge-success {
+    background-color: var(--bd-green) !important;
+    color: white !important;
+}
+
+/* Badge Info */
+.badge-info {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+/* Badge Warning */
+.badge-warning {
+    background-color: var(--bd-gold) !important;
+    color: var(--bd-green-dark) !important;
+    font-weight: 700 !important;
+}
+
+/* Badge Danger */
+.badge-danger {
+    background-color: var(--bd-red) !important;
+    color: white !important;
+}
+
+/* Badge Secondary */
+.badge-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+/* Badge Light */
+.badge-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+    font-weight: 600 !important;
+}
+
+/* Badge Dark */
+.badge-dark {
+    background-color: #343a40 !important;
+    color: white !important;
+}
+
+/* Label Colors (Legacy Support) */
+.label-primary {
+    background-color: var(--bd-green);
+}
+
+/* =============================================
+   11. ADMINLTE PROGRESS BARS
+   ============================================= */
+
+.progress-bar {
+    background-color: var(--bd-green);
+}
+
+    .progress-bar.bg-primary {
+        background: linear-gradient(90deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    }
+
+    .progress-bar.bg-success {
+        background: linear-gradient(90deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    }
+
+    .progress-bar.bg-warning {
+        background: linear-gradient(90deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%) !important;
+    }
+
+    .progress-bar.bg-danger {
+        background: linear-gradient(90deg, var(--bd-red-dark) 0%, var(--bd-red) 100%) !important;
+    }
+
+/* =============================================
+   12. ADMINLTE SMALL BOX (INFO-BOX)
+   ============================================= */
+
+/* Small Box - High contrast text */
+.small-box {
+    border-radius: 0.25rem;
+    position: relative;
+    overflow: hidden;
+    color: white !important;
+}
+
+.small-box h3,
+.small-box p,
+.small-box .small-box-footer,
+.small-box .inner h3,
+.small-box .inner p {
+    color: white !important;
+    font-weight: 600;
+}
+
+.small-box .icon {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.small-box.bg-primary {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+}
+
+.small-box.bg-success {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+}
+
+.small-box.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%) !important;
+}
+
+.small-box.bg-warning {
+    background: linear-gradient(135deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%) !important;
+    color: var(--bd-green-dark) !important;
+}
+
+.small-box.bg-warning h3,
+.small-box.bg-warning p,
+.small-box.bg-warning .small-box-footer,
+.small-box.bg-warning .inner h3,
+.small-box.bg-warning .inner p {
+    color: var(--bd-green-dark) !important;
+}
+
+.small-box.bg-warning .icon {
+    color: rgba(0, 106, 78, 0.15) !important;
+}
+
+.small-box.bg-danger {
+    background: linear-gradient(135deg, var(--bd-red-dark) 0%, var(--bd-red) 100%) !important;
+}
+
+.small-box.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #868e96 100%) !important;
+}
+
+/* Info Box */
+.info-box {
+    box-shadow: 0 1px 3px rgba(0, 106, 78, 0.12), 0 1px 2px rgba(0, 106, 78, 0.24);
+    border-radius: 0.25rem;
+    background: white;
+    display: flex;
+    margin-bottom: 1rem;
+    min-height: 90px;
+    padding: .5rem;
+    position: relative;
+}
+
+    .info-box .info-box-icon {
+        background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+        border-radius: 0.25rem;
+        color: white;
+    }
+
+.info-box-icon.bg-primary {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+}
+
+.info-box-icon.bg-warning {
+    background: linear-gradient(135deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%) !important;
+    color: var(--bd-green-dark) !important;
+}
+
+.info-box-icon.bg-danger {
+    background: linear-gradient(135deg, var(--bd-red-dark) 0%, var(--bd-red) 100%) !important;
+}
+
+/* Info Box with bg-light - dark text for visibility */
+.info-box.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.info-box.bg-light .info-box-icon {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    color: white !important;
+}
+
+.info-box.bg-light .info-box-text,
+.info-box.bg-light .info-box-number {
+    color: #212529 !important;
+    font-weight: 600;
+}
+
+/* =============================================
+   13. ADMINLTE ALERT STYLES
+   ============================================= */
+
+.alert-success {
+    background: rgba(0, 106, 78, 0.1);
+    border-color: var(--bd-green);
+    border-left: 4px solid var(--bd-green);
+    color: var(--bd-green-dark);
+}
+
+.alert-danger {
+    background: rgba(244, 42, 65, 0.1);
+    border-color: var(--bd-red);
+    border-left: 4px solid var(--bd-red);
+    color: var(--bd-red-dark);
+}
+
+.alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: var(--bd-gold);
+    border-left: 4px solid var(--bd-gold);
+    color: var(--bd-gold-dark);
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    border-color: #17a2b8;
+    border-left: 4px solid #17a2b8;
+    color: #0c5460 !important;  /* ✅ Dark cyan text for better visibility */
+    font-weight: 500;
+}
+
+.alert-primary {
+    background: rgba(0, 106, 78, 0.1);
+    border-color: var(--bd-green);
+    border-left: 4px solid var(--bd-green);
+    color: var(--bd-green-dark) !important;
+    font-weight: 500;
+}
+
+.alert-secondary {
+    background: rgba(108, 117, 125, 0.1);
+    border-color: #6c757d;
+    border-left: 4px solid #6c757d;
+    color: #383d41 !important;
+    font-weight: 500;
+}
+
+.alert-light {
+    background: #fefefe;
+    border-color: #e9ecef;
+    border-left: 4px solid #dee2e6;
+    color: #212529 !important;
+    font-weight: 500;
+}
+
+.alert-dark {
+    background: rgba(52, 58, 64, 0.1);
+    border-color: #343a40;
+    border-left: 4px solid #343a40;
+    color: #1b1e21 !important;
+    font-weight: 500;
+}
+
+/* Make all alert icons and links visible */
+.alert i,
+.alert .fas,
+.alert .far,
+.alert .fab {
+    color: inherit;
+    opacity: 0.9;
+}
+
+.alert a {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.alert-dismissible .close {
+    color: inherit;
+    opacity: 0.7;
+}
+
+.alert-dismissible .close:hover {
+    opacity: 1;
+}
+
+/* =============================================
+   14. ADMINLTE DROPDOWN STYLES
+   ============================================= */
+
+.dropdown-menu {
+    box-shadow: 0 10px 40px rgba(0, 106, 78, 0.15);
+    border: 1px solid var(--bd-green);
+    border-radius: 0.25rem;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: rgba(0, 106, 78, 0.1);
+    color: var(--bd-green);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: var(--bd-green);
+    color: white;
+}
+
+/* =============================================
+   15. ADMINLTE PAGINATION
+   ============================================= */
+
+.page-link {
+    color: var(--bd-green);
+}
+
+    .page-link:hover {
+        color: var(--bd-green-dark);
+        background-color: rgba(0, 106, 78, 0.1);
+    }
+
+.page-item.active .page-link {
+    background-color: var(--bd-green);
+    border-color: var(--bd-green);
+}
+
+/* =============================================
+   16. ADMINLTE TABS
+   ============================================= */
+
+.nav-tabs .nav-link.active {
+    border-color: var(--bd-green) var(--bd-green) #fff;
+    border-top: 3px solid var(--bd-green);
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--bd-green);
+}
+
+/* Custom Tabs */
+.custom-tabs .nav-link.active {
+    border-color: var(--bd-green);
+    background-color: var(--bd-green);
+}
+
+/* =============================================
+   17. ADMINLTE MODAL STYLES
+   ============================================= */
+
+.modal-primary .modal-header {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    color: white;
+}
+
+.modal-warning .modal-header {
+    background: linear-gradient(135deg, var(--bd-gold-dark) 0%, var(--bd-gold) 100%);
+    color: var(--bd-green-dark);
+}
+
+.modal-danger .modal-header {
+    background: linear-gradient(135deg, var(--bd-red-dark) 0%, var(--bd-red) 100%);
+    color: white;
+}
+
+/* =============================================
+   18. ADMINLTE TIMELINE
+   ============================================= */
+
+.timeline > div > .timeline-item > .timeline-header {
+    background: rgba(0, 106, 78, 0.05);
+    border-bottom: 1px solid var(--bd-green);
+}
+
+.timeline > .time-label > span {
+    background: var(--bd-green);
+}
+
+/* =============================================
+   19. ADMINLTE CALLOUT
+   ============================================= */
+
+.callout.callout-success {
+    border-left-color: var(--bd-green);
+}
+
+.callout.callout-warning {
+    border-left-color: var(--bd-gold);
+}
+
+.callout.callout-danger {
+    border-left-color: var(--bd-red);
+}
+
+/* =============================================
+   20. ADMINLTE PRELOADER
+   ============================================= */
+
+.preloader {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-dark) 100%);
+}
+
+    .preloader img {
+        animation: rotation 1s linear infinite;
+    }
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* =============================================
+   21. ADMINLTE TOASTR OVERRIDES
+   ============================================= */
+
+.toast-success {
+    background-color: var(--bd-green);
+}
+
+.toast-error {
+    background-color: var(--bd-red);
+}
+
+.toast-warning {
+    background-color: var(--bd-gold);
+    color: var(--bd-green-dark);
+}
+
+.toast-info {
+    background-color: #17a2b8;
+}
+
+/* =============================================
+   22. ADMINLTE DIRECT CHAT
+   ============================================= */
+
+.direct-chat-primary .right > .direct-chat-text {
+    background: var(--bd-green);
+    border-color: var(--bd-green);
+}
+
+    .direct-chat-primary .right > .direct-chat-text:after,
+    .direct-chat-primary .right > .direct-chat-text:before {
+        border-left-color: var(--bd-green);
+    }
+
+/* =============================================
+   23. SCROLLBAR CUSTOMIZATION
+   ============================================= */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--bd-green-dark);
+    }
+
+/* =============================================
+   24. ADMINLTE CONTROL SIDEBAR
+   ============================================= */
+
+.control-sidebar {
+    background: linear-gradient(180deg, #0a2e1f 0%, #0f3d2a 100%);
+}
+
+.control-sidebar-dark {
+    color: #c2c7d0;
+}
+
+/* =============================================
+   25. ADMINLTE LOGIN/REGISTER PAGES
+   ============================================= */
+
+.login-page,
+.register-page {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-dark) 100%);
+}
+
+.login-box .card,
+.register-box .card {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.login-card-body .input-group-text,
+.register-card-body .input-group-text {
+    background: var(--bd-green);
+    border-color: var(--bd-green);
+    color: white;
+}
+
+/* =============================================
+   26. ADMINLTE FOOTER
+   ============================================= */
+
+.main-footer {
+    background: white;
+    border-top: 2px solid var(--bd-gold);
+}
+
+/* =============================================
+   27. RESPONSIVE OVERRIDES
+   ============================================= */
+
+@media (max-width: 767.98px) {
+    .main-sidebar,
+    .main-sidebar::before {
+        box-shadow: none !important;
+        margin-left: -250px;
+    }
+
+    .sidebar-open .main-sidebar,
+    .sidebar-open .main-sidebar::before {
+        margin-left: 0;
+    }
+
+    .content-wrapper,
+    .main-footer,
+    .main-header {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .sidebar-mini.sidebar-collapse .main-sidebar .nav-link {
+        width: calc(var(--sidebar-mini-width) - .5rem * 2);
+    }
+}
+
+/* =============================================
+   28. PRINT STYLES
+   ============================================= */
+
+@media print {
+    .main-sidebar,
+    .main-header,
+    .main-footer,
+    .control-sidebar,
+    .btn,
+    .content-header {
+        display: none !important;
+    }
+
+    .content-wrapper {
+        margin: 0 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}
+
+/* =============================================
+   29. UTILITIES & HELPERS
+   ============================================= */
+
+/* National Badge */
+.badge-national {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%);
+    color: white;
+    border: 1px solid var(--bd-gold);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+/* Status Indicators */
+.status-active {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--bd-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-inactive {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--bd-red);
+    border-radius: 50%;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 106, 78, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 106, 78, 0);
+    }
+}
+
+/* Quick Stats */
+.quick-stats {
+    padding: 1.5rem;
+    text-align: center;
+    background: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease;
+}
+
+    .quick-stats:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 106, 78, 0.15);
+    }
+
+    .quick-stats .stats-icon {
+        font-size: 3rem;
+        color: var(--bd-green);
+        margin-bottom: 1rem;
+    }
+
+    .quick-stats .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--bd-green-dark);
+    }
+
+    .quick-stats .stats-label {
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        color: #6c757d;
+        letter-spacing: 0.05em;
+    }
+
+/* =============================================
+   30. DARK MODE SUPPORT
+   ============================================= */
+
+.dark-mode {
+    background: #1a1a1a;
+}
+
+    .dark-mode .main-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    }
+
+    .dark-mode .content-wrapper {
+        background: #1a1a1a;
+    }
+
+    .dark-mode .card {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+
+    .dark-mode .main-footer {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+
+/* =============================================
+   31. COMPREHENSIVE ICON VISIBILITY
+   ============================================= */
+
+/* Icons in colored backgrounds */
+.bg-primary i,
+.bg-primary .fas,
+.bg-primary .far,
+.bg-success i,
+.bg-success .fas,
+.bg-success .far,
+.bg-info i,
+.bg-info .fas,
+.bg-info .far,
+.bg-danger i,
+.bg-danger .fas,
+.bg-danger .far {
+    color: white !important;
+}
+
+.bg-warning i,
+.bg-warning .fas,
+.bg-warning .far {
+    color: var(--bd-green-dark) !important;
+}
+
+/* Icons in buttons */
+.btn i,
+.btn .fas,
+.btn .far,
+.btn .fab {
+    opacity: 1 !important;
+}
+
+/* Icons in table headers */
+.table thead th i,
+.table thead th .fas,
+.table thead th .far {
+    color: white !important;
+}
+
+/* Icons in badges */
+.badge i,
+.badge .fas,
+.badge .far {
+    opacity: 1 !important;
+    margin-right: 0.25rem;
+}
+
+/* User icons and small icons */
+.fa-user,
+.fa-user-tag {
+    opacity: 0.8;
+}
+
+/* =============================================
+   32. TEXT CONTRAST & READABILITY
+   ============================================= */
+
+/* Ensure all text has good contrast */
+body {
+    color: #212529;
+}
+
+/* Strong text visibility */
+strong {
+    font-weight: 600 !important;
+    color: inherit;
+}
+
+/* Small text readability */
+small {
+    font-size: 85%;
+    color: #6c757d;
+}
+
+/* Links visibility */
+a {
+    color: var(--bd-green);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--bd-green-dark);
+    text-decoration: underline;
+}
+
+/* Text muted - ensure it's still readable */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* =============================================
+   33. COLLAPSIBLE CARD HEADERS
+   ============================================= */
+
+/* Collapsible section headers - dark background with white text */
+.card.collapsed-card .card-header,
+.card:not(.collapsed-card) .card-header {
+    background: linear-gradient(135deg, var(--bd-green) 0%, var(--bd-green-light) 100%) !important;
+    color: white !important;
+}
+
+.card .card-header h3,
+.card .card-header h4,
+.card .card-header h5 {
+    color: white !important;
+}
+
+.card .card-header .card-title {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* Override for card-outline which should have white background */
+.card-outline .card-header {
+    background: white !important;
+    color: #212529 !important;
+}
+
+/*.card-outline .card-header h3,
+.card-outline .card-header h4,
+.card-outline .card-header h5,
+.card-outline .card-header .card-title {
+    color: #212529 !important;
+}*/
+
+/* =============================================
+   34. APPROVAL PAGE SPECIFIC STYLES
+   ============================================= */
+
+/* Approval action buttons */
+.btn[onclick*="approve"],
+.btn[onclick*="Approve"] {
+    min-width: 90px;
+}
+
+.btn[onclick*="reject"],
+.btn[onclick*="Reject"] {
+    min-width: 90px;
+}
+
+/* Priority badges */
+.badge:contains("High"),
+.badge.badge-danger[class*="priority"] {
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Level badges visibility */
+td .badge,
+dd .badge {
+    font-size: 0.8rem !important;
+    padding: 0.25em 0.6em !important;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Requested by info */
+td small,
+dd small {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Action column buttons spacing */
+.table td .btn {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Collapsible sections in approval page */
+.card[class*="collapsed-card"] .card-header .fas,
+.card[class*="collapsed-card"] .card-header i {
+    color: white !important;
+}
+
+/* End of AdminLTE Bangladesh Government Theme */
+

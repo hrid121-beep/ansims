@@ -1,0 +1,278 @@
+@using IMS.Domain.Enums
+@model IEnumerable<IMS.Application.DTOs.DamageDto>
+@{
+    ViewData["Title"] = "Damage Tracking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var damages = Model?.ToList() ?? new List<IMS.Application.DTOs.DamageDto>();
+
+    // Calculate statistics
+    var totalCount = damages.Count();
+    var reportedCount = damages.Count(d => d.Status == "Reported" || d.Status == DamageStatus.Reported.ToString());
+    var underReviewCount = damages.Count(d => d.Status == "UnderReview" || d.Status == DamageStatus.UnderReview.ToString());
+    var approvedCount = damages.Count(d => d.Status == "Approved" || d.Status == DamageStatus.Approved.ToString());
+    var highValueCount = damages.Count(d => d.TotalValue >= 10000);
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-exclamation-triangle text-warning"></i> Damage Tracking
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">Adjustments</li>
+                    <li class="breadcrumb-item active">Damage Tracking</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-list"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Damages</span>
+                        <span class="info-box-number">@totalCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending Review</span>
+                        <span class="info-box-number">@reportedCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-primary">
+                    <span class="info-box-icon"><i class="fas fa-search"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Under Review</span>
+                        <span class="info-box-number">@underReviewCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-exclamation-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">High Value (≥৳10K)</span>
+                        <span class="info-box-number">@highValueCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card card-warning card-outline collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control">
+                                    <option value="">All Stores</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status:</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Reported">Reported</option>
+                                    <option value="UnderReview">Under Review</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="RequiresRepair">Requires Repair</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Damage Type:</label>
+                                <select name="damageType" class="form-control">
+                                    <option value="">All Types</option>
+                                    <option value="Physical Damage">Physical Damage</option>
+                                    <option value="Water Damage">Water Damage</option>
+                                    <option value="Fire Damage">Fire Damage</option>
+                                    <option value="Weather Damage">Weather Damage</option>
+                                    <option value="Wear and Tear">Wear and Tear</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Damage List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Damage Records</h3>
+                <div class="card-tools">
+                    <a asp-action="CreateMultiItem" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Damage Report
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="damageTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Damage No</th>
+                            <th>Date</th>
+                            <th>Store</th>
+                            <th>Item(s)</th>
+                            <th>Value (৳)</th>
+                            <th>Status</th>
+                            <th>Reported By</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (damages.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var damage in damages.OrderByDescending(d => d.DamageDate))
+                            {
+                                var statusClass = damage.Status switch
+                                {
+                                    "Reported" => "badge-info",
+                                    "UnderReview" => "badge-warning",
+                                    "Approved" => "badge-success",
+                                    "Rejected" => "badge-danger",
+                                    "RequiresRepair" => "badge-primary",
+                                    _ => "badge-secondary"
+                                };
+
+                                <tr class="@(damage.TotalValue >= 10000 ? "table-warning" : "")">
+                                    <td>@serial</td>
+                                    <td>
+                                        <strong><code>@damage.DamageNo</code></strong>
+                                        @if (damage.TotalValue >= 10000)
+                                        {
+                                            <br /><span class="badge badge-danger badge-sm"><i class="fas fa-exclamation-triangle"></i> High Value</span>
+                                        }
+                                    </td>
+                                    <td>@damage.DamageDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@damage.StoreName</td>
+                                    <td>
+                                        @if (damage.Items != null && damage.Items.Any())
+                                        {
+                                            <span class="badge badge-info">@damage.Items.Count items</span>
+                                            <br />
+                                            <small class="text-muted">@string.Join(", ", damage.Items.Take(2).Select(i => i.ItemName))</small>
+                                            @if (damage.Items.Count > 2)
+                                            {
+                                                <small class="text-muted">...</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @damage.ItemName
+                                        }
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>@damage.TotalValue.ToString("N2")</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusClass">@damage.Status</span>
+                                    </td>
+                                    <td>
+                                        @damage.ReportedBy
+                                        <br />
+                                        <small class="text-muted">@damage.CreatedAt.ToString("dd-MMM HH:mm")</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@damage.Id"
+                                               class="btn btn-info btn-sm" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i> No damage records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#damageTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 8] } // Disable sorting on serial and actions
+                ]
+            });
+        });
+    </script>
+}

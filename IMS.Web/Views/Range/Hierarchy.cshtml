@@ -1,0 +1,244 @@
+﻿@model IMS.Application.DTOs.RangeHierarchyDto
+@{
+    ViewData["Title"] = "Range Hierarchy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Range Hierarchy - @Model.Range.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Ranges</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Range.Id">@Model.Range.Name</a></li>
+                    <li class="breadcrumb-item active">Hierarchy</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Range Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-map-marked-alt"></i> @Model.Range.Name - @Model.Range.Code
+                        </h3>
+                        <div class="card-tools">
+                            <a asp-action="Details" asp-route-id="@Model.Range.Id" class="btn btn-tool">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Headquarter:</strong> @(Model.Range.HeadquarterLocation ?? "-")</p>
+                                <p><strong>Commander:</strong> @(Model.Range.CommanderName ?? "-") @(!string.IsNullOrEmpty(Model.Range.CommanderRank) ? $"({Model.Range.CommanderRank})" : "")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Coverage Area:</strong> @(Model.Range.CoverageArea ?? "-")</p>
+                                <p>
+                                    <strong>Status:</strong>
+                                    @if (Model.Range.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hierarchy Tree -->
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Battalions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-shield-alt"></i> Battalions (@Model.Battalions.Count())
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Battalions.Any())
+                        {
+                            <div id="battalionTree">
+                                @foreach (var battalion in Model.Battalions.OrderBy(b => b.Type).ThenBy(b => b.Name))
+                                {
+                                    <div class="battalion-node mb-2">
+                                        <div class="card @(battalion.IsActive ? "card-outline card-primary" : "card-outline card-danger")">
+                                            <div class="card-body p-2">
+                                                <h6 class="mb-1">
+                                                    <i class="fas fa-@(battalion.Type == IMS.Domain.Enums.BattalionType.Male ? "male" : "female") text-@(battalion.Type == IMS.Domain.Enums.BattalionType.Male ? "primary" : "pink")"></i>
+                                                    <a asp-controller="Battalion" asp-action="Details" asp-route-id="@battalion.Id">
+                                                        @battalion.Name
+                                                    </a>
+                                                    <span class="badge badge-secondary float-right">@battalion.Code</span>
+                                                </h6>
+                                                <small class="text-muted">
+                                                    Commander: @(battalion.CommanderName ?? "Not Assigned") |
+                                                    Personnel: <span class="badge badge-info">@battalion.PersonnelCount</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No battalions assigned to this range.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <!-- Districts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-map"></i> Districts (Zilas) (@Model.Zilas.Count())
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Zilas.Any())
+                        {
+                            <div id="zilaTree">
+                                @foreach (var group in Model.Zilas.GroupBy(z => z.Division).OrderBy(g => g.Key))
+                                {
+                                    <div class="division-group mb-3">
+                                        <h6 class="text-primary">
+                                            <i class="fas fa-map-marker-alt"></i> @(group.Key ?? "Unassigned Division")
+                                        </h6>
+                                        <div class="ml-3">
+                                            @foreach (var zila in group.OrderBy(z => z.Name))
+                                            {
+                                                <div class="zila-node mb-1">
+                                                    <div class="card @(zila.IsActive ? "card-outline card-success" : "card-outline card-danger")">
+                                                        <div class="card-body p-2">
+                                                            <h6 class="mb-0">
+                                                                <a asp-controller="Zila" asp-action="Details" asp-route-id="@zila.Id">
+                                                                    @zila.Name
+                                                                </a>
+                                                                @if (!string.IsNullOrEmpty(zila.NameBangla))
+                                                                {
+                                                                    <small class="text-muted">(@zila.NameBangla)</small>
+                                                                }
+                                                                <span class="badge badge-secondary float-right">@zila.Code</span>
+                                                            </h6>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No districts assigned to this range.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        @if (Model.Statistics != null)
+        {
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Summary Statistics</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-sm-3">
+                                    <div class="description-block">
+                                        <h5 class="description-header">@Model.Statistics.TotalBattalions</h5>
+                                        <span class="description-text">Total Battalions</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-primary">@Model.Statistics.MaleBattalions</h5>
+                                        <span class="description-text">Male Battalions</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-pink">@Model.Statistics.FemaleBattalions</h5>
+                                        <span class="description-text">Female Battalions</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="description-block">
+                                        <h5 class="description-header">@Model.Statistics.TotalZilas</h5>
+                                        <span class="description-text">Total Districts</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-sm-4">
+                                    <div class="description-block">
+                                        <h5 class="description-header">@Model.Statistics.TotalStores</h5>
+                                        <span class="description-text">Total Stores</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="description-block">
+                                        <h5 class="description-header">@Model.Statistics.TotalPersonnel</h5>
+                                        <span class="description-text">Total Personnel</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="description-block">
+                                        <h5 class="description-header text-success">@Model.Statistics.ActiveBattalions</h5>
+                                        <span class="description-text">Active Battalions</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add interactive hover effects
+            $('.battalion-node, .zila-node').hover(
+                function() {
+                    $(this).find('.card').addClass('shadow-sm');
+                },
+                function() {
+                    $(this).find('.card').removeClass('shadow-sm');
+                }
+            );
+        });
+    </script>
+}

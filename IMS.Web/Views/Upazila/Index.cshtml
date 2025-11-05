@@ -1,0 +1,322 @@
+﻿@model IEnumerable<IMS.Application.DTOs.UpazilaDto>
+@{
+    ViewData["Title"] = "Sub-districts (Upazilas)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var zilaId = ViewBag.ZilaId as int?;
+    var zilaName = ViewBag.ZilaName as string;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Sub-districts (Upazilas) @(!string.IsNullOrEmpty(zilaName) ? $"- {zilaName}" : "")</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    @if (zilaId.HasValue)
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Zila" asp-action="Details" asp-route-id="@zilaId">@zilaName</a></li>
+                    }
+                    <li class="breadcrumb-item active">Sub-districts</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Sub-districts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(u => u.HasVDPUnit)</h3>
+                        <p>With VDP Units</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Sum(u => u.VDPMemberCount ?? 0)</h3>
+                        <p>Total VDP Members</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Sum(u => u.StoreCount)</h3>
+                        <p>Total Stores</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Table Card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sub-district List</h3>
+                        <div class="card-tools">
+                            <div class="btn-group">
+                                <a asp-action="Create" asp-route-zilaId="@zilaId" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Add Sub-district
+                                </a>
+                                <a asp-action="Import" class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-import"></i> Import CSV
+                                </a>
+                                <a asp-action="Export" class="btn btn-info btn-sm">
+                                    <i class="fas fa-file-export"></i> Export
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select id="zilaFilter" class="form-control select2">
+                                    <option value="">All Districts</option>
+                                    @{
+                                        var zilaSelectList = ViewBag.Zilas as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+                                    }
+                                    @if (zilaSelectList != null)
+                                    {
+                                        @foreach (var zila in zilaSelectList)
+                                        {
+                                            <option value="@zila.Value">@zila.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="vdpFilter" class="form-control">
+                                    <option value="">All VDP Status</option>
+                                    <option value="true">Has VDP Unit</option>
+                                    <option value="false">No VDP Unit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="searchBox" class="form-control" placeholder="Search sub-districts...">
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table id="upazilaTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name (English)</th>
+                                    <th>Name (Bengali)</th>
+                                    <th>District</th>
+                                    <th>Officer</th>
+                                    <th>Villages</th>
+                                    <th>VDP Unit</th>
+                                    <th>Stores</th>
+                                    <th>Status</th>
+                                    <th width="120">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var upazila in Model)
+                                {
+                                    <tr>
+                                        <td>@upazila.Code</td>
+                                        <td>@upazila.Name</td>
+                                        <td>@upazila.NameBangla</td>
+                                        <td>
+                                            <a asp-controller="Zila" asp-action="Details" asp-route-id="@upazila.ZilaId">
+                                                @upazila.ZilaName
+                                            </a>
+                                        </td>
+                                        <td>@(upazila.UpazilaOfficerName ?? "Not Assigned")</td>
+                                        <td>
+                                            <span class="badge badge-info">@(upazila.NumberOfVillages ?? 0)</span>
+                                        </td>
+                                        <td>
+                                            @if (upazila.HasVDPUnit)
+                                            {
+                                                <span class="badge badge-success">Yes (@upazila.VDPMemberCount)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">No</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">@upazila.StoreCount</span>
+                                        </td>
+                                        <td>
+                                            @if (upazila.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a asp-action="Details" asp-route-id="@upazila.Id" class="btn btn-info" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@upazila.Id" class="btn btn-warning" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete-btn"
+                                                        data-id="@upazila.Id" data-name="@upazila.Name" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteName"></strong>?
+                <div class="mt-2">
+                    <small class="text-muted">This action cannot be undone.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            var table = $('#upazilaTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "order": [[1, "asc"]],
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                "pageLength": 25,
+                "searching": true
+            });
+
+            table.buttons().container().appendTo('#upazilaTable_wrapper .col-md-6:eq(0)');
+
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Custom search box
+            $('#searchBox').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            // Filter functionality
+            $('#zilaFilter, #vdpFilter, #statusFilter').change(function() {
+                table.draw();
+            });
+
+            // Custom filtering
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var zilaFilter = $('#zilaFilter').val();
+                var vdpFilter = $('#vdpFilter').val();
+                var statusFilter = $('#statusFilter').val();
+
+                var zilaText = data[3]; // District column
+                var vdpBadge = $(table.row(dataIndex).node()).find('td:eq(6) .badge');
+                var hasVDP = vdpBadge.hasClass('badge-success');
+                var statusBadge = $(table.row(dataIndex).node()).find('td:eq(8) .badge');
+                var isActive = statusBadge.hasClass('badge-success');
+
+                // Check zila filter
+                if (zilaFilter !== '' && !zilaText.includes($('#zilaFilter option:selected').text())) {
+                    return false;
+                }
+
+                // Check VDP filter
+                if (vdpFilter !== '' && ((vdpFilter === 'true' && !hasVDP) || (vdpFilter === 'false' && hasVDP))) {
+                    return false;
+                }
+
+                // Check status filter
+                if (statusFilter !== '' && ((statusFilter === 'true' && !isActive) || (statusFilter === 'false' && isActive))) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Delete confirmation
+            $('.delete-btn').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                $('#deleteName').text(name);
+                $('#deleteForm').attr('action', '@Url.Action("Delete")/' + id);
+                $('#deleteModal').modal('show');
+            });
+
+            // Initialize filters if coming from specific zila
+            @if (zilaId.HasValue)
+            {
+                    <text>
+                    $('#zilaFilter').val('@zilaId').trigger('change');
+                    </text>
+            }
+        });
+    </script>
+}

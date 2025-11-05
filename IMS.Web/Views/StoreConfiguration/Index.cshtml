@@ -1,0 +1,174 @@
+﻿@model IEnumerable<IMS.Application.DTOs.StoreConfigurationDto>
+@{
+    ViewData["Title"] = "Store Configuration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Store Configuration</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Store Configuration</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Filter Card -->
+        <div class="card card-default collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title">Filter by Store</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Store</label>
+                                <select name="storeId" class="form-control select2">
+                                    <option value="">All Stores</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores as SelectList)
+                                        {
+                                            <option value="@store.Value">@store.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter"></i> Apply Filter
+                                </button>
+                                <a asp-action="Index" class="btn btn-default">
+                                    <i class="fas fa-redo"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Configuration List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    @if (ViewBag.StoreName != null)
+                    {
+                        <span>Configurations for @ViewBag.StoreName</span>
+                    }
+                    else
+                    {
+                        <span>All Store Configurations</span>
+                    }
+                </h3>
+                <div class="card-tools">
+                    <a asp-action="Create" asp-route-storeId="@ViewBag.StoreId" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Configuration
+                    </a>
+                    @if (ViewBag.StoreId != null)
+                    {
+                        <a asp-action="BulkEdit" asp-route-storeId="@ViewBag.StoreId" class="btn btn-info btn-sm">
+                            <i class="fas fa-edit"></i> Bulk Edit
+                        </a>
+                    }
+                    <a asp-action="Copy" class="btn btn-success btn-sm">
+                        <i class="fas fa-copy"></i> Copy Config
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped datatable">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Config Key</th>
+                            <th>Config Value</th>
+                            <th>Description</th>
+                            <th>Created Date</th>
+                            <th width="120">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var config in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge badge-info">@config.StoreName</span>
+                                </td>
+                                <td>
+                                    <code>@config.ConfigKey</code>
+                                </td>
+                                <td>
+                                    <strong>@config.ConfigValue</strong>
+                                </td>
+                                <td>@config.Description</td>
+                                <td>@config.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@config.Id"
+                                       class="btn btn-primary btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@config.Id"
+                                          asp-route-returnStoreId="@ViewBag.StoreId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Delete this configuration?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.datatable').DataTable();
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+    </script>
+}

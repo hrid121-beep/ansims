@@ -1,0 +1,349 @@
+@model IMS.Application.DTOs.StockMovementSummaryDto
+@{
+    ViewData["Title"] = "Stock Movement Summary";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-chart-pie"></i> Stock Movement Summary
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Movements</a></li>
+                    <li class="breadcrumb-item active">Summary</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card card-primary">
+            <div class="card-body">
+                <form method="get" asp-action="Summary">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select name="storeId" class="form-control select2" style="width: 100%;">
+                                    <option value="">All Stores</option>
+                                    @foreach (var store in ViewBag.Stores as SelectList)
+                                    {
+                                        <option value="@store.Value" selected="@(store.Value == ViewBag.StoreId?.ToString())">
+                                            @store.Text
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Date:</label>
+                                <input type="date" name="date" class="form-control" value="@ViewBag.Date" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@(Model?.TotalMovements ?? 0)</h3>
+                        <p>Total Movements</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@((Model?.TotalInQuantity ?? 0).ToString("N2"))</h3>
+                        <p>Total Stock In</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@((Model?.TotalOutQuantity ?? 0).ToString("N2"))</h3>
+                        <p>Total Stock Out</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@(((Model?.TotalInQuantity ?? 0) - (Model?.TotalOutQuantity ?? 0)).ToString("N2"))</h3>
+                        <p>Net Change</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Movement Type Breakdown -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title">Movement Type Breakdown</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model?.MovementTypeStats != null && Model.MovementTypeStats.Any())
+                        {
+                            <canvas id="typeChart" height="200"></canvas>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                                <p>No movement data available</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movement Type Summary Table -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title">Movement Type Summary</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model?.MovementTypeStats != null && Model.MovementTypeStats.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Movement Type</th>
+                                            <th class="text-right">Count</th>
+                                            <th class="text-right">Total Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stat in Model.MovementTypeStats)
+                                        {
+                                            <tr>
+                                                <td>@stat.MovementType</td>
+                                                <td class="text-right">@stat.Count</td>
+                                                <td class="text-right">
+                                                    <strong>@stat.TotalQuantity.ToString("N2")</strong>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                <p>No movement data available</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movement Value Summary -->
+        <div class="card">
+            <div class="card-header bg-success">
+                <h3 class="card-title">Value Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total In Value</span>
+                                <span class="info-box-number">@((Model?.TotalInValue ?? 0).ToString("N2"))</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box bg-danger">
+                            <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Out Value</span>
+                                <span class="info-box-number">@((Model?.TotalOutValue ?? 0).ToString("N2"))</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Movement Counts -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Movement Breakdown by Type</h3>
+                <div class="card-tools">
+                    <a asp-action="Index" class="btn btn-sm btn-primary">
+                        <i class="fas fa-list"></i> View All Movements
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@(Model?.TransferInCount ?? 0)</h3>
+                                <p>Transfer In</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3>@(Model?.TransferOutCount ?? 0)</h3>
+                                <p>Transfer Out</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-arrow-left"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model?.AdjustmentCount ?? 0)</h3>
+                                <p>Adjustments</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-secondary">
+                            <div class="inner">
+                                <h3>@(Model?.ReturnCount ?? 0)</h3>
+                                <p>Returns</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-undo"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-dark">
+                            <div class="inner">
+                                <h3>@(Model?.WriteOffCount ?? 0)</h3>
+                                <p>Write-Offs</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-12">
+                <a asp-action="Index" class="btn btn-default">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+                <a asp-action="Export" asp-route-storeId="@ViewBag.StoreId"
+                   asp-route-fromDate="@ViewBag.Date"
+                   asp-route-toDate="@ViewBag.Date"
+                   class="btn btn-success float-right">
+                    <i class="fas fa-file-excel"></i> Export Summary
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: 'Select a store',
+                allowClear: true
+            });
+
+            @if (Model?.MovementTypeStats != null && Model.MovementTypeStats.Any())
+            {
+                <text>
+                // Movement Type Chart
+                var typeCtx = document.getElementById('typeChart').getContext('2d');
+                new Chart(typeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.MovementTypeStats.Select(m => $"'{m.MovementType}'")))],
+                        datasets: [{
+                            data: [@Html.Raw(string.Join(",", Model.MovementTypeStats.Select(m => m.Count)))],
+                            backgroundColor: [
+                                '#28a745', // IN
+                                '#dc3545', // OUT
+                                '#17a2b8', // TRANSFER
+                                '#ffc107', // ADJUSTMENT
+                                '#007bff', // PHYSICAL_COUNT
+                                '#6c757d', // RETURN
+                                '#343a40'  // WRITE_OFF
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+        });
+    </script>
+}

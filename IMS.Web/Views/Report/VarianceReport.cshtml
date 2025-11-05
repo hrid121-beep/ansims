@@ -1,0 +1,411 @@
+@model IMS.Application.DTOs.VarianceAnalysisDto
+@{
+    ViewData["Title"] = "Variance Analysis Report";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header with Export Options -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-balance-scale"></i>
+                    Variance Analysis Report
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Physical Inventory Info -->
+                <div class="alert alert-info">
+                    <h5><i class="icon fas fa-info-circle"></i> Physical Inventory Details</h5>
+                    <strong>Reference:</strong> @Model.ReferenceNumber<br/>
+                    <strong>Count Date:</strong> @Model.CountDate.ToString("dd MMM yyyy")<br/>
+                    <strong>Total Items:</strong> @Model.TotalItems
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@Model.TotalItems</h3>
+                                <p>Total Items Counted</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@Model.ItemsWithShortage</h3>
+                                <p>Shortages</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-minus-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>@Model.ItemsWithOverage</h3>
+                                <p>Overages</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>৳@Model.TotalVarianceValue.ToString("N2")</h3>
+                                <p>Total Variance Value</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+@if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Variance Status Distribution</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="varianceStatusChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Top 10 Variances by Value</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="topVariancesChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Variance Details Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Variance Details</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="tableSearch" class="form-control float-right" placeholder="Search">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-default">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap" id="varianceTable">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="text-right">System Qty</th>
+                            <th class="text-right">Physical Qty</th>
+                            <th class="text-right">Variance Qty</th>
+                            <th class="text-right">Variance Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
+                        {
+                            @foreach (var variance in Model.ItemsWithVariance.OrderByDescending(v => Math.Abs(v.VarianceValue)))
+                            {
+                                string rowClass = "";
+                                string badgeClass = "";
+                                string statusText = "";
+
+                                if (Math.Abs(variance.Variance) == 0)
+                                {
+                                    rowClass = "";
+                                    badgeClass = "badge-success";
+                                    statusText = "Match";
+                                }
+                                else if (variance.Variance < 0)
+                                {
+                                    rowClass = "table-warning";
+                                    badgeClass = "badge-warning";
+                                    statusText = "Shortage";
+                                }
+                                else
+                                {
+                                    rowClass = "table-danger";
+                                    badgeClass = "badge-danger";
+                                    statusText = "Overage";
+                                }
+
+                                <tr class="@rowClass">
+                                    <td><strong>@variance.ItemName</strong></td>
+                                    <td class="text-right">@((variance.SystemQuantity % 1 == 0) ? variance.SystemQuantity.ToString("N0") : variance.SystemQuantity.ToString("N2"))</td>
+                                    <td class="text-right">@((variance.PhysicalQuantity % 1 == 0) ? variance.PhysicalQuantity.ToString("N0") : variance.PhysicalQuantity.ToString("N2"))</td>
+                                    <td class="text-right">
+                                        <strong>
+                                            @if (variance.Variance > 0)
+                                            {
+                                                <span class="text-danger">+@((variance.Variance % 1 == 0) ? variance.Variance.ToString("N0") : variance.Variance.ToString("N2"))</span>
+                                            }
+                                            else if (variance.Variance < 0)
+                                            {
+                                                <span class="text-warning">@((variance.Variance % 1 == 0) ? variance.Variance.ToString("N0") : variance.Variance.ToString("N2"))</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">0</span>
+                                            }
+                                        </strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>
+                                            @if (variance.VarianceValue > 0)
+                                            {
+                                                <span class="text-danger">+৳@variance.VarianceValue.ToString("N2")</span>
+                                            }
+                                            else if (variance.VarianceValue < 0)
+                                            {
+                                                <span class="text-warning">৳@variance.VarianceValue.ToString("N2")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">৳0.00</span>
+                                            }
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge @badgeClass">@statusText</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">No variance data available</td>
+                            </tr>
+                        }
+                    </tbody>
+                    @if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
+                    {
+                        <tfoot>
+                            <tr class="bg-light font-weight-bold">
+                                <td colspan="4" class="text-right">Total Variance Value:</td>
+                                <td class="text-right">
+                                    @if (Model.TotalVarianceValue > 0)
+                                    {
+                                        <span class="text-danger">+৳@Model.TotalVarianceValue.ToString("N2")</span>
+                                    }
+                                    else if (Model.TotalVarianceValue < 0)
+                                    {
+                                        <span class="text-warning">৳@Model.TotalVarianceValue.ToString("N2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">৳0.00</span>
+                                    }
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            @if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
+            {
+                <text>
+                // Variance Status Distribution Pie Chart
+                var matches = @(Model.TotalItems - Model.ItemsWithShortage - Model.ItemsWithOverage);
+                var shortages = @Model.ItemsWithShortage;
+                var overages = @Model.ItemsWithOverage;
+
+                var statusData = {
+                    labels: ['Matches', 'Shortages', 'Overages'],
+                    datasets: [{
+                        data: [matches, shortages, overages],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 0
+                    }]
+                };
+
+                var statusOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var dataset = data.datasets[tooltipItem.datasetIndex];
+                                var total = dataset.data.reduce(function(previousValue, currentValue) {
+                                    return previousValue + currentValue;
+                                });
+                                var currentValue = dataset.data[tooltipItem.index];
+                                var percentage = Math.floor(((currentValue/total) * 100)+0.5);
+                                return data.labels[tooltipItem.index] + ': ' + currentValue + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                };
+
+                var statusChartCanvas = $('#varianceStatusChart').get(0).getContext('2d');
+                new Chart(statusChartCanvas, {
+                    type: 'doughnut',
+                    data: statusData,
+                    options: statusOptions
+                });
+
+                // Top Variances Bar Chart
+                var topVariances = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.ItemsWithVariance
+                        .OrderByDescending(v => Math.Abs(v.VarianceValue))
+                        .Take(10)
+                        .Select(v => new { v.ItemName, v.VarianceValue })
+                        .ToList()
+                ));
+
+                var topVariancesData = {
+                    labels: topVariances.map(v => v.ItemName.length > 15 ? v.ItemName.substring(0, 15) + '...' : v.ItemName),
+                    datasets: [{
+                        label: 'Variance Value (৳)',
+                        data: topVariances.map(v => v.VarianceValue),
+                        backgroundColor: topVariances.map(v => v.VarianceValue >= 0 ? 'rgba(220, 53, 69, 0.8)' : 'rgba(255, 193, 7, 0.8)'),
+                        borderColor: topVariances.map(v => v.VarianceValue >= 0 ? 'rgba(220, 53, 69, 1)' : 'rgba(255, 193, 7, 1)'),
+                        borderWidth: 1
+                    }]
+                };
+
+                var topVariancesOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                callback: function(value) {
+                                    if (value.length > 15) {
+                                        return value.substr(0, 15) + '...';
+                                    }
+                                    return value;
+                                }
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                callback: function(value) {
+                                    return '৳ ' + value.toLocaleString();
+                                }
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                return '৳ ' + tooltipItem.yLabel.toLocaleString();
+                            }
+                        }
+                    }
+                };
+
+                var topVariancesChartCanvas = $('#topVariancesChart').get(0).getContext('2d');
+                new Chart(topVariancesChartCanvas, {
+                    type: 'bar',
+                    data: topVariancesData,
+                    options: topVariancesOptions
+                });
+                </text>
+            }
+
+            // Table Search
+            $('#tableSearch').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#varianceTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        // Print function
+        function printReport() {
+            window.print();
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            var physicalInventoryId = @Model.PhysicalInventoryId;
+            var url = '@Url.Action("ExportVarianceReport", "Report")' + '?physicalInventoryId=' + physicalInventoryId;
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var physicalInventoryId = @Model.PhysicalInventoryId;
+            var url = '@Url.Action("ExportVarianceReportPdf", "Report")' + '?physicalInventoryId=' + physicalInventoryId;
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, #tableSearch, form {
+                display: none !important;
+            }
+        }
+    </style>
+}

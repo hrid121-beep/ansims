@@ -1,0 +1,120 @@
+﻿@model IEnumerable<IMS.Application.DTOs.TransferDto>
+@{
+    ViewData["Title"] = $"{ViewBag.TransferType} Transfers - {ViewBag.Store.Name}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var store = ViewBag.Store as IMS.Application.DTOs.StoreDto;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">@ViewBag.TransferType Transfers - @store.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Transfers</a></li>
+                    <li class="breadcrumb-item active">By Store</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Buttons -->
+        <div class="card">
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a asp-action="ByStore" asp-route-storeId="@store.Id" asp-route-type="all"
+                       class="btn @(ViewBag.TransferType == "All" ? "btn-primary" : "btn-outline-primary")">
+                        All Transfers
+                    </a>
+                    <a asp-action="ByStore" asp-route-storeId="@store.Id" asp-route-type="from"
+                       class="btn @(ViewBag.TransferType == "Outgoing" ? "btn-primary" : "btn-outline-primary")">
+                        Outgoing Only
+                    </a>
+                    <a asp-action="ByStore" asp-route-storeId="@store.Id" asp-route-type="to"
+                       class="btn @(ViewBag.TransferType == "Incoming" ? "btn-primary" : "btn-outline-primary")">
+                        Incoming Only
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfers Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Transfer List</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Transfer
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="transfersTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Transfer No</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>From Store</th>
+                            <th>To Store</th>
+                            <th>Items</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.TransferNo</td>
+                                <td>@item.TransferDate.ToString("dd-MMM-yyyy")</td>
+                                <td>
+                                    @if (item.FromStoreId == store.Id)
+                                    {
+                                        <span class="badge badge-warning">Outgoing</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">Incoming</span>
+                                    }
+                                </td>
+                                <td>@item.FromStoreName</td>
+                                <td>@item.ToStoreName</td>
+                                <td><span class="badge badge-info">@item.Items.Count items</span></td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Print" asp-route-id="@item.Id" class="btn btn-success btn-sm" target="_blank">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $("#transfersTable").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "order": [[1, "desc"]],
+                "buttons": ["copy", "csv", "excel", "pdf", "print"]
+            }).buttons().container().appendTo('#transfersTable_wrapper .col-md-6:eq(0)');
+        });
+    </script>
+}

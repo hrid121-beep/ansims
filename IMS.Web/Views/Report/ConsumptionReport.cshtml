@@ -1,0 +1,445 @@
+@model IMS.Application.DTOs.ConsumptionAnalysisReportDto
+@{
+    ViewData["Title"] = "Consumption Analysis Report";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header with Export Options -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line"></i>
+                    Consumption Analysis Report
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <form asp-action="ConsumptionReport" method="get" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="categoryId" asp-items="ViewBag.Categories" class="form-control select2">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Summary Statistics -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@Model.TotalItemsConsumed</h3>
+                                <p>Items Consumed</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>৳@Model.TotalConsumptionValue.ToString("N2")</h3>
+                                <p>Total Value</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model.MonthlyTrend?.Count ?? 0)</h3>
+                                <p>Months Period</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>@(Model.Items?.Count ?? 0)</h3>
+                                <p>Unique Items</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Monthly Consumption Trend</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyTrendChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Category Breakdown</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.StoreBreakdown != null && Model.StoreBreakdown.Any())
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Store-wise Consumption</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="storeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Detailed Consumption Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Detailed Item Consumption</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="tableSearch" class="form-control float-right" placeholder="Search">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-default">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap" id="consumptionTable">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th class="text-right">Quantity Consumed</th>
+                            <th>Unit</th>
+                            <th class="text-right">Avg Unit Price</th>
+                            <th class="text-right">Total Value</th>
+                            <th class="text-right">% of Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            @foreach (var item in Model.Items.OrderByDescending(x => x.TotalValue))
+                            {
+                                var percentage = Model.TotalConsumptionValue > 0 ? (item.TotalValue / Model.TotalConsumptionValue * 100) : 0;
+                                <tr>
+                                    <td><strong>@item.ItemCode</strong></td>
+                                    <td>@item.ItemName</td>
+                                    <td>@item.CategoryName</td>
+                                    <td class="text-right">@((item.TotalQuantity % 1 == 0) ? item.TotalQuantity.ToString("N0") : item.TotalQuantity.ToString("N2"))</td>
+                                    <td>@item.Unit</td>
+                                    <td class="text-right">৳@item.AverageUnitPrice.ToString("N2")</td>
+                                    <td class="text-right">৳@item.TotalValue.ToString("N2")</td>
+                                    <td class="text-right">@percentage.ToString("N2")%</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">No consumption data available for the selected period</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-light font-weight-bold">
+                            <td colspan="6" class="text-right">Total:</td>
+                            <td class="text-right">৳@Model.TotalConsumptionValue.ToString("N2")</td>
+                            <td class="text-right">100.00%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Monthly Trend Line Chart
+            @if (Model.MonthlyTrend != null && Model.MonthlyTrend.Any())
+            {
+                <text>
+                var monthlyTrendData = {
+                    labels: [@Html.Raw(string.Join(",", Model.MonthlyTrend.Select(x => $"'{x.Month}'")))],
+                    datasets: [{
+                        label: 'Consumption Value (৳)',
+                        data: [@string.Join(",", Model.MonthlyTrend.Select(x => x.TotalValue.ToString("F2")))],
+                        borderColor: 'rgba(60,141,188,0.8)',
+                        backgroundColor: 'rgba(60,141,188,0.2)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                };
+
+                var monthlyTrendOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return '৳ ' + value.toLocaleString();
+                                }
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                return '৳ ' + tooltipItem.yLabel.toLocaleString();
+                            }
+                        }
+                    }
+                };
+
+                var monthlyTrendChartCanvas = $('#monthlyTrendChart').get(0).getContext('2d');
+                new Chart(monthlyTrendChartCanvas, {
+                    type: 'line',
+                    data: monthlyTrendData,
+                    options: monthlyTrendOptions
+                });
+                </text>
+            }
+
+            // Category Breakdown Pie Chart
+            @if (Model.CategoryBreakdown != null && Model.CategoryBreakdown.Any())
+            {
+                <text>
+                var categoryData = {
+                    labels: [@Html.Raw(string.Join(",", Model.CategoryBreakdown.Select(x => $"'{x.CategoryName}'")))],
+                    datasets: [{
+                        data: [@string.Join(",", Model.CategoryBreakdown.Select(x => x.TotalValue.ToString("F2")))],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(201, 203, 207, 0.8)',
+                            'rgba(100, 149, 237, 0.8)'
+                        ]
+                    }]
+                };
+
+                var categoryOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var label = data.labels[tooltipItem.index];
+                                var value = data.datasets[0].data[tooltipItem.index];
+                                return label + ': ৳' + parseFloat(value).toLocaleString();
+                            }
+                        }
+                    }
+                };
+
+                var categoryChartCanvas = $('#categoryChart').get(0).getContext('2d');
+                new Chart(categoryChartCanvas, {
+                    type: 'doughnut',
+                    data: categoryData,
+                    options: categoryOptions
+                });
+                </text>
+            }
+
+            // Store Breakdown Bar Chart
+            @if (Model.StoreBreakdown != null && Model.StoreBreakdown.Any())
+            {
+                <text>
+                var storeData = {
+                    labels: [@Html.Raw(string.Join(",", Model.StoreBreakdown.Select(x => $"'{x.StoreName}'")))],
+                    datasets: [{
+                        label: 'Consumption Value (৳)',
+                        data: [@string.Join(",", Model.StoreBreakdown.Select(x => x.TotalValue.ToString("F2")))],
+                        backgroundColor: 'rgba(40,167,69,0.8)',
+                        borderColor: 'rgba(40,167,69,1)',
+                        borderWidth: 1
+                    }]
+                };
+
+                var storeOptions = {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return '৳ ' + value.toLocaleString();
+                                }
+                            }
+                        }]
+                    }
+                };
+
+                var storeChartCanvas = $('#storeChart').get(0).getContext('2d');
+                new Chart(storeChartCanvas, {
+                    type: 'bar',
+                    data: storeData,
+                    options: storeOptions
+                });
+                </text>
+            }
+
+            // Table Search
+            $('#tableSearch').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#consumptionTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        // Print function
+        function printReport() {
+            window.print();
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            var fromDate = '@ViewBag.FromDate';
+            var toDate = '@ViewBag.ToDate';
+            var storeId = '@ViewBag.StoreId';
+            var categoryId = '@ViewBag.CategoryId';
+
+            var url = '@Url.Action("ExportConsumptionReport", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (storeId) url += '&storeId=' + storeId;
+            if (categoryId) url += '&categoryId=' + categoryId;
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = '@ViewBag.FromDate';
+            var toDate = '@ViewBag.ToDate';
+            var storeId = '@ViewBag.StoreId';
+            var categoryId = '@ViewBag.CategoryId';
+
+            var url = '@Url.Action("ExportConsumptionReportPdf", "Report")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            if (storeId) url += '&storeId=' + storeId;
+            if (categoryId) url += '&categoryId=' + categoryId;
+
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, #tableSearch, form {
+                display: none !important;
+            }
+        }
+    </style>
+}

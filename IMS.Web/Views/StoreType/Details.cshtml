@@ -1,0 +1,352 @@
+﻿@model IMS.Application.DTOs.StoreTypeDto
+@{
+    ViewData["Title"] = "Store Type Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    @if (!string.IsNullOrEmpty(Model.Icon))
+                    {
+                        <i class="@Model.Icon" style="color: @Model.Color"></i>
+                    }
+                    @Model.Name
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Store Types</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a asp-action="Index" class="btn btn-default">
+                    <i class="fas fa-list"></i> Back to List
+                </a>
+                <button type="button" class="btn btn-danger float-right"
+                        onclick="confirmDelete(@Model.Id, '@Model.Name')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Main Information -->
+            <div class="col-md-8">
+                <!-- Basic Info Card -->
+                <div class="card">
+                    <div class="card-header" style="background-color: @(Model.Color ?? "#007bff")10; border-left: 4px solid @(Model.Color ?? "#007bff");">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Basic Information
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-4"><i class="fas fa-hashtag"></i> Code:</dt>
+                                    <dd class="col-sm-8">
+                                        <code class="badge badge-secondary" style="font-size: 1rem;">@Model.Code</code>
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-tag"></i> Name:</dt>
+                                    <dd class="col-sm-8"><strong>@Model.Name</strong></dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-toggle-on"></i> Status:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check"></i> Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-times"></i> Inactive
+                                            </span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-4"><i class="fas fa-icons"></i> Icon:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Icon))
+                                        {
+                                            <i class="@Model.Icon fa-2x" style="color: @Model.Color"></i>
+                                            <br>
+                                            <small class="text-muted">@Model.Icon</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not set</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-palette"></i> Color:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Color))
+                                        {
+                                            <div class="d-flex align-items-center">
+                                                <div style="width: 40px; height: 40px; background-color: @Model.Color; border-radius: 4px; border: 1px solid #ddd;"></div>
+                                                <code class="ml-2">@Model.Color</code>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not set</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <dt><i class="fas fa-info-circle"></i> Description:</dt>
+                                <dd>
+                                    @if (!string.IsNullOrEmpty(Model.Description))
+                                    {
+                                        <p class="text-muted mb-0">@Model.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted mb-0"><em>No description provided</em></p>
+                                    }
+                                </dd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allowed Categories -->
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title">
+                            <i class="fas fa-tags"></i> Allowed Categories
+                            <span class="badge badge-light ml-2">@Model.CategoryCount</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.AllowedCategories != null && Model.AllowedCategories.Any())
+                        {
+                            <div class="row">
+                                @foreach (var category in Model.AllowedCategories)
+                                {
+                                    <div class="col-md-6 mb-2">
+                                        <div class="info-box bg-light">
+                                            <span class="info-box-icon bg-info">
+                                                <i class="fas fa-tag"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">@category.Name</span>
+                                                <span class="info-box-number">
+                                                    <small>
+                                                        <code>@category.Code</code>
+                                                    </small>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No categories assigned to this store type yet.
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Audit Info -->
+                @if (Model.CreatedAt != DateTime.MinValue || Model.UpdatedAt.HasValue)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-history"></i> Audit Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                @if (Model.CreatedAt != DateTime.MinValue)
+                                {
+                                    <dt class="col-sm-3"><i class="fas fa-plus-circle"></i> Created:</dt>
+                                    <dd class="col-sm-9">
+                                        @Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")
+                                        @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                                        {
+                                            <span class="text-muted">by @Model.CreatedBy</span>
+                                        }
+                                    </dd>
+                                }
+
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <dt class="col-sm-3"><i class="fas fa-edit"></i> Last Updated:</dt>
+                                    <dd class="col-sm-9">
+                                        @Model.UpdatedAt.Value.ToString("MMMM dd, yyyy hh:mm tt")
+                                        @if (!string.IsNullOrEmpty(Model.UpdatedBy))
+                                        {
+                                            <span class="text-muted">by @Model.UpdatedBy</span>
+                                        }
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Statistics Sidebar -->
+            <div class="col-md-4">
+                <!-- Quick Stats -->
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Quick Statistics</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="info-box mb-0">
+                            <span class="info-box-icon bg-primary">
+                                <i class="fas fa-warehouse"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Stores</span>
+                                <span class="info-box-number">@Model.StoreCount</span>
+                                <small class="text-muted">stores using this type</small>
+                            </div>
+                        </div>
+
+                        <div class="info-box mb-0">
+                            <span class="info-box-icon bg-info">
+                                <i class="fas fa-tags"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Categories</span>
+                                <span class="info-box-number">@Model.CategoryCount</span>
+                                <small class="text-muted">allowed categories</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Preview -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title"><i class="fas fa-eye"></i> Visual Preview</h3>
+                    </div>
+                    <div class="card-body text-center" style="background-color: @(Model.Color ?? "#007bff")10;">
+                        @if (!string.IsNullOrEmpty(Model.Icon))
+                        {
+                            <i class="@Model.Icon mb-3" style="font-size: 4rem; color: @(Model.Color ?? "#007bff");"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-warehouse mb-3" style="font-size: 4rem; color: #6c757d;"></i>
+                        }
+                        <h4>@Model.Name</h4>
+                        <p class="text-muted">@(Model.Description ?? "No description")</p>
+                        <code class="badge badge-secondary">@Model.Code</code>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card @(Model.IsActive ? "card-success" : "card-danger")">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> Status</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.IsActive)
+                        {
+                            <p class="text-success mb-0">
+                                <i class="fas fa-check-circle"></i>
+                                This store type is <strong>active</strong> and can be assigned to new stores.
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="text-danger mb-0">
+                                <i class="fas fa-times-circle"></i>
+                                This store type is <strong>inactive</strong> and cannot be assigned to new stores.
+                            </p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-block">
+                            <i class="fas fa-edit"></i> Edit Store Type
+                        </a>
+                        @if (Model.StoreCount == 0)
+                        {
+                            <button type="button" class="btn btn-danger btn-block"
+                                    onclick="confirmDelete(@Model.Id, '@Model.Name')">
+                                <i class="fas fa-trash"></i> Delete Store Type
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary btn-block" disabled
+                                    title="Cannot delete - store type is in use">
+                                <i class="fas fa-trash"></i> Cannot Delete (In Use)
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Form -->
+<form id="deleteForm" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `Do you want to delete store type <strong>${name}</strong>?<br><small class="text-danger">This action cannot be undone.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('#deleteForm');
+                    form.attr('action', '@Url.Action("Delete")/' + id);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+}

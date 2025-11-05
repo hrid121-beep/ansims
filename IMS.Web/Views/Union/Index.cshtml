@@ -1,0 +1,366 @@
+﻿@model IEnumerable<IMS.Application.DTOs.UnionDto>
+@{
+    ViewData["Title"] = "Unions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var upazilaId = ViewBag.UpazilaId as int?;
+    var upazilaName = ViewBag.UpazilaName as string;
+    var zilaName = ViewBag.ZilaName as string;
+    var filter = ViewBag.Filter as string;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    Unions
+                    @if (!string.IsNullOrEmpty(upazilaName))
+                    {
+                        <small class="text-muted">- @upazilaName</small>
+                    }
+                    @if (!string.IsNullOrEmpty(filter))
+                    {
+                        <small class="text-muted">(Filtered: @filter)</small>
+                    }
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    @if (upazilaId.HasValue)
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Upazila" asp-action="Details" asp-route-id="@upazilaId">@upazilaName</a></li>
+                    }
+                    <li class="breadcrumb-item active">Unions</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Quick Stats -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Unions</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(u => u.HasVDPUnit)</h3>
+                        <p>With VDP Units</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(u => u.IsRural)</h3>
+                        <p>Rural Unions</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(u => u.IsBorderArea)</h3>
+                        <p>Border Areas</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Union List</h3>
+                        <div class="card-tools">
+                            <div class="btn-group">
+                                <a asp-action="Create" asp-route-upazilaId="@upazilaId" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Add Union
+                                </a>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        <i class="fas fa-filter"></i> Filter
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" asp-action="Index">All Unions</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" asp-action="Index" asp-route-filter="vdp">With VDP Units</a>
+                                        <a class="dropdown-item" asp-action="Index" asp-route-filter="border">Border Areas</a>
+                                        <a class="dropdown-item" asp-action="Index" asp-route-filter="rural">Rural</a>
+                                        <a class="dropdown-item" asp-action="Index" asp-route-filter="urban">Urban</a>
+                                    </div>
+                                </div>
+                                <a asp-action="Import" class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-import"></i> Import CSV
+                                </a>
+                                <a asp-action="Export" asp-route-upazilaId="@upazilaId" class="btn btn-info btn-sm">
+                                    <i class="fas fa-file-export"></i> Export
+                                </a>
+                                <a asp-action="Search" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-search"></i> Advanced Search
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select id="zilaFilter" class="form-control select2">
+                                    <option value="">All Districts</option>
+                                    @foreach (var zila in ViewBag.Zilas as IEnumerable<IMS.Application.DTOs.ZilaDto> ?? new List<IMS.Application.DTOs.ZilaDto>())
+                                    {
+                                        <option value="@zila.Id">@zila.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="upazilaFilter" class="form-control select2">
+                                    <option value="">All Upazilas</option>
+                                    @foreach (var upazila in ViewBag.Upazilas as IEnumerable<IMS.Application.DTOs.UpazilaDto> ?? new List<IMS.Application.DTOs.UpazilaDto>())
+                                    {
+                                        <option value="@upazila.Id">@upazila.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="vdpFilter" class="form-control">
+                                    <option value="">All VDP Status</option>
+                                    <option value="true">Has VDP Unit</option>
+                                    <option value="false">No VDP Unit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="areaFilter" class="form-control">
+                                    <option value="">All Areas</option>
+                                    <option value="rural">Rural</option>
+                                    <option value="urban">Urban</option>
+                                    <option value="border">Border Area</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table id="unionTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name (English)</th>
+                                    <th>Name (Bengali)</th>
+                                    <th>Upazila</th>
+                                    <th>Chairman</th>
+                                    <th>Wards</th>
+                                    <th>Villages</th>
+                                    <th>Population</th>
+                                    <th>VDP Members</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th width="150">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var union in Model)
+                                {
+                                    <tr>
+                                        <td>@union.Code</td>
+                                        <td>@union.Name</td>
+                                        <td>@union.NameBangla</td>
+                                        <td>
+                                            <a asp-controller="Upazila" asp-action="Details" asp-route-id="@union.UpazilaId">
+                                                @union.UpazilaName
+                                            </a>
+                                        </td>
+                                        <td>@(union.ChairmanName ?? "Not Assigned")</td>
+                                        <td>@(union.NumberOfWards ?? 0)</td>
+                                        <td>@(union.NumberOfVillages ?? 0)</td>
+                                        <td>@(union.Population?.ToString("N0") ?? "N/A")</td>
+                                        <td>
+                                            @if (union.HasVDPUnit)
+                                            {
+                                                <span class="badge badge-success">
+                                                    M: @(union.VDPMemberCountMale ?? 0) | F: @(union.VDPMemberCountFemale ?? 0)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">No VDP</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (union.IsBorderArea)
+                                            {
+                                                <span class="badge badge-danger">Border</span>
+                                            }
+                                            else if (union.IsRural)
+                                            {
+                                                <span class="badge badge-info">Rural</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-warning">Urban</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (union.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a asp-action="Details" asp-route-id="@union.Id" class="btn btn-sm btn-info" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@union.Id" class="btn btn-sm btn-warning" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="VDPManagement" asp-route-id="@union.Id" class="btn btn-sm btn-success" title="VDP Management">
+                                                    <i class="fas fa-users"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger delete-btn"
+                                                        data-id="@union.Id" data-name="@union.Name" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize DataTable
+            var table = $('#unionTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "order": [[1, "asc"]],
+                "buttons": ["copy", "csv", "excel", "pdf", "print"],
+                "pageLength": 25
+            });
+
+            table.buttons().container().appendTo('#unionTable_wrapper .col-md-6:eq(0)');
+
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Cascading dropdown
+            $('#zilaFilter').change(function() {
+                var zilaId = $(this).val();
+                if (zilaId) {
+                    $.get('@Url.Action("GetUpazilasByZila", "Upazila")', { zilaId: zilaId }, function(data) {
+                        var upazila = $('#upazilaFilter');
+                        upazila.empty();
+                        upazila.append('<option value="">All Upazilas</option>');
+                        $.each(data, function(index, item) {
+                            upazila.append($('<option>').val(item.value).text(item.text));
+                        });
+                    });
+                }
+            });
+
+            // Filter table
+            $('#upazilaFilter, #vdpFilter, #areaFilter').change(function() {
+                filterTable();
+            });
+
+            function filterTable() {
+                table.draw();
+            }
+
+            // Custom filtering
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var upazilaFilter = $('#upazilaFilter').val();
+                var vdpFilter = $('#vdpFilter').val();
+                var areaFilter = $('#areaFilter').val();
+
+                var upazila = data[3] || '';
+                var vdp = $(table.row(dataIndex).node()).find('td:eq(8) .badge').hasClass('badge-success');
+                var area = '';
+
+                if ($(table.row(dataIndex).node()).find('td:eq(9) .badge').text() === 'Border') area = 'border';
+                else if ($(table.row(dataIndex).node()).find('td:eq(9) .badge').text() === 'Rural') area = 'rural';
+                else if ($(table.row(dataIndex).node()).find('td:eq(9) .badge').text() === 'Urban') area = 'urban';
+
+                if ((upazilaFilter === '' || upazila.includes($('#upazilaFilter option:selected').text())) &&
+                    (vdpFilter === '' || (vdpFilter === 'true' && vdp) || (vdpFilter === 'false' && !vdp)) &&
+                    (areaFilter === '' || area === areaFilter)) {
+                    return true;
+                }
+                return false;
+            });
+
+            // Delete confirmation
+            $('.delete-btn').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                $('#deleteName').text(name);
+                $('#deleteForm').attr('action', '@Url.Action("Delete")/' + id);
+                $('#deleteModal').modal('show');
+            });
+        });
+    </script>
+}

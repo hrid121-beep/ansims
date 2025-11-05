@@ -1,0 +1,138 @@
+﻿@{
+    ViewData["Title"] = "Bulk Stock Operations";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Bulk Stock Operations</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Bulk Operations</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Bulk Upload -->
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Bulk Stock Upload</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Upload multiple stock entries using CSV file</p>
+                        <a href="/templates/stock_upload_template.csv" class="btn btn-sm btn-info mb-3">
+                            <i class="fas fa-download"></i> Download Template
+                        </a>
+                        <form method="post" enctype="multipart/form-data" action="/StockEntry/BulkUpload">
+                            <div class="form-group">
+                                <label>Select Store</label>
+                                <select name="storeId" class="form-control" required>
+                                    <option value="">Choose Store...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CSV File</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="file" accept=".csv" required>
+                                    <label class="custom-file-label">Choose file</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Transfer -->
+            <div class="col-md-6">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Bulk Transfer</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Transfer multiple items between stores</p>
+                        <form id="bulkTransferForm">
+                            <div class="form-group">
+                                <label>From Store</label>
+                                <select id="fromStore" class="form-control" required>
+                                    <option value="">Choose Store...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>To Store</label>
+                                <select id="toStore" class="form-control" required>
+                                    <option value="">Choose Store...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Items</label>
+                                <select id="items" class="form-control select2" multiple required>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-exchange-alt"></i> Create Transfer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Barcode Generation -->
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Bulk Barcode Generation</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="bulkBarcodeForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Select Items</label>
+                                        <select id="barcodeItems" class="form-control select2" multiple required>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Quantity per Item</label>
+                                        <input type="number" class="form-control" id="barcodeQty" value="1" min="1" max="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Label Format</label>
+                                        <select class="form-control" id="labelFormat">
+                                            <option value="Small_30x20mm">Small (30x20mm)</option>
+                                            <option value="Medium_50x30mm">Medium (50x30mm)</option>
+                                            <option value="Large_70x50mm">Large (70x50mm)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-barcode"></i> Generate Barcodes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

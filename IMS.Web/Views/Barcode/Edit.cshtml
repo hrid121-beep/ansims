@@ -1,0 +1,347 @@
+﻿@model IMS.Application.DTOs.BarcodeDto
+@{
+    ViewData["Title"] = $"Edit Barcode - {Model.BarcodeNumber}";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-edit"></i> Edit Barcode
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Barcodes</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.BarcodeNumber</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit"></i> Edit Barcode: @Model.BarcodeNumber
+                        </h3>
+                    </div>
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="BarcodeNumber" />
+                        <input type="hidden" asp-for="ItemId" />
+                        <input type="hidden" asp-for="GeneratedDate" />
+                        <input type="hidden" asp-for="GeneratedBy" />
+
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger alert alert-danger"></div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Warning:</strong> Barcode number and associated item cannot be changed after generation.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Barcode Number</label>
+                                        <input type="text" class="form-control" value="@Model.BarcodeNumber" readonly />
+                                        <small class="form-text text-muted">Cannot be changed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Item Name</label>
+                                        <input type="text" class="form-control" value="@Model.ItemName" readonly />
+                                        <small class="form-text text-muted">Cannot be changed</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BarcodeType" class="control-label"></label>
+                                        <select asp-for="BarcodeType" class="form-control">
+                                            <option value="QRCode">QR Code</option>
+                                            <option value="Barcode">Linear Barcode</option>
+                                        </select>
+                                        <span asp-validation-for="BarcodeType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Generated Date</label>
+                                        <input type="text" class="form-control" value="@Model.GeneratedDate.ToString("MMM dd, yyyy")" readonly />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SerialNumber" class="control-label"></label>
+                                        <input asp-for="SerialNumber" class="form-control" placeholder="Enter serial number" />
+                                        <span asp-validation-for="SerialNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BatchNumber" class="control-label"></label>
+                                        <input asp-for="BatchNumber" class="form-control" placeholder="Enter batch number" />
+                                        <span asp-validation-for="BatchNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Location" class="control-label"></label>
+                                        <input asp-for="Location" class="form-control" placeholder="Storage location" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="StoreId" class="control-label">Store</label>
+                                        <select asp-for="StoreId" class="form-control select2">
+                                            <option value="">Select Store</option>
+                                            @if (ViewBag.Stores != null)
+                                            {
+                                                @foreach (var store in ViewBag.Stores)
+                                                {
+                                                    <option value="@store.Value">@store.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                        <span asp-validation-for="StoreId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ReferenceType" class="control-label"></label>
+                                        <select asp-for="ReferenceType" class="form-control">
+                                            <option value="">Select Reference Type</option>
+                                            <option value="StockEntry">Stock Entry</option>
+                                            <option value="Purchase">Purchase</option>
+                                            <option value="Transfer">Transfer</option>
+                                            <option value="Issue">Issue</option>
+                                            <option value="Receive">Receive</option>
+                                            <option value="Adjustment">Adjustment</option>
+                                            <option value="Return">Return</option>
+                                        </select>
+                                        <span asp-validation-for="ReferenceType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ReferenceId" class="control-label"></label>
+                                        <input asp-for="ReferenceId" class="form-control" type="number" placeholder="Reference ID" />
+                                        <span asp-validation-for="ReferenceId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Notes" class="control-label"></label>
+                                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Optional notes"></textarea>
+                                <span asp-validation-for="Notes" class="text-danger"></span>
+                            </div>
+
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-clipboard-check"></i> Change Tracking (Required)
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Reason for Change <span class="text-danger">*</span></label>
+                                        <select name="changeReason" class="form-control" required>
+                                            <option value="">Select reason</option>
+                                            <option value="Correction">Data Correction</option>
+                                            <option value="Update">Information Update</option>
+                                            <option value="Location Change">Location Change</option>
+                                            <option value="Reference Update">Reference Update</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <small class="form-text text-muted">Required for audit trail</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Change Notes</label>
+                                        <textarea name="changeNotes" class="form-control" rows="2" placeholder="Describe the changes..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-default">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </a>
+                                <div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-qrcode"></i> Current Barcode
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(ViewBag.QRCodeBase64))
+                        {
+                            <img src="data:image/png;base64,@ViewBag.QRCodeBase64"
+                                 alt="QR Code" class="img-fluid border rounded"
+                                 style="max-width: 200px;">
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                QR Code not available
+                            </div>
+                        }
+                        <div class="mt-3">
+                            <h6 class="font-weight-bold">@Model.BarcodeNumber</h6>
+                            <p class="text-muted mb-0">@Model.ItemName</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-box"></i> Item Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Item Name:</dt>
+                            <dd class="col-sm-7">@Model.ItemName</dd>
+
+                            <dt class="col-sm-5">Item Code:</dt>
+                            <dd class="col-sm-7">@(Model.ItemCode ?? "N/A")</dd>
+
+                            <dt class="col-sm-5">Category:</dt>
+                            <dd class="col-sm-7">@(Model.CategoryName ?? "N/A")</dd>
+
+                            <dt class="col-sm-5">Store:</dt>
+                            <dd class="col-sm-7">@(Model.StoreName ?? "N/A")</dd>
+                        </dl>
+                        @if (Model.ItemId.HasValue)
+                        {
+                            <div class="text-center mt-3">
+                                <a asp-controller="Item" asp-action="Details" asp-route-id="@Model.ItemId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-external-link-alt"></i> View Item
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar"></i> Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="description-block">
+                                    <h5 class="description-header">@Model.PrintCount</h5>
+                                    <span class="description-text">Times Printed</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="description-block">
+                                    <h5 class="description-header">@(Model.ScanCount ?? 0)</h5>
+                                    <span class="description-text">Times Scanned</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.LastScannedDate.HasValue)
+                        {
+                            <div class="border-top pt-3 mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Last Scanned:
+                                    @Model.LastScannedDate.Value.ToString("MMM dd, yyyy")
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> Edit Guidelines
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-lock text-danger"></i>
+                                <small>Barcode number cannot be changed</small>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-edit text-success"></i>
+                                <small>Update serial number, location, and notes</small>
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-history text-info"></i>
+                                <small>All changes are logged for audit</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('form').on('submit', function() {
+                var reason = $('select[name="changeReason"]').val();
+                if (!reason) {
+                    alert('Please select a reason for the change');
+                    return false;
+                }
+            });
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,521 @@
+﻿@model IMS.Application.DTOs.BattalionDto
+@{
+    ViewData["Title"] = "Create Battalion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Create Battalion</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Battalions</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Messages -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error!</strong> @TempData["Error"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle"></i>
+                <strong>Success!</strong> @TempData["Success"]
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-shield-alt"></i> Battalion Information
+                        </h3>
+                    </div>
+                    <form asp-action="Create" method="post" id="createBattalionForm">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <!-- Basic Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">
+                                            <i class="fas fa-shield-alt text-primary"></i> Battalion Name *
+                                        </label>
+                                        <input asp-for="Name" class="form-control" placeholder="e.g., 1st Battalion Ansar" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label">
+                                            <i class="fas fa-barcode text-info"></i> Battalion Code
+                                        </label>
+                                        <div class="input-group">
+                                            <input asp-for="Code" class="form-control" placeholder="Will be auto-generated"
+                                                   readonly style="background-color: #f8f9fa;" />
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary" id="generateCodeBtn">
+                                                    <i class="fas fa-sync-alt"></i> Generate
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning" id="editCodeBtn">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-lightbulb"></i>
+                                            Code is auto-generated based on battalion type
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Type" class="control-label">
+                                            <i class="fas fa-users text-success"></i> Battalion Type *
+                                        </label>
+                                        <select asp-for="Type" asp-items="ViewBag.BattalionTypes" class="form-control">
+                                            <option value="">-- Select Type --</option>
+                                        </select>
+                                        <span asp-validation-for="Type" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location Information -->
+                            <h5 class="mt-4 mb-3 text-primary">
+                                <i class="fas fa-map-marker-alt"></i> Location & Assignment
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="RangeId" class="control-label">Range Assignment</label>
+                                        <select asp-for="RangeId" asp-items="ViewBag.Ranges" class="form-control">
+                                            <option value="">-- Select Range --</option>
+                                        </select>
+                                        <span asp-validation-for="RangeId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Location" class="control-label">Battalion Location</label>
+                                        <input asp-for="Location" class="form-control" placeholder="e.g., Savar Cantonment, Dhaka" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Commander Information -->
+                            <h5 class="mt-4 mb-3 text-primary">
+                                <i class="fas fa-user-tie"></i> Commander Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="CommanderName" class="control-label">Commander Name</label>
+                                        <input asp-for="CommanderName" class="form-control" placeholder="e.g., Lt. Col. Rahman" />
+                                        <span asp-validation-for="CommanderName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="CommanderRank" class="control-label">Commander Rank</label>
+                                        <select asp-for="CommanderRank" class="form-control">
+                                            <option value="">Select Rank</option>
+                                            <optgroup label="General Officers">
+                                                <option value="Brigadier">Brigadier</option>
+                                                <option value="Colonel">Colonel</option>
+                                            </optgroup>
+                                            <optgroup label="Field Officers">
+                                                <option value="Lieutenant Colonel" selected>Lieutenant Colonel</option>
+                                                <option value="Major">Major</option>
+                                            </optgroup>
+                                            <optgroup label="Company Officers">
+                                                <option value="Captain">Captain</option>
+                                                <option value="Lieutenant">Lieutenant</option>
+                                                <option value="Second Lieutenant">Second Lieutenant</option>
+                                            </optgroup>
+                                            <optgroup label="VDP Ranks">
+                                                <option value="Commandant">Commandant</option>
+                                                <option value="Assistant Commandant">Assistant Commandant</option>
+                                                <option value="Instructor">Instructor</option>
+                                                <option value="Assistant Instructor">Assistant Instructor</option>
+                                            </optgroup>
+                                        </select>
+                                        <span asp-validation-for="CommanderRank" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ContactNumber" class="control-label">Contact Number</label>
+                                        <input asp-for="ContactNumber" class="form-control" placeholder="e.g., +8801XXXXXXXXX" />
+                                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Email" class="control-label">Email Address</label>
+                                        <input asp-for="Email" class="form-control" placeholder="e.g., battalion1@ansarvdp.gov.bd" />
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="EstablishedDate" class="control-label">Established Date</label>
+                                        <input asp-for="EstablishedDate" type="date" class="form-control" />
+                                        <span asp-validation-for="EstablishedDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Personnel Information -->
+                            <h5 class="mt-4 mb-3 text-primary">
+                                <i class="fas fa-users"></i> Personnel Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="OfficerCount" class="control-label">Officer Count</label>
+                                        <input asp-for="OfficerCount" type="number" class="form-control" value="0" min="0" />
+                                        <span asp-validation-for="OfficerCount" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="EnlistedCount" class="control-label">Enlisted Count</label>
+                                        <input asp-for="EnlistedCount" type="number" class="form-control" value="0" min="0" />
+                                        <span asp-validation-for="EnlistedCount" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="TotalPersonnel" class="control-label">Total Personnel</label>
+                                        <input asp-for="TotalPersonnel" type="number" class="form-control" value="0" readonly
+                                               style="background-color: #f8f9fa;" />
+                                        <span asp-validation-for="TotalPersonnel" class="text-danger"></span>
+                                        <small class="text-muted">Auto-calculated from officer and enlisted counts</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="OperationalStatus" class="control-label">Operational Status</label>
+                                        <select asp-for="OperationalStatus" asp-items="ViewBag.OperationalStatuses" class="form-control">
+                                            <option value="">-- Select Status --</option>
+                                        </select>
+                                        <span asp-validation-for="OperationalStatus" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Status</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" asp-for="IsActive" class="custom-control-input" checked />
+                                            <label class="custom-control-label" asp-for="IsActive">
+                                                <span class="badge" id="statusBadge">Active</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="form-group">
+                                <label asp-for="Remarks" class="control-label">Remarks</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Enter any additional information about the battalion"></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary" id="createBtn">
+                                <i class="fas fa-save"></i> Create Battalion
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="button" class="btn btn-success" id="previewBtn">
+                                <i class="fas fa-search"></i> Preview Information
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            console.log('Battalion create page loaded');
+
+            // Status switch handler
+            $('#IsActive').change(function() {
+                updateStatusBadge();
+            });
+
+            function updateStatusBadge() {
+                if ($('#IsActive').is(':checked')) {
+                    $('#statusBadge').removeClass('badge-danger').addClass('badge-success').text('Active');
+                } else {
+                    $('#statusBadge').removeClass('badge-success').addClass('badge-danger').text('Inactive');
+                }
+            }
+
+            // Initialize status badge
+            updateStatusBadge();
+
+            // Auto-calculate total personnel
+            $('#OfficerCount, #EnlistedCount').on('input', function() {
+                var officers = parseInt($('#OfficerCount').val()) || 0;
+                var enlisted = parseInt($('#EnlistedCount').val()) || 0;
+                $('#TotalPersonnel').val(officers + enlisted);
+            });
+
+            // Generate code when type changes
+            $('#Type').on('change', function() {
+                var type = $(this).val();
+                if (type) {
+                    generateCode(type);
+                }
+            });
+
+            // Generate code button click
+            $('#generateCodeBtn').click(function() {
+                var type = $('#Type').val();
+                if (type) {
+                    generateCode(type);
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Battalion Type Required',
+                        text: 'Please select a battalion type first.'
+                    });
+                }
+            });
+
+            // Edit code button
+            $('#editCodeBtn').click(function() {
+                $('#Code').prop('readonly', false).css('background-color', 'white').focus();
+            });
+
+            // Function to generate code
+            function generateCode(type) {
+                console.log('Generating code for type:', type);
+
+                // Show loading
+                $('#generateCodeBtn').html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+
+                $.ajax({
+                    url: '@Url.Action("GenerateCodeFromType", "Battalion")',
+                    type: 'GET',
+                    data: { type: type },
+                    success: function(response) {
+                        console.log('Response received:', response);
+
+                        if (response.success) {
+                            $('#Code').val(response.code);
+                            $('#Code').removeClass('is-invalid');
+                            console.log('Code generated:', response.code);
+                        } else {
+                            console.log('Failed to generate code:', response.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Code Generation Failed',
+                                text: response.message || 'Unable to generate code. Please try again.'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('AJAX error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error generating code. Please try again.'
+                        });
+                    },
+                    complete: function() {
+                        $('#generateCodeBtn').html('<i class="fas fa-sync-alt"></i> Generate').prop('disabled', false);
+                    }
+                });
+            }
+
+            // Validate code when manually entered
+            $('#Code').on('blur', function() {
+                var code = $(this).val();
+                if (code && code.trim() !== '') {
+                    $.get('@Url.Action("CheckCodeExists", "Battalion")', { code: code })
+                        .done(function(isValid) {
+                            if (!isValid) {
+                                $('#Code').addClass('is-invalid');
+                                showFieldError('Code', 'Code "' + code + '" is already in use.');
+                            } else {
+                                $('#Code').removeClass('is-invalid');
+                                hideFieldError('Code');
+                            }
+                        })
+                        .fail(function() {
+                            console.log('Failed to check code uniqueness');
+                        });
+                }
+            });
+
+            // Preview button
+            $('#previewBtn').click(function() {
+                showPreviewModal();
+            });
+
+            // Form submission handler
+            $('#createBattalionForm').on('submit', function(e) {
+                // Show loading state
+                $('#createBtn').html('<i class="fas fa-spinner fa-spin"></i> Creating...').prop('disabled', true);
+
+                // Validate required fields
+                var name = $('#Name').val().trim();
+                var type = $('#Type').val();
+
+                if (!name) {
+                    e.preventDefault();
+                    $('#createBtn').html('<i class="fas fa-save"></i> Create Battalion').prop('disabled', false);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Battalion name is required.'
+                    });
+                    $('#Name').focus();
+                    return false;
+                }
+
+                if (!type) {
+                    e.preventDefault();
+                    $('#createBtn').html('<i class="fas fa-save"></i> Create Battalion').prop('disabled', false);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Battalion type is required.'
+                    });
+                    $('#Type').focus();
+                    return false;
+                }
+            });
+
+            // Function to show preview modal
+            function showPreviewModal() {
+                var data = {
+                    name: $('#Name').val() || 'Not specified',
+                    code: $('#Code').val() || 'Will be generated',
+                    type: $('#Type option:selected').text() || 'Not selected',
+                    range: $('#RangeId option:selected').text() || 'Not assigned',
+                    commander: $('#CommanderName').val() || 'Not specified',
+                    rank: $('#CommanderRank').val() || 'Not specified',
+                    location: $('#Location').val() || 'Not specified',
+                    officers: $('#OfficerCount').val() || '0',
+                    enlisted: $('#EnlistedCount').val() || '0',
+                    total: $('#TotalPersonnel').val() || '0',
+                    status: $('#IsActive').is(':checked') ? 'Active' : 'Inactive'
+                };
+
+                var html = `
+                    <div class="text-left">
+                        <dl class="row">
+                            <dt class="col-5">Battalion Name:</dt>
+                            <dd class="col-7">${data.name}</dd>
+                            <dt class="col-5">Code:</dt>
+                            <dd class="col-7">${data.code}</dd>
+                            <dt class="col-5">Type:</dt>
+                            <dd class="col-7">${data.type}</dd>
+                            <dt class="col-5">Range:</dt>
+                            <dd class="col-7">${data.range}</dd>
+                            <dt class="col-5">Commander:</dt>
+                            <dd class="col-7">${data.commander} (${data.rank})</dd>
+                            <dt class="col-5">Location:</dt>
+                            <dd class="col-7">${data.location}</dd>
+                            <dt class="col-5">Personnel:</dt>
+                            <dd class="col-7">${data.total} (${data.officers} officers, ${data.enlisted} enlisted)</dd>
+                            <dt class="col-5">Status:</dt>
+                            <dd class="col-7">${data.status}</dd>
+                        </dl>
+                    </div>
+                `;
+
+                Swal.fire({
+                    title: 'Battalion Information Preview',
+                    html: html,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Create Battalion',
+                    cancelButtonText: 'Continue Editing',
+                    confirmButtonColor: '#007bff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#createBattalionForm').submit();
+                    }
+                });
+            }
+
+            // Helper functions
+            function showFieldError(fieldName, message) {
+                var field = $('#' + fieldName);
+                var errorSpan = field.next('.text-danger');
+                if (errorSpan.length === 0) {
+                    field.after('<span class="text-danger">' + message + '</span>');
+                } else {
+                    errorSpan.text(message);
+                }
+            }
+
+            function hideFieldError(fieldName) {
+                $('#' + fieldName).next('.text-danger').text('');
+            }
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Generate initial code if type is selected
+            var initialType = $('#Type').val();
+            if (initialType) {
+                generateCode(initialType);
+            }
+        });
+    </script>
+}

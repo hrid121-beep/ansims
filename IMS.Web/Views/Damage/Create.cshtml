@@ -1,0 +1,125 @@
+﻿@model IMS.Application.DTOs.DamageDto
+@{
+    ViewData["Title"] = "Report Damage";
+}
+
+<div class="page-header">
+    <h1>Report Damage</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Damages</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="mb-0">New Damage Report</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label class="control-label">Damage No</label>
+                        <input type="text" value="@ViewBag.DamageNo" class="form-control" readonly />
+                        <input type="hidden" asp-for="DamageNo" value="@ViewBag.DamageNo" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="DamageDate" class="control-label"></label>
+                        <input asp-for="DamageDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="DamageDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="DamageType" class="control-label"></label>
+                        <select asp-for="DamageType" class="form-control">
+                            <option value="">Select Type</option>
+                            <option value="Physical Damage">Physical Damage</option>
+                            <option value="Water Damage">Water Damage</option>
+                            <option value="Fire Damage">Fire Damage</option>
+                            <option value="Theft/Loss">Theft/Loss</option>
+                            <option value="Expiry">Expiry</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="DamageType" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="ItemId" class="control-label">Item</label>
+                        <select asp-for="ItemId" class="form-control" asp-items="ViewBag.Items">
+                            <option value="">Select Item</option>
+                        </select>
+                        <span asp-validation-for="ItemId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="StoreId" class="control-label">Store</label>
+                        <select asp-for="StoreId" class="form-control" asp-items="ViewBag.Stores">
+                            <option value="">Select Store</option>
+                        </select>
+                        <span asp-validation-for="StoreId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Quantity" class="control-label"></label>
+                        <input asp-for="Quantity" class="form-control" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Cause" class="control-label"></label>
+                <textarea asp-for="Cause" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Cause" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ActionTaken" class="control-label"></label>
+                <select asp-for="ActionTaken" class="form-control">
+                    <option value="">Select Action</option>
+                    <option value="Disposed">Disposed</option>
+                    <option value="Under Repair">Under Repair</option>
+                    <option value="Write-off Pending">Write-off Pending</option>
+                    <option value="Insurance Claim">Insurance Claim</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="ActionTaken" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="control-label">Photo Evidence (Optional)</label>
+                <input type="file" name="photoFile" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Submit Report
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

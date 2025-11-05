@@ -1,0 +1,207 @@
+﻿@{
+    ViewData["Title"] = "Import Sub-districts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Import Sub-districts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Sub-districts</a></li>
+                    <li class="breadcrumb-item active">Import</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Sub-districts from CSV</h3>
+                    </div>
+                    <form asp-action="Import" method="post" enctype="multipart/form-data" id="importForm">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="alert alert-info">
+                                <h5><i class="icon fas fa-info"></i> CSV Format Requirements</h5>
+                                Your CSV file should contain the following columns:
+                                <ul class="mb-0">
+                                    <li><strong>Code</strong> - Sub-district code, e.g., UPZ-DHK-001 (auto-generated if empty)</li>
+                                    <li><strong>Name</strong> - Sub-district name in English (required)</li>
+                                    <li><strong>NameBangla</strong> - Sub-district name in Bengali</li>
+                                    <li><strong>ZilaId</strong> - ID of the parent District (required)</li>
+                                    <li><strong>UpazilaOfficerName</strong> - Name of Upazila Officer</li>
+                                    <li><strong>OfficerDesignation</strong> - Officer designation</li>
+                                    <li><strong>ContactNumber</strong> - Contact number</li>
+                                    <li><strong>Email</strong> - Email address</li>
+                                    <li><strong>OfficeAddress</strong> - Office address</li>
+                                    <li><strong>Area</strong> - Area in square kilometers</li>
+                                    <li><strong>Population</strong> - Population count</li>
+                                    <li><strong>NumberOfUnions</strong> - Number of unions</li>
+                                    <li><strong>NumberOfVillages</strong> - Number of villages</li>
+                                    <li><strong>HasVDPUnit</strong> - true/false for VDP unit existence</li>
+                                    <li><strong>VDPMemberCount</strong> - Number of VDP members</li>
+                                    <li><strong>UpazilaChairmanName</strong> - Chairman name</li>
+                                    <li><strong>VDPOfficerName</strong> - VDP Officer name</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="file">Select CSV File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" name="file" class="custom-file-input" id="csvFile" accept=".csv" required>
+                                        <label class="custom-file-label" for="csvFile">Choose file</label>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Maximum file size: 5MB</small>
+                            </div>
+
+                            <div class="form-group">
+                                <a href="/templates/upazila_import_template.csv" class="btn btn-info btn-sm">
+                                    <i class="fas fa-download"></i> Download Sample Template
+                                </a>
+                            </div>
+
+                            <div id="previewSection" style="display: none;">
+                                <h5>Preview (First 5 rows)</h5>
+                                <div class="table-responsive">
+                                    <table id="previewTable" class="table table-sm table-bordered">
+                                        <thead class="bg-light"></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success" id="importBtn" disabled>
+                                <i class="fas fa-file-import"></i> Import Sub-districts
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Ensure all required columns are present</li>
+                            <li>Sub-district codes must be unique if provided</li>
+                            <li>ZilaId must match existing Districts</li>
+                            <li>Leave optional fields empty if not applicable</li>
+                            <li>Contact numbers should be in 01XXXXXXXXX format</li>
+                            <li>HasVDPUnit should be true or false</li>
+                            <li>Numbers should be valid integers</li>
+                            <li>Area can be decimal values</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Important Notes</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Duplicate Check:</strong> Sub-districts with existing codes will be skipped</li>
+                            <li><strong>Auto Code Generation:</strong> Empty codes will be auto-generated</li>
+                            <li><strong>Validation:</strong> Invalid data will be reported in errors</li>
+                            <li><strong>Transaction Safe:</strong> Failed imports won't affect existing data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        $(function() {
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+
+                if (fileName.endsWith('.csv')) {
+                    previewCSV(this.files[0]);
+                    $('#importBtn').prop('disabled', false);
+                } else {
+                    $('#importBtn').prop('disabled', true);
+                    $('#previewSection').hide();
+                    toastr.error('Please select a valid CSV file');
+                }
+            });
+
+            function previewCSV(file) {
+                Papa.parse(file, {
+                    preview: 6, // Header + 5 data rows
+                    complete: function(results) {
+                        var table = $('#previewTable');
+                        var thead = table.find('thead').empty();
+                        var tbody = table.find('tbody').empty();
+
+                        if (results.data.length > 0) {
+                            // Create header row
+                            var headerRow = $('<tr>');
+                            results.data[0].forEach(function(header) {
+                                headerRow.append($('<th>').text(header));
+                            });
+                            thead.append(headerRow);
+
+                            // Create data rows
+                            for (var i = 1; i < results.data.length && i <= 5; i++) {
+                                if (results.data[i] && results.data[i].length > 0) {
+                                    var row = $('<tr>');
+                                    results.data[i].forEach(function(cell) {
+                                        row.append($('<td>').text(cell || ''));
+                                    });
+                                    tbody.append(row);
+                                }
+                            }
+
+                            $('#previewSection').slideDown();
+                            toastr.success('CSV preview loaded successfully');
+                        }
+                    },
+                    error: function(error) {
+                        toastr.error('Error reading CSV file: ' + error.message);
+                        $('#importBtn').prop('disabled', true);
+                    }
+                });
+            }
+
+            $('#importForm').on('submit', function(e) {
+                $('#importBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Importing...');
+
+                // Show progress indication
+                var progressHtml = `
+                    <div class="alert alert-info mt-3" id="importProgress">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <strong>Importing...</strong> Please wait while we process your file.
+                    </div>
+                `;
+                $('#previewSection').after(progressHtml);
+            });
+        });
+    </script>
+}

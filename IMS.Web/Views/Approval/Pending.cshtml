@@ -1,0 +1,170 @@
+﻿@model IEnumerable<IMS.Web.Models.ApprovalViewModel>
+@{
+    ViewData["Title"] = "Pending Approvals";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Pending Approvals</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Pending Approvals</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No pending approvals at this time.
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var approval in Model)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card card-outline @GetCardColor(approval.EntityType)">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="@GetIcon(approval.EntityType)"></i>
+                                    @approval.EntityType
+                                </h3>
+                                <div class="card-tools">
+                                    <span class="badge badge-warning">Pending</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-5">Reference:</dt>
+                                    <dd class="col-sm-7">@approval.Description</dd>
+
+                                    <dt class="col-sm-5">Amount:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (approval.Amount.HasValue)
+                                        {
+                                            <text>৳ @approval.Amount.Value.ToString("N2")</text>
+                                        }
+                                        else
+                                        {
+                                            <text>N/A</text>
+                                        }
+                                    </dd>
+                                    
+                                    <dt class="col-sm-5">Requested By:</dt>
+                                    <dd class="col-sm-7">
+                                        <strong>@approval.RequestedByName</strong><br />
+                                        <small class="text-muted"><i class="fas fa-user-tag"></i> @approval.RequestedByRole</small>
+                                    </dd>
+                                    
+                                    <dt class="col-sm-5">Date:</dt>
+                                    <dd class="col-sm-7">@approval.RequestedDate.ToString("dd/MM/yyyy")</dd>
+                                </dl>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-success btn-sm" onclick="processApproval(@approval.Id, 'approve')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="processApproval(@approval.Id, 'reject')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                                <a href="/@approval.EntityType/Details/@approval.EntityId" class="btn btn-info btn-sm float-right">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function processApproval(id, action) {
+            if (action === 'reject') {
+                Swal.fire({
+                    title: 'Reject Approval',
+                    input: 'textarea',
+                    inputLabel: 'Please provide a reason for rejection',
+                    inputPlaceholder: 'Enter rejection reason...',
+                    inputAttributes: {
+                        'aria-label': 'Rejection reason'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Reject',
+                    confirmButtonColor: '#dc3545',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'You need to provide a reason!'
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitApproval(id, action, result.value);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Approve Request?',
+                    text: 'Are you sure you want to approve this request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, approve it!',
+                    confirmButtonColor: '#28a745'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitApproval(id, action, '');
+                    }
+                });
+            }
+        }
+
+        function submitApproval(id, action, remarks) {
+            $.post('/Approval/Process', {
+                id: id,
+                action: action,
+                remarks: remarks
+            }).done(function(response) {
+                if (response.success) {
+                    Swal.fire('Success!', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error!', response.message, 'error');
+                }
+            });
+        }
+    </script>
+}
+
+@functions {
+    string GetCardColor(string entityType) => entityType switch {
+        "PURCHASE" => "card-primary",
+        "ISSUE" => "card-info",
+        "STOCK_ADJUSTMENT" => "card-warning",
+        "WRITEOFF" => "card-danger",
+        _ => "card-secondary"
+    };
+
+    string GetIcon(string entityType) => entityType switch {
+        "PURCHASE" => "fas fa-shopping-cart",
+        "ISSUE" => "fas fa-share",
+        "STOCK_ADJUSTMENT" => "fas fa-sliders-h",
+        "WRITEOFF" => "fas fa-trash",
+        _ => "fas fa-file"
+    };
+}

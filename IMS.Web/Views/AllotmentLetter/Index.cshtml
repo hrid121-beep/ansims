@@ -1,0 +1,350 @@
+﻿@model IEnumerable<IMS.Application.DTOs.AllotmentLetterDto>
+@{
+    ViewData["Title"] = "Allotment Letters";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Allotment Letter Management</h1>
+                <p class="text-muted">Authorization documents for item issuance</p>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Allotment Letters</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Allotment Letter
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count()</h3>
+                        <p>Total Allotments</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.Status == "Active")</h3>
+                        <p>Active</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.Status == "Draft")</h3>
+                        <p>Pending Approval</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.IsExpired)</h3>
+                        <p>Expired</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Filters and Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-filter"></i> Filters & Export
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" style="display: none;">
+                <form method="get" asp-action="Index" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Date From</label>
+                                <input type="date" name="dateFrom" class="form-control" value="@ViewBag.DateFrom" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Date To</label>
+                                <input type="date" name="dateTo" class="form-control" value="@ViewBag.DateTo" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Draft" selected="@(ViewBag.Status == "Draft")">Draft</option>
+                                    <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+                                    <option value="Completed" selected="@(ViewBag.Status == "Completed")">Completed</option>
+                                    <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Cancelled</option>
+                                    <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Store</label>
+                                <select name="storeId" class="form-control">
+                                    <option value="">All Stores</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        foreach (var store in ViewBag.Stores)
+                                        {
+                                            <option value="@store.Value" selected="@(ViewBag.StoreId == store.Value)">@store.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Allotment No</label>
+                                <input type="text" name="allotmentNo" class="form-control" placeholder="Search by number" value="@ViewBag.AllotmentNo" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Issued To</label>
+                                <input type="text" name="issuedTo" class="form-control" placeholder="Search recipient" value="@ViewBag.IssuedTo" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Show Expired</label>
+                                <select name="showExpired" class="form-control">
+                                    <option value="">All</option>
+                                    <option value="true" selected="@(ViewBag.ShowExpired == "true")">Expired Only</option>
+                                    <option value="false" selected="@(ViewBag.ShowExpired == "false")">Active Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <hr />
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Export Options</h6>
+                        <button type="button" class="btn btn-danger" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> Export to PDF
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> Export to CSV
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Allotment Letters Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Allotment Letters List</h3>
+            </div>
+            <div class="card-body">
+                <table id="allotmentTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Allotment No</th>
+                            <th>Date</th>
+                            <th>Issued To</th>
+                            <th>From Store</th>
+                            <th>Items</th>
+                            <th>Allotted</th>
+                            <th>Issued</th>
+                            <th>Remaining</th>
+                            <th>Valid Until</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var allotment in Model)
+                        {
+                            <tr>
+                                <td><strong>@allotment.AllotmentNo</strong></td>
+                                <td>@allotment.AllotmentDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (allotment.TotalRecipients > 0)
+                                    {
+                                        @if (allotment.TotalRecipients == 1)
+                                        {
+                                            var recipient = allotment.Recipients?.FirstOrDefault();
+                                            if (recipient != null)
+                                            {
+                                                <span class="badge badge-dark">@(recipient.RecipientName ?? recipient.RecipientNameBn)</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-info" title="@string.Join(", ", allotment.Recipients.Select(r => r.RecipientName ?? r.RecipientNameBn))">
+                                                Multiple (@allotment.TotalRecipients)
+                                            </span>
+                                        }
+                                    }
+                                    else if (!string.IsNullOrEmpty(allotment.IssuedToBattalionName))
+                                    {
+                                        <span class="badge badge-dark">@allotment.IssuedToBattalionName</span>
+                                    }
+                                    else if (!string.IsNullOrEmpty(allotment.IssuedToRangeName))
+                                    {
+                                        <span class="badge badge-primary">@allotment.IssuedToRangeName</span>
+                                    }
+                                    else if (!string.IsNullOrEmpty(allotment.IssuedToZilaName))
+                                    {
+                                        <span class="badge badge-success">@allotment.IssuedToZilaName</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@allotment.IssuedTo</span>
+                                    }
+                                </td>
+                                <td>@allotment.FromStoreName</td>
+                                <td><span class="badge badge-secondary">@allotment.TotalItems</span></td>
+                                <td><span class="badge badge-info">@allotment.TotalQuantity</span></td>
+                                <td><span class="badge badge-success">@allotment.TotalIssued</span></td>
+                                <td><span class="badge badge-warning">@allotment.TotalRemaining</span></td>
+                                <td>
+                                    @allotment.ValidUntil.ToString("dd MMM yyyy")
+                                    @if (allotment.IsExpired)
+                                    {
+                                        <br>
+                                
+                                        <small class="text-danger">Expired</small>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (allotment.Status)
+                                    {
+                                        case "Draft":
+                                            <span class="badge badge-warning">Draft</span>
+                                            break;
+                                        case "Active":
+                                            <span class="badge badge-success">Active</span>
+                                            break;
+                                        case "Completed":
+                                            <span class="badge badge-info">Completed</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge badge-danger">Cancelled</span>
+                                            break;
+                                        case "Rejected":
+                                            <span class="badge badge-danger">Rejected</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@allotment.Id"
+                                           class="btn btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (allotment.Status == "Draft")
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@allotment.Id"
+                                               class="btn btn-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        @if (allotment.CanIssue)
+                                        {
+                                            <a asp-controller="Issue" asp-action="Create"
+                                               asp-route-allotmentId="@allotment.Id"
+                                               class="btn btn-success" title="Create Issue">
+                                                <i class="fas fa-share-square"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#allotmentTable').DataTable({
+                responsive: true,
+                order: [[1, 'desc']],
+                pageLength: 25,
+                dom: 'Bfrtip',
+                buttons: []
+            });
+        });
+
+        function exportToPDF() {
+            var url = '@Url.Action("ExportListPDF", "AllotmentLetter")' + window.location.search;
+            window.location.href = url;
+        }
+
+        function exportToCSV() {
+            var url = '@Url.Action("ExportCSV", "AllotmentLetter")' + window.location.search;
+            window.location.href = url;
+        }
+
+        function exportToExcel() {
+            var url = '@Url.Action("ExportExcel", "AllotmentLetter")' + window.location.search;
+            window.location.href = url;
+        }
+    </script>
+}

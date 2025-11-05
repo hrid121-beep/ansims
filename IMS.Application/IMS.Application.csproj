@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DTOs - Copy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="EPPlus" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+	<!-- Barcode and QR Code Generation -->
+	<PackageReference Include="BarcodeLib" Version="2.4.0" />
+	<PackageReference Include="QRCoder" Version="1.6.0" />
+	<PackageReference Include="QuestPDF" Version="2024.10.3" />
+	<PackageReference Include="ZXing.Net" Version="0.16.9" />
+	<PackageReference Include="ZXing.Net.Bindings.ImageSharp" Version="0.16.14" />
+
+	<!-- Image Processing -->
+	<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+	<PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+
+	<!-- PDF Generation -->
+	<PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.4.22" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IMS.Domain\IMS.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

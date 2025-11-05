@@ -1,0 +1,327 @@
+﻿@using IMS.Application.DTOs
+@model IssueDto
+@{
+    ViewData["Title"] = "Process Physical Handover";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-handshake"></i> Process Physical Handover
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Issues</a></li>
+                    <li class="breadcrumb-item active">Handover</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Issue Details - @Model.IssueNo</h3>
+                        <div class="card-tools">
+                            @if (!string.IsNullOrEmpty(Model.VoucherNumber))
+                            {
+                                <span class="badge badge-light">Voucher: @Model.VoucherNumber</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">Issue Number:</dt>
+                            <dd class="col-sm-8">@Model.IssueNo</dd>
+
+                            <dt class="col-sm-4">Issue Date:</dt>
+                            <dd class="col-sm-8">@Model.IssueDate.ToString("dd MMM yyyy")</dd>
+
+                            <dt class="col-sm-4">Issued To:</dt>
+                            <dd class="col-sm-8">
+                                <strong>@Model.IssuedToName</strong> (@Model.IssuedToType)
+                            </dd>
+
+                            <dt class="col-sm-4">Purpose:</dt>
+                            <dd class="col-sm-8">@Model.Purpose</dd>
+
+                            <dt class="col-sm-4">Total Items:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge badge-primary">@Model.TotalItems items</span>
+                                <span class="badge badge-info">@Model.TotalQuantity?.ToString("0.##") units</span>
+                            </dd>
+
+                            @if (Model.TotalValue > 0)
+                            {
+                                <dt class="col-sm-4">Total Value:</dt>
+                                <dd class="col-sm-8">
+                                    <strong class="text-success">৳ @Model.TotalValue.</strong>
+                                </dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.DeliveryLocation))
+                            {
+                                <dt class="col-sm-4">Delivery Location:</dt>
+                                <dd class="col-sm-8">@Model.DeliveryLocation</dd>
+                            }
+                        </dl>
+
+                        @if (!string.IsNullOrEmpty(Model.Remarks))
+                        {
+                            <div class="alert alert-info" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
+                                <strong style="color: #0c5460;">Remarks:</strong> @Model.Remarks
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title">Items to Handover</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="40%">Item</th>
+                                    <th width="15%">Category</th>
+                                    <th width="15%">Quantity</th>
+                                    <th width="10%">Unit</th>
+                                    <th width="15%">Store</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Items?.Any() == true)
+                                {
+                                    var index = 1;
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@(index++)</td>
+                                            <td>
+                                                <strong>@item.ItemName</strong><br />
+                                                <small class="text-muted">Code: @item.ItemCode</small>
+                                            </td>
+                                            <td>@item.CategoryName</td>
+                                            <td class="text-center">
+                                                <span class="badge badge-primary badge-lg">
+                                                    @item.Quantity.ToString("0.##")
+                                                </span>
+                                            </td>
+                                            <td>@item.Unit</td>
+                                            <td>@item.StoreName</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Receiver Information</h3>
+                    </div>
+                    <form id="handoverForm" asp-action="ProcessHandover" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Receiver Name <span class="text-danger">*</span></label>
+                                <input type="text" name="receiverName" class="form-control"
+                                       value="@Model.IssuedToName" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Receiver Badge/ID <span class="text-danger">*</span></label>
+                                <input type="text" name="receiverBadgeId" class="form-control"
+                                       placeholder="Enter badge or ID number" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Receiver Phone</label>
+                                <input type="tel" name="receiverPhone" class="form-control"
+                                       placeholder="01XXXXXXXXX" pattern="01[0-9]{9}" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Receiver Email</label>
+                                <input type="email" name="receiverEmail" class="form-control"
+                                       placeholder="email@example.com" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Handover Date & Time <span class="text-danger">*</span></label>
+                                <input type="datetime-local" name="handoverDateTime" class="form-control"
+                                       value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Handover Notes</label>
+                                <textarea name="handoverNotes" class="form-control" rows="3"
+                                          placeholder="Any special notes about the handover..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Digital Signature <span class="text-danger">*</span></label>
+                                <small class="text-muted d-block">Draw your signature below:</small>
+                                <div class="border rounded bg-white p-2" style="margin-top: 10px;">
+                                    <canvas id="signatureCanvas" width="320" height="150"
+                                            style="border: 1px solid #dee2e6; width: 100%; cursor: crosshair;"></canvas>
+                                    <input type="hidden" name="signature" id="signatureData" required />
+                                    <button type="button" class="btn btn-sm btn-secondary mt-2" id="clearSignature">
+                                        <i class="fas fa-eraser"></i> Clear Signature
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Important:</strong> By signing, the receiver confirms receipt of all items in good condition.
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success btn-block" id="submitBtn">
+                                <i class="fas fa-check"></i> Complete Handover
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-default btn-block">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.QRCode))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Voucher QR Code</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="@Model.QRCode" alt="QR Code" style="max-width: 200px;" />
+                            <p class="mt-2 mb-0">
+                                <small class="text-muted">Scan for quick verification</small>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/signature_pad.min.js"></script>
+    <script>
+        $(function() {
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent('mouseup', {});
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            function startDrawing(e) {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                if (isDrawing) {
+                    isDrawing = false;
+                    $('#signatureData').val(canvas.toDataURL('image/png'));
+                }
+            }
+
+            $('#clearSignature').click(function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                $('#signatureData').val('');
+            });
+
+            $('#handoverForm').submit(function(e) {
+                const signatureData = $('#signatureData').val();
+
+                if (!signatureData) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Signature Required',
+                        text: 'Please provide digital signature before completing handover',
+                        confirmButtonText: 'OK'
+                    });
+                    return false;
+                }
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const hasSignature = imageData.data.some(channel => channel !== 0 && channel !== 255);
+
+                if (!hasSignature) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Signature Required',
+                        text: 'Please draw your signature',
+                        confirmButtonText: 'OK'
+                    });
+                    return false;
+                }
+
+                $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+                return true;
+            });
+        });
+    </script>
+}

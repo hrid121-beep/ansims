@@ -1,0 +1,262 @@
+﻿@model IMS.Application.DTOs.RequisitionDto
+@{
+    ViewData["Title"] = "Requisition Details";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Requisition Details</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-action="Index">Requisitions</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    Requisition: @Model.RequisitionNumber
+                    @switch (Model.Status)
+                    {
+                        case "Draft":
+                            <span class="badge badge-secondary ml-2">Draft</span>
+                            break;
+                        case "Submitted":
+                            <span class="badge badge-info ml-2">Submitted</span>
+                            break;
+                        case "Approved":
+                            <span class="badge badge-success ml-2">Approved</span>
+                            break;
+                        case "Rejected":
+                            <span class="badge badge-danger ml-2">Rejected</span>
+                            break;
+                        default:
+                            <span class="badge badge-warning ml-2">@Model.Status</span>
+                            break;
+                    }
+                </h3>
+                <div class="card-tools">
+                    @if (Model.Status == "Draft")
+                    {
+                        <form asp-action="Submit" method="post" style="display: inline;">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit for Approval
+                            </button>
+                        </form>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    }
+                    @if (Model.PurchaseOrderId.HasValue)
+                    {
+                        <a asp-controller="Purchase" asp-action="Details" asp-route-id="@Model.PurchaseOrderId" class="btn btn-sm btn-info">
+                            <i class="fas fa-shopping-cart"></i> View PO
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Request Date:</dt>
+                            <dd class="col-sm-8">@Model.RequestDate.ToString("dd/MM/yyyy")</dd>
+
+                            <dt class="col-sm-4">Required By:</dt>
+                            <dd class="col-sm-8">@Model.RequiredByDate.ToString("dd/MM/yyyy")</dd>
+
+                            <dt class="col-sm-4">Requested By:</dt>
+                            <dd class="col-sm-8">@Model.RequestedBy</dd>
+
+                            <dt class="col-sm-4">Priority:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.Priority)
+                                {
+                                    case "Critical":
+                                        <span class="badge badge-danger">@Model.Priority</span>
+                                        break;
+                                    case "Urgent":
+                                        <span class="badge badge-warning">@Model.Priority</span>
+                                        break;
+                                    case "High":
+                                        <span class="badge badge-info">@Model.Priority</span>
+                                        break;
+                                    default:
+                                        <span class="badge badge-secondary">@Model.Priority</span>
+                                        break;
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Department:</dt>
+                            <dd class="col-sm-8">@Model.Department</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">From Store:</dt>
+                            <dd class="col-sm-8">@(Model.FromStoreName ?? "N/A")</dd>
+
+                            <dt class="col-sm-4">To Store:</dt>
+                            <dd class="col-sm-8">@(Model.ToStoreName ?? "N/A")</dd>
+
+                            <dt class="col-sm-4">Purpose:</dt>
+                            <dd class="col-sm-8">@Model.Purpose</dd>
+
+                            <dt class="col-sm-4">Fulfillment:</dt>
+                            <dd class="col-sm-8">@Model.FulfillmentStatus</dd>
+
+                            <dt class="col-sm-4">Auto Convert to PO:</dt>
+                            <dd class="col-sm-8">@(Model.AutoConvertToPO ? "Yes" : "No")</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Notes:</strong> @Model.Notes
+                        </div>
+                    </div>
+                }
+
+                <h5 class="mt-4">Requisition Items</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Requested Qty</th>
+                            <th>Approved Qty</th>
+                            <th>Issued Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total Price</th>
+                            <th>Specification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.ItemCode</td>
+                                <td>@item.ItemName</td>
+                                <td>@item.RequestedQuantity @item.Unit</td>
+                                <td>@(item.ApprovedQuantity != null ? $"{item.ApprovedQuantity} {item.Unit}" : "-")</td>
+                                <td>@(item.IssuedQuantity != null ? $"{item.IssuedQuantity} {item.Unit}" : "-")</td>
+                                <td>৳ @item.UnitPrice.ToString("N2")</td>
+                                <td>৳ @item.TotalPrice.ToString("N2")</td>
+                                <td>@item.Specification</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="6">Total Estimated Value:</th>
+                            <th>৳ @Model.EstimatedValue.ToString("N2")</th>
+                            <th></th>
+                        </tr>
+                        @if (Model.ApprovedValue > 0)
+                        {
+                            <tr>
+                                <th colspan="6">Total Approved Value:</th>
+                                <th>৳ @Model.ApprovedValue.ToString("N2")</th>
+                                <th></th>
+                            </tr>
+                        }
+                    </tfoot>
+                </table>
+
+                @if (Model.Status == "Approved" || Model.Status == "Rejected" || Model.CurrentApprovalLevel > 0)
+                {
+                    <h5 class="mt-4">Approval History</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Approved By</th>
+                                <th>Date</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!string.IsNullOrEmpty(Model.Level1ApprovedBy))
+                            {
+                                <tr>
+                                    <td>Level 1</td>
+                                    <td>@Model.Level1ApprovedBy</td>
+                                    <td>@Model.Level1ApprovedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>-</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Level2ApprovedBy))
+                            {
+                                <tr>
+                                    <td>Level 2</td>
+                                    <td>@Model.Level2ApprovedBy</td>
+                                    <td>@Model.Level2ApprovedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>-</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.FinalApprovedBy))
+                            {
+                                <tr>
+                                    <td>Final</td>
+                                    <td>@Model.FinalApprovedBy</td>
+                                    <td>@Model.FinalApprovedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@Model.ApprovalComments</td>
+                                </tr>
+                            }
+                            @if (Model.Status == "Rejected")
+                            {
+                                <tr class="table-danger">
+                                    <td>Rejected</td>
+                                    <td>@Model.RejectedBy</td>
+                                    <td>@Model.RejectedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@Model.RejectionReason</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="card-footer">
+                @if (Model.Status == "Draft")
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Are you sure you want to delete this requisition?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                }
+                @if (Model.Status == "Draft")
+                {
+                    <form asp-action="Submit" asp-route-id="@Model.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Submit this requisition for approval?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane"></i> Submit for Approval
+                        </button>
+                    </form>
+                }
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

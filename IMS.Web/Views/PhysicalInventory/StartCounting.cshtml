@@ -1,0 +1,488 @@
+﻿@model IMS.Application.DTOs.PhysicalInventoryDto
+@using IMS.Domain.Enums
+@{
+    ViewData["Title"] = "Physical Count - " + Model.ReferenceNumber;  // Fixed: Use ReferenceNumber
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .count-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+
+        .count-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .counted {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .variance-badge {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .scanner-input {
+        font-size: 1.2rem;
+        height: 50px;
+    }
+
+    .count-progress {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: white;
+        padding: 15px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+<!-- Progress Header -->
+<div class="count-progress mb-4">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h4 class="mb-0">
+                    <i class="fas fa-clipboard-check"></i> @Model.ReferenceNumber  @* Fixed: Use ReferenceNumber *@
+                </h4>
+                <small class="text-muted">@Model.CountType Count - @Model.StoreName</small>
+            </div>
+            <div class="col-md-4">
+                <div class="progress" style="height: 25px;">
+                    @{
+                        var progressPercent = Model.Details.Any() ?  // Fixed: Use Details
+                        (Model.Details.Count(i => i.CountedDate.HasValue) * 100 / Model.Details.Count) : 0;  // Fixed: Use Details and CountedDate
+                    }
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: @progressPercent%"
+                         aria-valuenow="@progressPercent" aria-valuemin="0" aria-valuemax="100">
+                        @progressPercent% Complete
+                    </div>
+                </div>
+                <small class="text-muted">
+                    @Model.Details.Count(i => i.CountedDate.HasValue) of @Model.Details.Count items counted  @* Fixed: Use Details *@
+                </small>
+            </div>
+            <div class="col-md-4 text-right">
+                <button type="button" class="btn btn-warning" onclick="pauseCount()">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button type="button" class="btn btn-success" onclick="completeCount()"
+                        @(Model.Details.All(i => i.CountedDate.HasValue) ? "" : "disabled")>
+                    @* Fixed: Use Details *@
+                    <i class="fas fa-check-circle"></i> Complete Count
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scanner Section -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-barcode"></i> Barcode Scanner</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <input type="text" id="barcodeInput" class="form-control scanner-input"
+                       placeholder="Scan or enter barcode..." autofocus>
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="scanQuantity" class="form-control scanner-input"
+                       placeholder="Quantity" value="1" min="0" step="0.01">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary btn-lg btn-block" onclick="processScan()">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+        </div>
+        <div id="scanResult" class="mt-3"></div>
+    </div>
+</div>
+
+<!-- Items Grid -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Items to Count</h5>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 300px;">
+                        <input type="text" id="searchItem" class="form-control"
+                               placeholder="Search items...">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                <div id="itemsList">
+                    @foreach (var item in Model.Details.OrderBy(i => i.ItemName))  @* Fixed: Use Details *@
+                    {
+                        <div class="count-card @(item.CountedDate.HasValue ? "counted" : "")"
+                             data-item-id="@item.ItemId" data-item-name="@item.ItemName.ToLower()">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h6 class="mb-1">@item.ItemName</h6>
+                                    <small class="text-muted">
+                                        Code: @item.ItemCode | Location: @item.LocationCode
+                                    </small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <label class="mb-0">System Qty</label>
+                                    <h5 class="mb-0">@item.SystemQuantity</h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control physical-qty"
+                                               data-item-id="@item.ItemId"
+                                               value="@item.PhysicalQuantity"
+                                               min="0" step="0.01"
+                                               @(item.CountedDate.HasValue ? "readonly" : "")>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-sm btn-primary save-count"
+                                                    data-item-id="@item.ItemId"
+                                                    @(item.CountedDate.HasValue ? "disabled" : "")>
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @if (item.Variance != 0)  @* Fixed: Check Variance property *@
+                                    {
+                                        <span class="badge variance-badge @(item.Variance < 0 ? "badge-danger" : "badge-warning")">
+                                            Variance: @item.Variance
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            @if (item.CountedDate.HasValue)
+                            {
+                                <div class="mt-2">
+                                    <small class="text-success">
+                                        <i class="fas fa-check"></i> Counted at @item.CountedDate.Value.ToString("HH:mm")
+                                        @if (item.Status == CountStatus.Verified)  @* Fixed: Check proper status *@
+                                        {
+                                            <span class="badge badge-info">Recounted</span>
+                                        }
+                                    </small>
+                                    <button class="btn btn-sm btn-warning float-right recount-btn"
+                                            data-item-id="@item.ItemId">
+                                        <i class="fas fa-redo"></i> Recount
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Panel -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Count Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Items Counted</span>
+                        <span class="info-box-number" id="itemsCounted">
+                            @Model.Details.Count(i => i.CountedDate.HasValue)  @* Fixed: Use Details *@
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Items with Variance</span>
+                        <span class="info-box-number" id="itemsWithVariance">
+                            @Model.Details.Count(i => i.Variance != 0)  @* Fixed: Use Details *@
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <span class="info-box-icon bg-primary"><i class="fas fa-dollar-sign"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Variance Value</span>
+                        <span class="info-box-number" id="totalVariance">
+                            ৳ @Model.Details.Sum(i => Math.Abs(i.VarianceValue ?? 0)).ToString("N2")  @* Fixed: Use Details *@
+                        </span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6>Recent Counts</h6>
+                <div id="recentCounts" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Will be populated via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-block btn-outline-primary" onclick="exportCountSheet()">
+                    <i class="fas fa-download"></i> Export Count Sheet
+                </button>
+                <button class="btn btn-block btn-outline-info" onclick="printLabels()">
+                    <i class="fas fa-print"></i> Print Labels
+                </button>
+                <button class="btn btn-block btn-outline-warning" onclick="showVarianceOnly()">
+                    <i class="fas fa-filter"></i> Show Variance Only
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recount Modal -->
+<div class="modal fade" id="recountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recount Item</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="recountForm">
+                    <input type="hidden" id="recountItemId">
+                    <div class="form-group">
+                        <label>Item Name</label>
+                        <input type="text" id="recountItemName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Previous Count</label>
+                        <input type="number" id="previousCount" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>New Count <span class="text-danger">*</span></label>
+                        <input type="number" id="newCount" class="form-control"
+                               min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason for Recount</label>
+                        <textarea id="recountReason" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitRecount()">
+                    Save Recount
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const inventoryId = @Model.Id;
+        let recentCountsList = [];
+
+        // Initialize
+        $(document).ready(function() {
+            // Focus on barcode input
+            $('#barcodeInput').focus();
+
+            // Barcode input enter key
+            $('#barcodeInput').keypress(function(e) {
+                if (e.which == 13) {
+                    processScan();
+                }
+            });
+
+            // Search items
+            $('#searchItem').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('#itemsList .count-card').filter(function() {
+                    $(this).toggle($(this).data('item-name').indexOf(value) > -1);
+                });
+            });
+
+            // Save count button
+            $('.save-count').click(function() {
+                var itemId = $(this).data('item-id');
+                var quantity = $(`.physical-qty[data-item-id="${itemId}"]`).val();
+                updateCount(itemId, quantity);
+            });
+
+            // Recount button
+            $('.recount-btn').click(function() {
+                var itemId = $(this).data('item-id');
+                openRecountModal(itemId);
+            });
+        });
+
+        // Process barcode scan
+        function processScan() {
+            const barcode = $('#barcodeInput').val();
+            const quantity = $('#scanQuantity').val();
+
+            if (!barcode) {
+                showAlert('Please enter or scan a barcode', 'warning');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ScanForCount", "PhysicalInventory")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    inventoryId: inventoryId,
+                    barcode: barcode,
+                    quantity: parseFloat(quantity)
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        $('#scanResult').html(`
+                            <div class="alert alert-success">
+                                <i class="fas fa-check"></i>
+                                ${response.itemName} (${response.itemCode}) - Count updated: ${quantity}
+                            </div>
+                        `);
+
+                        // Update UI
+                        updateItemCard(response.data.itemId, response.data);
+                        updateSummary();
+                        addToRecentCounts(response.itemName, quantity);
+
+                        // Clear inputs
+                        $('#barcodeInput').val('').focus();
+                        $('#scanQuantity').val('1');
+                    } else {
+                        $('#scanResult').html(`
+                            <div class="alert alert-danger">
+                                <i class="fas fa-times"></i> ${response.message}
+                            </div>
+                        `);
+                    }
+                }
+            });
+        }
+
+        // Update count manually
+        function updateCount(itemId, quantity) {
+            $.ajax({
+                url: '@Url.Action("CountItem", "PhysicalInventory")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    inventoryId: inventoryId,
+                    itemId: itemId,
+                    physicalQuantity: parseFloat(quantity),
+                    notes: ''
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        updateItemCard(itemId, response.data);
+                        updateSummary();
+                        showAlert('Count saved successfully', 'success');
+                    }
+                }
+            });
+        }
+
+        // Update item card UI
+        function updateItemCard(itemId, data) {
+            const card = $(`.count-card[data-item-id="${itemId}"]`);
+            card.addClass('counted');
+            card.find('.physical-qty').prop('readonly', true);
+            card.find('.save-count').prop('disabled', true);
+
+            if (data.variance != 0) {
+                const varianceClass = data.variance < 0 ? 'badge-danger' : 'badge-warning';
+                card.find('.variance-badge').remove();
+                card.find('.input-group').after(`
+                    <span class="badge variance-badge ${varianceClass}">
+                        Variance: ${data.variance}
+                    </span>
+                `);
+            }
+        }
+
+        // Complete count
+        function completeCount() {
+            if (confirm('Are you sure you want to complete this count? All uncounted items will be marked as zero.')) {
+                $.post('@Url.Action("CompleteCount", "PhysicalInventory")',
+                    { id: inventoryId },
+                    function() {
+                        window.location.href = '@Url.Action("Review", "PhysicalInventory", new { id = Model.Id })';
+                    });
+            }
+        }
+
+        // Helper functions
+        function showAlert(message, type) {
+            // Implement toast notification
+            if (typeof toastr !== 'undefined') {
+                toastr[type](message);
+            } else {
+                alert(message);
+            }
+        }
+
+        function updateSummary() {
+            // Update summary counts via AJAX
+            location.reload(); // Simple reload for now
+        }
+
+        function addToRecentCounts(itemName, quantity) {
+            recentCountsList.unshift({ item: itemName, qty: quantity, time: new Date() });
+            if (recentCountsList.length > 10) recentCountsList.pop();
+
+            const html = recentCountsList.map(c => `
+                <div class="small">
+                    <strong>${c.item}</strong>: ${c.qty}
+                    <span class="text-muted">${c.time.toLocaleTimeString()}</span>
+                </div>
+            `).join('');
+
+            $('#recentCounts').html(html);
+        }
+
+        function exportCountSheet() {
+            window.location.href = '@Url.Action("Export", "PhysicalInventory", new { id = Model.Id, format = "excel" })';
+        }
+
+        function showVarianceOnly() {
+            $('.count-card').hide();
+            $('.count-card').each(function() {
+                if ($(this).find('.variance-badge').length > 0) {
+                    $(this).show();
+                }
+            });
+        }
+
+        function openRecountModal(itemId) {
+            // Implementation for opening recount modal
+            $('#recountModal').modal('show');
+            $('#recountItemId').val(itemId);
+        }
+
+        function submitRecount() {
+            // Implementation for submitting recount
+            $('#recountModal').modal('hide');
+        }
+    </script>
+}

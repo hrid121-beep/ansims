@@ -1,0 +1,425 @@
+@model IEnumerable<IMS.Application.DTOs.StockAlertDto>
+@{
+    ViewData["Title"] = "Stock Alerts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stores = ViewBag.Stores as IEnumerable<IMS.Application.DTOs.StoreDto> ?? new List<IMS.Application.DTOs.StoreDto>();
+    var selectedLevel = ViewBag.SelectedLevel as string;
+    var selectedStoreId = ViewBag.SelectedStoreId as int?;
+    var searchQuery = ViewBag.SearchQuery as string;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-bell text-warning"></i> Stock Alerts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Stock Alerts</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Alert Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "Critical")</h3>
+                        <p>Critical Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a href="?level=Critical" class="small-box-footer">
+                        View Details <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "High" || a.AlertLevel == "Medium")</h3>
+                        <p>Warning Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <a href="?level=High" class="small-box-footer">
+                        View Details <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "Low" || a.AlertLevel == "Info")</h3>
+                        <p>Info Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <a href="?level=Low" class="small-box-footer">
+                        View Details <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.IsAcknowledged)</h3>
+                        <p>Acknowledged</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <a href="#acknowledged-section" class="small-box-footer">
+                        View Details <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filters</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index" class="form-inline">
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Alert Level:</label>
+                        <select name="level" class="form-control select2" style="width: 150px;">
+                            <option value="">All Levels</option>
+                            <option value="Critical" selected="@(selectedLevel == "Critical")">Critical</option>
+                            <option value="High" selected="@(selectedLevel == "High")">High</option>
+                            <option value="Medium" selected="@(selectedLevel == "Medium")">Medium</option>
+                            <option value="Low" selected="@(selectedLevel == "Low")">Low</option>
+                            <option value="Info" selected="@(selectedLevel == "Info")">Info</option>
+                        </select>
+                    </div>
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Store:</label>
+                        <select name="storeId" class="form-control select2" style="width: 200px;">
+                            <option value="">All Stores</option>
+                            @foreach (var store in stores)
+                            {
+                                <option value="@store.Id" selected="@(selectedStoreId == store.Id)">@store.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Search:</label>
+                        <input type="text" name="search" value="@searchQuery" class="form-control" placeholder="Item name or code..." style="width: 250px;" />
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="fas fa-search"></i> Apply Filters
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Alerts List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-list"></i> Active Stock Alerts (@Model.Count(a => !a.IsAcknowledged))</h3>
+                <div class="card-tools">
+                    @if (User.IsInRole("Admin") || User.IsInRole("LogisticsOfficer"))
+                    {
+                        <button class="btn btn-sm btn-primary mr-2" onclick="checkAllStores()">
+                            <i class="fas fa-sync"></i> Check All Stores
+                        </button>
+                        <button class="btn btn-sm btn-warning mr-2" onclick="sendStockAlerts()">
+                            <i class="fas fa-envelope"></i> Send Alerts
+                        </button>
+                    }
+                    <a asp-action="Export" asp-route-level="@selectedLevel" asp-route-storeId="@selectedStoreId" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel"></i> Export
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.Any(a => !a.IsAcknowledged))
+                {
+                    @foreach (var alert in Model.Where(a => !a.IsAcknowledged).OrderBy(a => a.AlertLevel))
+                    {
+                        <div class="alert @GetAlertClass(alert.AlertLevel) alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" onclick="acknowledgeAlert(@alert.ItemId, @(alert.StoreId?.ToString() ?? "null"))" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h5>
+                                <i class="icon @GetAlertIcon(alert.AlertLevel)"></i>
+                                <span class="badge @GetBadgeClass(alert.AlertLevel)">@alert.AlertLevel</span> Stock Alert
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Item:</strong> @alert.ItemName<br />
+                                    <strong>Code:</strong> <span class="badge badge-secondary">@alert.ItemCode</span><br />
+                                    <strong>Store:</strong> @alert.StoreName
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Current Stock:</strong> <span class="badge badge-dark">@alert.CurrentStock @alert.Unit</span><br />
+                                    <strong>Minimum Stock:</strong> <span class="badge badge-secondary">@alert.MinimumStock @alert.Unit</span><br />
+                                    @if (alert.PercentageRemaining.HasValue)
+                                    {
+                                        <strong>Remaining:</strong> <span class="badge @(alert.PercentageRemaining < 25 ? "badge-danger" : alert.PercentageRemaining < 50 ? "badge-warning" : "badge-info")">
+                                            @alert.PercentageRemaining.Value.ToString("F0")%
+                                        </span>
+                                    }
+                                </div>
+                                <div class="col-md-3 text-right">
+                                    <small class="text-muted">
+                                        <i class="far fa-clock"></i> @GetTimeAgo(alert.AlertDate)
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <a href="/Purchase/Create?itemId=@alert.ItemId&storeId=@alert.StoreId" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-shopping-cart"></i> Create Purchase Order
+                                </a>
+                                <a href="/Transfer/Create?itemId=@alert.ItemId&toStoreId=@alert.StoreId" class="btn btn-sm btn-info">
+                                    <i class="fas fa-exchange-alt"></i> Request Transfer
+                                </a>
+                                <a href="/Item/Details/@alert.ItemId" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> View Item
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No active alerts found with the current filters.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <div class="card">
+                <div class="card-body">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="?page=@(currentPage - 1)&level=@selectedLevel&storeId=@selectedStoreId&search=@searchQuery">Previous</a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="?page=@i&level=@selectedLevel&storeId=@selectedStoreId&search=@searchQuery">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" href="?page=@(currentPage + 1)&level=@selectedLevel&storeId=@selectedStoreId&search=@searchQuery">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+
+        <!-- Acknowledged Alerts Section -->
+        <div class="card" id="acknowledged-section">
+            <div class="card-header bg-success">
+                <h3 class="card-title"><i class="fas fa-check"></i> Acknowledged Alerts</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                @if (Model.Any(a => a.IsAcknowledged))
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Store</th>
+                                    <th>Level</th>
+                                    <th>Stock</th>
+                                    <th>Acknowledged By</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var alert in Model.Where(a => a.IsAcknowledged).OrderByDescending(a => a.AcknowledgedDate))
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@alert.ItemName</strong><br />
+                                            <small class="text-muted">@alert.ItemCode</small>
+                                        </td>
+                                        <td>@alert.StoreName</td>
+                                        <td><span class="badge @GetBadgeClass(alert.AlertLevel)">@alert.AlertLevel</span></td>
+                                        <td>@alert.CurrentStock / @alert.MinimumStock</td>
+                                        <td>@alert.AcknowledgedBy</td>
+                                        <td>
+                                            <small>@alert.AcknowledgedDate?.ToString("MMM dd, yyyy HH:mm")</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No acknowledged alerts found.</p>
+                }
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@functions {
+    string GetAlertClass(string level) => level?.ToLower() switch
+    {
+        "critical" => "alert-danger",
+        "high" => "alert-warning",
+        "medium" => "alert-warning",
+        "low" => "alert-info",
+        "info" => "alert-info",
+        _ => "alert-secondary"
+    };
+
+    string GetBadgeClass(string level) => level?.ToLower() switch
+    {
+        "critical" => "badge-danger",
+        "high" => "badge-warning",
+        "medium" => "badge-warning",
+        "low" => "badge-info",
+        "info" => "badge-info",
+        _ => "badge-secondary"
+    };
+
+    string GetAlertIcon(string level) => level?.ToLower() switch
+    {
+        "critical" => "fas fa-exclamation-triangle",
+        "high" => "fas fa-exclamation-circle",
+        "medium" => "fas fa-exclamation",
+        "low" => "fas fa-info-circle",
+        "info" => "fas fa-info-circle",
+        _ => "fas fa-bell"
+    };
+
+    string GetTimeAgo(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)timeSpan.TotalDays} days ago";
+
+        return date.ToString("MMM dd, yyyy");
+    }
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+
+        function acknowledgeAlert(itemId, storeId) {
+            if (confirm('Are you sure you want to acknowledge this alert?')) {
+                $.ajax({
+                    url: '@Url.Action("AcknowledgeAlert", "StockAlert")',
+                    type: 'POST',
+                    data: {
+                        itemId: itemId,
+                        storeId: storeId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            location.reload();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Failed to acknowledge alert');
+                    }
+                });
+            }
+        }
+
+        function checkAllStores() {
+            if (confirm('This will check stock levels in all stores. Continue?')) {
+                $.ajax({
+                    url: '@Url.Action("CheckAllStores", "StockAlert")',
+                    type: 'POST',
+                    data: {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    beforeSend: function() {
+                        toastr.info('Checking all stores...');
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                    error: function() {
+                        toastr.error('Failed to check stores');
+                    }
+                });
+            }
+        }
+
+        function sendStockAlerts() {
+            if (confirm('Send email notifications for low stock items?')) {
+                $.ajax({
+                    url: '@Url.Action("SendStockAlerts", "StockAlert")',
+                    type: 'POST',
+                    data: {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    beforeSend: function() {
+                        toastr.info('Sending alerts...');
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                    error: function() {
+                        toastr.error('Failed to send alerts');
+                    }
+                });
+            }
+        }
+    </script>
+}

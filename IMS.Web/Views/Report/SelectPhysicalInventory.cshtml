@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "Select Physical Inventory";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-check"></i>
+                    Select Physical Inventory for Variance Report
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Please select a physical inventory count to generate the variance analysis report. The report will compare the physical count with system quantities.
+                </div>
+
+                <form asp-action="VarianceReport" method="get">
+                    <div class="form-group">
+                        <label for="physicalInventoryId">Physical Inventory</label>
+                        <select name="physicalInventoryId" id="physicalInventoryId" class="form-control select2" required>
+                            <option value="">-- Select Physical Inventory --</option>
+                            @if (ViewBag.PhysicalInventories != null)
+                            {
+                                @foreach (var item in ViewBag.PhysicalInventories)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                        <small class="form-text text-muted">
+                            Select a physical inventory count from the list above. Only recent inventories are shown.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i> Generate Report
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Reports
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Info Card -->
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">About Variance Reports</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>What is a Variance Report?</strong></p>
+                <p>A variance report compares physical inventory counts with system quantities to identify discrepancies. It helps in:</p>
+                <ul>
+                    <li>Identifying stock discrepancies (shortages or overages)</li>
+                    <li>Calculating variance values for financial reporting</li>
+                    <li>Detecting potential issues like theft, damage, or data entry errors</li>
+                    <li>Improving inventory accuracy and control</li>
+                </ul>
+
+                <p class="mb-0"><strong>How to use:</strong></p>
+                <ol class="mb-0">
+                    <li>Complete a physical inventory count from the Physical Inventory module</li>
+                    <li>Return to this page and select the completed inventory</li>
+                    <li>Review the variance report and take necessary actions</li>
+                </ol>
+            </div>
+        </div>
+
+        @if (ViewBag.PhysicalInventories == null || !ViewBag.PhysicalInventories.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>No Physical Inventories Found!</strong><br/>
+                No physical inventory counts are available. Please conduct a physical inventory count first.
+                <br/><br/>
+                <a asp-controller="PhysicalInventory" asp-action="Index" class="btn btn-sm btn-warning">
+                    <i class="fas fa-clipboard-check"></i> Go to Physical Inventory
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: '-- Select Physical Inventory --'
+            });
+        });
+    </script>
+}

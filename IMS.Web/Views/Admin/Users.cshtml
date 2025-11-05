@@ -1,0 +1,146 @@
+﻿@model IEnumerable<IMS.Web.Models.UserViewModel>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>User Management</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Admin</a></li>
+                    <li class="breadcrumb-item active">Users</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Users</h3>
+                <div class="card-tools">
+                    <a asp-action="CreateUser" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Create New User
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Designation</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.UserName</td>
+                                <td>@user.FullName</td>
+                                <td>@(user.Email ?? "N/A")</td>
+                                <td>@user.Designation</td>
+                                <td>@(user.Department ?? "N/A")</td>
+                                <td>
+                                    @if (user.Roles.Any())
+                                    {
+                                        <span class="badge badge-info">@user.Roles.First()</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">No Role</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-info" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="ResetPassword" asp-route-id="@user.Id" class="btn btn-warning" title="Reset Password">
+                                            <i class="fas fa-key"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-secondary toggle-status" data-user-id="@user.Id" data-status="@user.IsActive" title="Toggle Status">
+                                            <i class="fas fa-power-off"></i>
+                                        </button>
+                                        <a asp-action="DeleteUser" asp-route-id="@user.Id" class="btn btn-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                responsive: true,
+                order: [[7, 'desc']]
+            });
+
+            $('.toggle-status').on('click', function () {
+                var userId = $(this).data('user-id');
+                var isActive = $(this).data('status');
+                var btn = $(this);
+
+                Swal.fire({
+                    title: isActive ? 'Deactivate User?' : 'Activate User?',
+                    text: isActive ? 'User will not be able to login.' : 'User will be able to login.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: isActive ? 'Deactivate' : 'Activate'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("ToggleUserStatus", "Admin")',
+                            type: 'POST',
+                            data: {
+                                id: userId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    toastr.success(response.message);
+                                    location.reload();
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

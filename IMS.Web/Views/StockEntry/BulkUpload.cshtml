@@ -1,0 +1,381 @@
+﻿@{
+    ViewData["Title"] = "Bulk Stock Upload";
+}
+
+@section Styles {
+    <style>
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .alert {
+            font-weight: 600;
+        }
+
+        .btn {
+            font-weight: 600;
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-upload text-info"></i> Bulk Stock Upload
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Entries</a></li>
+                    <li class="breadcrumb-item active">Bulk Upload</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Upload Instructions -->
+            <div class="col-md-4">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> Instructions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <h5 style="font-weight: 700;">How to upload stock:</h5>
+                        <ol style="font-weight: 500;">
+                            <li>Download the CSV template</li>
+                            <li>
+                                Fill in the item details:
+                                <ul>
+                                    <li><strong>ItemCode</strong> (required)</li>
+                                    <li><strong>Quantity</strong> (required)</li>
+                                    <li>UnitCost (optional)</li>
+                                    <li>Location (optional)</li>
+                                    <li>BatchNumber (optional)</li>
+                                    <li>ExpiryDate (optional)</li>
+                                </ul>
+                            </li>
+                            <li>Select the target store</li>
+                            <li>Upload the CSV file</li>
+                            <li>Review and confirm the upload</li>
+                        </ol>
+
+                        <div class="alert alert-warning" style="font-weight: 600;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> Item codes must match existing items in the system.
+                        </div>
+
+                        <a asp-action="DownloadTemplate" class="btn btn-success btn-block">
+                            <i class="fas fa-download"></i> Download CSV Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-upload"></i> Upload Stock Data
+                        </h3>
+                    </div>
+                    <form asp-action="ProcessBulkUpload" method="post" enctype="multipart/form-data" id="bulkUploadForm">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Select Store <span class="text-danger" style="font-weight: 700;">*</span></label>
+                                <select name="storeId" class="form-control select2" required>
+                                    <option value="">Choose Store...</option>
+                                    @if (ViewBag.Stores != null)
+                                    {
+                                        @foreach (var store in ViewBag.Stores as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)
+                                        {
+                                            <option value="@store.Value">@store.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>CSV File <span class="text-danger" style="font-weight: 700;">*</span></label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="csvFile" name="file"
+                                           accept=".csv" required onchange="validateFile(this)">
+                                    <label class="custom-file-label" for="csvFile">Choose CSV file</label>
+                                </div>
+                                <small class="form-text text-muted" style="font-weight: 500;">
+                                    Maximum file size: 5MB. Supported format: CSV
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="generateBarcodes"
+                                           name="generateBarcodes" checked>
+                                    <label class="custom-control-label" for="generateBarcodes">
+                                        Generate barcodes for uploaded items
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="updateExisting"
+                                           name="updateExisting">
+                                    <label class="custom-control-label" for="updateExisting">
+                                        Update existing stock (add to current quantity)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- File Preview -->
+                            <div id="filePreview" style="display:none;">
+                                <div class="alert alert-info">
+                                    <h5 style="font-weight: 700;">File Information:</h5>
+                                    <p style="font-weight: 600;">File Name: <span id="fileName"></span></p>
+                                    <p style="font-weight: 600;">File Size: <span id="fileSize"></span></p>
+                                    <div id="previewTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
+                                <i class="fas fa-upload"></i> Upload Stock Data
+                            </button>
+                            <a asp-action="Index" class="btn btn-default btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Recent Uploads -->
+                @if (ViewBag.RecentUploads != null)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i> Recent Bulk Uploads
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Store</th>
+                                        <th>Items</th>
+                                        <th>Status</th>
+                                        <th>Uploaded By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var upload in ViewBag.RecentUploads)
+                                    {
+                                        <tr>
+                                            <td>@upload.UploadDate.ToString("dd-MMM-yyyy HH:mm")</td>
+                                            <td>@upload.StoreName</td>
+                                            <td>@upload.ItemCount</td>
+                                            <td>
+                                                <span class="badge badge-success">@upload.Status</span>
+                                            </td>
+                                            <td>@upload.UploadedBy</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('.custom-file-input').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+            });
+        });
+
+        function validateFile(input) {
+            const file = input.files[0];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (file) {
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'File size exceeds 5MB limit',
+                        customClass: {
+                            title: 'swal-title-bold',
+                            content: 'swal-content-bold'
+                        }
+                    });
+                    input.value = '';
+                    return;
+                }
+
+                const fileName = file.name;
+                const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+                if (extension !== 'csv') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Please select a CSV file',
+                        customClass: {
+                            title: 'swal-title-bold',
+                            content: 'swal-content-bold'
+                        }
+                    });
+                    input.value = '';
+                    return;
+                }
+
+                $('#fileName').text(file.name);
+                $('#fileSize').text((file.size / 1024).toFixed(2) + ' KB');
+
+                Papa.parse(file, {
+                    header: true,
+                    preview: 5,
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            var table = '<table class="table table-sm table-bordered">';
+                            table += '<thead><tr>';
+
+                            for (var key in results.data[0]) {
+                                table += '<th>' + key + '</th>';
+                            }
+                            table += '</tr></thead><tbody>';
+
+                            results.data.forEach(function(row) {
+                                table += '<tr>';
+                                for (var key in row) {
+                                    table += '<td>' + (row[key] || '-') + '</td>';
+                                }
+                                table += '</tr>';
+                            });
+
+                            table += '</tbody></table>';
+                            table += '<p class="text-muted" style="font-weight: 600;">Showing first 5 rows...</p>';
+
+                            $('#previewTable').html(table);
+                            $('#filePreview').show();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('CSV Parse Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to parse CSV file',
+                            customClass: {
+                                title: 'swal-title-bold',
+                                content: 'swal-content-bold'
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        $('#bulkUploadForm').submit(function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $('#uploadBtn').prop('disabled', true)
+                          .html('<i class="fas fa-spinner fa-spin"></i> Uploading...');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            showConfirmButton: true,
+                            customClass: {
+                                title: 'swal-title-bold',
+                                content: 'swal-content-bold'
+                            }
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Index")';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Upload failed',
+                            customClass: {
+                                title: 'swal-title-bold',
+                                content: 'swal-content-bold'
+                            }
+                        });
+                        $('#uploadBtn').prop('disabled', false)
+                                      .html('<i class="fas fa-upload"></i> Upload Stock Data');
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred during upload',
+                        customClass: {
+                            title: 'swal-title-bold',
+                            content: 'swal-content-bold'
+                        }
+                    });
+                    $('#uploadBtn').prop('disabled', false)
+                                  .html('<i class="fas fa-upload"></i> Upload Stock Data');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .swal-title-bold {
+            font-weight: 700 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .swal-content-bold {
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+        }
+    </style>
+}

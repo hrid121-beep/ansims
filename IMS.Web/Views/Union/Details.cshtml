@@ -1,0 +1,428 @@
+﻿@model IMS.Application.DTOs.UnionDto
+@{
+    ViewData["Title"] = "Union Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var statistics = ViewBag.Statistics as IMS.Application.DTOs.UnionStatisticsDto;
+    var stores = ViewBag.Stores as IEnumerable<IMS.Application.DTOs.StoreDto>;
+    var dashboardData = ViewBag.DashboardData as Dictionary<string, object>;
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Union Details - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Upazila" asp-action="Details" asp-route-id="@Model.UpazilaId">@Model.UpazilaName</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Unions</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Union Info -->
+            <div class="col-md-4">
+                <div class="card card-primary card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            <i class="fas fa-building fa-5x text-primary mb-3"></i>
+                        </div>
+                        <h3 class="profile-username text-center">@Model.Name</h3>
+                        <p class="text-muted text-center">@Model.NameBangla</p>
+                        <p class="text-center">
+                            <span class="badge badge-info">@Model.Code</span>
+                            @if (Model.IsBorderArea)
+                            {
+                                <span class="badge badge-danger">Border Area</span>
+                            }
+                            @if (Model.IsRural)
+                            {
+                                <span class="badge badge-success">Rural</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">Urban</span>
+                            }
+                        </p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>Upazila</b>
+                                <a asp-controller="Upazila" asp-action="Details" asp-route-id="@Model.UpazilaId" class="float-right">
+                                    @Model.UpazilaName
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>District</b>
+                                <a class="float-right">@Model.ZilaName</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Range</b>
+                                <a class="float-right">@Model.RangeName</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Chairman</b>
+                                <a class="float-right">@(Model.ChairmanName ?? "Not Assigned")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Contact</b>
+                                <a class="float-right">@(Model.ChairmanContact ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b>
+                                <a class="float-right text-truncate" style="max-width: 150px;">
+                                    @(Model.Email ?? "N/A")
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Area</b>
+                                <a class="float-right">@(Model.Area?.ToString("N2") ?? "N/A") km²</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Population</b>
+                                <a class="float-right">@(Model.Population?.ToString("N0") ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Households</b>
+                                <a class="float-right">@(Model.NumberOfHouseholds?.ToString("N0") ?? "N/A")</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Status</b>
+                                <a class="float-right">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="text-center">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a asp-action="VDPManagement" asp-route-id="@Model.Id" class="btn btn-success">
+                                <i class="fas fa-users"></i> VDP Management
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GPS Location Card -->
+                @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">GPS Location</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="map" style="height: 300px;"></div>
+                            <p class="text-center mt-2">
+                                <small>Lat: @Model.Latitude, Lng: @Model.Longitude</small>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Statistics and Info -->
+            <div class="col-md-8">
+                <!-- Quick Stats -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@(statistics?.TotalWards ?? 0)</h3>
+                                <p>Wards</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-map"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@(statistics?.TotalVillages ?? 0)</h3>
+                                <p>Villages</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(statistics?.TotalStores ?? 0)</h3>
+                                <p>Stores</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3>@Model.TotalVDPMembers</h3>
+                                <p>VDP Members</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Officials Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Union Officials</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary"><i class="fas fa-user-tie"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Chairman</span>
+                                        <span class="info-box-number">@(Model.ChairmanName ?? "Not Assigned")</span>
+                                        <small>@(Model.ChairmanContact ?? "")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-user-cog"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Secretary</span>
+                                        <span class="info-box-number">@(Model.SecretaryName ?? "Not Assigned")</span>
+                                        <small>@(Model.SecretaryContact ?? "")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-user-shield"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">VDP Officer</span>
+                                        <span class="info-box-number">@(Model.VDPOfficerName ?? "Not Assigned")</span>
+                                        <small>@(Model.VDPOfficerContact ?? "")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Force Statistics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Force Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="vdpChart" style="max-height: 300px;"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>Force Type</th>
+                                        <th>Count</th>
+                                    </tr>
+                                    <tr>
+                                        <td>VDP Members (Male)</td>
+                                        <td><span class="badge badge-info">@(Model.VDPMemberCountMale ?? 0)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>VDP Members (Female)</td>
+                                        <td><span class="badge badge-pink">@(Model.VDPMemberCountFemale ?? 0)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ansar Members</td>
+                                        <td><span class="badge badge-success">@(Model.AnsarMemberCount ?? 0)</span></td>
+                                    </tr>
+                                    <tr class="font-weight-bold">
+                                        <td>Total Force</td>
+                                        <td><span class="badge badge-primary">@((Model.TotalVDPMembers + (Model.AnsarMemberCount ?? 0)))</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Chart -->
+                @if (statistics?.MonthlyActivities != null)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Monthly Activity (Last 6 Months)</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="activityChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                }
+
+                <!-- Stores List -->
+                @if (stores != null && stores.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Union Stores</h3>
+                            <div class="card-tools">
+                                <a asp-controller="Store" asp-action="Create" asp-route-unionId="@Model.Id" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add Store
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Manager</th>
+                                        <th>Capacity</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var store in stores)
+                                    {
+                                        <tr>
+                                            <td>@store.Code</td>
+                                            <td>@store.Name</td>
+                                            <td>@store.StoreTypeName</td>
+                                            <td>@store.ManagerName</td>
+                                            <td>
+                                                @if (store.TotalCapacity.HasValue)
+                                                {
+                                                    <div class="progress progress-xs">
+                                                        <div class="progress-bar bg-primary" style="width: @store.UsedCapacityPercentage%"></div>
+                                                    </div>
+                                                    <small>@store.UsedCapacityPercentage% Used</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Store" asp-action="Details" asp-route-id="@store.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Additional Info -->
+                @if (!string.IsNullOrWhiteSpace(Model.Remarks))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Remarks</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>@Model.Remarks</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+    {
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <script>
+            // Initialize map
+            var map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.marker([@Model.Latitude, @Model.Longitude])
+                .addTo(map)
+                .bindPopup('@Model.Name Union Office')
+                .openPopup();
+        </script>
+    }
+
+    <script>
+        // VDP Chart
+        var vdpCtx = document.getElementById('vdpChart').getContext('2d');
+        var vdpChart = new Chart(vdpCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['VDP Male', 'VDP Female', 'Ansar'],
+                datasets: [{
+                    data: [@(Model.VDPMemberCountMale ?? 0), @(Model.VDPMemberCountFemale ?? 0), @(Model.AnsarMemberCount ?? 0)],
+                    backgroundColor: ['#17a2b8', '#e83e8c', '#28a745']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        });
+
+        @if (statistics?.MonthlyActivities != null)
+        {
+                <text>
+                // Activity Chart
+                var activityCtx = document.getElementById('activityChart').getContext('2d');
+                var activityChart = new Chart(activityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", statistics.MonthlyActivities.Select(m => $"'{m.Month}'")))],
+                        datasets: [{
+                            label: 'Issues',
+                            data: [@string.Join(",", statistics.MonthlyActivities.Select(m => m.IssueCount))],
+                            borderColor: 'rgb(255, 99, 132)',
+                            tension: 0.1
+                        }, {
+                            label: 'Receives',
+                            data: [@string.Join(",", statistics.MonthlyActivities.Select(m => m.ReceiveCount))],
+                            borderColor: 'rgb(54, 162, 235)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                </text>
+        }
+    </script>
+}

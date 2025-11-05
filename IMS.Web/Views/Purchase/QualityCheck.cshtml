@@ -1,0 +1,197 @@
+﻿@model IMS.Application.DTOs.QualityCheckDto
+@{
+    ViewData["Title"] = "Quality Check";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Quality Check</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Purchase</a></li>
+                    <li class="breadcrumb-item active">Quality Check</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <form asp-action="QualityCheck" method="post">
+            <input type="hidden" asp-for="PurchaseId" />
+
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">Quality Check Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Check Number</label>
+                                <input type="text" asp-for="CheckNumber" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Check Date</label>
+                                <input type="date" asp-for="CheckDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Check Type</label>
+                                <select asp-for="CheckType" class="form-control">
+                                    <option value="Incoming">Incoming Inspection</option>
+                                    <option value="Random">Random Check</option>
+                                    <option value="Full">Full Inspection</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Items Quality Check</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th width="120">Checked Qty</th>
+                                <th width="120">Passed Qty</th>
+                                <th width="120">Failed Qty</th>
+                                <th width="150">Status</th>
+                                <th>Check Parameters</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" asp-for="Items[i].ItemId" />
+                                        Item #@Model.Items[i].ItemId
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].CheckedQuantity"
+                                               class="form-control checked-qty"
+                                               data-row="@i" min="0" />
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].PassedQuantity"
+                                               class="form-control passed-qty"
+                                               data-row="@i" min="0" />
+                                    </td>
+                                    <td>
+                                        <input type="number" asp-for="Items[i].FailedQuantity"
+                                               class="form-control failed-qty"
+                                               data-row="@i" readonly />
+                                    </td>
+                                    <td>
+                                        <select asp-for="Items[i].Status" class="form-control status-select" data-row="@i">
+                                            <option value="0">Pass</option>
+                                            <option value="1">Fail</option>
+                                            <option value="2">Conditional</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" asp-for="Items[i].CheckParameters"
+                                               class="form-control" placeholder="Parameters checked" />
+                                    </td>
+                                    <td>
+                                        <input type="text" asp-for="Items[i].Remarks"
+                                               class="form-control" placeholder="Remarks" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Overall Status</label>
+                                <select asp-for="Status" class="form-control">
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                    <option value="Conditional">Conditional Pass</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Requires Retest?</label>
+                                <select asp-for="RequiresRetest" class="form-control">
+                                    <option value="false">No</option>
+                                    <option value="true">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Failure Reasons (if any)</label>
+                        <textarea asp-for="FailureReasons" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Corrective Actions</label>
+                        <textarea asp-for="CorrectiveActions" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>General Comments</label>
+                        <textarea asp-for="Comments" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-check-double"></i> Complete Quality Check
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-calculate failed quantity
+            $('.checked-qty, .passed-qty').on('input', function() {
+                var row = $(this).data('row');
+                var checked = parseFloat($('.checked-qty[data-row="' + row + '"]').val()) || 0;
+                var passed = parseFloat($('.passed-qty[data-row="' + row + '"]').val()) || 0;
+                var failed = checked - passed;
+
+                if (failed < 0) failed = 0;
+                $('.failed-qty[data-row="' + row + '"]').val(failed);
+
+                // Auto-update status
+                if (failed > 0) {
+                    $('.status-select[data-row="' + row + '"]').val('1'); // Fail
+                } else if (passed === checked) {
+                    $('.status-select[data-row="' + row + '"]').val('0'); // Pass
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,495 @@
+@model IMS.Application.DTOs.ABCAnalysisReportDto
+@{
+    ViewData["Title"] = "ABC Analysis Report";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header with Export Options -->
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-sort-amount-down"></i>
+                    ABC Analysis Report
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-tool" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <form asp-action="ABCAnalysis" method="get" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Analysis Method</label>
+                                <select name="analysisMethod" asp-items="ViewBag.AnalysisMethods" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Time Period</label>
+                                <select name="months" asp-items="ViewBag.MonthsOptions" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Summary Statistics -->
+                <div class="row">
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>@(Model.ClassAItems?.Count ?? 0)</h3>
+                                <p>Class A Items (70%)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model.ClassBItems?.Count ?? 0)</h3>
+                                <p>Class B Items (20%)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@(Model.ClassCItems?.Count ?? 0)</h3>
+                                <p>Class C Items (10%)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-dot-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Analysis Method:</strong> @Model.AnalysisMethod |
+                    <strong>Period:</strong> Last @Model.Months months |
+                    <strong>Total Items:</strong> @(Model.ClassAItems?.Count + Model.ClassBItems?.Count + Model.ClassCItems?.Count ?? 0)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">ABC Distribution</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="abcDistributionChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Pareto Chart</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="paretoChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Class A Items Table -->
+@if (Model.ClassAItems != null && Model.ClassAItems.Any())
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-danger">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-star"></i>
+                        Class A Items - High Priority (Top 70% Value)
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-danger">@Model.ClassAItems.Count items</span>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th class="text-right">Value/Qty/Frequency</th>
+                                <th class="text-right">Current Stock</th>
+                                <th>Unit</th>
+                                <th class="text-right">% Contribution</th>
+                                <th class="text-right">Cumulative %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rankA = 1;
+                                foreach (var item in Model.ClassAItems)
+                                {
+                                    <tr class="table-danger">
+                                        <td><strong>@rankA</strong></td>
+                                        <td><strong>@item.ItemCode</strong></td>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.CategoryName</td>
+                                        <td class="text-right">@item.AnalysisValue.ToString("N2")</td>
+                                        <td class="text-right">@((item.CurrentStock % 1 == 0) ? item.CurrentStock.ToString("N0") : item.CurrentStock.ToString("N2"))</td>
+                                        <td>@item.Unit</td>
+                                        <td class="text-right">@item.PercentageContribution.ToString("N2")%</td>
+                                        <td class="text-right">@item.CumulativePercentage.ToString("N2")%</td>
+                                    </tr>
+                                    rankA++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Class B Items Table -->
+@if (Model.ClassBItems != null && Model.ClassBItems.Any())
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-circle"></i>
+                        Class B Items - Medium Priority (Next 20% Value)
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-warning">@Model.ClassBItems.Count items</span>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th class="text-right">Value/Qty/Frequency</th>
+                                <th class="text-right">Current Stock</th>
+                                <th>Unit</th>
+                                <th class="text-right">% Contribution</th>
+                                <th class="text-right">Cumulative %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rankB = Model.ClassAItems.Count + 1;
+                                foreach (var item in Model.ClassBItems)
+                                {
+                                    <tr class="table-warning">
+                                        <td><strong>@rankB</strong></td>
+                                        <td><strong>@item.ItemCode</strong></td>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.CategoryName</td>
+                                        <td class="text-right">@item.AnalysisValue.ToString("N2")</td>
+                                        <td class="text-right">@((item.CurrentStock % 1 == 0) ? item.CurrentStock.ToString("N0") : item.CurrentStock.ToString("N2"))</td>
+                                        <td>@item.Unit</td>
+                                        <td class="text-right">@item.PercentageContribution.ToString("N2")%</td>
+                                        <td class="text-right">@item.CumulativePercentage.ToString("N2")%</td>
+                                    </tr>
+                                    rankB++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Class C Items Table -->
+@if (Model.ClassCItems != null && Model.ClassCItems.Any())
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-success">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-dot-circle"></i>
+                        Class C Items - Low Priority (Bottom 10% Value)
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-success">@Model.ClassCItems.Count items</span>
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0" style="max-height: 400px;">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th class="text-right">Value/Qty/Frequency</th>
+                                <th class="text-right">Current Stock</th>
+                                <th>Unit</th>
+                                <th class="text-right">% Contribution</th>
+                                <th class="text-right">Cumulative %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rankC = Model.ClassAItems.Count + Model.ClassBItems.Count + 1;
+                                foreach (var item in Model.ClassCItems)
+                                {
+                                    <tr>
+                                        <td>@rankC</td>
+                                        <td>@item.ItemCode</td>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.CategoryName</td>
+                                        <td class="text-right">@item.AnalysisValue.ToString("N2")</td>
+                                        <td class="text-right">@((item.CurrentStock % 1 == 0) ? item.CurrentStock.ToString("N0") : item.CurrentStock.ToString("N2"))</td>
+                                        <td>@item.Unit</td>
+                                        <td class="text-right">@item.PercentageContribution.ToString("N2")%</td>
+                                        <td class="text-right">@item.CumulativePercentage.ToString("N2")%</td>
+                                    </tr>
+                                    rankC++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ABC Analysis Info Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-info">
+            <div class="card-header">
+                <h3 class="card-title">About ABC Analysis</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>What is ABC Analysis?</strong></p>
+                <p>ABC Analysis is an inventory categorization technique based on the Pareto Principle (80/20 rule). It helps prioritize inventory management efforts:</p>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="callout callout-danger">
+                            <h5><i class="fas fa-star"></i> Class A Items</h5>
+                            <p>High value items (typically 70% of total value, 20% of items). Require tight control, accurate records, and frequent reviews.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="callout callout-warning">
+                            <h5><i class="fas fa-circle"></i> Class B Items</h5>
+                            <p>Medium value items (typically 20% of total value, 30% of items). Require moderate control and regular monitoring.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="callout callout-success">
+                            <h5><i class="fas fa-dot-circle"></i> Class C Items</h5>
+                            <p>Low value items (typically 10% of total value, 50% of items). Require simple controls and periodic reviews.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="mb-0 text-muted"><small>Report generated on: @DateTime.Now.ToString("dd MMM yyyy HH:mm:ss")</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // ABC Distribution Pie Chart
+            var distributionData = {
+                labels: ['Class A', 'Class B', 'Class C'],
+                datasets: [{
+                    data: [@Model.ClassAItems.Count, @Model.ClassBItems.Count, @Model.ClassCItems.Count],
+                    backgroundColor: ['rgba(220, 53, 69, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(40, 167, 69, 0.8)'],
+                    borderWidth: 0
+                }]
+            };
+
+            var distributionOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var label = data.labels[tooltipItem.index];
+                            var value = data.datasets[0].data[tooltipItem.index];
+                            return label + ': ' + value + ' items';
+                        }
+                    }
+                }
+            };
+
+            var distributionChartCanvas = $('#abcDistributionChart').get(0).getContext('2d');
+            new Chart(distributionChartCanvas, {
+                type: 'doughnut',
+                data: distributionData,
+                options: distributionOptions
+            });
+
+            // Pareto Chart (Cumulative Percentage)
+            var allItems = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.ClassAItems.Concat(Model.ClassBItems).Concat(Model.ClassCItems)
+                    .OrderBy(i => i.CumulativePercentage)
+                    .Take(20)
+                    .Select(i => new { i.ItemName, i.PercentageContribution, i.CumulativePercentage })
+                    .ToList()
+            ));
+
+            var paretoData = {
+                labels: allItems.map(i => i.ItemName.length > 15 ? i.ItemName.substring(0, 15) + '...' : i.ItemName),
+                datasets: [{
+                    type: 'bar',
+                    label: 'Individual %',
+                    data: allItems.map(i => i.PercentageContribution),
+                    backgroundColor: 'rgba(60, 141, 188, 0.8)',
+                    yAxisID: 'y-axis-1'
+                }, {
+                    type: 'line',
+                    label: 'Cumulative %',
+                    data: allItems.map(i => i.CumulativePercentage),
+                    borderColor: 'rgba(220, 53, 69, 0.8)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: false,
+                    yAxisID: 'y-axis-2'
+                }]
+            };
+
+            var paretoOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        id: 'y-axis-1',
+                        type: 'linear',
+                        position: 'left',
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }, {
+                        id: 'y-axis-2',
+                        type: 'linear',
+                        position: 'right',
+                        ticks: {
+                            beginAtZero: true,
+                            max: 100,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        gridLines: {
+                            drawOnChartArea: false
+                        }
+                    }]
+                }
+            };
+
+            var paretoChartCanvas = $('#paretoChart').get(0).getContext('2d');
+            new Chart(paretoChartCanvas, {
+                type: 'bar',
+                data: paretoData,
+                options: paretoOptions
+            });
+        });
+
+        // Print function
+        function printReport() {
+            window.print();
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            var analysisMethod = '@Model.AnalysisMethod';
+            var months = @Model.Months;
+
+            var url = '@Url.Action("ExportABCAnalysis", "Report")' +
+                      '?analysisMethod=' + encodeURIComponent(analysisMethod) +
+                      '&months=' + months;
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var analysisMethod = '@Model.AnalysisMethod';
+            var months = @Model.Months;
+
+            var url = '@Url.Action("ExportABCAnalysisPdf", "Report")' +
+                      '?analysisMethod=' + encodeURIComponent(analysisMethod) +
+                      '&months=' + months;
+
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- Print Styles -->
+    <style>
+        @@media print {
+            .main-sidebar, .main-header, .main-footer {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card-tools, form {
+                display: none !important;
+            }
+        }
+    </style>
+}

@@ -1,0 +1,329 @@
+﻿@model IEnumerable<IMS.Application.DTOs.VendorDto>
+@{
+    ViewData["Title"] = "Vendors";
+}
+
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-users text-primary"></i>
+                    Vendors Management
+                </h1>
+                <small class="text-muted">Manage all vendor information and relationships</small>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Vendors</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Info row -->
+        <div class="row">
+            <div class="col-12">
+                <!-- Main card -->
+                <div class="card card-outline card-primary shadow">
+                    <div class="card-header bg-gradient-primary">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-list mr-2"></i>
+                            Vendor List
+                        </h3>
+                        <div class="card-tools">
+                            <a asp-action="Create" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus"></i> Add New Vendor
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Search and Filter Row -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" class="form-control" id="tableSearch" placeholder="Search vendors...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control form-control-sm" id="typeFilter">
+                                    <option value="">All Types</option>
+                                    <option value="Supplier">Supplier</option>
+                                    <option value="Manufacturer">Manufacturer</option>
+                                    <option value="Service Provider">Service Provider</option>
+                                    <option value="Distributor">Distributor</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFilter">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <span class="badge badge-info badge-lg">
+                                    Total: @Model.Count() vendors
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Vendors Table -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover" id="vendorsTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th><i class="fas fa-building"></i> Name</th>
+                                        <th><i class="fas fa-tag"></i> Type</th>
+                                        <th><i class="fas fa-user"></i> Contact Person</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th><i class="fas fa-phone"></i> Phone</th>
+                                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                                        <th width="150"><i class="fas fa-cogs"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="text-primary">@item.Name</strong>
+                                                @if (!string.IsNullOrEmpty(item.VendorType))
+                                                {
+                                                    <br>
+                                            
+                                                    <small class="text-muted">@item.VendorType</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.VendorType))
+                                                {
+                                                    <span class="badge badge-info">@item.VendorType</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.ContactPerson))
+                                                {
+                                                    <i class="fas fa-user-tie text-muted mr-1"></i>
+                                                    @item.ContactPerson
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.Email))
+                                                {
+                                                    <a href="mailto:@item.Email" class="text-info">
+                                                        <i class="fas fa-envelope mr-1"></i>@item.Email
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.Phone))
+                                                {
+                                                    <i class="fas fa-phone text-muted mr-1"></i>
+                                                    @item.Phone
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Mobile))
+                                                {
+                                                    <br>
+                                            
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-mobile-alt mr-1"></i>@item.Mobile
+                                                    </small>
+                                                }
+                                                @if (string.IsNullOrEmpty(item.Phone) && string.IsNullOrEmpty(item.Mobile))
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check"></i> Active
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger">
+                                                        <i class="fas fa-times"></i> Inactive
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.Id"
+                                                       class="btn btn-info" title="View Details" data-toggle="tooltip">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@item.Id"
+                                                       class="btn btn-primary" title="Edit" data-toggle="tooltip">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger delete-confirm"
+                                                                title="Delete" data-toggle="tooltip">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (!Model.Any())
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-5x text-muted mb-3"></i>
+                                <h4 class="text-muted">No vendors found</h4>
+                                <p class="text-muted">Start by adding your first vendor to the system</p>
+                                <a asp-action="Create" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-plus"></i> Add First Vendor
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Any())
+                    {
+                        <div class="card-footer clearfix">
+                            <div class="float-right">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Showing @Model.Count() vendors
+                                </small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables with AdminLTE styling
+            var table = $('#vendorsTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "order": [[0, "asc"]],
+                "pageLength": 25,
+                "dom": 'Bfrtip',
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-success btn-sm',
+                        text: '<i class="fas fa-file-excel"></i> Excel'
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-danger btn-sm',
+                        text: '<i class="fas fa-file-pdf"></i> PDF'
+                    },
+                    {
+                        extend: 'print',
+                        className: 'btn btn-info btn-sm',
+                        text: '<i class="fas fa-print"></i> Print'
+                    }
+                ],
+                "language": {
+                    "emptyTable": "No vendors found in the system",
+                    "search": "",
+                    "searchPlaceholder": "Search vendors...",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ vendors",
+                    "infoEmpty": "No vendors available",
+                    "infoFiltered": "(filtered from _MAX_ total vendors)"
+                }
+            });
+
+            // Custom search
+            $('#tableSearch').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+
+            // Type filter
+            $('#typeFilter').on('change', function() {
+                var selectedType = this.value;
+                if (selectedType) {
+                    table.column(1).search(selectedType).draw();
+                } else {
+                    table.column(1).search('').draw();
+                }
+            });
+
+            // Clear filters
+            $('#clearFilter').on('click', function() {
+                $('#tableSearch').val('');
+                $('#typeFilter').val('');
+                table.search('').columns().search('').draw();
+            });
+
+            // Delete confirmation with SweetAlert
+            $('.delete-confirm').click(function(e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this action!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Show success/error messages with toastr
+            @if (TempData["Success"] != null)
+            {
+                    <text>
+                    toastr.success('@TempData["Success"]');
+                    </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                    <text>
+                    toastr.error('@TempData["Error"]');
+                    </text>
+            }
+        });
+    </script>
+}

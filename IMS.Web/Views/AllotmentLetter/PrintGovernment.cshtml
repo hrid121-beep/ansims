@@ -1,0 +1,579 @@
+@model IMS.Application.DTOs.AllotmentLetterDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বরাদ্দপত্র - @Model.AllotmentNo</title>
+    <style>
+        @@media print {
+            .no-print { display: none; }
+            @@page {
+                size: A4;
+                margin: 20mm;
+            }
+        }
+
+        body {
+            font-family: 'Kalpurush', 'SolaimanLipi', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .page {
+            background: white;
+            padding: 30px;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            border-bottom: 3px double #000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .header h2 {
+            margin: 3px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 2px 0;
+            font-size: 13px;
+        }
+
+        .header .website {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+
+        /* Memo & Date */
+        .memo-section {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .memo-no {
+            font-weight: bold;
+        }
+
+        .date {
+            font-weight: bold;
+        }
+
+        /* Subject */
+        .subject {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .subject-label {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Body Text */
+        .body-text {
+            text-align: justify;
+            margin: 15px 0;
+            padding: 0 10px;
+        }
+
+        .body-text p {
+            margin: 10px 0;
+            text-indent: 30px;
+        }
+
+        .instruction-number {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Recipients Section */
+        .recipients-section {
+            margin: 20px 0;
+        }
+
+        .recipient-item {
+            margin: 5px 0 5px 30px;
+        }
+
+        /* Copy Distribution */
+        .copy-distribution {
+            margin-top: 30px;
+            page-break-before: avoid;
+        }
+
+        .copy-distribution h3 {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .copy-item {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+
+        /* Signature */
+        .signature-section {
+            margin-top: 40px;
+            text-align: right;
+        }
+
+        .signature-box {
+            display: inline-block;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .signature-designation {
+            margin: 3px 0;
+        }
+
+        .signature-contact {
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        /* Attachment Table */
+        .attachment-section {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+
+        .attachment-header {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .attachment-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        table, th, td {
+            border: 1px solid #000;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 6px 8px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        tfoot td {
+            font-weight: bold;
+        }
+
+        /* Print Button */
+        .print-btn {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+
+        .print-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .attachment-memo {
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .date-bengali {
+            text-align: right;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">
+            🖨️ প্রিন্ট করুন
+        </button>
+        <button class="print-btn" onclick="window.close()" style="background-color: #6c757d;">
+            ✖ বন্ধ করুন
+        </button>
+    </div>
+
+    <!-- PAGE 1: Main Letter -->
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <h1>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h1>
+            <h2>বাংলাদেশ আনসার ও ভিডিপি</h2>
+            <p>সদর দপ্তর, খিলগাঁও, ঢাকা।</p>
+            <p class="website">www.ansarvdp.gov.bd</p>
+        </div>
+
+        <!-- Memo Number and Date -->
+        <div class="memo-section">
+            <div class="memo-no">স্মারক নং- @Model.ReferenceNo</div>
+            <div class="date">
+                তারিখ: @Model.AllotmentDate.ToString("dd/MM/yyyy")<br />
+                @if (!string.IsNullOrEmpty(Model.BengaliDate))
+                {
+                    <span>@Model.BengaliDate</span>
+                }
+            </div>
+        </div>
+
+        <hr style="border: 1px solid #000; margin: 10px 0;" />
+
+        <!-- Subject -->
+        <div class="subject">
+            <span class="subject-label">বিষয় :</span>
+            @(Model.SubjectBn ?? Model.Subject ?? "বরাদ্দ প্রদান প্রসঙ্গে")
+        </div>
+
+        <!-- Body Text -->
+        <div class="body-text">
+            @if (!string.IsNullOrEmpty(Model.BodyTextBn))
+            {
+                @Html.Raw(Model.BodyTextBn.Replace("\n", "<br />"))
+            }
+            else
+            {
+                <p>
+                    উপর্যুক্ত বিষয়ের প্রেক্ষিতে সময় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য জানানো যাচ্ছে যে,
+                    আয়স্কাল বিবেচনায় প্রাপ্যতার ভিত্তিতে সংযুক্ত তালিকা 'ক' অনুযায়ী বরাদ্দ প্রদান করা হলো।
+                </p>
+
+                <p>
+                    <span class="instruction-number">২।</span>
+                    উপমহাপরিচালক/পরিচালক রেঞ্জ কর্তৃক গঠিত কমিটিকে ক্ষমতাপত্র দিয়ে
+                    @if (Model.CollectionDeadline.HasValue)
+                    {
+                        <strong>@Model.CollectionDeadline.Value.ToString("dd/MM/yyyy")</strong>
+                    }
+                    else
+                    {
+                        <strong>নির্ধারিত</strong>
+                    }
+                    তারিখের মধ্যে অবশ্যই ভাউচার গ্রহণ পূর্বক একাডেমীস্থ কেন্দ্রীয় আনসার/ভিডিপি ভান্ডার হতে বরাদ্দকৃত
+                    উপকরণ গ্রহণ করবেন। গ্রহণকারী নিজ নামীয় সীল সঙ্গে আনবেন।
+                </p>
+
+                <p>
+                    <span class="instruction-number">৩।</span>
+                    বরাদ্দকৃত উপকরণ পরিবহনের ক্ষেত্রে রেঞ্জের গাড়ী ব্যবহার করার জন্য অনুরোধ করা হলো।
+                    রেঞ্জের পরিবহন ব্যতীত অতিরিক্ত যানবাহন প্রয়োজন হলে প্রশাসন-উইং শাখায় যোগাযোগ করার জন্য অনুরোধ করা হলো।
+                </p>
+
+                <p>
+                    <span class="instruction-number">৪।</span>
+                    বরাদ্দকৃত উপকরণের জামানত অবমুক্ত করার নিমিত্তে কেন্দ্রীয় আনসার/ভিডিপি ভান্ডার হতে
+                    উপকরণ গ্রহণের ৩০(ত্রিশ) দিনের মধ্যে এর গুনগতমান (আপত্তি/অনাপত্তি/ত্রুটি) যাচাই করে প্রতিবেদন
+                    (লেজারভুক্তির প্রত্যয়নসহ) ভান্ডার শাখায় প্রেরণ করার জন্য অনুরোধ করা হলো।
+                </p>
+            }
+        </div>
+
+        <p style="margin: 20px 0; padding-left: 10px;">
+            কর্তৃপক্ষের অনুমোদনক্রমে এ পত্র প্রেরণ করা হলো।
+        </p>
+
+        <!-- Recipients List -->
+        @if (Model.Recipients != null && Model.Recipients.Any())
+        {
+            <div class="recipients-section">
+                @for (int i = 0; i < Model.Recipients.Count; i++)
+                {
+                    var recipient = Model.Recipients[i];
+                    <div class="recipient-item">
+                        @(i + 1)। @(recipient.RecipientType == "Range" ? "উপমহাপরিচালক" :
+                        recipient.RecipientType == "Battalion" ? "পরিচালক" :
+                        recipient.RecipientType == "Zila" ? "উপপরিচালক/জেলা কমান্ডান্ট" :
+                        "উপজেলা আনসার ও ভিডিপি কর্মকর্তা")
+                        <br />
+                        বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী
+                        <br />
+                        @(recipient.RecipientNameBn ?? recipient.RecipientName)
+                        @if (!string.IsNullOrEmpty(recipient.Remarks))
+                        {
+                            <br /><em>@recipient.Remarks</em>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Attachment Note -->
+        <div class="attachment-memo">
+            সংযুক্ত: ০১ (এক) পাতা
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-name">
+                    @(Model.SignatoryName ?? "এ.বি.এম. ফরহাদ, বিবিএম")
+                </div>
+                <div class="signature-designation">
+                    @if (!string.IsNullOrEmpty(Model.SignatoryId))
+                    {
+                        <span>@Model.SignatoryId</span><br />
+                    }
+                    @(Model.SignatoryDesignationBn ?? Model.SignatoryDesignation ?? "উপপরিচালক (ভান্ডার)")
+                </div>
+                @if (!string.IsNullOrEmpty(Model.SignatoryEmail))
+                {
+                    <div class="signature-contact">ই-মেইল: @Model.SignatoryEmail</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.SignatoryPhone))
+                {
+                    <div class="signature-contact">ফোন: @Model.SignatoryPhone</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.SignatoryPhone))
+                {
+                    <div class="signature-contact">মোবাইল: @Model.SignatoryPhone</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: Copy Distribution -->
+    <div class="page" style="page-break-before: always;">
+        <!-- Copy Distribution Memo -->
+        <div class="memo-section">
+            <div class="memo-no">স্মারক নং- @Model.ReferenceNo</div>
+            <div class="date">তারিখ: @Model.AllotmentDate.ToString("dd/MM/yyyy")</div>
+        </div>
+
+        <!-- Copy Distribution List -->
+        <div class="copy-distribution">
+            <h3>অনুলিপিঃ</h3>
+            <div class="copy-item">
+                ১। মহাপরিচালক মহোদয়ের সচিবালয়<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।
+            </div>
+            <div class="copy-item">
+                ২। অতিরিক্ত মহাপরিচালক মহোদয়ের দপ্তর<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা। সময় অবগতির জন্য।
+            </div>
+            <div class="copy-item">
+                ৩। কমান্ডান্ট<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর।
+            </div>
+            <div class="copy-item">
+                ৪। উপমহাপরিচালক (প্রশাসন/অপারেশনস্/প্রশিক্ষণ)<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।
+            </div>
+            <div class="copy-item">
+                ৫। উপমহাপরিচালক/পরিচালক<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;(সংশ্লিষ্ট রেঞ্জ)। সময় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।
+            </div>
+            <div class="copy-item">
+                ৬। সহকারী পরিচালক<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;কেন্দ্রীয় আনসার/ভিডিপি ভান্ডার<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর। অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।
+            </div>
+            <div class="copy-item">
+                ৭। কোয়াটার মাস্টার<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;ভান্ডার শাখা, সদর দপ্তর, খিলগাঁও, ঢাকা।
+            </div>
+            <div class="copy-item">
+                ৮। দপ্তর/মাস্টার কপি।
+            </div>
+        </div>
+
+        <div class="signature-section" style="margin-top: 40px;">
+            <div class="signature-designation">
+                @(Model.SignatoryDesignationBn ?? "উপপরিচালক (ভান্ডার)")
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: Attachment Table -->
+    <div class="page attachment-section">
+        <div class="attachment-header">
+            তালিকাপত্র-'ক'
+        </div>
+
+        <div class="memo-section">
+            <div class="memo-no">স্মারক নং- @Model.ReferenceNo</div>
+            <div class="date">
+                তারিখ: @Model.AllotmentDate.ToString("dd/MM/yyyy")<br />
+                @if (!string.IsNullOrEmpty(Model.BengaliDate))
+                {
+                    <span>@Model.BengaliDate</span>
+                }
+            </div>
+        </div>
+
+        <hr style="border: 1px solid #000; margin: 10px 0;" />
+
+        <div class="attachment-title">
+            @(Model.SubjectBn ?? Model.Subject ?? "বরাদ্দের বিবরণ ও পরিমাণ")
+        </div>
+
+        <!-- Allotment Table with Recipients as Rows and Items as Columns -->
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width: 50px;">ক্রম</th>
+                    <th rowspan="2" style="width: 200px;">ইউনিটের নাম</th>
+                    @if (Model.Recipients.Any(r => !string.IsNullOrEmpty(r.StaffStrength)))
+                    {
+                        <th rowspan="2" style="width: 80px;">কর্মরত<br />জনবল</th>
+                    }
+                    <th rowspan="2" style="width: 60px;">হিসাবের<br />একক</th>
+                    <th colspan="@Model.Items.Count" class="text-center">বরাদ্দের পরিমাণ</th>
+                    <th rowspan="2" style="width: 100px;">মন্তব্য</th>
+                </tr>
+                <tr>
+                    @foreach (var item in Model.Items.OrderBy(i => i.Id))
+                    {
+                        <th style="width: 80px;">
+                            @(item.ItemNameBn ?? item.ItemName)
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Recipients != null && Model.Recipients.Any())
+                {
+                    @for (int i = 0; i < Model.Recipients.Count; i++)
+                    {
+                        var recipient = Model.Recipients[i];
+                        <tr>
+                            <td class="text-center">@(i + 1)</td>
+                            <td>@(recipient.RecipientNameBn ?? recipient.RecipientName)</td>
+                            @if (Model.Recipients.Any(r => !string.IsNullOrEmpty(r.StaffStrength)))
+                            {
+                                <td class="text-center">@(recipient.StaffStrength ?? "")</td>
+                            }
+                            <td class="text-center">
+                                @if (recipient.Items.Any())
+                                {
+                                    @(recipient.Items.First().UnitBn ?? recipient.Items.First().Unit ?? "টি")
+                                }
+                                else
+                                {
+                                    <span>টি</span>
+                                }
+                            </td>
+                            @foreach (var headerItem in Model.Items.OrderBy(i => i.Id))
+                            {
+                                var recipientItem = recipient.Items.FirstOrDefault(ri => ri.ItemId == headerItem.ItemId);
+                                <td class="text-center">
+                                    @if (recipientItem != null && recipientItem.AllottedQuantity > 0)
+                                    {
+                                        @recipientItem.AllottedQuantity.ToString("0")
+                                    }
+                                    else
+                                    {
+                                        <span>--</span>
+                                    }
+                                </td>
+                            }
+                            <td>@(recipient.Remarks ?? "")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="100" class="text-center">কোন প্রাপক নেই</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="@(Model.Recipients.Any(r => !string.IsNullOrEmpty(r.StaffStrength)) ? 4 : 3)" class="text-right">
+                        মোট=
+                    </td>
+                    @foreach (var item in Model.Items.OrderBy(i => i.Id))
+                    {
+                        var total = Model.Recipients.SelectMany(r => r.Items).Where(ri => ri.ItemId == item.ItemId).Sum(ri => ri.AllottedQuantity);
+                        <td class="text-center">@total.ToString("0")</td>
+                    }
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="date-bengali">
+            @if (!string.IsNullOrEmpty(Model.BengaliDate))
+            {
+                @Model.BengaliDate
+            }
+        </div>
+
+        <div class="signature-section" style="margin-top: 40px;">
+            <div class="signature-box">
+                <div class="signature-name">
+                    @(Model.SignatoryName ?? "এ.বি.এম. ফরহাদ, বিবিএম")
+                </div>
+                <div class="signature-designation">
+                    @if (!string.IsNullOrEmpty(Model.SignatoryId))
+                    {
+                        <span>@Model.SignatoryId</span><br />
+                    }
+                    @(Model.SignatoryDesignationBn ?? "উপপরিচালক (ভান্ডার)")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

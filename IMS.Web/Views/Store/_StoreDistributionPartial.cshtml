@@ -1,0 +1,82 @@
+﻿@model IMS.Web.Models.StoreDistributionViewModel
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> Unable to load store distribution data.
+    </div>
+}
+else
+{
+    <div class="p-3">
+        <h5 class="mb-3">
+            <i class="fas fa-box"></i> @Model.ItemName
+            <small class="text-muted">(@Model.ItemCode)</small>
+        </h5>
+
+        @if (Model.StoreDistributions?.Any() == true)
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Current Stock</th>
+                            <th>Min/Max</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var store in Model.StoreDistributions.OrderByDescending(s => s.CurrentStock))
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@store.StoreName</strong><br>
+                                    <small class="text-muted">@store.StoreCode</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-dark">@store.CurrentStock</span>
+                                </td>
+                                <td>
+                                    <small>Min: @store.MinimumStock</small><br>
+                                    <small>Max: @store.MaximumStock</small>
+                                </td>
+                                <td>
+                                    @switch (store.Status)
+                                    {
+                                        case "Out of Stock":
+                                            <span class="badge badge-danger">Out of Stock</span>
+                                            break;
+                                        case "Low Stock":
+                                            <span class="badge badge-warning">Low Stock</span>
+                                            break;
+                                        default:
+                                            <span class="badge badge-success">Good</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-weight-bold">
+                            <td>Total</td>
+                            <td colspan="3">
+                                <span class="badge badge-primary">
+                                    @Model.StoreDistributions.Sum(s => s.CurrentStock) units
+                                </span>
+                                across @Model.StoreDistributions.Count() stores
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> This item is not available in any store.
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,348 @@
+@using IMS.Domain.Enums
+@model IEnumerable<IMS.Application.DTOs.PhysicalInventoryDto>
+@{
+    ViewData["Title"] = "Count History";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var inventories = Model?.ToList() ?? new List<IMS.Application.DTOs.PhysicalInventoryDto>();
+
+    // Calculate statistics
+    var totalCount = inventories.Count();
+    var inProgressCount = inventories.Count(i => i.Status == PhysicalInventoryStatus.InProgress);
+    var underReviewCount = inventories.Count(i => i.Status == PhysicalInventoryStatus.UnderReview);
+    var approvedCount = inventories.Count(i => i.Status == PhysicalInventoryStatus.Approved);
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-clipboard-check text-primary"></i> Count History
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item">Physical Count</li>
+                    <li class="breadcrumb-item active">Count History</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="icon fas fa-ban"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-clipboard-list"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Counts</span>
+                        <span class="info-box-number">@totalCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-hourglass-half"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">In Progress</span>
+                        <span class="info-box-number">@inProgressCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-primary">
+                    <span class="info-box-icon"><i class="fas fa-search"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Under Review</span>
+                        <span class="info-box-number">@underReviewCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Approved</span>
+                        <span class="info-box-number">@approvedCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card card-primary card-outline collapsed-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control">
+                                    <option value="">All Stores</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status:</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    @foreach (var status in Enum.GetValues(typeof(PhysicalInventoryStatus)))
+                                    {
+                                        if (ViewBag.CurrentStatus != null && ViewBag.CurrentStatus.Equals(status))
+                                        {
+                                            <option value="@status" selected>@status</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@status">@status</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Fiscal Year:</label>
+                                <select name="fiscalYear" asp-items="ViewBag.FiscalYears" class="form-control">
+                                    <option value="">All Years</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Inventory List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-table"></i> Physical Count Records</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    <a asp-action="Initiate" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Start New Count
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="countHistoryTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Reference No</th>
+                            <th>Store</th>
+                            <th>Count Date</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Variance</th>
+                            <th>Progress</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (inventories.Any())
+                        {
+                            var serial = 1;
+                            @foreach (var inventory in inventories.OrderByDescending(i => i.CountDate))
+                            {
+                                var statusClass = inventory.Status switch
+                                {
+                                    PhysicalInventoryStatus.Initiated => "badge-secondary",
+                                    PhysicalInventoryStatus.InProgress => "badge-warning",
+                                    PhysicalInventoryStatus.Completed => "badge-info",
+                                    PhysicalInventoryStatus.UnderReview => "badge-primary",
+                                    PhysicalInventoryStatus.Approved => "badge-success",
+                                    PhysicalInventoryStatus.Rejected => "badge-danger",
+                                    PhysicalInventoryStatus.Cancelled => "badge-dark",
+                                    _ => "badge-secondary"
+                                };
+
+                                var progress = 0;
+                                if (inventory.Details != null && inventory.Details.Any())
+                                {
+                                    progress = (inventory.Details.Count(d => d.Status == CountStatus.Counted) * 100) / inventory.Details.Count;
+                                }
+
+                                <tr>
+                                    <td>@serial</td>
+                                    <td>
+                                        <strong><code>@inventory.ReferenceNumber</code></strong>
+                                    </td>
+                                    <td>@inventory.StoreName</td>
+                                    <td>@inventory.CountDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>
+                                        <span class="badge badge-info">@inventory.CountType</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusClass">@inventory.Status</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (inventory.TotalVariance != 0)
+                                        {
+                                            <span class="font-weight-bold @(inventory.TotalVariance > 0 ? "text-success" : "text-danger")">
+                                                @inventory.TotalVariance.ToString("+#;-#;0")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (progress > 0)
+                                        {
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" style="width: @progress%">
+                                                    @progress%
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not started</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            @if (inventory.Status == PhysicalInventoryStatus.Initiated ||
+                                                 inventory.Status == PhysicalInventoryStatus.InProgress)
+                                            {
+                                                <a asp-action="Count" asp-route-id="@inventory.Id"
+                                                   class="btn btn-warning btn-sm" title="Continue Counting">
+                                                    <i class="fas fa-calculator"></i>
+                                                </a>
+                                            }
+                                            @if (inventory.Status == PhysicalInventoryStatus.Completed ||
+                                                 inventory.Status == PhysicalInventoryStatus.UnderReview)
+                                            {
+                                                <a asp-action="Review" asp-route-id="@inventory.Id"
+                                                   class="btn btn-primary btn-sm" title="Review">
+                                                    <i class="fas fa-search"></i>
+                                                </a>
+                                            }
+                                            <a asp-action="Details" asp-route-id="@inventory.Id"
+                                               class="btn btn-info btn-sm" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (inventory.Status == PhysicalInventoryStatus.Approved ||
+                                                 inventory.Status == PhysicalInventoryStatus.Completed)
+                                            {
+                                                <a asp-action="VarianceReport" asp-route-id="@inventory.Id"
+                                                   class="btn btn-success btn-sm" title="Variance Report">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                serial++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i> No physical count records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#countHistoryTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[3, "desc"]], // Sort by count date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 8] } // Disable sorting on serial and actions
+                ]
+            });
+        });
+
+        function exportToCSV() {
+            var storeId = document.querySelector('select[name="storeId"]').value;
+            var status = document.querySelector('select[name="status"]').value;
+            var fiscalYear = document.querySelector('select[name="fiscalYear"]').value;
+
+            var url = '@Url.Action("ExportCountHistoryCsv", "PhysicalInventory")' + '?';
+            var params = [];
+
+            if (storeId) params.push('storeId=' + storeId);
+            if (status) params.push('status=' + status);
+            if (fiscalYear) params.push('fiscalYear=' + fiscalYear);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+
+        function exportToPDF() {
+            var storeId = document.querySelector('select[name="storeId"]').value;
+            var status = document.querySelector('select[name="status"]').value;
+            var fiscalYear = document.querySelector('select[name="fiscalYear"]').value;
+
+            var url = '@Url.Action("ExportCountHistoryPdf", "PhysicalInventory")' + '?';
+            var params = [];
+
+            if (storeId) params.push('storeId=' + storeId);
+            if (status) params.push('status=' + status);
+            if (fiscalYear) params.push('fiscalYear=' + fiscalYear);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+    </script>
+}

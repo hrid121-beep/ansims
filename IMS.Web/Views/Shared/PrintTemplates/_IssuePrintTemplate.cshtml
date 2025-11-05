@@ -1,0 +1,136 @@
+﻿@model IMS.Application.DTOs.IssueDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Issue Voucher - @Model.IssueNo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+            .header h1 {
+                margin: 0;
+            }
+
+        .voucher-info {
+            margin-bottom: 20px;
+        }
+
+            .voucher-info table {
+                width: 100%;
+            }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+            .items-table th, .items-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .items-table th {
+                background-color: #f0f0f0;
+            }
+
+        .signature-section {
+            margin-top: 50px;
+        }
+
+        .signature-box {
+            display: inline-block;
+            width: 45%;
+            text-align: center;
+        }
+
+        @@media print {
+            body {
+                margin: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ANSAR & VDP</h1>
+        <h2>ISSUE VOUCHER</h2>
+    </div>
+
+    <div class="voucher-info">
+        <table>
+            <tr>
+                <td><strong>Issue No:</strong> @Model.IssueNo</td>
+                <td><strong>Date:</strong> @Model.IssueDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <td><strong>Issued To:</strong> @Model.IssuedToType - @Model.IssuedToName</td>
+                <td><strong>Store:</strong> @Model.StoreName</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>SL</th>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int sl = 1;
+                foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@sl</td>
+                        <td>@item.ItemCode</td>
+                        <td>@item.ItemName</td>
+                        <td>@item.Unit</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Remarks</td>
+                    </tr>
+                    sl++;
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <p>_______________________</p>
+            <p>Issued By<br />@Model.IssuedBy</p>
+        </div>
+        <div class="signature-box">
+            <p>_______________________</p>
+            <p>Received By<br />Name & Signature</p>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+﻿@model IMS.Application.DTOs.BrandDto
+@{
+    ViewData["Title"] = "Create Brand";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-8">
+                <h1 class="m-0">
+                    <i class="fas fa-plus-circle text-primary"></i>
+                    Create New Brand
+                </h1>
+                <p class="mb-0 text-muted">Add a new brand to organize your product catalog</p>
+            </div>
+            <div class="col-sm-4">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/" class="text-primary">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-primary">Brands</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Create Form -->
+            <div class="col-lg-8">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-copyright"></i>
+                            Brand Information
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-primary">New Brand</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post" id="createBrandForm">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="control-label">
+                                            <i class="fas fa-copyright text-primary"></i>
+                                            Brand Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Name" class="form-control form-control-lg"
+                                               placeholder="Enter brand name (e.g., Apple, Samsung)" maxlength="100" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                        <small class="form-text text-muted">Enter the official brand name</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code" class="control-label">
+                                            <i class="fas fa-qrcode text-secondary"></i>
+                                            Brand Code
+                                        </label>
+                                        <input asp-for="Code" class="form-control form-control-lg"
+                                               placeholder="Auto-generated or custom code" maxlength="20" />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle"></i>
+                                            Unique identifier (auto-generated if empty)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description" class="control-label">
+                                    <i class="fas fa-align-left text-success"></i>
+                                    Brand Description
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="5"
+                                          placeholder="Enter detailed description about this brand, its specialty, country of origin, etc."></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Provide comprehensive information to help users understand this brand
+                                </small>
+                            </div>
+
+                            <div class="form-group mt-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="createBtn">
+                                            <i class="fas fa-save"></i>
+                                            Create Brand
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-lg ml-2" onclick="resetForm()">
+                                            <i class="fas fa-undo"></i>
+                                            Reset
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Panel -->
+            <div class="col-lg-4">
+                <!-- Brand Guidelines -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Brand Guidelines
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box bg-gradient-info">
+                            <span class="info-box-icon"><i class="fas fa-star"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Best Practices</span>
+                                <span class="info-box-number">Follow these tips</span>
+                            </div>
+                        </div>
+
+                        <ul class="list-unstyled mt-3">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success mr-2"></i>
+                                Use official brand names
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success mr-2"></i>
+                                Keep codes short and meaningful
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success mr-2"></i>
+                                Include country of origin in description
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success mr-2"></i>
+                                Mention brand specialty/category
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success mr-2"></i>
+                                Check for existing similar brands
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Brand Examples -->
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-examples"></i>
+                            Example Brands
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item">
+                                <strong>Technology Brands</strong>
+                                <br><small class="text-muted">Apple, Samsung, Dell, HP, Lenovo</small>
+                            </div>
+                            <div class="list-group-item">
+                                <strong>Automotive Brands</strong>
+                                <br><small class="text-muted">Toyota, Honda, BMW, Ford, Mercedes</small>
+                            </div>
+                            <div class="list-group-item">
+                                <strong>Office Supplies</strong>
+                                <br><small class="text-muted">3M, Staples, Canon, Brother, Epson</small>
+                            </div>
+                            <div class="list-group-item">
+                                <strong>Industrial Equipment</strong>
+                                <br><small class="text-muted">Caterpillar, John Deere, Bosch, Siemens</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions After Creation -->
+                <div class="card card-success card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i>
+                            After Creating Brand
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5><i class="icon fas fa-info"></i> Next Steps!</h5>
+                            After creating this brand, you can:
+                        </div>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-plus text-success mr-2"></i>
+                                Add item models for this brand
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-boxes text-primary mr-2"></i>
+                                Create items using this brand
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-edit text-warning mr-2"></i>
+                                Update brand information
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-chart-bar text-info mr-2"></i>
+                                View brand statistics
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Auto-generate code from name
+            $('#Name').on('blur', function() {
+                var name = $(this).val().trim();
+                var code = $('#Code').val().trim();
+
+                if (name && !code) {
+                    var generatedCode = name
+                        .replace(/[^a-zA-Z0-9\s]/g, '')
+                        .replace(/\s+/g, '')
+                        .substring(0, 10)
+                        .toUpperCase();
+
+                    $('#Code').val(generatedCode);
+                    showNotification('Code auto-generated from brand name', 'info');
+                }
+            });
+
+            // Form validation enhancement
+            $('#createBrandForm').on('submit', function(e) {
+                var isValid = true;
+                var errorMessages = [];
+
+                if (!$('#Name').val().trim()) {
+                    errorMessages.push('Brand Name is required');
+                    isValid = false;
+                }
+
+                if ($('#Name').val().trim().length < 2) {
+                    errorMessages.push('Brand Name must be at least 2 characters long');
+                    isValid = false;
+                }
+
+                var code = $('#Code').val().trim();
+                if (code && code.length < 2) {
+                    errorMessages.push('Brand Code must be at least 2 characters long');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    showValidationErrors(errorMessages);
+                } else {
+                    $('#createBtn').prop('disabled', true)
+                        .html('<i class="fas fa-spinner fa-spin"></i> Creating Brand...');
+                }
+            });
+
+            // Live validation feedback
+            $('#Name').on('input blur', function() {
+                validateField($(this), 'Brand name is required and must be at least 2 characters');
+            });
+        });
+
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all fields? This will clear all entered data.')) {
+                $('#createBrandForm')[0].reset();
+                $('.form-control').removeClass('is-valid is-invalid border-warning');
+                $('.text-danger').text('');
+                $('.alert-danger').remove();
+                $('#Name').focus();
+                showNotification('Form has been reset', 'success');
+            }
+        }
+
+        function validateField(field, message) {
+            var value = field.val().trim();
+            var isValid = value.length >= 2;
+
+            field.removeClass('is-valid is-invalid');
+            field.addClass(isValid ? 'is-valid' : 'is-invalid');
+
+            return isValid;
+        }
+
+        function showValidationErrors(errors) {
+            $('.alert-danger').remove();
+
+            var alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
+            alertHtml += '<h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>';
+            alertHtml += '<ul class="mb-0">';
+            errors.forEach(function(error) {
+                alertHtml += '<li>' + error + '</li>';
+            });
+            alertHtml += '</ul>';
+            alertHtml += '<button type="button" class="close" data-dismiss="alert">';
+            alertHtml += '<span aria-hidden="true">&times;</span></button></div>';
+
+            $('.card-body').prepend(alertHtml);
+            $('.card-body').animate({scrollTop: 0}, 300);
+        }
+
+        function showNotification(message, type = 'info') {
+            if (typeof toastr !== 'undefined') {
+                toastr.options = {
+                    "closeButton": true,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "timeOut": "3000"
+                };
+                toastr[type](message);
+            }
+        }
+    </script>
+
+    <style>
+        .form-control-lg {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .card-outline {
+            border-top: 3px solid;
+        }
+
+        .info-box {
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .is-valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+    </style>
+}

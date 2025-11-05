@@ -1,0 +1,429 @@
+﻿@model IMS.Application.Helpers.PagedResult<IMS.Application.DTOs.IssueDto>
+@{
+    ViewData["Title"] = "Issues Management";
+    var items = Model.Items; // Extract items from PagedResult
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-share"></i> Issue Management
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Issues</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Quick Stats -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.TotalCount</h3>
+                        <p>Total Issues</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-bag"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@items.Count(i => i.Status == "Pending")</h3>
+                        <p>Pending Approval</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@items.Count(i => i.Status == "Approved")</h3>
+                        <p>Approved</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-checkmark"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>@items.Count(i => i.Status == "Completed")</h3>
+                        <p>Completed</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-thumbsup"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Issues</h3>
+                <div class="card-tools">
+                    <div class="btn-group">
+                        <a asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> New Issue
+                        </a>
+                        <a asp-action="QuickIssue" class="btn btn-warning btn-sm">
+                            <i class="fas fa-bolt"></i> Quick Issue
+                        </a>
+                        @if (User.IsInRole("Officer") || User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Approval" asp-action="Index" class="btn btn-info btn-sm">
+                                <i class="fas fa-clipboard-check"></i> Approval Center
+                                @if (items.Count(i => i.Status == "Pending") > 0)
+                                {
+                                    <span class="badge badge-danger">@items.Count(i => i.Status == "Pending")</span>
+                                }
+                            </a>
+                        }
+                        <button type="button" class="btn btn-default btn-sm" id="exportBtn">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status Filter:</label>
+                            <select class="form-control select2" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Pending">Pending Approval</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Issued">Issued</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Date Range:</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" id="startDate" />
+                                <input type="date" class="form-control" id="endDate" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Search:</label>
+                            <input type="text" class="form-control" id="searchBox" placeholder="Search by Issue No, Voucher No, or Issued To...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-primary btn-block" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Issues Table -->
+                @if (items != null && items.Any())
+                {
+                    <div class="table-responsive">
+                        <table id="issuesTable" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="100">Issue No</th>
+                                    <th width="100">Date</th>
+                                    <th>Issued To</th>
+                                    <th>Purpose</th>
+                                    <th width="100">Status</th>
+                                    <th width="100">Voucher</th>
+                                    <th width="200">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="text-primary">
+                                                <strong>@item.IssueNo</strong>
+                                            </a>
+                                        </td>
+                                        <td>@item.IssueDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>
+                                            <strong>@item.IssuedToName</strong><br />
+                                            <small class="text-muted">@item.IssuedToType</small>
+                                        </td>
+                                        <td>@item.Purpose</td>
+                                        <td>
+                                            @{
+                                                var statusClass = item.Status switch
+                                                {
+                                                    "Draft" => "badge-secondary",
+                                                    "Pending" => "badge-warning",
+                                                    "Approved" => "badge-success",
+                                                    "Rejected" => "badge-danger",
+                                                    "Cancelled" => "badge-dark",
+                                                    "Issued" => "badge-info",
+                                                    "Completed" => "badge-primary",
+                                                    _ => "badge-secondary"
+                                                };
+                                            }
+                                            <span class="badge @statusClass">@item.Status</span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.VoucherNumber))
+                                            {
+                                                <span class="badge badge-info">@item.VoucherNumber</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <!-- View Details - Always Available -->
+                                                <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id"
+                                                   data-toggle="tooltip" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Status-based Actions -->
+                                                @if (item.Status == "Draft" || item.Status == "Rejected")
+                                                {
+                                                    <!-- Edit -->
+                                                    <a class="btn btn-info" asp-action="Edit" asp-route-id="@item.Id"
+                                                       data-toggle="tooltip" title="@(item.Status == "Rejected" ? "Edit & Resubmit" : "Edit Draft")">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    @if (item.Status == "Draft")
+                                                    {
+                                                        <!-- Submit for Approval -->
+                                                        <button type="button" class="btn btn-success" onclick="submitForApproval(@item.Id)"
+                                                                data-toggle="tooltip" title="Submit for Approval">
+                                                            <i class="fas fa-paper-plane"></i>
+                                                        </button>
+                                                        <!-- Delete Draft -->
+                                                        <button type="button" class="btn btn-danger" onclick="deleteIssue(@item.Id, '@item.IssueNo')"
+                                                                data-toggle="tooltip" title="Delete Draft">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
+                                                    else if (item.Status == "Rejected")
+                                                    {
+                                                        <!-- Quick Resubmit -->
+                                                        <button type="button" class="btn btn-warning" onclick="resubmitIssue(@item.Id)"
+                                                                data-toggle="tooltip" title="Quick Resubmit">
+                                                            <i class="fas fa-redo"></i>
+                                                        </button>
+                                                    }
+                                                }
+
+                                                @if (item.Status == "Pending")
+                                                {
+                                                    <!-- Waiting for Approval - Go to Approval Center -->
+                                                    <button class="btn btn-warning" disabled data-toggle="tooltip"
+                                                            title="Waiting for Approval - Check Approval Center">
+                                                        <i class="fas fa-clock"></i>
+                                                    </button>
+                                                }
+
+                                                @if (item.Status == "Approved")
+                                                {
+                                                    @if (string.IsNullOrEmpty(item.VoucherNumber))
+                                                    {
+                                                        <!-- Generate Voucher -->
+                                                        <a class="btn btn-warning" asp-action="GenerateVoucher" asp-route-id="@item.Id"
+                                                           data-toggle="tooltip" title="Generate Voucher">
+                                                            <i class="fas fa-qrcode"></i>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <!-- Print Voucher -->
+                                                        <a class="btn btn-info" asp-action="PrintVoucher" asp-route-id="@item.Id"
+                                                           target="_blank" data-toggle="tooltip" title="Print Voucher">
+                                                            <i class="fas fa-print"></i>
+                                                        </a>
+
+                                                        @if (string.IsNullOrEmpty(item.SignaturePath))
+                                                        {
+                                                            <!-- Process Handover -->
+                                                            <a class="btn btn-success" asp-action="ProcessHandover" asp-route-id="@item.Id"
+                                                               data-toggle="tooltip" title="Process Physical Handover">
+                                                                <i class="fas fa-handshake"></i>
+                                                            </a>
+                                                        }
+                                                    }
+                                                }
+
+                                                @if (item.Status == "Issued" || item.Status == "Completed")
+                                                {
+                                                    <!-- View Receipt -->
+                                                    <a class="btn btn-success" asp-action="ViewReceipt" asp-route-id="@item.Id"
+                                                       data-toggle="tooltip" title="View Receipt">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No issues found. <a asp-action="Create">Create a new issue</a>
+                    </div>
+                }
+            </div>
+
+            <!-- Footer with Pagination -->
+            <div class="card-footer clearfix">
+                <div class="float-left">
+                    Showing @items.Count() of @Model.TotalCount issues
+                </div>
+                <div class="float-right">
+                    @if (Model.TotalPages > 1)
+                    {
+                        <ul class="pagination pagination-sm m-0">
+                            <!-- Previous Button -->
+                            <li class="page-item @(!Model.HasPrevious ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageNumber - 1)">«</a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                if (i <= 3 || i > Model.TotalPages - 3 || (i >= Model.PageNumber - 1 && i <= Model.PageNumber + 1))
+                                {
+                                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                                    </li>
+                                }
+                                else if (i == 4 && Model.PageNumber > 5)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+                                else if (i == Model.TotalPages - 3 && Model.PageNumber < Model.TotalPages - 4)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+                            }
+
+                            <!-- Next Button -->
+                            <li class="page-item @(!Model.HasNext ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageNumber + 1)">»</a>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+
+        // Submit for Approval
+        function submitForApproval(id) {
+            Swal.fire({
+                title: 'Submit for Approval?',
+                text: 'This issue will be sent for approval.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, submit it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("SubmitForApproval", "Issue")',
+                        { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        function() {
+                            Swal.fire('Submitted!', 'Issue has been submitted for approval.', 'success')
+                                .then(() => location.reload());
+                        }).fail(function() {
+                            Swal.fire('Error!', 'Failed to submit issue.', 'error');
+                        });
+                }
+            });
+        }
+
+        // Delete Issue
+        function deleteIssue(id, issueNo) {
+            Swal.fire({
+                title: 'Delete Issue?',
+                text: `Are you sure you want to delete issue ${issueNo}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("Delete", "Issue")',
+                        { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        function() {
+                            Swal.fire('Deleted!', 'Issue has been deleted.', 'success')
+                                .then(() => location.reload());
+                        }).fail(function() {
+                            Swal.fire('Error!', 'Failed to delete issue.', 'error');
+                        });
+                }
+            });
+        }
+
+        // Resubmit Issue
+        function resubmitIssue(id) {
+            Swal.fire({
+                title: 'Resubmit Issue?',
+                text: 'This will resubmit the issue for approval without editing.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, resubmit!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("Resubmit", "Issue")',
+                        { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        function() {
+                            Swal.fire('Resubmitted!', 'Issue has been resubmitted for approval.', 'success')
+                                .then(() => location.reload());
+                        }).fail(function() {
+                            Swal.fire('Error!', 'Failed to resubmit issue.', 'error');
+                        });
+                }
+            });
+        }
+    </script>
+}

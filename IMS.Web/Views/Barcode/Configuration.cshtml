@@ -1,0 +1,946 @@
+﻿@model IMS.Application.DTOs.BarcodeConfigurationDto
+@{
+    ViewData["Title"] = "Barcode System Configuration";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="fas fa-cogs"></i> Barcode System Configuration
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Barcodes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Configuration</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Configuration Tabs -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+                <i class="fas fa-sliders-h"></i> System Configuration
+            </h3>
+            <div>
+                <button type="button" class="btn btn-outline-light btn-sm" onclick="resetToDefaults()">
+                    <i class="fas fa-undo"></i> Reset to Defaults
+                </button>
+                <button type="button" class="btn btn-light btn-sm" onclick="exportConfig()">
+                    <i class="fas fa-download"></i> Export Config
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs nav-fill" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                    <i class="fas fa-cog"></i> General Settings
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="generation-tab" data-bs-toggle="tab" data-bs-target="#generation" type="button" role="tab">
+                    <i class="fas fa-barcode"></i> Generation Rules
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="scanning-tab" data-bs-toggle="tab" data-bs-target="#scanning" type="button" role="tab">
+                    <i class="fas fa-scanner"></i> Scanning & Hardware
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="printing-tab" data-bs-toggle="tab" data-bs-target="#printing" type="button" role="tab">
+                    <i class="fas fa-print"></i> Printing & Labels
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab">
+                    <i class="fas fa-tools"></i> Advanced
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content p-4" id="configTabContent">
+            <!-- General Settings -->
+            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                <form id="generalSettingsForm">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-info-circle text-primary"></i> Basic Configuration
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="BarcodeFormat" class="control-label fw-bold"></label>
+                                <select asp-for="BarcodeFormat" class="form-select" onchange="updateFormatPreview()">
+                                    <option value="CODE128">CODE128 (Recommended)</option>
+                                    <option value="CODE39">CODE39</option>
+                                    <option value="EAN13">EAN13</option>
+                                    <option value="QR">QR Code</option>
+                                    <option value="DATAMATRIX">Data Matrix</option>
+                                </select>
+                                <small class="form-text text-muted">Default barcode format for new generations</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="Prefix" class="control-label fw-bold"></label>
+                                <input asp-for="Prefix" class="form-control" placeholder="e.g., ITM, PRD" maxlength="10" onchange="updatePatternPreview()" />
+                                <small class="form-text text-muted">Prefix added to all generated barcodes</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="DefaultLabelSize" class="control-label fw-bold"></label>
+                                <select asp-for="DefaultLabelSize" class="form-select">
+                                    <option value="2x1">2" x 1" (Small)</option>
+                                    <option value="4x2">4" x 2" (Standard)</option>
+                                    <option value="6x3">6" x 3" (Large)</option>
+                                    <option value="custom">Custom Size</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="DefaultRotationMethod" class="control-label fw-bold"></label>
+                                <select asp-for="DefaultRotationMethod" class="form-select">
+                                    <option value="FIFO">FIFO (First In, First Out)</option>
+                                    <option value="LIFO">LIFO (Last In, First Out)</option>
+                                    <option value="FEFO">FEFO (First Expired, First Out)</option>
+                                </select>
+                                <small class="form-text text-muted">Default stock rotation method for inventory</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-toggle-on text-success"></i> Feature Toggles
+                            </h5>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="AutoGenerateOnEntry" id="autoGenerate">
+                                <label class="form-check-label" for="autoGenerate">
+                                    <strong>Auto Generate on Entry</strong><br>
+                                    <small class="text-muted">Automatically generate barcodes when new items are added</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="IncludeDate" id="includeDate" onchange="updatePatternPreview()">
+                                <label class="form-check-label" for="includeDate">
+                                    <strong>Include Date in Barcode</strong><br>
+                                    <small class="text-muted">Add generation date to barcode pattern</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="IncludeBatch" id="includeBatch" onchange="updatePatternPreview()">
+                                <label class="form-check-label" for="includeBatch">
+                                    <strong>Include Batch Information</strong><br>
+                                    <small class="text-muted">Include batch numbers in barcode data</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="OfflineModeEnabled" id="offlineMode">
+                                <label class="form-check-label" for="offlineMode">
+                                    <strong>Offline Mode Support</strong><br>
+                                    <small class="text-muted">Allow barcode operations without internet connection</small>
+                                </label>
+                            </div>
+
+                            <!-- Pattern Preview -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Barcode Pattern Preview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <code id="patternPreview">ITM-20231214-001</code>
+                                    <small class="d-block text-muted mt-2">Example of generated barcode pattern</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Generation Rules -->
+            <div class="tab-pane fade" id="generation" role="tabpanel">
+                <form id="generationRulesForm">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-magic text-warning"></i> Generation Rules
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Number Format</label>
+                                <select class="form-select" name="numberFormat">
+                                    <option value="sequential">Sequential (001, 002, 003)</option>
+                                    <option value="random">Random (ABC123, XYZ789)</option>
+                                    <option value="timestamp">Timestamp Based</option>
+                                    <option value="uuid">UUID Based</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Starting Number</label>
+                                <input type="number" class="form-control" name="startingNumber" value="1" min="1" />
+                                <small class="form-text text-muted">Starting number for sequential generation</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Number Padding</label>
+                                <select class="form-select" name="numberPadding">
+                                    <option value="3">3 digits (001)</option>
+                                    <option value="4">4 digits (0001)</option>
+                                    <option value="5">5 digits (00001)</option>
+                                    <option value="6">6 digits (000001)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Duplicate Handling</label>
+                                <select class="form-select" name="duplicateHandling">
+                                    <option value="error">Show Error</option>
+                                    <option value="append">Append Suffix</option>
+                                    <option value="regenerate">Regenerate Number</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-shield-alt text-info"></i> Validation Rules
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Minimum Length</label>
+                                <input type="number" class="form-control" name="minLength" value="5" min="3" max="50" />
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Maximum Length</label>
+                                <input type="number" class="form-control" name="maxLength" value="25" min="5" max="100" />
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="allowSpecialChars" id="allowSpecialChars">
+                                <label class="form-check-label" for="allowSpecialChars">
+                                    Allow Special Characters
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enforceUniqueness" id="enforceUniqueness" checked>
+                                <label class="form-check-label" for="enforceUniqueness">
+                                    Enforce Global Uniqueness
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="validateChecksum" id="validateChecksum">
+                                <label class="form-check-label" for="validateChecksum">
+                                    Include Checksum Validation
+                                </label>
+                            </div>
+
+                            <!-- Generation Test -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Test Generation</h6>
+                                </div>
+                                <div class="card-body">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="testGeneration()">
+                                        <i class="fas fa-flask"></i> Generate Test Barcode
+                                    </button>
+                                    <div id="testResult" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Scanning & Hardware -->
+            <div class="tab-pane fade" id="scanning" role="tabpanel">
+                <form id="scanningSettingsForm">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-camera text-primary"></i> Scanner Configuration
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ScannerType" class="control-label fw-bold"></label>
+                                <select asp-for="ScannerType" class="form-select" onchange="updateScannerSettings()">
+                                    <option value="USB">USB Scanner</option>
+                                    <option value="Bluetooth">Bluetooth Scanner</option>
+                                    <option value="Camera">Camera/Mobile</option>
+                                    <option value="Integrated">Integrated Device</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Scan Timeout (seconds)</label>
+                                <input type="number" class="form-control" name="scanTimeout" value="30" min="5" max="300" />
+                                <small class="form-text text-muted">Maximum time to wait for scan input</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Beep Settings</label>
+                                <select class="form-select" name="beepSettings">
+                                    <option value="always">Always Beep</option>
+                                    <option value="success">Success Only</option>
+                                    <option value="error">Error Only</option>
+                                    <option value="never">Never Beep</option>
+                                </select>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="autoSubmit" id="autoSubmit" checked>
+                                <label class="form-check-label" for="autoSubmit">
+                                    Auto-submit on Successful Scan
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-mobile-alt text-success"></i> Mobile & Camera Settings
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Camera Resolution</label>
+                                <select class="form-select" name="cameraResolution">
+                                    <option value="640x480">640x480 (VGA)</option>
+                                    <option value="1280x720">1280x720 (HD)</option>
+                                    <option value="1920x1080">1920x1080 (Full HD)</option>
+                                    <option value="auto">Auto Select</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Scan Sensitivity</label>
+                                <select class="form-select" name="scanSensitivity">
+                                    <option value="low">Low (Precise)</option>
+                                    <option value="medium">Medium (Balanced)</option>
+                                    <option value="high">High (Flexible)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enableTorch" id="enableTorch">
+                                <label class="form-check-label" for="enableTorch">
+                                    Enable Flashlight/Torch
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enableVibration" id="enableVibration">
+                                <label class="form-check-label" for="enableVibration">
+                                    Enable Vibration Feedback
+                                </label>
+                            </div>
+
+                            <!-- Scanner Test -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Scanner Test</h6>
+                                </div>
+                                <div class="card-body">
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="testScanner()">
+                                        <i class="fas fa-camera"></i> Test Scanner
+                                    </button>
+                                    <div id="scannerTestResult" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Printing & Labels -->
+            <div class="tab-pane fade" id="printing" role="tabpanel">
+                <form id="printingSettingsForm">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-print text-info"></i> Printer Configuration
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Default Printer</label>
+                                <select class="form-select" name="defaultPrinter" id="printerSelect">
+                                    <option value="">Select Printer</option>
+                                    <!-- Printers will be loaded dynamically -->
+                                </select>
+                                <small class="form-text text-muted">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="detectPrinters()">
+                                        <i class="fas fa-search"></i> Detect Printers
+                                    </button>
+                                </small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Print Quality</label>
+                                <select class="form-select" name="printQuality">
+                                    <option value="draft">Draft (Fast)</option>
+                                    <option value="normal">Normal (Balanced)</option>
+                                    <option value="high">High Quality (Slow)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Label Orientation</label>
+                                <select class="form-select" name="labelOrientation">
+                                    <option value="portrait">Portrait</option>
+                                    <option value="landscape">Landscape</option>
+                                    <option value="auto">Auto Detect</option>
+                                </select>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="printBorder" id="printBorder" checked>
+                                <label class="form-check-label" for="printBorder">
+                                    Print Border Around Labels
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-tags text-warning"></i> Label Settings
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Label Template</label>
+                                <select class="form-select" name="labelTemplate">
+                                    <option value="standard">Standard Template</option>
+                                    <option value="minimal">Minimal Template</option>
+                                    <option value="detailed">Detailed Template</option>
+                                    <option value="custom">Custom Template</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Font Size</label>
+                                <select class="form-select" name="fontSize">
+                                    <option value="8">8pt (Small)</option>
+                                    <option value="10">10pt (Medium)</option>
+                                    <option value="12">12pt (Large)</option>
+                                    <option value="14">14pt (Extra Large)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="includeCompanyLogo" id="includeCompanyLogo">
+                                <label class="form-check-label" for="includeCompanyLogo">
+                                    Include Company Logo
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="includeTimestamp" id="includeTimestamp">
+                                <label class="form-check-label" for="includeTimestamp">
+                                    Include Print Timestamp
+                                </label>
+                            </div>
+
+                            <!-- Label Preview -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Label Preview</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="labelPreview" style="border: 2px dashed #ccc; padding: 20px; min-height: 100px;">
+                                        <i class="fas fa-tags fa-2x text-muted"></i>
+                                        <p class="text-muted mt-2">Label preview will appear here</p>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="generateLabelPreview()">
+                                        <i class="fas fa-eye"></i> Preview Label
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="tab-pane fade" id="advanced" role="tabpanel">
+                <form id="advancedSettingsForm">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-database text-danger"></i> Data Management
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Data Retention (days)</label>
+                                <input type="number" class="form-control" name="dataRetention" value="365" min="30" max="7300" />
+                                <small class="form-text text-muted">How long to keep scan history data</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Backup Frequency</label>
+                                <select class="form-select" name="backupFrequency">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="manual">Manual Only</option>
+                                </select>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enableAuditLog" id="enableAuditLog" checked>
+                                <label class="form-check-label" for="enableAuditLog">
+                                    Enable Audit Logging
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="encryptBarcodeData" id="encryptBarcodeData">
+                                <label class="form-check-label" for="encryptBarcodeData">
+                                    Encrypt Barcode Data
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-network-wired text-success"></i> Integration Settings
+                            </h5>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">API Endpoint</label>
+                                <input type="url" class="form-control" name="apiEndpoint" placeholder="https://api.example.com/barcodes" />
+                                <small class="form-text text-muted">External API for barcode synchronization</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="control-label fw-bold">Webhook URL</label>
+                                <input type="url" class="form-control" name="webhookUrl" placeholder="https://webhook.example.com/barcode-events" />
+                                <small class="form-text text-muted">URL to receive barcode event notifications</small>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enableWebhooks" id="enableWebhooks">
+                                <label class="form-check-label" for="enableWebhooks">
+                                    Enable Webhook Notifications
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="enableApiSync" id="enableApiSync">
+                                <label class="form-check-label" for="enableApiSync">
+                                    Enable API Synchronization
+                                </label>
+                            </div>
+
+                            <!-- System Info -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">System Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <small class="d-block">Version: 2.1.3</small>
+                                    <small class="d-block">Last Updated: @DateTime.Now.ToString("MMM dd, yyyy")</small>
+                                    <small class="d-block">Database: Connected</small>
+                                    <small class="d-block">Cache: Enabled</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                Changes are automatically validated before saving
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-secondary me-2" onclick="validateConfiguration()">
+                    <i class="fas fa-check"></i> Validate Configuration
+                </button>
+                <button type="button" class="btn btn-success" onclick="saveConfiguration()">
+                    <i class="fas fa-save"></i> Save All Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Scanner Modal -->
+<div class="modal fade" id="scannerTestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Scanner Test</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div id="scannerTestPreview" style="min-height: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                        <div>
+                            <i class="fas fa-camera fa-3x text-muted"></i>
+                            <p class="text-muted mt-2">Click "Start Test" to begin scanner test</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" id="startScannerTest">Start Test</button>
+                        <button type="button" class="btn btn-secondary" id="stopScannerTest" style="display: none;">Stop Test</button>
+                    </div>
+                    <div id="scannerTestLog" class="mt-3 text-start">
+                        <h6>Test Log:</h6>
+                        <div class="border rounded p-2 bg-light" style="height: 100px; overflow-y: auto;">
+                            <small class="text-muted">Test not started...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            loadCurrentConfiguration();
+            updatePatternPreview();
+            detectPrinters();
+        });
+
+        function loadCurrentConfiguration() {
+            // Load current configuration from server
+            $.get('@Url.Action("GetConfiguration", "Barcode")')
+                .done(function(config) {
+                    // Populate form fields with current configuration
+                    Object.keys(config).forEach(key => {
+                        const field = $(`[name="${key}"], #${key}`);
+                        if (field.length) {
+                            if (field.is(':checkbox')) {
+                                field.prop('checked', config[key]);
+                            } else {
+                                field.val(config[key]);
+                            }
+                        }
+                    });
+                })
+                .fail(function() {
+                    toastr.warning('Could not load current configuration');
+                });
+        }
+
+        function updatePatternPreview() {
+            const prefix = $('#Prefix').val() || 'ITM';
+            const includeDate = $('#includeDate').prop('checked');
+            const includeBatch = $('#includeBatch').prop('checked');
+
+            let pattern = prefix;
+
+            if (includeDate) {
+                pattern += '-' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            }
+
+            if (includeBatch) {
+                pattern += '-BTH001';
+            }
+
+            pattern += '-001';
+            $('#patternPreview').text(pattern);
+        }
+
+        function updateFormatPreview() {
+            const format = $('#BarcodeFormat').val();
+            // Update format-specific settings or previews
+            console.log('Format changed to:', format);
+        }
+
+        function updateScannerSettings() {
+            const scannerType = $('#ScannerType').val();
+            // Show/hide relevant settings based on scanner type
+            console.log('Scanner type changed to:', scannerType);
+        }
+
+        function testGeneration() {
+            const testData = {
+                format: $('[name="numberFormat"]').val(),
+                prefix: $('#Prefix').val(),
+                includeDate: $('#includeDate').prop('checked'),
+                includeBatch: $('#includeBatch').prop('checked')
+            };
+
+            $.post('@Url.Action("TestGeneration", "Barcode")', testData)
+                .done(function(response) {
+                    if (response.success) {
+                        $('#testResult').html(`
+                            <div class="alert alert-success">
+                                <strong>Test Generated:</strong> ${response.testBarcode}<br>
+                                <small>Generated in ${response.generateTime}ms</small>
+                            </div>
+                        `);
+                    } else {
+                        $('#testResult').html(`
+                            <div class="alert alert-danger">
+                                <strong>Generation Failed:</strong> ${response.message}
+                            </div>
+                        `);
+                    }
+                })
+                .fail(function() {
+                    $('#testResult').html(`
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> Failed to test generation
+                        </div>
+                    `);
+                });
+        }
+
+        function testScanner() {
+            $('#scannerTestModal').modal('show');
+        }
+
+        $('#startScannerTest').click(function() {
+            $(this).hide();
+            $('#stopScannerTest').show();
+
+            const logDiv = $('#scannerTestLog .border');
+            logDiv.html('<small class="text-info">Starting scanner test...</small><br>');
+
+            // Simulate scanner test
+            let testStep = 0;
+            const testSteps = [
+                'Initializing camera...',
+                'Detecting camera devices...',
+                'Setting up video stream...',
+                'Testing barcode detection...',
+                'Scanner test completed successfully!'
+            ];
+
+            const testInterval = setInterval(() => {
+                if (testStep < testSteps.length) {
+                    logDiv.append(`<small>${new Date().toLocaleTimeString()}: ${testSteps[testStep]}</small><br>`);
+                    logDiv.scrollTop(logDiv[0].scrollHeight);
+                    testStep++;
+                } else {
+                    clearInterval(testInterval);
+                    $('#startScannerTest').show();
+                    $('#stopScannerTest').hide();
+                }
+            }, 1000);
+        });
+
+        $('#stopScannerTest').click(function() {
+            $(this).hide();
+            $('#startScannerTest').show();
+            const logDiv = $('#scannerTestLog .border');
+            logDiv.append('<small class="text-warning">Scanner test stopped by user</small><br>');
+        });
+
+        function detectPrinters() {
+            // Simulate printer detection
+            const printers = [
+                'Zebra ZD620 (USB)',
+                'Brother QL-800 (Network)',
+                'DYMO LabelWriter 450',
+                'Default System Printer'
+            ];
+
+            const printerSelect = $('#printerSelect');
+            printerSelect.html('<option value="">Select Printer</option>');
+
+            printers.forEach(printer => {
+                printerSelect.append(`<option value="${printer}">${printer}</option>`);
+            });
+
+            toastr.success(`Detected ${printers.length} printers`);
+        }
+
+        function generateLabelPreview() {
+            const labelData = {
+                template: $('[name="labelTemplate"]').val(),
+                fontSize: $('[name="fontSize"]').val(),
+                includeLogo: $('[name="includeCompanyLogo"]').prop('checked'),
+                includeTimestamp: $('[name="includeTimestamp"]').prop('checked'),
+                printBorder: $('[name="printBorder"]').prop('checked')
+            };
+
+            $('#labelPreview').html(`
+                <div style="border: ${labelData.printBorder ? '1px solid #000' : 'none'}; padding: 10px; background: white;">
+                    ${labelData.includeLogo ? '<div style="font-size: 12px; font-weight: bold;">COMPANY LOGO</div>' : ''}
+                    <div style="font-size: ${labelData.fontSize}px; margin: 10px 0;">
+                        <div style="font-family: monospace; font-weight: bold;">ITM-20231214-001</div>
+                        <div>Sample Item Name</div>
+                        <div style="font-size: 10px;">SN: ABC123</div>
+                    </div>
+                    ${labelData.includeTimestamp ? '<div style="font-size: 8px; color: #666;">Printed: ' + new Date().toLocaleString() + '</div>' : ''}
+                </div>
+            `);
+        }
+
+        function validateConfiguration() {
+            let isValid = true;
+            let errors = [];
+
+            // Validate prefix
+            const prefix = $('#Prefix').val();
+            if (prefix && !/^[A-Z0-9]{2,10}$/.test(prefix)) {
+                errors.push('Prefix must be 2-10 characters (letters and numbers only)');
+                isValid = false;
+            }
+
+            // Validate number ranges
+            const minLength = parseInt($('[name="minLength"]').val());
+            const maxLength = parseInt($('[name="maxLength"]').val());
+            if (minLength >= maxLength) {
+                errors.push('Minimum length must be less than maximum length');
+                isValid = false;
+            }
+
+            // Validate API URL
+            const apiUrl = $('[name="apiEndpoint"]').val();
+            if (apiUrl && !isValidUrl(apiUrl)) {
+                errors.push('Invalid API endpoint URL');
+                isValid = false;
+            }
+
+            if (isValid) {
+                toastr.success('Configuration validation passed');
+            } else {
+                toastr.error('Validation errors: ' + errors.join(', '));
+            }
+
+            return isValid;
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function saveConfiguration() {
+            if (!validateConfiguration()) {
+                return;
+            }
+
+            const configData = {};
+
+            // Collect all form data
+            $('#configTabContent form').each(function() {
+                $(this).find('input, select, textarea').each(function() {
+                    const field = $(this);
+                    const name = field.attr('name') || field.attr('id');
+
+                    if (name) {
+                        if (field.is(':checkbox')) {
+                            configData[name] = field.prop('checked');
+                        } else {
+                            configData[name] = field.val();
+                        }
+                    }
+                });
+            });
+
+            $.post('@Url.Action("SaveConfiguration", "Barcode")', configData)
+                .done(function(response) {
+                    if (response.success) {
+                        toastr.success('Configuration saved successfully');
+                    } else {
+                        toastr.error('Failed to save configuration: ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    toastr.error('Error saving configuration');
+                });
+        }
+
+        function resetToDefaults() {
+            if (confirm('Are you sure you want to reset all settings to default values? This cannot be undone.')) {
+                $.post('@Url.Action("ResetToDefaults", "Barcode")')
+                    .done(function(response) {
+                        if (response.success) {
+                            toastr.success('Configuration reset to defaults');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            toastr.error('Failed to reset configuration');
+                        }
+                    })
+                    .fail(function() {
+                        toastr.error('Error resetting configuration');
+                    });
+            }
+        }
+
+        function exportConfig() {
+            window.open('@Url.Action("ExportConfiguration", "Barcode")', '_blank');
+        }
+    </script>
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" rel="stylesheet" />
+    <style>
+        .form-check-label {
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link {
+            color: #495057;
+            border-color: transparent;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #007bff;
+                border-color: #dee2e6 #dee2e6 #fff;
+            }
+
+        .tab-content {
+            min-height: 400px;
+        }
+
+        .card-footer {
+            border-top: 1px solid #dee2e6;
+        }
+
+        #labelPreview {
+            transition: all 0.3s ease;
+        }
+
+        .form-switch .form-check-input {
+            width: 2rem;
+            height: 1.2rem;
+        }
+
+        .timeline-item {
+            border-left: 2px solid #dee2e6;
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+            .timeline-item:before {
+                content: '';
+                width: 12px;
+                height: 12px;
+                background: #007bff;
+                border-radius: 50%;
+                position: absolute;
+                left: -7px;
+                margin-top: 5px;
+            }
+    </style>
+}

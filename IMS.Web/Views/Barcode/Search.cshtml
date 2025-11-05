@@ -1,0 +1,400 @@
+﻿@model IMS.Application.DTOs.BarcodeDto
+@{
+    ViewData["Title"] = "Search Barcode";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-search"></i> Barcode Search & Scanner
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Barcode" asp-action="Index">Barcodes</a></li>
+                    <li class="breadcrumb-item active">Search</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-keyboard"></i> Search Barcode
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Search" method="get" id="searchForm">
+                            <div class="form-group">
+                                <label>Barcode Number</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="text" name="barcodeNumber" id="barcodeInput"
+                                           class="form-control" autofocus
+                                           placeholder="Scan or type barcode number"
+                                           value="@ViewBag.SearchTerm" />
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-default" onclick="clearSearch()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Focus on this field and scan with your barcode scanner
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <a asp-controller="Barcode" asp-action="Index" class="btn btn-default btn-lg">
+                                    <i class="fas fa-arrow-left"></i> Back to List
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <a asp-action="BatchGenerate" class="btn btn-outline-primary btn-block mb-2">
+                            <i class="fas fa-layer-group"></i> Batch Generate New
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-success btn-block">
+                            <i class="fas fa-list"></i> View All Barcodes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                @if (Model != null)
+                {
+                    <div class="card card-success card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-check-circle"></i> Barcode Found
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                @if (!string.IsNullOrEmpty(ViewBag.QRCodeBase64))
+                                {
+                                    <img src="data:image/png;base64,@ViewBag.QRCodeBase64"
+                                         alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                                }
+                            </div>
+
+                            <ul class="nav nav-tabs" id="result-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#basic-info">
+                                        <i class="fas fa-info-circle"></i> Basic Info
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#item-store">
+                                        <i class="fas fa-box"></i> Item & Store
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#tracking">
+                                        <i class="fas fa-chart-bar"></i> Tracking
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content mt-3">
+                                <div class="tab-pane active" id="basic-info">
+                                    <dl class="row">
+                                        <dt class="col-sm-5">Barcode Number:</dt>
+                                        <dd class="col-sm-7"><code>@Model.BarcodeNumber</code></dd>
+
+                                        <dt class="col-sm-5">Type:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge badge-@(Model.BarcodeType == "QRCode" ? "success" : "primary")">
+                                                @(Model.BarcodeType ?? "Barcode")
+                                            </span>
+                                        </dd>
+
+                                        <dt class="col-sm-5">Serial Number:</dt>
+                                        <dd class="col-sm-7">@(Model.SerialNumber ?? "N/A")</dd>
+
+                                        <dt class="col-sm-5">Batch Number:</dt>
+                                        <dd class="col-sm-7">@(Model.BatchNumber ?? "N/A")</dd>
+
+                                        <dt class="col-sm-5">Generated Date:</dt>
+                                        <dd class="col-sm-7">
+                                            <i class="far fa-calendar"></i> @Model.GeneratedDate.ToString("MMM dd, yyyy")
+                                        </dd>
+                                    </dl>
+                                </div>
+
+                                <div class="tab-pane" id="item-store">
+                                    <dl class="row">
+                                        <dt class="col-sm-5">Item Name:</dt>
+                                        <dd class="col-sm-7"><strong>@Model.ItemName</strong></dd>
+
+                                        <dt class="col-sm-5">Item Code:</dt>
+                                        <dd class="col-sm-7">@Model.ItemCode</dd>
+
+                                        <dt class="col-sm-5">Store:</dt>
+                                        <dd class="col-sm-7">
+                                            <i class="fas fa-warehouse"></i> @Model.StoreName
+                                        </dd>
+
+                                        <dt class="col-sm-5">Location:</dt>
+                                        <dd class="col-sm-7">
+                                            <i class="fas fa-map-marker-alt"></i> @(Model.Location ?? "N/A")
+                                        </dd>
+
+                                        <dt class="col-sm-5">Category:</dt>
+                                        <dd class="col-sm-7">
+                                            <span class="badge badge-info">@Model.CategoryName</span>
+                                        </dd>
+                                    </dl>
+                                </div>
+
+                                <div class="tab-pane" id="tracking">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="small-box bg-info">
+                                                <div class="inner">
+                                                    <h3>@Model.PrintCount</h3>
+                                                    <p>Printed</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-print"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small-box bg-success">
+                                                <div class="inner">
+                                                    <h3>@(Model.ScanCount ?? 0)</h3>
+                                                    <p>Scanned</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-qrcode"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (Model.LastScannedDate.HasValue)
+                                    {
+                                        <div class="text-center">
+                                            <small class="text-success">
+                                                <i class="fas fa-clock"></i> Last scanned: @Model.LastScannedDate.Value.ToString("MMM dd, yyyy")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="btn-group btn-group-sm w-100">
+                                    <a asp-action="Print" asp-route-id="@Model.Id"
+                                       class="btn btn-success" target="_blank">
+                                        <i class="fas fa-print"></i> Print
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@Model.Id"
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
+                                    <button type="button" class="btn btn-warning" onclick="recordScan(@Model.Id)">
+                                        <i class="fas fa-qrcode"></i> Record Scan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (ViewBag.SearchTerm != null)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-exclamation-triangle"></i> Barcode Not Found</h5>
+                                <p>No barcode found with number: <strong>@ViewBag.SearchTerm</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i> Search Instructions
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="callout callout-info">
+                                <h5>How to Search:</h5>
+                                <ul class="mb-0">
+                                    <li>Type or scan barcode directly into the search field</li>
+                                    <li>For barcode scanners: Focus the search field and scan</li>
+                                    <li>Results appear instantly when barcode is found</li>
+                                </ul>
+                            </div>
+
+                            <h5 class="mt-4">Search Tips:</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon"><i class="fas fa-lightbulb"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Quick Tip</span>
+                                            <span class="info-box-number">Place cursor in search field for scanner</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="scanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Record Barcode Scan</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="scanForm">
+                    <input type="hidden" id="scanBarcodeId" />
+                    <div class="form-group">
+                        <label>Scan Location <span class="text-danger">*</span></label>
+                        <input type="text" id="scanLocation" class="form-control" required
+                               placeholder="Enter location where barcode was scanned" />
+                    </div>
+                    <div class="form-group">
+                        <label>Action</label>
+                        <select id="scanAction" class="form-control">
+                            <option value="Manual">Manual Scan</option>
+                            <option value="Check">Check/Verify</option>
+                            <option value="Count">Physical Count</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="scanNotes" class="form-control" rows="3"
+                                  placeholder="Optional notes"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitScan()">
+                    <i class="fas fa-save"></i> Record Scan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#barcodeInput').focus();
+
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#searchForm').submit();
+                }
+            });
+        });
+
+        function clearSearch() {
+            $('#barcodeInput').val('').focus();
+        }
+
+        function recordScan(barcodeId) {
+            $('#scanBarcodeId').val(barcodeId);
+            $('#scanLocation').val('');
+            $('#scanNotes').val('');
+            $('#scanModal').modal('show');
+        }
+
+        function submitScan() {
+            const location = $('#scanLocation').val();
+            if (!location) {
+                toastr.warning('Please enter scan location');
+                $('#scanLocation').focus();
+                return;
+            }
+
+            const data = {
+                barcodeId: $('#scanBarcodeId').val(),
+                location: location,
+                action: $('#scanAction').val(),
+                notes: $('#scanNotes').val()
+            };
+
+            const $btn = $('.modal-footer .btn-primary');
+            const originalText = $btn.html();
+            $btn.html('<i class="fas fa-spinner fa-spin"></i> Recording...').prop('disabled', true);
+
+            $.post('@Url.Action("RecordScan", "Barcode")', data)
+                .done(function(response) {
+                    if (response.success) {
+                        toastr.success('Scan recorded successfully');
+                        $('#scanModal').modal('hide');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error(response.message || 'Failed to record scan');
+                    }
+                })
+                .fail(function() {
+                    toastr.error('Error recording scan');
+                })
+                .always(function() {
+                    $btn.html(originalText).prop('disabled', false);
+                });
+        }
+    </script>
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" rel="stylesheet" />
+    <style>
+        .small-box .inner {
+            padding: 10px;
+        }
+
+        .small-box .icon {
+            font-size: 45px;
+        }
+
+        .info-box {
+            min-height: 70px;
+        }
+
+            .info-box .info-box-icon {
+                width: 70px;
+                font-size: 30px;
+                line-height: 70px;
+            }
+    </style>
+}

@@ -1,0 +1,241 @@
+﻿@model IMS.Application.DTOs.UnionDto
+@{
+    ViewData["Title"] = "VDP Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">VDP/Ansar Management - @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Unions</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
+                    <li class="breadcrumb-item active">VDP Management</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Current Statistics -->
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@(Model.VDPMemberCountMale ?? 0)</h3>
+                                <p>VDP Members (Male)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-male"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-pink">
+                            <div class="inner">
+                                <h3>@(Model.VDPMemberCountFemale ?? 0)</h3>
+                                <p>VDP Members (Female)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-female"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@(Model.AnsarMemberCount ?? 0)</h3>
+                                <p>Ansar Members</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@(Model.TotalVDPMembers + (Model.AnsarMemberCount ?? 0))</h3>
+                                <p>Total Force</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Update VDP Count -->
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Update VDP Member Count</h3>
+                    </div>
+                    <form asp-action="UpdateVDPCount" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="maleCount">Male Members</label>
+                                        <input type="number" name="maleCount" id="maleCount" class="form-control"
+                                               value="@(Model.VDPMemberCountMale ?? 0)" min="0" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="femaleCount">Female Members</label>
+                                        <input type="number" name="femaleCount" id="femaleCount" class="form-control"
+                                               value="@(Model.VDPMemberCountFemale ?? 0)" min="0" required />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Total VDP Members</label>
+                                <input type="text" class="form-control" id="totalVDP" readonly />
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update VDP Count
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Update Ansar Count -->
+            <div class="col-md-6">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Update Ansar Member Count</h3>
+                    </div>
+                    <form asp-action="UpdateAnsarCount" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="count">Ansar Members</label>
+                                <input type="number" name="count" id="count" class="form-control"
+                                       value="@(Model.AnsarMemberCount ?? 0)" min="0" required />
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Ansar members are permanent force members stationed at the union level.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Update Ansar Count
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Force Distribution Chart -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Force Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="forceChart" style="max-height: 400px;"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="genderChart" style="max-height: 400px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="row">
+            <div class="col-12">
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Details
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(function() {
+            // Calculate total VDP
+            function calculateTotal() {
+                var male = parseInt($('#maleCount').val()) || 0;
+                var female = parseInt($('#femaleCount').val()) || 0;
+                $('#totalVDP').val(male + female);
+            }
+
+            $('#maleCount, #femaleCount').on('input', calculateTotal);
+            calculateTotal();
+
+            // Force Distribution Chart
+            var forceCtx = document.getElementById('forceChart').getContext('2d');
+            var forceChart = new Chart(forceCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['VDP Members', 'Ansar Members'],
+                    datasets: [{
+                        data: [@Model.TotalVDPMembers, @(Model.AnsarMemberCount ?? 0)],
+                        backgroundColor: ['#007bff', '#28a745']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    title: {
+                        display: true,
+                        text: 'VDP vs Ansar Distribution'
+                    }
+                }
+            });
+
+            // Gender Distribution Chart
+            var genderCtx = document.getElementById('genderChart').getContext('2d');
+            var genderChart = new Chart(genderCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        label: 'VDP Members by Gender',
+                        data: [@(Model.VDPMemberCountMale ?? 0), @(Model.VDPMemberCountFemale ?? 0)],
+                        backgroundColor: ['#17a2b8', '#e83e8c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

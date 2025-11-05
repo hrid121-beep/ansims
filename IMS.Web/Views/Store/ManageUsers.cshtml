@@ -1,0 +1,295 @@
+﻿@model IMS.Web.Models.StoreUsersViewModel
+@{
+    ViewData["Title"] = "Manage Store Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Manage Store Users</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stores</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.StoreId">@Model.StoreName</a></li>
+                    <li class="breadcrumb-item active">Manage Users</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Info boxes -->
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-warehouse"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Store</span>
+                        <span class="info-box-number">@Model.StoreName</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-users"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Assigned Users</span>
+                        <span class="info-box-number">@Model.AssignedUsers.Count()</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-user-plus"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Available Users</span>
+                        <span class="info-box-number">@Model.AvailableUsers.Count()</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-primary elevation-1"><i class="fas fa-user-shield"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Store Manager</span>
+                        <span class="info-box-number">@(Model.PrimaryKeeper ?? "Not Set")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-check"></i> Success!</h5>
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                @TempData["Error"]
+            </div>
+        }
+
+        <div class="row">
+            <!-- Assigned Users -->
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Currently Assigned Users</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Assigned Date</th>
+                                    <th width="80">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.AssignedUsers?.Any() == true)
+                                {
+                                    @foreach (var user in Model.AssignedUsers)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <img src="~/adminlte/img/user-avatar.png" alt="User" class="img-circle img-size-32 mr-2">
+                                                <strong>@user.FullName</strong>
+                                                <br />
+                                                <small class="text-muted">@user.UserName</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">@user.Role</span>
+                                                @if (user.IsPrimary)
+                                                {
+                                                    <span class="badge badge-success">Primary</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@user.AssignedDate?.ToString("dd MMM yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                        onclick="removeUser('@user.Id', '@user.FullName')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">
+                                            <i class="fas fa-info-circle"></i> No users assigned to this store
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Users -->
+            <div class="col-md-6">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New Users</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <form id="addUsersForm">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Select Users to Add</label>
+                                <select class="select2bs4" multiple="multiple" id="selectedUsers"
+                                        data-placeholder="Select users" style="width: 100%;">
+                                    @foreach (var user in Model.AvailableUsers)
+                                    {
+                                        <option value="@user.Id">
+                                            @user.FullName (@user.UserName) - @user.Role
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="setPrimary">
+                                    <label class="custom-control-label" for="setPrimary">
+                                        Set as Primary Store Keeper
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-success" onclick="addUsers()">
+                                <i class="fas fa-plus"></i> Add Selected Users
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Select2 -->
+    <script src="~/adminlte/plugins/select2/js/select2.full.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="~/adminlte/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Toastr -->
+    <script src="~/adminlte/plugins/toastr/toastr.min.js"></script>
+
+    <script>
+        $(function () {
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
+        });
+
+        function removeUser(userId, userName) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `Remove ${userName} from this store?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("RemoveUserFromStore", "Store")',
+                        type: 'POST',
+                        data: {
+                            storeId: @Model.StoreId,
+                            userId: userId,
+                            __RequestVerificationToken: $('#addUsersForm input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(result) {
+                            if (result.success) {
+                                toastr.success('User removed successfully');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(result.message || 'Failed to remove user');
+                            }
+                        },
+                        error: function() {
+                            toastr.error('An error occurred');
+                        }
+                    });
+                }
+            });
+        }
+
+        function addUsers() {
+            var selectedUsers = $('#selectedUsers').val();
+            if (!selectedUsers || selectedUsers.length === 0) {
+                toastr.warning('Please select at least one user');
+                return;
+            }
+
+            var isPrimary = $('#setPrimary').is(':checked');
+
+            $.ajax({
+                url: '@Url.Action("AddUsersToStore", "Store")',
+                type: 'POST',
+                data: {
+                    storeId: @Model.StoreId,
+                    userIds: selectedUsers,
+                    setPrimary: isPrimary,
+                    __RequestVerificationToken: $('#addUsersForm input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(result) {
+                    if (result.success) {
+                        toastr.success('Users added successfully');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error(result.message || 'Failed to add users');
+                    }
+                },
+                error: function() {
+                    toastr.error('An error occurred');
+                }
+            });
+        }
+    </script>
+}
+
+@section Styles {
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/adminlte/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="~/adminlte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+    <!-- Toastr -->
+    <link rel="stylesheet" href="~/adminlte/plugins/toastr/toastr.min.css">
+}

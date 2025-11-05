@@ -1,0 +1,244 @@
+﻿@model IEnumerable<IMS.Application.DTOs.BarcodeDto>
+@{
+    ViewData["Title"] = "Barcode Management";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-barcode"></i> Barcode Management
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Barcodes</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@ViewBag.TotalBarcodes</h3>
+                        <p>Total Barcodes</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@ViewBag.RecentlyScanned</h3>
+                        <p>Scanned Today</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@ViewBag.MostPrinted</h3>
+                        <p>Printed Today</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@ViewBag.Unscanned</h3>
+                        <p>Unscanned</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i> Barcode List
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#filterPanel">
+                        <i class="fas fa-filter"></i> Filters
+                    </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="@Url.Action("ExportToExcel", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
+                                <i class="fas fa-file-excel text-success"></i> Excel
+                            </a>
+                            <a class="dropdown-item" href="@Url.Action("ExportToPDF", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
+                                <i class="fas fa-file-pdf text-danger"></i> PDF
+                            </a>
+                            <a class="dropdown-item" href="@Url.Action("ExportToCSV", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
+                                <i class="fas fa-file-csv text-info"></i> CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapse" id="filterPanel">
+                <div class="card-body border-bottom">
+                    <form method="get" asp-action="Index">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Search</label>
+                                    <input type="text" name="search" class="form-control" placeholder="Search..." value="@ViewBag.SearchTerm">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Store</label>
+                                    <select name="storeId" class="form-control">
+                                        <option value="">All Stores</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Barcode Type</label>
+                                    <select name="barcodeType" class="form-control">
+                                        <option value="">All Types</option>
+                                        <option value="QRCode">QR Code</option>
+                                        <option value="Barcode">Linear Barcode</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select name="scanStatus" class="form-control">
+                                        <option value="">All Status</option>
+                                        <option value="Scanned">Scanned</option>
+                                        <option value="Unscanned">Unscanned</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="barcodesTable">
+                    <thead>
+                        <tr>
+                            <th>Barcode Number</th>
+                            <th>Item</th>
+                            <th>Serial Number</th>
+                            <th>Type</th>
+                            <th>Generated Date</th>
+                            <th>Generated By</th>
+                            <th>Scan Count</th>
+                            <th>Print Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var barcode in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@barcode.BarcodeNumber</strong>
+                                    </td>
+                                    <td>
+                                        @barcode.ItemName
+                                        @if (!string.IsNullOrEmpty(barcode.ItemCode))
+                                        {
+                                            <br>
+                                
+                                            <small class="text-muted">@barcode.ItemCode</small>
+                                        }
+                                    </td>
+                                    <td>@(barcode.SerialNumber ?? "N/A")</td>
+                                    <td>
+                                        <span class="badge badge-@(barcode.BarcodeType == "QRCode" ? "success" : "primary")">
+                                            @(barcode.BarcodeType ?? "Barcode")
+                                        </span>
+                                    </td>
+                                    <td>@barcode.GeneratedDate.ToString("MM/dd/yyyy")</td>
+                                    <td>@(barcode.GeneratedBy ?? "System")</td>
+                                    <td>
+                                        <span class="badge badge-info">@barcode.ScanCount</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-warning">@barcode.PrintCount</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@barcode.Id" class="btn btn-info" title="Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Print" asp-route-id="@barcode.Id" class="btn btn-primary" title="Print" target="_blank">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            <a asp-action="GeneratePDF" asp-route-id="@barcode.Id" class="btn btn-success" title="Download PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No barcodes found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#barcodesTable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 25,
+                order: [[4, 'desc']],
+                dom: 'Bfrtip',
+                buttons: []
+            });
+        });
+    </script>
+}

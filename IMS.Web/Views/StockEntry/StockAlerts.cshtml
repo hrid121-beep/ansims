@@ -1,0 +1,130 @@
+﻿@model IEnumerable<IMS.Application.DTOs.StockAlertDto>
+@{
+    ViewData["Title"] = "Stock Alerts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Stock Alerts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Stock Alerts</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Alert Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "Critical")</h3>
+                        <p>Critical Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "Warning")</h3>
+                        <p>Warning Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.AlertLevel == "Info")</h3>
+                        <p>Info Alerts</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.Count(a => a.IsAcknowledged)</h3>
+                        <p>Acknowledged</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Active Stock Alerts</h3>
+                <div class="card-tools">
+                    <button class="btn btn-sm btn-primary" onclick="checkAllStores()">
+                        <i class="fas fa-sync"></i> Check All Stores
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                @foreach (var alert in Model.Where(a => !a.IsAcknowledged).OrderBy(a => a.AlertLevel))
+                {
+                    <div class="alert @GetAlertClass(alert.AlertLevel) alert-dismissible">
+                        <button type="button" class="close" onclick="acknowledgeAlert(@alert.ItemId, @alert.StoreId)">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h5><i class="icon @GetAlertIcon(alert.AlertLevel)"></i> @alert.AlertLevel Alert!</h5>
+                        <strong>@alert.ItemName</strong> at <strong>@alert.StoreName</strong><br />
+                        Current Stock: <span class="badge badge-dark">@alert.CurrentStock</span> |
+                        Minimum Stock: <span class="badge badge-secondary">@alert.MinimumStock</span> |
+                        Reorder Level: <span class="badge badge-info">@alert.ReorderLevel</span>
+                        <div class="mt-2">
+                            <a href="/Purchase/Create?itemId=@alert.ItemId&storeId=@alert.StoreId"
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-shopping-cart"></i> Create Purchase Order
+                            </a>
+                            <a href="/Transfer/Create?itemId=@alert.ItemId&toStoreId=@alert.StoreId"
+                               class="btn btn-sm btn-info">
+                                <i class="fas fa-exchange-alt"></i> Request Transfer
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetAlertClass(string level) => level switch
+    {
+        "Critical" => "alert-danger",
+        "Warning" => "alert-warning",
+        "Info" => "alert-info",
+        _ => "alert-secondary"
+    };
+
+    string GetAlertIcon(string level) => level switch
+    {
+        "Critical" => "fas fa-exclamation-triangle",
+        "Warning" => "fas fa-exclamation-circle",
+        "Info" => "fas fa-info-circle",
+        _ => "fas fa-bell"
+    };
+}

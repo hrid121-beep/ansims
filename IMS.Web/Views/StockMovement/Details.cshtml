@@ -1,0 +1,503 @@
+@model IMS.Application.DTOs.StockMovementDto
+@{
+    ViewData["Title"] = "Movement Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-info-circle"></i> Stock Movement Details
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Stock Movements</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Movement Type Banner -->
+                <div class="card">
+                    <div class="card-body text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h2 class="mb-2">
+                            @switch (Model.MovementType)
+                            {
+                                case "IN":
+                                    <i class="fas fa-arrow-down fa-2x"></i>
+                                    <span class="ml-2">Stock In Movement</span>
+                                    break;
+                                case "OUT":
+                                    <i class="fas fa-arrow-up fa-2x"></i>
+                                    <span class="ml-2">Stock Out Movement</span>
+                                    break;
+                                case "TRANSFER":
+                                    <i class="fas fa-exchange-alt fa-2x"></i>
+                                    <span class="ml-2">Stock Transfer</span>
+                                    break;
+                                case "ADJUSTMENT":
+                                    <i class="fas fa-balance-scale fa-2x"></i>
+                                    <span class="ml-2">Stock Adjustment</span>
+                                    break;
+                                case "PHYSICAL_COUNT":
+                                    <i class="fas fa-clipboard-check fa-2x"></i>
+                                    <span class="ml-2">Physical Count Adjustment</span>
+                                    break;
+                                case "RETURN":
+                                    <i class="fas fa-undo fa-2x"></i>
+                                    <span class="ml-2">Return Movement</span>
+                                    break;
+                                case "WRITE_OFF":
+                                    <i class="fas fa-trash-alt fa-2x"></i>
+                                    <span class="ml-2">Write-Off Movement</span>
+                                    break;
+                                default:
+                                    <i class="fas fa-exchange-alt fa-2x"></i>
+                                    <span class="ml-2">@Model.MovementType</span>
+                                    break;
+                            }
+                        </h2>
+                        <p class="mb-0">
+                            <i class="far fa-calendar-alt"></i> @Model.MovementDate.ToString("dd MMMM yyyy, hh:mm tt")
+                        </p>
+                    </div>
+                </div>
+
+                <!-- What Item Moved -->
+                <div class="card card-outline card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-box"></i> <strong>কোন জিনিস?</strong> (Which Item?)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="item-icon-box">
+                                    <i class="fas fa-cube fa-3x text-success"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <h4 class="text-success mb-2">@Model.ItemName</h4>
+                                <p class="mb-1">
+                                    <span class="badge badge-secondary">Item Code: @Model.ItemCode</span>
+                                </p>
+                                <a asp-action="ItemHistory" asp-route-itemId="@Model.ItemId" asp-route-storeId="@Model.StoreId"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-history"></i> এই আইটেমের সম্পূর্ণ ইতিহাস দেখুন
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Where - Store Information -->
+                <div class="card card-outline card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-warehouse"></i> <strong>কোথায়?</strong> (Where?)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(Model.SourceStoreName) && !string.IsNullOrEmpty(Model.DestinationStoreName))
+                        {
+                            <!-- Transfer Movement -->
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <div class="store-box source-store">
+                                        <div class="store-label">
+                                            <i class="fas fa-sign-out-alt"></i> From (যেখান থেকে)
+                                        </div>
+                                        <h5 class="mb-2">@Model.SourceStoreName</h5>
+                                        <a asp-action="StoreHistory" asp-route-storeId="@Model.SourceStoreId"
+                                           class="btn btn-xs btn-outline-info">
+                                            <i class="fas fa-history"></i> History
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <i class="fas fa-arrow-right fa-2x text-primary transfer-arrow"></i>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="store-box destination-store">
+                                        <div class="store-label">
+                                            <i class="fas fa-sign-in-alt"></i> To (যেখানে)
+                                        </div>
+                                        <h5 class="mb-2">@Model.DestinationStoreName</h5>
+                                        <a asp-action="StoreHistory" asp-route-storeId="@Model.DestinationStoreId"
+                                           class="btn btn-xs btn-outline-info">
+                                            <i class="fas fa-history"></i> History
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Regular Movement -->
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    <div class="store-icon-box">
+                                        <i class="fas fa-warehouse fa-3x text-info"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <h4 class="text-info mb-2">@Model.StoreName</h4>
+                                    <a asp-action="StoreHistory" asp-route-storeId="@Model.StoreId"
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-history"></i> এই স্টোরের সম্পূর্ণ ইতিহাস দেখুন
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- How Much - Quantity Changes -->
+                <div class="card card-outline card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calculator"></i> <strong>কতটুকু?</strong> (How Much?)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quantity-flow">
+                            <div class="row text-center align-items-center">
+                                <!-- Before -->
+                                <div class="col-md-4">
+                                    <div class="balance-box before-balance">
+                                        <div class="balance-label">
+                                            <i class="fas fa-hourglass-start"></i> আগের স্টক (Before)
+                                        </div>
+                                        <h2 class="balance-value">@Model.OldBalance.ToString("N2")</h2>
+                                        <small class="text-muted">পূর্বের ব্যালেন্স</small>
+                                    </div>
+                                </div>
+
+                                <!-- Change Arrow -->
+                                <div class="col-md-4">
+                                    <div class="change-indicator">
+                                        @if (Model.Quantity > 0)
+                                        {
+                                            <i class="fas fa-plus-circle fa-3x text-success"></i>
+                                            <h3 class="text-success mt-2 mb-0">+@Model.Quantity</h3>
+                                            <small class="text-success">যোগ হয়েছে (Added)</small>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-minus-circle fa-3x text-danger"></i>
+                                            <h3 class="text-danger mt-2 mb-0">@Model.Quantity</h3>
+                                            <small class="text-danger">বিয়োগ হয়েছে (Deducted)</small>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- After -->
+                                <div class="col-md-4">
+                                    <div class="balance-box after-balance">
+                                        <div class="balance-label">
+                                            <i class="fas fa-hourglass-end"></i> নতুন স্টক (After)
+                                        </div>
+                                        <h2 class="balance-value text-primary">@Model.NewBalance.ToString("N2")</h2>
+                                        <small class="text-muted">বর্তমান ব্যালেন্স</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reference Information -->
+                @if (!string.IsNullOrEmpty(Model.ReferenceNo))
+                {
+                    <div class="card card-outline card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-link"></i> <strong>রেফারেন্স</strong> (Reference Information)
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1 text-muted">Reference Type:</p>
+                                    <h5>@Model.ReferenceType</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1 text-muted">Reference Number:</p>
+                                    <h5><span class="badge badge-secondary badge-lg">@Model.ReferenceNo</span></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Remarks -->
+                @if (!string.IsNullOrEmpty(Model.Remarks))
+                {
+                    <div class="card card-outline card-dark">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-comment"></i> <strong>মন্তব্য</strong> (Remarks)
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">@Model.Remarks</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="card">
+                    <div class="card-body">
+                        <a asp-action="Index" class="btn btn-default">
+                            <i class="fas fa-arrow-left"></i> Back to Movement List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="col-md-4">
+                <!-- Who & When Card -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-user-clock"></i> <strong>কে এবং কখন?</strong> (Who & When?)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="audit-info">
+                            <div class="audit-item">
+                                <div class="audit-label">
+                                    <i class="fas fa-user"></i> Movement By:
+                                </div>
+                                <div class="audit-value">
+                                    <strong>@Model.MovedBy</strong>
+                                </div>
+                                <small class="text-muted">যিনি স্টক মুভমেন্ট করেছেন</small>
+                            </div>
+
+                            <hr>
+
+                            <div class="audit-item">
+                                <div class="audit-label">
+                                    <i class="far fa-clock"></i> Movement Date:
+                                </div>
+                                <div class="audit-value">
+                                    <strong>@Model.MovementDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                                </div>
+                                <small class="text-muted">যখন মুভমেন্ট হয়েছে</small>
+                            </div>
+
+                            <hr>
+
+                            <div class="audit-item">
+                                <div class="audit-label">
+                                    <i class="fas fa-database"></i> Record Created:
+                                </div>
+                                <div class="audit-value">
+                                    @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                                {
+                                    <small class="text-muted">By: @Model.CreatedBy</small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Navigation -->
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-rocket"></i> <strong>দ্রুত নেভিগেশন</strong> (Quick Actions)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-action="ItemHistory" asp-route-itemId="@Model.ItemId" asp-route-storeId="@Model.StoreId"
+                               class="btn btn-block btn-success mb-2">
+                                <i class="fas fa-box-open"></i>
+                                <div>এই আইটেমের সব মুভমেন্ট দেখুন</div>
+                                <small class="d-block">View All Movements of This Item</small>
+                            </a>
+                            <a asp-action="StoreHistory" asp-route-storeId="@Model.StoreId"
+                               class="btn btn-block btn-info mb-2">
+                                <i class="fas fa-warehouse"></i>
+                                <div>এই স্টোরের সব মুভমেন্ট দেখুন</div>
+                                <small class="d-block">View All Movements of This Store</small>
+                            </a>
+                            <a asp-action="Summary" asp-route-storeId="@Model.StoreId"
+                               class="btn btn-block btn-primary">
+                                <i class="fas fa-chart-pie"></i>
+                                <div>স্টোরের সামারি রিপোর্ট দেখুন</div>
+                                <small class="d-block">View Store Summary Report</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="card card-light">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-question-circle"></i> সাহায্য (Help)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="help-list">
+                            <li><strong>Stock In:</strong> নতুন স্টক যোগ হওয়া</li>
+                            <li><strong>Stock Out:</strong> স্টক বের হয়ে যাওয়া</li>
+                            <li><strong>Transfer:</strong> এক স্টোর থেকে অন্য স্টোরে যাওয়া</li>
+                            <li><strong>Adjustment:</strong> স্টক সংশোধন</li>
+                            <li><strong>Return:</strong> স্টক ফেরত</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .badge-lg {
+        font-size: 1.1em;
+        padding: 0.5em 0.8em;
+    }
+
+    .item-icon-box, .store-icon-box {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    .store-box {
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #17a2b8;
+        background: #f8f9fa;
+        height: 100%;
+    }
+
+    .store-label {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .source-store {
+        border-color: #ffc107;
+    }
+
+    .destination-store {
+        border-color: #28a745;
+    }
+
+    .transfer-arrow {
+        animation: moveRight 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes moveRight {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        50% {
+            transform: translateX(10px);
+        }
+    }
+
+    .quantity-flow {
+        padding: 20px;
+    }
+
+    .balance-box {
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #dee2e6;
+        background: #ffffff;
+        height: 100%;
+    }
+
+    .balance-label {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .balance-value {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #495057;
+    }
+
+    .before-balance {
+        border-color: #6c757d;
+        background: #f8f9fa;
+    }
+
+    .after-balance {
+        border-color: #007bff;
+        background: #e7f3ff;
+    }
+
+    .change-indicator {
+        padding: 20px;
+    }
+
+    .audit-info {
+        padding: 10px;
+    }
+
+    .audit-item {
+        margin-bottom: 15px;
+    }
+
+    .audit-label {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .audit-value {
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+
+    .help-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .help-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 0.9em;
+    }
+
+    .help-list li:last-child {
+        border-bottom: none;
+    }
+
+    .btn-block small {
+        font-size: 0.75em;
+        opacity: 0.8;
+    }
+</style>
