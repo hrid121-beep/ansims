@@ -173,7 +173,34 @@ namespace IMS.Web.Controllers
         public async Task<IActionResult> Create()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            var userStores = await _storeService.GetUserStoresAsync(currentUser.Id);
+
+            // Check if user is Admin, Director, or StoreManager - they can access all stores
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Director") || User.IsInRole("StoreManager");
+
+            IEnumerable<StoreDto> userStores;
+            if (isAdmin)
+            {
+                // Admins can issue from any active store
+                userStores = await _storeService.GetAllStoresAsync();
+            }
+            else
+            {
+                // Regular users can only issue from their assigned stores
+                userStores = await _storeService.GetUserStoresAsync(currentUser.Id);
+            }
+
+            // Check if stores are available
+            if (!userStores.Any())
+            {
+                if (isAdmin)
+                {
+                    TempData["Warning"] = "No stores found in the system. Please create stores first.";
+                }
+                else
+                {
+                    TempData["Warning"] = "You are not assigned to any stores. Please contact an administrator to assign you to a store.";
+                }
+            }
 
             ViewBag.IssueNo = await _issueService.GenerateIssueNoAsync();
             ViewBag.Stores = userStores;
@@ -1120,7 +1147,21 @@ namespace IMS.Web.Controllers
         private async Task LoadCreateViewBag()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            var userStores = await _storeService.GetUserStoresAsync(currentUser.Id);
+
+            // Check if user is Admin, Director, or StoreManager - they can access all stores
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Director") || User.IsInRole("StoreManager");
+
+            IEnumerable<StoreDto> userStores;
+            if (isAdmin)
+            {
+                // Admins can issue from any active store
+                userStores = await _storeService.GetAllStoresAsync();
+            }
+            else
+            {
+                // Regular users can only issue from their assigned stores
+                userStores = await _storeService.GetUserStoresAsync(currentUser.Id);
+            }
 
             ViewBag.Stores = userStores;
             ViewBag.Battalions = await _battalionService.GetActiveBattalionsAsync();
@@ -1142,8 +1183,20 @@ namespace IMS.Web.Controllers
                 Unit = i.Unit ?? "Piece"
             }).ToList();
 
-            var stores = await _storeService.GetUserStoresAsync(currentUser.Id);
-            ViewBag.Stores = stores.Select(s => new
+            // Check if user is Admin, Director, or StoreManager - they can access all stores
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Director") || User.IsInRole("StoreManager");
+
+            IEnumerable<StoreDto> userStores;
+            if (isAdmin)
+            {
+                userStores = await _storeService.GetAllStoresAsync();
+            }
+            else
+            {
+                userStores = await _storeService.GetUserStoresAsync(currentUser.Id);
+            }
+
+            ViewBag.Stores = userStores.Select(s => new
             {
                 Id = s.Id,
                 Name = s.Name
