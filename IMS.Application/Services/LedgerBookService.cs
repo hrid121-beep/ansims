@@ -1,7 +1,6 @@
 using IMS.Application.DTOs;
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
-using IMS.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
