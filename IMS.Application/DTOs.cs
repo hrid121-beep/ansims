@@ -5114,5 +5114,18 @@ namespace IMS.Application.DTOs
         public decimal PercentageOfTotalItems { get; set; }
     }
 
+    // Store Recent Transaction DTO
+    public class StoreRecentTransactionDto
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public StockMovementType Type { get; set; }
+        public string ItemCode { get; set; }
+        public string ItemName { get; set; }
+        public decimal Quantity { get; set; }
+        public string Direction { get; set; } // "In" or "Out"
+        public string ReferenceNumber { get; set; }
+        public string User { get; set; }
+    }
 
 }

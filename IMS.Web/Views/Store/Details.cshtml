@@ -4,7 +4,7 @@
     ViewData["Title"] = "Store Details";
     var storeStock = ViewBag.StoreStock as IEnumerable<IMS.Application.DTOs.StoreStockDto> ?? Enumerable.Empty<IMS.Application.DTOs.StoreStockDto>();
     var assignedUsers = ViewBag.AssignedUsers as IEnumerable<IMS.Application.DTOs.UserDto> ?? Enumerable.Empty<IMS.Application.DTOs.UserDto>();
-    var recentTransactions = ViewBag.RecentTransactions as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var recentTransactions = ViewBag.RecentTransactions as IEnumerable<IMS.Application.DTOs.StoreRecentTransactionDto> ?? Enumerable.Empty<IMS.Application.DTOs.StoreRecentTransactionDto>();
     var inventorySummary = ViewBag.InventorySummary;
     var totalValue = ViewBag.TotalValue ?? 0m;
 }
@@ -528,12 +528,12 @@
                                 <tbody>
                                     @if (recentTransactions.Any())
                                     {
-                                        @foreach (dynamic trans in recentTransactions)
+                                        @foreach (var trans in recentTransactions)
                                         {
                                             <tr>
                                                 <td>
-                                                    <small>@trans.Date?.ToString("dd/MM/yyyy")</small><br>
-                                                    <small class="text-muted">@trans.Date?.ToString("HH:mm")</small>
+                                                    <small>@trans.Date.ToString("dd/MM/yyyy")</small><br>
+                                                    <small class="text-muted">@trans.Date.ToString("HH:mm")</small>
                                                 </td>
                                                 <td><span class="badge badge-info">@trans.Type</span></td>
                                                 <td><code>@trans.ReferenceNumber</code></td>

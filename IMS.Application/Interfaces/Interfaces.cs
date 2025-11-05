@@ -296,7 +296,7 @@ namespace IMS.Application.Interfaces
         // Additional methods
         Task<IEnumerable<UserDto>> GetStoreAssignedUsersAsync(int? storeId);
         Task<object> GetStoreInventorySummaryAsync(int? storeId);
-        Task<IEnumerable<dynamic>> GetStoreRecentTransactionsAsync(int? storeId, int count = 20);
+        Task<IEnumerable<StoreRecentTransactionDto>> GetStoreRecentTransactionsAsync(int? storeId, int count = 20);
         Task<IEnumerable<StoreDto>> GetStoresByUnionAsync(int unionId);
         Task<byte[]> ExportStoresToCsvAsync(IEnumerable<StoreDto> stores);
         Task<ImportResultDto> ImportStoresFromCsvAsync(Stream fileStream, bool updateExisting, string importedBy);

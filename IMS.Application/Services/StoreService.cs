@@ -1531,11 +1531,11 @@ namespace IMS.Application.Services
                 throw;
             }
         }
-        public async Task<IEnumerable<dynamic>> GetStoreRecentTransactionsAsync(int? storeId, int count = 20)
+        public async Task<IEnumerable<StoreRecentTransactionDto>> GetStoreRecentTransactionsAsync(int? storeId, int count = 20)
         {
             try
             {
-                var transactions = new List<dynamic>();
+                var transactions = new List<StoreRecentTransactionDto>();
 
                 if (!storeId.HasValue)
                     return transactions;
@@ -1549,7 +1549,7 @@ namespace IMS.Application.Services
                 {
                     var item = await _unitOfWork.Items.GetByIdAsync(movement.ItemId);
 
-                    transactions.Add(new
+                    transactions.Add(new StoreRecentTransactionDto
                     {
                         Id = movement.Id,
                         Date = movement.CreatedAt,
