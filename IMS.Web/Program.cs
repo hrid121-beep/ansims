@@ -118,6 +118,7 @@ builder.Services.AddScoped<IStockEntryService, StockEntryService>();
 builder.Services.AddScoped<IStoreTypeService, StoreTypeService>();
 builder.Services.AddScoped<IUserStoreService, UserStoreService>();
 builder.Services.AddScoped<IStoreConfigurationService, StoreConfigurationService>();
+builder.Services.AddScoped<ILedgerBookService, LedgerBookService>();
 builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 builder.Services.AddScoped<IStockAdjustmentService, StockAdjustmentService>();
 

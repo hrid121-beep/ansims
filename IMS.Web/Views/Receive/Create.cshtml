@@ -454,6 +454,72 @@
             if (!$('#ReceiveDate').val()) {
                 $('#ReceiveDate').val(new Date().toISOString().split('T')[0]);
             }
+
+            // ==================== Ledger Book Management ====================
+            // Load ledger books when store is selected
+            $('#StoreId').on('change', function() {
+                const storeId = $(this).val();
+                if (!storeId) {
+                    // Clear all ledger book dropdowns if no store selected
+                    $('.ledger-book-select').empty().append('<option value="">Select Ledger</option>');
+                    $('.page-no-field').val('');
+                    return;
+                }
+
+                // Load ledger books for this store with bookType = 'Receive'
+                $.ajax({
+                    url: '/LedgerBook/GetActiveLedgerBooks',
+                    type: 'GET',
+                    data: {
+                        storeId: storeId,
+                        bookType: 'Receive'
+                    },
+                    success: function(ledgerBooks) {
+                        // Update all existing ledger book dropdowns
+                        $('.ledger-book-select').each(function() {
+                            const select = $(this);
+                            const currentValue = select.val();
+
+                            select.empty();
+                            select.append('<option value="">Select Ledger</option>');
+
+                            ledgerBooks.forEach(function(book) {
+                                let status = '';
+                                if (book.pagesRemaining <= 10) {
+                                    status = '⚠️ Almost Full';
+                                } else if (book.pagesRemaining <= 50) {
+                                    status = '⏰ Low';
+                                }
+
+                                select.append(`<option value="${book.id}"
+                                                      data-ledger-no="${book.ledgerNo}"
+                                                      data-next-page="${book.currentPageNo}">
+                                                   ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
+                                               </option>`);
+                            });
+
+                            // Restore previous selection if it exists
+                            if (currentValue) {
+                                select.val(currentValue);
+                            }
+                        });
+
+                        if (ledgerBooks.length === 0) {
+                            toastr.warning('No active ledger books found for this store. Please create one first.', 'Warning', {
+                                timeOut: 5000
+                            });
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Failed to load ledger books', 'Error');
+                    }
+                });
+            });
+
+            // Auto-load ledger books if store is already selected on page load
+            if ($('#StoreId').val()) {
+                $('#StoreId').trigger('change');
+            }
         });
 
         function initSignaturePad() {
@@ -547,12 +613,18 @@
                         </select>
                     </td>
                     <td>
-                        <input type="text" name="Items[${itemIndex}].LedgerNo"
-                               class="form-control form-control-sm" placeholder="Ledger" />
+                        <select name="Items[${itemIndex}].LedgerBookId"
+                                class="form-control form-control-sm ledger-book-select"
+                                data-item-index="${itemIndex}"
+                                onchange="updatePageNumber(this)">
+                            <option value="">Select Ledger</option>
+                        </select>
+                        <input type="hidden" name="Items[${itemIndex}].LedgerNo" class="ledger-no-hidden" />
                     </td>
                     <td>
                         <input type="text" name="Items[${itemIndex}].PageNo"
-                               class="form-control form-control-sm" placeholder="Page" />
+                               class="form-control form-control-sm page-no-field"
+                               placeholder="Page" readonly />
                     </td>
                     <td>
                         <input type="number" name="Items[${itemIndex}].UsableQuantity"
@@ -642,6 +714,26 @@
             $('#goodCount').text(goodCount);
             $('#damagedCount').text(damagedCount);
         }
+
+        // ==================== Update Page Number from Ledger Book ====================
+        window.updatePageNumber = function(selectElement) {
+            const $select = $(selectElement);
+            const $row = $select.closest('tr');
+            const $selectedOption = $select.find('option:selected');
+            const $pageField = $row.find('.page-no-field');
+            const $ledgerNoField = $row.find('.ledger-no-hidden');
+
+            if ($selectedOption.val()) {
+                const nextPage = $selectedOption.data('next-page');
+                const ledgerNo = $selectedOption.data('ledger-no');
+
+                $pageField.val(nextPage);
+                $ledgerNoField.val(ledgerNo);
+            } else {
+                $pageField.val('');
+                $ledgerNoField.val('');
+            }
+        };
 
         // Handle receive type change
         $('#receiveType').change(function() {

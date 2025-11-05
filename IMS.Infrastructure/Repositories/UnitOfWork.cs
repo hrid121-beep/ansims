@@ -21,6 +21,7 @@ namespace IMS.Infrastructure.Repositories
         private IRepository<Item> _items;
         private IRepository<Store> _stores;
         private IRepository<StoreItem> _storeItems;
+        private IRepository<LedgerBook> _ledgerBooks;
         private IRepository<Vendor> _vendors;
         private IRepository<Purchase> _purchases;
         private IRepository<PurchaseItem> _purchaseItems;
@@ -130,6 +131,7 @@ namespace IMS.Infrastructure.Repositories
         public IRepository<Item> Items => _items ??= new Repository<Item>(_context);
         public IRepository<Store> Stores => _stores ??= new Repository<Store>(_context);
         public IRepository<StoreItem> StoreItems => _storeItems ??= new Repository<StoreItem>(_context);
+        public IRepository<LedgerBook> LedgerBooks => _ledgerBooks ??= new Repository<LedgerBook>(_context);
         public IRepository<Vendor> Vendors => _vendors ??= new Repository<Vendor>(_context);
         public IRepository<Purchase> Purchases => _purchases ??= new Repository<Purchase>(_context);
         public IRepository<PurchaseItem> PurchaseItems => _purchaseItems ??= new Repository<PurchaseItem>(_context);

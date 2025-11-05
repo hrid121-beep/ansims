@@ -558,8 +558,8 @@
                         <li class="nav-header">MASTER DATA</li>
 
                         <!-- Store Management -->
-                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" ? "menu-open" : "")">
-                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" ? "active" : "")">
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" || ViewContext.RouteData.Values["controller"]?.ToString() == "LedgerBook" ? "menu-open" : "")">
+                            <a href="#" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" || ViewContext.RouteData.Values["controller"]?.ToString() == "StoreType" || ViewContext.RouteData.Values["controller"]?.ToString() == "LedgerBook" ? "active" : "")">
                                 <i class="nav-icon fas fa-warehouse"></i>
                                 <p>
                                     Store Management
@@ -598,6 +598,14 @@
                                                 <span class="badge badge-danger right">@ViewBag.CriticalStockCount</span>
                                             }
                                         </p>
+                                    </a>
+                                </li>
+
+                                <!-- Ledger Books -->
+                                <li class="nav-item">
+                                    <a asp-controller="LedgerBook" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "LedgerBook" ? "active" : "")">
+                                        <i class="fas fa-book nav-icon"></i>
+                                        <p>Ledger Books</p>
                                     </a>
                                 </li>
 

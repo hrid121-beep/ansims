@@ -1,0 +1,156 @@
+@model IMS.Application.DTOs.LedgerBookDto
+@{
+    ViewData["Title"] = "Edit Ledger Book";
+    var stores = ViewBag.Stores as IEnumerable<IMS.Application.DTOs.StoreDto> ?? new List<IMS.Application.DTOs.StoreDto>();
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>✏️ Edit Ledger Book</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Ledger Books</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-edit"></i> Edit Ledger Book - @Model.LedgerNo</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="LedgerNo">Ledger Number <span class="text-danger">*</span></label>
+                                        <input asp-for="LedgerNo" class="form-control" required />
+                                        <span asp-validation-for="LedgerNo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BookType">Book Type <span class="text-danger">*</span></label>
+                                        <select asp-for="BookType" class="form-control" required>
+                                            <option value="">Select Type</option>
+                                            <option value="Issue">Issue</option>
+                                            <option value="Receive">Receive</option>
+                                            <option value="Transfer">Transfer</option>
+                                            <option value="General">General</option>
+                                        </select>
+                                        <span asp-validation-for="BookType" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="BookName">Book Name <span class="text-danger">*</span></label>
+                                <input asp-for="BookName" class="form-control" required />
+                                <span asp-validation-for="BookName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="StoreId">Store</label>
+                                <select asp-for="StoreId" class="form-control select2">
+                                    <option value="">-- Select Store (Optional) --</option>
+                                    @foreach (var store in stores)
+                                    {
+                                        <option value="@store.Id">@store.Name - @store.Code</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="StoreId" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="TotalPages">Total Pages <span class="text-danger">*</span></label>
+                                        <input asp-for="TotalPages" type="number" class="form-control" min="1" required />
+                                        <span asp-validation-for="TotalPages" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Location">Physical Location</label>
+                                        <input asp-for="Location" class="form-control" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Remarks">Remarks</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger"></span>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Note:</strong> Current page number (@Model.CurrentPageNo) cannot be changed manually.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Current Statistics</h3>
+                        </div>
+                        <div class="card-body">
+                            <dl>
+                                <dt>Current Page:</dt>
+                                <dd><span class="badge badge-dark">@Model.CurrentPageNo</span></dd>
+
+                                <dt>Pages Used:</dt>
+                                <dd>@Model.PagesUsed</dd>
+
+                                <dt>Pages Remaining:</dt>
+                                <dd><span class="badge badge-@(Model.PagesRemaining <= 10 ? "warning" : "success")">@Model.PagesRemaining</span></dd>
+
+                                <dt>Status:</dt>
+                                <dd><span class="badge badge-@(Model.IsClosed ? "danger" : "success")">@Model.Status</span></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+    </script>
+}

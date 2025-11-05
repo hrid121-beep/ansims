@@ -1,0 +1,181 @@
+@model IMS.Application.DTOs.LedgerBookDto
+@{
+    ViewData["Title"] = "Ledger Book Details";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>📖 @Model.LedgerNo</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Ledger Books</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> Ledger Book Information</h3>
+                        <div class="card-tools">
+                            <span class="badge badge-@(Model.IsClosed ? "danger" : "success")">
+                                @Model.Status
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">Ledger Number:</dt>
+                            <dd class="col-sm-8"><code class="h5">@Model.LedgerNo</code></dd>
+
+                            <dt class="col-sm-4">Book Name:</dt>
+                            <dd class="col-sm-8">@Model.BookName</dd>
+
+                            <dt class="col-sm-4">Book Type:</dt>
+                            <dd class="col-sm-8"><span class="badge badge-info">@Model.BookType</span></dd>
+
+                            @if (!string.IsNullOrEmpty(Model.StoreName))
+                            {
+                                <dt class="col-sm-4">Store:</dt>
+                                <dd class="col-sm-8">@Model.StoreName</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                <dt class="col-sm-4">Description:</dt>
+                                <dd class="col-sm-8">@Model.Description</dd>
+                            }
+
+                            <dt class="col-sm-4">Start Date:</dt>
+                            <dd class="col-sm-8">@Model.StartDate.ToString("dd MMMM yyyy")</dd>
+
+                            @if (Model.EndDate.HasValue)
+                            {
+                                <dt class="col-sm-4">End Date:</dt>
+                                <dd class="col-sm-8 text-danger">@Model.EndDate.Value.ToString("dd MMMM yyyy")</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Location))
+                            {
+                                <dt class="col-sm-4">Physical Location:</dt>
+                                <dd class="col-sm-8"><i class="fas fa-map-marker-alt"></i> @Model.Location</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Remarks))
+                            {
+                                <dt class="col-sm-4">Remarks:</dt>
+                                <dd class="col-sm-8">@Model.Remarks</dd>
+                            }
+
+                            <dt class="col-sm-4">Created:</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd MMM yyyy") by @Model.CreatedBy</dd>
+
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <dt class="col-sm-4">Last Updated:</dt>
+                                <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd MMM yyyy") by @Model.UpdatedBy</dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        @if (!Model.IsClosed)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form asp-action="Close" asp-route-id="@Model.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to close this ledger book? This action cannot be undone.');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-lock"></i> Close Book
+                                </button>
+                            </form>
+                        }
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Page Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-primary"><i class="fas fa-file"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Pages</span>
+                                <span class="info-box-number">@Model.TotalPages</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-success"><i class="fas fa-bookmark"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Current Page</span>
+                                <span class="info-box-number">@Model.CurrentPageNo</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-info"><i class="fas fa-check"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pages Used</span>
+                                <span class="info-box-number">@Model.PagesUsed</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-@(Model.PagesRemaining <= 10 ? "warning" : "success")">
+                                <i class="fas fa-hourglass-half"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pages Remaining</span>
+                                <span class="info-box-number">@Model.PagesRemaining</span>
+                            </div>
+                        </div>
+
+                        <div class="progress mb-2">
+                            @{
+                                var percentage = Model.TotalPages > 0 ? (Model.PagesUsed * 100.0 / Model.TotalPages) : 0;
+                                var progressClass = percentage >= 90 ? "danger" : (percentage >= 70 ? "warning" : "success");
+                            }
+                            <div class="progress-bar bg-@progressClass" style="width: @percentage%">
+                                @percentage.ToString("F1")%
+                            </div>
+                        </div>
+
+                        @if (Model.PagesRemaining <= 10 && !Model.IsClosed)
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Warning:</strong> Only @Model.PagesRemaining pages remaining!
+                            </div>
+                        }
+
+                        @if (Model.IsClosed)
+                        {
+                            <div class="alert alert-danger">
+                                <i class="fas fa-lock"></i>
+                                <strong>Closed:</strong> This ledger book is closed and cannot be used.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
