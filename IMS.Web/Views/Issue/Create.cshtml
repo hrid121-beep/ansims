@@ -758,8 +758,21 @@
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Ensure FromStoreId is properly set before submitting
+                        var fromStoreId = $('#fromStore').val();
+                        $('#fromStoreIdHidden').val(fromStoreId);
+
+                        // Also set the asp-for bound field
+                        $('select[name="FromStoreId"]').val(fromStoreId);
+
                         var formData = new FormData($('#issueForm')[0]);
                         formData.append('action', 'submit');
+
+                        // Double check FromStoreId is in FormData
+                        if (!formData.has('FromStoreId') || !formData.get('FromStoreId')) {
+                            formData.set('FromStoreId', fromStoreId);
+                            console.log('FromStoreId explicitly set:', fromStoreId);
+                        }
 
                         $.ajax({
                             url: $('#issueForm').attr('action'),
