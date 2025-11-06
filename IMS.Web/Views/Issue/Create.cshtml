@@ -910,12 +910,39 @@
             $('#fromStore').data('previous', $('#fromStore').val());
 
             // ==================== Ledger Book Loading ====================
+            // Store ledger books globally so new items can access them
+            window.currentLedgerBooks = [];
+
+            // Function to populate a ledger dropdown
+            window.populateLedgerDropdown = function(selectElement) {
+                const $select = $(selectElement);
+                $select.empty();
+                $select.append('<option value="">Select Ledger</option>');
+
+                if (window.currentLedgerBooks && window.currentLedgerBooks.length > 0) {
+                    window.currentLedgerBooks.forEach(function(book) {
+                        const pagesLeft = book.pagesRemaining || 0;
+                        const status = pagesLeft <= 10 ? '⚠️' : '✅';
+                        $select.append(`<option value="${book.id}"
+                                              data-ledger-no="${book.ledgerNo}"
+                                              data-next-page="${book.currentPageNo}">
+                                           ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
+                                       </option>`);
+                    });
+                } else {
+                    $select.append('<option value="">No ledger books available</option>');
+                }
+            };
+
             $('#fromStore').on('change', function() {
                 const storeId = $(this).val();
                 console.log('Store changed to:', storeId);
 
                 if (!storeId) {
-                    $('.ledger-book-select').empty().append('<option value="">Select Ledger</option>');
+                    window.currentLedgerBooks = [];
+                    $('.ledger-book-select').each(function() {
+                        populateLedgerDropdown(this);
+                    });
                     return;
                 }
 
@@ -927,32 +954,25 @@
                         console.log('Ledger books received:', ledgerBooks);
                         console.log('Number of ledger books:', ledgerBooks.length);
 
-                        $('.ledger-book-select').each(function() {
-                            const select = $(this);
-                            select.empty();
-                            select.append('<option value="">Select Ledger</option>');
+                        // Store ledger books globally
+                        window.currentLedgerBooks = ledgerBooks || [];
 
-                            if (ledgerBooks && ledgerBooks.length > 0) {
-                                ledgerBooks.forEach(function(book) {
-                                    console.log('Adding ledger book:', book);
-                                    const pagesLeft = book.pagesRemaining || 0;
-                                    const status = pagesLeft <= 10 ? '⚠️' : '✅';
-                                    select.append(`<option value="${book.id}"
-                                                          data-ledger-no="${book.ledgerNo}"
-                                                          data-next-page="${book.currentPageNo}">
-                                                       ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
-                                                   </option>`);
-                                });
-                            } else {
-                                console.warn('No ledger books found for store:', storeId);
-                                select.append('<option value="">No ledger books available</option>');
-                            }
+                        // Populate all existing ledger dropdowns
+                        $('.ledger-book-select').each(function() {
+                            populateLedgerDropdown(this);
                         });
+
+                        if (ledgerBooks && ledgerBooks.length > 0) {
+                            console.log('✅ Ledger books loaded and ready for new items');
+                        } else {
+                            console.warn('⚠️ No ledger books found for store:', storeId);
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX Error loading ledger books:', error);
                         console.error('Status:', status);
                         console.error('Response:', xhr.responseText);
+                        window.currentLedgerBooks = [];
                         alert('Error loading ledger books. Check console for details.');
                     }
                 });
@@ -1190,6 +1210,13 @@
 
                 $('#itemsContainer').append(row);
                 selectedItems.push(item.itemId);
+
+                // Populate the ledger dropdown for the newly added item
+                const newLedgerDropdown = $(`#item_${item.itemId}`).find('.ledger-book-select');
+                if (newLedgerDropdown.length > 0) {
+                    populateLedgerDropdown(newLedgerDropdown[0]);
+                }
+
                 itemIndex++;
 
                 if (stockValue <= minStock) {
