@@ -486,13 +486,17 @@ namespace IMS.Web.Controllers
                 ViewBag.Categories = new SelectList(categories, "Id", "Name", currentItem?.CategoryId);
                 ViewBag.Brands = new SelectList(brands, "Id", "Name", currentItem?.BrandId);
 
-                ViewBag.ItemTypes = new SelectList(Enum.GetValues(typeof(ItemType))
+                // Create SelectList for ItemType enum - use enum values directly for proper asp-for binding
+                var itemTypes = Enum.GetValues(typeof(ItemType))
                     .Cast<ItemType>()
-                    .Select(e => new
+                    .Select(e => new SelectListItem
                     {
-                        Id = (int)e,
-                        Name = e.ToString()
-                    }), "Id", "Name", currentItem != null ? (int?)currentItem.Type : null);
+                        Value = ((int)e).ToString(), // Convert enum to int, then to string for HTML value
+                        Text = e.ToString(),
+                        Selected = currentItem != null && currentItem.Type == e
+                    })
+                    .ToList();
+                ViewBag.ItemTypes = itemTypes;
 
                 // Load subcategories if CategoryId exists
                 if (currentItem?.CategoryId > 0)
