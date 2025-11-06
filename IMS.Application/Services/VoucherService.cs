@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PdfDocument = iTextSharp.text.Document;
+using QuestDocument = QuestPDF.Fluent.Document;
+using QuestPageSizes = QuestPDF.Helpers.PageSizes;
 
 namespace IMS.Application.Services
 {
@@ -25,7 +27,8 @@ namespace IMS.Application.Services
 
         // Bengali Font configuration
         private BaseFont _bengaliFont;
-        private const string BANGLA_FONT_PATH = "wwwroot/fonts/kalpurush.ttf"; // You'll need to add this font
+        private string _bengaliFontPath;
+        private const string BANGLA_FONT_PATH = "wwwroot/fonts/kalpurush.ttf";
 
         public VoucherService(
             IUnitOfWork unitOfWork,
@@ -44,7 +47,7 @@ namespace IMS.Application.Services
                 Directory.CreateDirectory(_voucherDirectory);
             }
 
-            // Register Bengali font with QuestPDF
+            // Load Bengali font
             try
             {
                 string fontPath = Path.Combine(Directory.GetCurrentDirectory(), BANGLA_FONT_PATH);
@@ -52,12 +55,12 @@ namespace IMS.Application.Services
 
                 if (File.Exists(fontPath))
                 {
-                    // Read font into memory to ensure it stays loaded
-                    var fontBytes = File.ReadAllBytes(fontPath);
-                    var fontStream = new MemoryStream(fontBytes);
+                    // Store font path for QuestPDF
+                    _bengaliFontPath = fontPath;
 
-                    // Register font for QuestPDF with explicit custom name
-                    FontManager.RegisterFontWithCustomName("Kalpurush", fontStream);
+                    // Use QuestPDF's font embedding by loading the font file
+                    var fontBytes = File.ReadAllBytes(fontPath);
+                    QuestPDF.Drawing.FontManager.RegisterFontWithCustomName("Kalpurush", new MemoryStream(fontBytes));
                     _logger.LogInformation("✓ Bengali font 'Kalpurush' registered successfully with {Size} bytes", fontBytes.Length);
 
                     // Also load for iTextSharp fallback
@@ -408,11 +411,11 @@ namespace IMS.Application.Services
         private byte[] CreateIssueVoucherPdf(Issue issue)
         {
             // Use QuestPDF for perfect Bengali rendering
-            var document = Document.Create(container =>
+            var document = QuestDocument.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(PageSizes.A4);
+                    page.Size(QuestPageSizes.A4);
                     page.Margin(20);
                     page.PageColor(Colors.White);
                     // Set Kalpurush as default font for the entire document
