@@ -425,9 +425,9 @@ namespace IMS.Application.Services
                     {
                         // Title
                         column.Item().AlignCenter().Text("প্রাপ্তি বিলি ও ব্যয়ের রশিদ")
-                            .FontSize(18).Bold();
+                            .FontSize(14).Bold();
 
-                        column.Item().PaddingVertical(10);
+                        column.Item().PaddingVertical(5);
 
                         // Header Table (Two columns)
                         column.Item().Table(table =>
@@ -439,33 +439,31 @@ namespace IMS.Application.Services
                             });
 
                             // Left Column - Provider
-                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(leftCol =>
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(leftCol =>
                             {
-                                leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
-                                leftCol.Item().Text($"প্রদান- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontFamily("Kalpurush");
-                                leftCol.Item().Text($"ইউনিট: {issue.FromStore?.Name ?? "………………"}").FontFamily("Kalpurush");
-                                leftCol.Item().Text($"স্টেশন: {issue.FromStore?.Location ?? "………………"}").FontFamily("Kalpurush");
-                                leftCol.Item().PaddingTop(10);
-                                leftCol.Item().Text($"তারিখ: {issue.IssueDate:dd/MM/yyyy}").FontFamily("Kalpurush");
-                                leftCol.Item().Text($"অনুমোদনকারী: {issue.ApprovedByName ?? "………………"}").FontFamily("Kalpurush");
-                                leftCol.Item().Text("দ্রব্যাদির হিসাব নিম্নোক্ত:").FontFamily("Kalpurush");
+                                leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text($"প্রদান- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text($"ইউনিট: {issue.FromStore?.Name ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text($"স্টেশন: {issue.FromStore?.Location ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().PaddingTop(5);
+                                leftCol.Item().Text($"তারিখ: {issue.IssueDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text($"অনুমোদনকারী: {issue.ApprovedByName ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                             });
 
                             // Right Column - Receiver
-                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(rightCol =>
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(rightCol =>
                             {
-                                rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
-                                rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontFamily("Kalpurush");
-                                rightCol.Item().Text($"ইউনিট: {issue.IssuedTo ?? "………………"}").FontFamily("Kalpurush");
-                                rightCol.Item().Text($"স্টেশন: {issue.DeliveryLocation ?? "………………"}").FontFamily("Kalpurush");
-                                rightCol.Item().PaddingTop(10);
-                                rightCol.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontFamily("Kalpurush");
-                                rightCol.Item().Text($"গ্রহণকারী: {issue.ReceivedBy ?? "………………"}").FontFamily("Kalpurush");
-                                rightCol.Item().Text($"পদবী: {issue.ReceiverDesignation ?? "………………"}").FontFamily("Kalpurush");
+                                rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"ইউনিট: {issue.IssuedTo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"স্টেশন: {issue.DeliveryLocation ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().PaddingTop(5);
+                                rightCol.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"গ্রহণকারী: {issue.ReceivedBy ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                             });
                         });
 
-                        column.Item().PaddingVertical(10);
+                        column.Item().PaddingVertical(5);
 
                         // Items Table
                         column.Item().Table(itemsTable =>
@@ -520,7 +518,7 @@ namespace IMS.Application.Services
                             }
                         });
 
-                        column.Item().PaddingVertical(20);
+                        column.Item().PaddingVertical(10);
 
                         // Signature Section
                         column.Item().Table(sigTable =>
@@ -531,9 +529,9 @@ namespace IMS.Application.Services
                                 columns.RelativeColumn();
                             });
 
-                            sigTable.Cell().Padding(10).Column(leftSig =>
+                            sigTable.Cell().Padding(5).Column(leftSig =>
                             {
-                                leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
+                                leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontSize(8).FontFamily("Kalpurush");
 
                                 // Embed digital signature image if available
                                 if (issue.IssuerSignature != null && !string.IsNullOrEmpty(issue.IssuerSignature.SignatureData))
@@ -548,17 +546,17 @@ namespace IMS.Application.Services
                                         }
 
                                         var imageBytes = Convert.FromBase64String(base64Data);
-                                        leftSig.Item().Height(60).Image(imageBytes);
+                                        leftSig.Item().Height(40).Image(imageBytes);
                                     }
                                     catch (Exception ex)
                                     {
                                         _logger.LogWarning(ex, "Failed to embed issuer signature image");
-                                        leftSig.Item().PaddingTop(60); // Space for manual signature
+                                        leftSig.Item().PaddingTop(40); // Space for manual signature
                                     }
                                 }
                                 else
                                 {
-                                    leftSig.Item().PaddingTop(60); // Space for manual signature
+                                    leftSig.Item().PaddingTop(40); // Space for manual signature
                                 }
 
                                 // Use digital signature data if available, otherwise fallback to plain fields
@@ -567,22 +565,22 @@ namespace IMS.Application.Services
                                 var issuerDesignation = issue.IssuerSignature?.SignerDesignation ?? issue.SignerDesignation ?? "…………………";
                                 var issuerDate = issue.IssuerSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.SignedDate?.ToString("dd/MM/yyyy") ?? "…………………";
 
-                                leftSig.Item().Text($"নাম: {issuerName}").FontFamily("Kalpurush");
-                                leftSig.Item().Text($"ব্যাজ/আইডি: {issuerBadge}").FontFamily("Kalpurush");
-                                leftSig.Item().Text($"পদবী: {issuerDesignation}").FontFamily("Kalpurush");
-                                leftSig.Item().Text($"তারিখ: {issuerDate}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"নাম: {issuerName}").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text($"ব্যাজ/আইডি: {issuerBadge}").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text($"পদবী: {issuerDesignation}").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text($"তারিখ: {issuerDate}").FontSize(8).FontFamily("Kalpurush");
 
                                 // Add "Digital Signature Verified" badge if signature exists
                                 if (issue.IssuerSignature != null)
                                 {
-                                    leftSig.Item().PaddingTop(5);
-                                    leftSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(8).FontColor("#28a745").FontFamily("Kalpurush");
+                                    leftSig.Item().PaddingTop(3);
+                                    leftSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(7).FontColor("#28a745").FontFamily("Kalpurush");
                                 }
                             });
 
-                            sigTable.Cell().Padding(10).Column(rightSig =>
+                            sigTable.Cell().Padding(5).Column(rightSig =>
                             {
-                                rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
+                                rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontSize(8).FontFamily("Kalpurush");
 
                                 // Embed digital signature image if available
                                 if (issue.ReceiverSignature != null && !string.IsNullOrEmpty(issue.ReceiverSignature.SignatureData))
@@ -597,17 +595,17 @@ namespace IMS.Application.Services
                                         }
 
                                         var imageBytes = Convert.FromBase64String(base64Data);
-                                        rightSig.Item().Height(60).Image(imageBytes);
+                                        rightSig.Item().Height(40).Image(imageBytes);
                                     }
                                     catch (Exception ex)
                                     {
                                         _logger.LogWarning(ex, "Failed to embed receiver signature image");
-                                        rightSig.Item().PaddingTop(60); // Space for manual signature
+                                        rightSig.Item().PaddingTop(40); // Space for manual signature
                                     }
                                 }
                                 else
                                 {
-                                    rightSig.Item().PaddingTop(60); // Space for manual signature
+                                    rightSig.Item().PaddingTop(40); // Space for manual signature
                                 }
 
                                 // Use digital signature data if available, otherwise fallback to plain fields
@@ -616,16 +614,16 @@ namespace IMS.Application.Services
                                 var receiverDesignation = issue.ReceiverSignature?.SignerDesignation ?? issue.ReceiverDesignation ?? "…………………";
                                 var receiverDate = issue.ReceiverSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.ReceivedDate.ToString("dd/MM/yyyy");
 
-                                rightSig.Item().Text($"নাম: {receiverName}").FontFamily("Kalpurush");
-                                rightSig.Item().Text($"ব্যাজ/আইডি: {receiverBadge}").FontFamily("Kalpurush");
-                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontFamily("Kalpurush");
-                                rightSig.Item().Text($"তারিখ: {receiverDate}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"নাম: {receiverName}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"ব্যাজ/আইডি: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"তারিখ: {receiverDate}").FontSize(8).FontFamily("Kalpurush");
 
                                 // Add "Digital Signature Verified" badge if signature exists
                                 if (issue.ReceiverSignature != null)
                                 {
-                                    rightSig.Item().PaddingTop(5);
-                                    rightSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(8).FontColor("#28a745").FontFamily("Kalpurush");
+                                    rightSig.Item().PaddingTop(3);
+                                    rightSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(7).FontColor("#28a745").FontFamily("Kalpurush");
                                 }
                             });
                         });
