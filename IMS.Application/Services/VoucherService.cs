@@ -117,10 +117,10 @@ namespace IMS.Application.Services
         {
             try
             {
-                // Get issue with related data
+                // Get issue with related data including digital signatures
                 var issueEntity = await _unitOfWork.Issues.GetAsync(
                     i => i.Id == issueId,
-                    includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila" }
+                    includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila", "IssuerSignature", "ApproverSignature", "ReceiverSignature" }
                 );
 
                 if (issueEntity == null)
@@ -132,10 +132,10 @@ namespace IMS.Application.Services
                 if (string.IsNullOrEmpty(issueEntity.VoucherNo))
                 {
                     await GenerateIssueVoucherAsync(issueId);
-                    // Reload entity
+                    // Reload entity with all includes
                     issueEntity = await _unitOfWork.Issues.GetAsync(
                         i => i.Id == issueId,
-                        includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila" }
+                        includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila", "IssuerSignature", "ApproverSignature", "ReceiverSignature" }
                     );
                 }
 
@@ -535,18 +535,48 @@ namespace IMS.Application.Services
                             {
                                 leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
                                 leftSig.Item().PaddingTop(40);
-                                leftSig.Item().Text($"নাম: {issue.IssuedBy ?? "…………………"}").FontFamily("Kalpurush");
-                                leftSig.Item().Text($"পদবী: {issue.SignerDesignation ?? "…………………"}").FontFamily("Kalpurush");
-                                leftSig.Item().Text($"তারিখ: {issue.SignedDate?.ToString("dd/MM/yyyy") ?? "…………………"}").FontFamily("Kalpurush");
+
+                                // Use digital signature data if available, otherwise fallback to plain fields
+                                var issuerName = issue.IssuerSignature?.SignerName ?? issue.IssuedBy ?? "…………………";
+                                var issuerBadge = issue.IssuerSignature?.SignerBadgeId ?? issue.SignerBadgeId ?? "…………………";
+                                var issuerDesignation = issue.IssuerSignature?.SignerDesignation ?? issue.SignerDesignation ?? "…………………";
+                                var issuerDate = issue.IssuerSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.SignedDate?.ToString("dd/MM/yyyy") ?? "…………………";
+
+                                leftSig.Item().Text($"নাম: {issuerName}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"ব্যাজ/আইডি: {issuerBadge}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"পদবী: {issuerDesignation}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"তারিখ: {issuerDate}").FontFamily("Kalpurush");
+
+                                // Add "Digital Signature Verified" badge if signature exists
+                                if (issue.IssuerSignature != null)
+                                {
+                                    leftSig.Item().PaddingTop(5);
+                                    leftSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(8).FontColor("#28a745").FontFamily("Kalpurush");
+                                }
                             });
 
                             sigTable.Cell().Padding(10).Column(rightSig =>
                             {
                                 rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
                                 rightSig.Item().PaddingTop(40);
-                                rightSig.Item().Text($"নাম: {issue.ReceivedBy ?? "…………………"}").FontFamily("Kalpurush");
-                                rightSig.Item().Text($"পদবী: {issue.ReceiverDesignation ?? "…………………"}").FontFamily("Kalpurush");
-                                rightSig.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontFamily("Kalpurush");
+
+                                // Use digital signature data if available, otherwise fallback to plain fields
+                                var receiverName = issue.ReceiverSignature?.SignerName ?? issue.ReceivedBy ?? "…………………";
+                                var receiverBadge = issue.ReceiverSignature?.SignerBadgeId ?? "…………………";
+                                var receiverDesignation = issue.ReceiverSignature?.SignerDesignation ?? issue.ReceiverDesignation ?? "…………………";
+                                var receiverDate = issue.ReceiverSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.ReceivedDate.ToString("dd/MM/yyyy");
+
+                                rightSig.Item().Text($"নাম: {receiverName}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"ব্যাজ/আইডি: {receiverBadge}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"তারিখ: {receiverDate}").FontFamily("Kalpurush");
+
+                                // Add "Digital Signature Verified" badge if signature exists
+                                if (issue.ReceiverSignature != null)
+                                {
+                                    rightSig.Item().PaddingTop(5);
+                                    rightSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(8).FontColor("#28a745").FontFamily("Kalpurush");
+                                }
                             });
                         });
                     });
