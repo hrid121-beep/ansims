@@ -31,6 +31,7 @@
         <form asp-action="Create" method="post" id="issueForm" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="IssueNo" value="@ViewBag.IssueNo" />
+            <input type="hidden" name="FromStoreId" id="fromStoreIdHidden" value="" />
 
             <div class="row">
                 <div class="col-lg-8">
@@ -533,6 +534,8 @@
             }
 
             $('#fromStore').on('change', function() {
+                // Update hidden field to ensure FormData includes FromStoreId
+                $('#fromStoreIdHidden').val($(this).val());
                 checkProvisionStoreRequirements();
             });
 
@@ -937,6 +940,9 @@
             $('#fromStore').on('change', function() {
                 const storeId = $(this).val();
                 console.log('Store changed to:', storeId);
+
+                // Update hidden field to ensure FormData includes FromStoreId
+                $('#fromStoreIdHidden').val(storeId);
 
                 if (!storeId) {
                     window.currentLedgerBooks = [];
