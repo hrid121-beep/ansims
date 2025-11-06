@@ -207,15 +207,19 @@
                             <table class="table table-sm table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th width="4%">#</th>
-                                        <th width="10%">Code</th>
-                                        <th width="20%">Item Name</th>
-                                        <th width="12%">Category</th>
-                                        <th width="12%">Store</th>
-                                        <th width="8%" class="text-center">Quantity</th>
-                                        <th width="8%">Unit</th>
-                                        <th width="12%" class="text-right">Unit Price</th>
-                                        <th width="14%" class="text-right">Total Price</th>
+                                        <th width="3%">#</th>
+                                        <th width="8%">Code</th>
+                                        <th width="15%">Item Name</th>
+                                        <th width="10%">Category</th>
+                                        <th width="7%" class="text-center">Quantity</th>
+                                        <th width="5%">Unit</th>
+                                        <th width="8%">Batch No</th>
+                                        <th width="10%">Ledger No</th>
+                                        <th width="6%" class="text-center">Page No</th>
+                                        <th width="7%" class="text-center">Usable</th>
+                                        <th width="7%" class="text-center">Partial</th>
+                                        <th width="7%" class="text-center">Unusable</th>
+                                        <th width="7%" class="text-right">Unit Price</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -229,21 +233,66 @@
                                                 <td><span class="badge badge-secondary">@item.ItemCode</span></td>
                                                 <td>
                                                     <strong>@item.ItemName</strong>
-                                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
-                                                    {
-                                                        <br /><small class="text-muted"><i class="fas fa-barcode"></i> Batch: @item.BatchNumber</small>
-                                                    }
                                                 </td>
                                                 <td>@item.CategoryName</td>
-                                                <td>@item.StoreName</td>
                                                 <td class="text-center">
                                                     <span class="badge badge-primary">@item.Quantity.ToString("0.##")</span>
                                                 </td>
                                                 <td>@item.Unit</td>
-                                                <td class="text-right">
-                                                    @if (item.UnitPrice.HasValue && item.UnitPrice.Value > 0)
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
                                                     {
-                                                        <text>৳ @((item.UnitPrice.Value % 1 == 0) ? item.UnitPrice.Value.ToString("N0") : item.UnitPrice.Value.ToString("N2"))</text>
+                                                        <small><i class="fas fa-barcode"></i> @item.BatchNumber</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(item.LedgerNo))
+                                                    {
+                                                        <span class="badge badge-info">@item.LedgerNo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (!string.IsNullOrEmpty(item.PageNo))
+                                                    {
+                                                        <strong>@item.PageNo</strong>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (item.UsableQuantity.HasValue && item.UsableQuantity > 0)
+                                                    {
+                                                        <span class="badge badge-success">@item.UsableQuantity.Value.ToString("0.##")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (item.PartiallyUsableQuantity.HasValue && item.PartiallyUsableQuantity > 0)
+                                                    {
+                                                        <span class="badge badge-warning">@item.PartiallyUsableQuantity.Value.ToString("0.##")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (item.UnusableQuantity.HasValue && item.UnusableQuantity > 0)
+                                                    {
+                                                        <span class="badge badge-danger">@item.UnusableQuantity.Value.ToString("0.##")</span>
                                                     }
                                                     else
                                                     {
@@ -251,10 +300,9 @@
                                                     }
                                                 </td>
                                                 <td class="text-right">
-                                                    @if (item.UnitPrice.HasValue && item.Quantity > 0)
+                                                    @if (item.UnitPrice.HasValue && item.UnitPrice.Value > 0)
                                                     {
-                                                        var totalPrice = item.UnitPrice.Value * item.Quantity;
-                                                        <strong class="text-primary">৳ @((totalPrice % 1 == 0) ? totalPrice.ToString("N0") : totalPrice.ToString("N2"))</strong>
+                                                        <text>৳ @((item.UnitPrice.Value % 1 == 0) ? item.UnitPrice.Value.ToString("N0") : item.UnitPrice.Value.ToString("N2"))</text>
                                                     }
                                                     else
                                                     {
