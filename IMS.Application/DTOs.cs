@@ -1091,6 +1091,7 @@ namespace IMS.Application.DTOs
         public decimal CurrentStock { get; set; }
 
         // Voucher fields
+        public int? LedgerBookId { get; set; }
         public string LedgerNo { get; set; }
         public string PageNo { get; set; }
         public decimal? UsableQuantity { get; set; }

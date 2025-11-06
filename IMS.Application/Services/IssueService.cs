@@ -824,6 +824,17 @@ namespace IMS.Application.Services
                         // Price
                         UnitPrice = unitPrice,
 
+                        // Ledger tracking fields
+                        BatchNumber = issueItem.BatchNumber,
+                        LedgerBookId = issueItem.LedgerBookId,
+                        LedgerNo = issueItem.LedgerNo,
+                        PageNo = issueItem.PageNo,
+
+                        // Quantity breakdown fields
+                        UsableQuantity = issueItem.UsableQuantity,
+                        PartiallyUsableQuantity = issueItem.PartiallyUsableQuantity,
+                        UnusableQuantity = issueItem.UnusableQuantity,
+
                         // Other fields
                         Remarks = issueItem.Remarks ?? "-",
                         Condition = issueItem.Condition ?? "Good"
