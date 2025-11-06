@@ -472,31 +472,31 @@ namespace IMS.Application.Services
                         {
                             itemsTable.ColumnsDefinition(columns =>
                             {
-                                columns.ConstantColumn(30);  // ক্রম
-                                columns.ConstantColumn(50);  // লেজার নং
-                                columns.ConstantColumn(50);  // পৃষ্ঠা নং
+                                columns.ConstantColumn(25);  // ক্রম
+                                columns.ConstantColumn(40);  // লেজার নং
+                                columns.ConstantColumn(35);  // পৃষ্ঠা নং
                                 columns.RelativeColumn(3);   // দ্রব্যাদির বিবরণ
-                                columns.ConstantColumn(50);  // মোট সংখ্যা
-                                columns.ConstantColumn(50);  // ব্যবহার যোগ্য
-                                columns.ConstantColumn(60);  // আংশিক ব্যবহারযোগ্য
-                                columns.ConstantColumn(50);  // অকেজো
-                                columns.ConstantColumn(55);  // একক দর
-                                columns.ConstantColumn(60);  // মোট মূল্য
+                                columns.ConstantColumn(40);  // মোট সংখ্যা
+                                columns.ConstantColumn(40);  // ব্যবহার যোগ্য
+                                columns.ConstantColumn(45);  // আংশিক ব্যবহারযোগ্য
+                                columns.ConstantColumn(40);  // অকেজো
+                                columns.ConstantColumn(45);  // একক দর
+                                columns.ConstantColumn(50);  // মোট মূল্য
                             });
 
                             // Header Row
                             itemsTable.Header(header =>
                             {
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("ক্রম").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("লেজার\nনং").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("পৃষ্ঠা\nনং").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("দ্রব্যাদির বিবরণ").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("মোট\nসংখ্যা").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("ব্যবহার\nযোগ্য").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("আংশিক\nব্যবহারযোগ্য").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("অকেজো").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("একক\nদর").FontSize(9).Bold().FontFamily("Kalpurush");
-                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("মোট\nমূল্য").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("ক্রম").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("লেজার\nনং").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("পৃষ্ঠা\nনং").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("দ্রব্যাদির বিবরণ").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("মোট\nসংখ্যা").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("ব্যবহার\nযোগ্য").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("আংশিক\nব্যবহারযোগ্য").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("অকেজো").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("একক\nদর").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("মোট\nমূল্য").FontSize(7).Bold().FontFamily("Kalpurush");
                             });
 
                             // Data Rows
@@ -505,16 +505,16 @@ namespace IMS.Application.Services
                             {
                                 var totalPrice = (item.Item?.UnitPrice ?? 0) * item.Quantity;
 
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(serialNo.ToString()).FontSize(9).FontFamily("Kalpurush");
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(item.LedgerNo ?? "").FontSize(9).FontFamily("Kalpurush");
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(item.PageNo ?? "").FontSize(9).FontFamily("Kalpurush");
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignLeft().Text(item.Item?.Name ?? "").FontSize(9).FontFamily("Kalpurush");
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text(item.Quantity.ToString("0.##")).FontSize(9);
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.UsableQuantity ?? 0).ToString("0.##")).FontSize(9);
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.PartiallyUsableQuantity ?? 0).ToString("0.##")).FontSize(9);
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.UnusableQuantity ?? 0).ToString("0.##")).FontSize(9);
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.Item?.UnitPrice ?? 0).ToString("0.##")).FontSize(9);
-                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text(totalPrice.ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(serialNo.ToString()).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(item.LedgerNo ?? "").FontSize(7).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(item.PageNo ?? "").FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignLeft().Text(item.Item?.Name ?? "").FontSize(7).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text(item.Quantity.ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.UsableQuantity ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.PartiallyUsableQuantity ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.UnusableQuantity ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.Item?.UnitPrice ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text(totalPrice.ToString("0.##")).FontSize(7);
 
                                 serialNo++;
                             }
