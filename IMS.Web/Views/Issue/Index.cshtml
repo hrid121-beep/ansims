@@ -458,15 +458,9 @@
             window.location.href = url;
         }
 
-        // Allow Enter key to trigger filter
-        $('#searchBox').on('keypress', function(e) {
-            if (e.which === 13) { // Enter key
-                applyFilters();
-            }
-        });
-
-        // Restore filter values from ViewBag
+        // Restore filter values and attach events when DOM is ready
         $(function() {
+            // Restore filter values from ViewBag
             var status = '@ViewBag.Status';
             var searchTerm = '@ViewBag.SearchTerm';
             var fromDate = '@ViewBag.FromDate';
@@ -476,6 +470,13 @@
             if (searchTerm) $('#searchBox').val(searchTerm);
             if (fromDate && fromDate !== '') $('#startDate').val(fromDate);
             if (toDate && toDate !== '') $('#endDate').val(toDate);
+
+            // Allow Enter key to trigger filter
+            $('#searchBox').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    applyFilters();
+                }
+            });
         });
     </script>
 }
