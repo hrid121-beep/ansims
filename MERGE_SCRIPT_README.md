@@ -2,6 +2,18 @@
 
 এই script গুলো automatically আপনার claude branch থেকে local master এ merge করে এবং remote master এ push করে দেয়।
 
+## ⚡ Quick Start
+
+**Windows Users (সবচেয়ে সহজ):**
+1. File Explorer এ project folder খুলুন
+2. `merge-to-master.bat` file এ **double-click** করুন
+3. Done! ✅
+
+**Linux/Mac Users:**
+```bash
+./merge-to-master.sh
+```
+
 ## 📋 কি করে এই Script?
 
 1. ✅ Current branch save করে
@@ -24,6 +36,20 @@ chmod +x merge-to-master.sh
 ./merge-to-master.sh
 ```
 
+### Windows (Batch File) - সবচেয়ে সহজ:
+
+```cmd
+REM Command Prompt বা File Explorer থেকে double-click করুন
+merge-to-master.bat
+```
+
+অথবা Command Prompt থেকে:
+
+```cmd
+cd C:\path\to\ansims
+merge-to-master.bat
+```
+
 ### Windows (PowerShell):
 
 ```powershell
@@ -31,7 +57,7 @@ chmod +x merge-to-master.sh
 .\merge-to-master.ps1
 ```
 
-অথবা Git Bash থেকে:
+### Linux/Mac (Git Bash):
 
 ```bash
 bash merge-to-master.sh
@@ -125,6 +151,12 @@ git push origin master
 ## 📝 Script Customization
 
 যদি claude branch এর নাম পরিবর্তন হয়, script edit করুন:
+
+**Batch file (merge-to-master.bat):**
+```batch
+REM Line 10 এ branch name পরিবর্তন করুন
+set CLAUDE_BRANCH=your-new-branch-name
+```
 
 **Bash script (merge-to-master.sh):**
 ```bash
