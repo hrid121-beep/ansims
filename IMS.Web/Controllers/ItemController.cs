@@ -492,7 +492,7 @@ namespace IMS.Web.Controllers
                     {
                         Id = (int)e,
                         Name = e.ToString()
-                    }), "Id", "Name", currentItem?.Type);
+                    }), "Id", "Name", currentItem != null ? (int?)currentItem.Type : null);
 
                 // Load subcategories if CategoryId exists
                 if (currentItem?.CategoryId > 0)
