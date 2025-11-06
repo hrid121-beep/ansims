@@ -912,6 +912,8 @@
             // ==================== Ledger Book Loading ====================
             $('#fromStore').on('change', function() {
                 const storeId = $(this).val();
+                console.log('Store changed to:', storeId);
+
                 if (!storeId) {
                     $('.ledger-book-select').empty().append('<option value="">Select Ledger</option>');
                     return;
@@ -922,24 +924,36 @@
                     url: '/LedgerBook/GetActiveLedgerBooks',
                     data: { storeId: storeId, bookType: 'Issue' },
                     success: function(ledgerBooks) {
+                        console.log('Ledger books received:', ledgerBooks);
+                        console.log('Number of ledger books:', ledgerBooks.length);
+
                         $('.ledger-book-select').each(function() {
                             const select = $(this);
                             select.empty();
                             select.append('<option value="">Select Ledger</option>');
 
-                            ledgerBooks.forEach(function(book) {
-                                const pagesLeft = book.pagesRemaining || 0;
-                                const status = pagesLeft <= 10 ? '⚠️' : '✅';
-                                select.append(`<option value="${book.id}"
-                                                      data-ledger-no="${book.ledgerNo}"
-                                                      data-next-page="${book.currentPageNo}">
-                                                   ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
-                                               </option>`);
-                            });
+                            if (ledgerBooks && ledgerBooks.length > 0) {
+                                ledgerBooks.forEach(function(book) {
+                                    console.log('Adding ledger book:', book);
+                                    const pagesLeft = book.pagesRemaining || 0;
+                                    const status = pagesLeft <= 10 ? '⚠️' : '✅';
+                                    select.append(`<option value="${book.id}"
+                                                          data-ledger-no="${book.ledgerNo}"
+                                                          data-next-page="${book.currentPageNo}">
+                                                       ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
+                                                   </option>`);
+                                });
+                            } else {
+                                console.warn('No ledger books found for store:', storeId);
+                                select.append('<option value="">No ledger books available</option>');
+                            }
                         });
                     },
-                    error: function() {
-                        console.error('Error loading ledger books');
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error loading ledger books:', error);
+                        console.error('Status:', status);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error loading ledger books. Check console for details.');
                     }
                 });
             });
