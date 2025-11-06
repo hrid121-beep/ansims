@@ -1025,23 +1025,70 @@ namespace IMS.Application.Services
             };
         }
 
-        // Get paged issues
-        public async Task<PagedResult<IssueDto>> GetAllIssuesAsync(int pageNumber = 1, int pageSize = 50)
+        // Get paged issues with filters
+        public async Task<PagedResult<IssueDto>> GetAllIssuesAsync(int pageNumber = 1, int pageSize = 50,
+            string searchTerm = null, string status = null, string issueType = null,
+            DateTime? fromDate = null, DateTime? toDate = null)
         {
             try
             {
-                var totalCount = await _unitOfWork.Issues.CountAsync(i => i.IsActive);
-                var issues = await _unitOfWork.Issues.GetPagedAsync(pageNumber, pageSize, i => i.IsActive);
+                // Get all active issues
+                var allIssues = await _unitOfWork.Issues.FindAsync(i => i.IsActive);
 
+                // Apply filters
+                var filteredIssues = allIssues.AsEnumerable();
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    searchTerm = searchTerm.ToLower();
+                    filteredIssues = filteredIssues.Where(i =>
+                        i.IssueNo.ToLower().Contains(searchTerm) ||
+                        (i.VoucherNumber != null && i.VoucherNumber.ToLower().Contains(searchTerm)) ||
+                        (i.IssuedTo != null && i.IssuedTo.ToLower().Contains(searchTerm)) ||
+                        (i.Purpose != null && i.Purpose.ToLower().Contains(searchTerm))
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    filteredIssues = filteredIssues.Where(i => i.Status == status);
+                }
+
+                if (!string.IsNullOrEmpty(issueType))
+                {
+                    filteredIssues = filteredIssues.Where(i => i.IssueType == issueType);
+                }
+
+                if (fromDate.HasValue)
+                {
+                    filteredIssues = filteredIssues.Where(i => i.IssueDate >= fromDate.Value);
+                }
+
+                if (toDate.HasValue)
+                {
+                    filteredIssues = filteredIssues.Where(i => i.IssueDate <= toDate.Value);
+                }
+
+                // Get total count after filtering
+                var totalCount = filteredIssues.Count();
+
+                // Apply pagination
+                var pagedIssues = filteredIssues
+                    .OrderByDescending(i => i.IssueDate)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // Map to DTOs
                 var issueDtos = new List<IssueDto>();
-                foreach (var issue in issues)
+                foreach (var issue in pagedIssues)
                 {
                     issueDtos.Add(await MapToIssueDto(issue));
                 }
 
                 return new PagedResult<IssueDto>
                 {
-                    Items = issueDtos.OrderByDescending(i => i.IssueDate),
+                    Items = issueDtos,
                     TotalCount = totalCount,
                     PageNumber = pageNumber,
                     PageSize = pageSize
@@ -1049,7 +1096,7 @@ namespace IMS.Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting paged issues");
+                _logger.LogError(ex, "Error getting paged issues with filters");
                 throw;
             }
         }
