@@ -152,6 +152,7 @@
                                 <tr>
                                     <th width="100">Issue No</th>
                                     <th width="100">Date</th>
+                                    <th width="150">From Store</th>
                                     <th>Issued To</th>
                                     <th>Purpose</th>
                                     <th width="100">Status</th>
@@ -169,6 +170,10 @@
                                             </a>
                                         </td>
                                         <td>@item.IssueDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>
+                                            <i class="fas fa-warehouse text-info"></i>
+                                            <strong>@item.FromStoreName</strong>
+                                        </td>
                                         <td>
                                             <strong>@item.IssuedToName</strong><br />
                                             <small class="text-muted">@item.IssuedToType</small>
