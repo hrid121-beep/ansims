@@ -267,10 +267,16 @@
                                                             <i class="fas fa-print"></i>
                                                         </a>
 
+                                                        <!-- Download Voucher PDF -->
+                                                        <a class="btn btn-success" asp-action="DownloadVoucher" asp-route-id="@item.Id"
+                                                           data-toggle="tooltip" title="Download Voucher PDF">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+
                                                         @if (string.IsNullOrEmpty(item.SignaturePath))
                                                         {
                                                             <!-- Process Handover -->
-                                                            <a class="btn btn-success" asp-action="ProcessHandover" asp-route-id="@item.Id"
+                                                            <a class="btn btn-warning" asp-action="ProcessHandover" asp-route-id="@item.Id"
                                                                data-toggle="tooltip" title="Process Physical Handover">
                                                                 <i class="fas fa-handshake"></i>
                                                             </a>
