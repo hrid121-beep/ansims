@@ -5,6 +5,9 @@ using iTextSharp.text.pdf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QRCoder;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,6 +34,9 @@ namespace IMS.Application.Services
             _unitOfWork = unitOfWork;
             _logger = logger;
 
+            // Configure QuestPDF license (Community/Free for non-commercial)
+            QuestPDF.Settings.License = LicenseType.Community;
+
             // Set voucher directory
             _voucherDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "vouchers");
             if (!Directory.Exists(_voucherDirectory))
@@ -38,7 +44,7 @@ namespace IMS.Application.Services
                 Directory.CreateDirectory(_voucherDirectory);
             }
 
-            // Try to load Bengali font
+            // Try to load Bengali font (for iTextSharp fallback)
             try
             {
                 string fontPath = Path.Combine(Directory.GetCurrentDirectory(), BANGLA_FONT_PATH);
@@ -388,56 +394,145 @@ namespace IMS.Application.Services
 
         private byte[] CreateIssueVoucherPdf(Issue issue)
         {
-            using (MemoryStream ms = new MemoryStream())
+            // Use QuestPDF for perfect Bengali rendering
+            var document = Document.Create(container =>
             {
-                // Create document in A4 landscape
-                PdfDocument document = new PdfDocument(PageSize.A4, 20, 20, 20, 20);
-                PdfWriter writer = PdfWriter.GetInstance(document, ms);
-                document.Open();
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(20);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Kalpurush"));
 
-                // Create fonts
-                Font bengaliFont = GetBengaliFont(10);
-                Font bengaliFontBold = GetBengaliFont(12, Font.BOLD);
-                Font bengaliFontTitle = GetBengaliFont(16, Font.BOLD);
-                Font bengaliFontSmall = GetBengaliFont(8);
+                    page.Content().Column(column =>
+                    {
+                        // Title
+                        column.Item().AlignCenter().Text("প্রাপ্তি বিলি ও ব্যয়ের রশিদ")
+                            .FontSize(18).Bold().FontFamily("Kalpurush");
 
-                // Add title
-                Paragraph title = new Paragraph("প্রাপ্তি বিলি ও ব্যয়ের রশিদ", bengaliFontTitle);
-                title.Alignment = Element.ALIGN_CENTER;
-                title.SpacingAfter = 20f;
-                document.Add(title);
+                        column.Item().PaddingVertical(10);
 
-                // Create header table (2 columns)
-                PdfPTable headerTable = new PdfPTable(2);
-                headerTable.WidthPercentage = 100;
-                headerTable.SetWidths(new float[] { 50f, 50f });
+                        // Header Table (Two columns)
+                        column.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
 
-                // Left side - Provider (প্রদানকারী)
-                PdfPCell leftCell = CreateHeaderCell(issue, "প্রদানকারী", bengaliFont, bengaliFontBold, true);
-                headerTable.AddCell(leftCell);
+                            // Left Column - Provider
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(leftCol =>
+                            {
+                                leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
+                                leftCol.Item().Text("প্রদান- ভাউচার নং………………………………...…").FontFamily("Kalpurush");
+                                leftCol.Item().Text("ইউনিট ……………………………………...........").FontFamily("Kalpurush");
+                                leftCol.Item().Text("স্টেশন ……………………………………...........").FontFamily("Kalpurush");
+                                leftCol.Item().PaddingTop(10);
+                                leftCol.Item().Text("…………….আদেশানুসারে ………………….. কর্তৃক").FontFamily("Kalpurush");
+                                leftCol.Item().Text("…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :").FontFamily("Kalpurush");
+                            });
 
-                // Right side - Receiver (গ্রহনকারী)
-                PdfPCell rightCell = CreateHeaderCell(issue, "গ্রহনকারী", bengaliFont, bengaliFontBold, false);
-                headerTable.AddCell(rightCell);
+                            // Right Column - Receiver
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(rightCol =>
+                            {
+                                rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
+                                rightCol.Item().Text("প্রাপ্ত- ভাউচার নং………………………………...…").FontFamily("Kalpurush");
+                                rightCol.Item().Text("ইউনিট ……………………………………...........").FontFamily("Kalpurush");
+                                rightCol.Item().Text("স্টেশন  ……………………………………...........").FontFamily("Kalpurush");
+                                rightCol.Item().PaddingTop(10);
+                                rightCol.Item().Text("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:").FontFamily("Kalpurush");
+                                rightCol.Item().Text("উৎপাদিত").FontFamily("Kalpurush");
+                            });
+                        });
 
-                document.Add(headerTable);
-                document.Add(new Paragraph("\n", bengaliFont));
+                        column.Item().PaddingVertical(10);
 
-                // Create items table
-                PdfPTable itemsTable = CreateItemsTable(issue.Items, bengaliFont, bengaliFontBold);
-                document.Add(itemsTable);
+                        // Items Table
+                        column.Item().Table(itemsTable =>
+                        {
+                            itemsTable.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(30);  // ক্রম
+                                columns.ConstantColumn(50);  // লেজার নং
+                                columns.ConstantColumn(50);  // পৃষ্ঠা নং
+                                columns.RelativeColumn(3);   // দ্রব্যাদির বিবরণ
+                                columns.ConstantColumn(50);  // মোট সংখ্যা
+                                columns.ConstantColumn(50);  // ব্যবহার যোগ্য
+                                columns.ConstantColumn(60);  // আংশিক ব্যবহারযোগ্য
+                                columns.ConstantColumn(50);  // অকেজো
+                                columns.ConstantColumn(55);  // একক দর
+                                columns.ConstantColumn(60);  // মোট মূল্য
+                            });
 
-                document.Add(new Paragraph("\n\n", bengaliFont));
+                            // Header Row
+                            itemsTable.Header(header =>
+                            {
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("ক্রম").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("লেজার\nনং").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("পৃষ্ঠা\nনং").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("দ্রব্যাদির বিবরণ").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("মোট\nসংখ্যা").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("ব্যবহার\nযোগ্য").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("আংশিক\nব্যবহারযোগ্য").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("অকেজো").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("একক\nদর").FontSize(9).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text("মোট\nমূল্য").FontSize(9).Bold().FontFamily("Kalpurush");
+                            });
 
-                // Create signature table
-                PdfPTable signatureTable = CreateSignatureTable(issue, bengaliFont);
-                document.Add(signatureTable);
+                            // Data Rows
+                            int serialNo = 1;
+                            foreach (var item in issue.Items)
+                            {
+                                var totalPrice = (item.Item?.UnitPrice ?? 0) * item.Quantity;
 
-                document.Close();
-                writer.Close();
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(serialNo.ToString()).FontSize(9).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(item.LedgerNo ?? "").FontSize(9).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignCenter().Text(item.PageNo ?? "").FontSize(9).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignLeft().Text(item.Item?.Name ?? "").FontSize(9).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text(item.Quantity.ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.UsableQuantity ?? 0).ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.PartiallyUsableQuantity ?? 0).ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.UnusableQuantity ?? 0).ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text((item.Item?.UnitPrice ?? 0).ToString("0.##")).FontSize(9);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(3).AlignRight().Text(totalPrice.ToString("0.##")).FontSize(9);
 
-                return ms.ToArray();
-            }
+                                serialNo++;
+                            }
+                        });
+
+                        column.Item().PaddingVertical(20);
+
+                        // Signature Section
+                        column.Item().Table(sigTable =>
+                        {
+                            sigTable.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
+
+                            sigTable.Cell().Padding(10).Column(leftSig =>
+                            {
+                                leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
+                                leftSig.Item().PaddingTop(40);
+                                leftSig.Item().Text("পদবী …………………………………………").FontFamily("Kalpurush");
+                                leftSig.Item().Text("তারিখ………………………………………….").FontFamily("Kalpurush");
+                            });
+
+                            sigTable.Cell().Padding(10).Column(rightSig =>
+                            {
+                                rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
+                                rightSig.Item().PaddingTop(40);
+                                rightSig.Item().Text("পদবী …………………………………………").FontFamily("Kalpurush");
+                                rightSig.Item().Text("তারিখ………………………………………….").FontFamily("Kalpurush");
+                            });
+                        });
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
         }
 
         private byte[] CreateReceiveVoucherPdf(Receive receive)
