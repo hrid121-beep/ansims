@@ -226,6 +226,10 @@ namespace IMS.Web.Controllers
         {
             try
             {
+                // DEBUG: Log FromStoreId to check if it's being received
+                _logger.LogInformation("=== DEBUG: FromStoreId received = {FromStoreId} ===", model.FromStoreId);
+                _logger.LogInformation("=== DEBUG: Model state valid = {IsValid} ===", ModelState.IsValid);
+
                 if (ModelState.IsValid)
                 {
                     // STEP 1: Validate Allotment Letter BEFORE creating the issue

@@ -1890,6 +1890,11 @@ namespace IMS.Application.Services
                 IssuedToName = GetIssuedToName(issue),
                 IssuedToType = issue.IssuedToType,
                 Purpose = issue.Purpose,
+
+                // FromStore mapping
+                FromStoreId = issue.FromStoreId,
+                FromStoreName = issue.FromStore?.Name,
+
                 IssuedToBattalionId = issue.IssuedToBattalionId,
                 IssuedToRangeId = issue.IssuedToRangeId,
                 IssuedToZilaId = issue.IssuedToZilaId,

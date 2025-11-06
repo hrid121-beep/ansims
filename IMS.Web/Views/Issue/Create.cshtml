@@ -31,7 +31,6 @@
         <form asp-action="Create" method="post" id="issueForm" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="IssueNo" value="@ViewBag.IssueNo" />
-            <input type="hidden" name="FromStoreId" id="fromStoreIdHidden" value="" />
 
             <div class="row">
                 <div class="col-lg-8">
@@ -74,7 +73,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label asp-for="FromStoreId">From Store <span class="text-danger">*</span></label>
-                                        <select asp-for="FromStoreId" class="form-control select2" id="fromStore" required>
+                                        <select asp-for="FromStoreId" class="form-control" id="fromStore" name="FromStoreId" required>
                                             <option value="">Select Store</option>
                                             @if (stores.Any())
                                             {
@@ -534,8 +533,6 @@
             }
 
             $('#fromStore').on('change', function() {
-                // Update hidden field to ensure FormData includes FromStoreId
-                $('#fromStoreIdHidden').val($(this).val());
                 checkProvisionStoreRequirements();
             });
 
@@ -758,21 +755,8 @@
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Ensure FromStoreId is properly set before submitting
-                        var fromStoreId = $('#fromStore').val();
-                        $('#fromStoreIdHidden').val(fromStoreId);
-
-                        // Also set the asp-for bound field
-                        $('select[name="FromStoreId"]').val(fromStoreId);
-
                         var formData = new FormData($('#issueForm')[0]);
                         formData.append('action', 'submit');
-
-                        // Double check FromStoreId is in FormData
-                        if (!formData.has('FromStoreId') || !formData.get('FromStoreId')) {
-                            formData.set('FromStoreId', fromStoreId);
-                            console.log('FromStoreId explicitly set:', fromStoreId);
-                        }
 
                         $.ajax({
                             url: $('#issueForm').attr('action'),
@@ -953,9 +937,6 @@
             $('#fromStore').on('change', function() {
                 const storeId = $(this).val();
                 console.log('Store changed to:', storeId);
-
-                // Update hidden field to ensure FormData includes FromStoreId
-                $('#fromStoreIdHidden').val(storeId);
 
                 if (!storeId) {
                     window.currentLedgerBooks = [];
