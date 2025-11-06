@@ -505,28 +505,23 @@ namespace IMS.Application.Services
 
             if (isProvider)
             {
-                // Provider details (Issuer)
-                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং: {issue.VoucherNo ?? "....................."}", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট: {issue.FromStore?.Name ?? "....................."}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: {issue.FromStore?.Location ?? "....................."}", normalFont));
+                // Provider details (Issuer) - with dots like nomuna
+                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং………………………………...…", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন ……………………………………...........", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph($"আদেশানুসারে {issue.IssuedBy ?? "................"} কর্তৃক", normalFont));
-                cell.AddElement(new Paragraph($"কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব:", normalFont));
+                cell.AddElement(new Paragraph($"…………….আদেশানুসারে ………………….. কর্তৃক", normalFont));
+                cell.AddElement(new Paragraph($"…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :", normalFont));
             }
             else
             {
-                // Receiver details
-                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "....................."}", normalFont));
-
-                string receiverUnit = issue.IssuedToBattalion?.Name ??
-                                     issue.IssuedToRange?.Name ??
-                                     issue.IssuedToZila?.Name ??
-                                     ".....................";
-                cell.AddElement(new Paragraph($"ইউনিট: {receiverUnit}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: {issue.DeliveryLocation ?? "....................."}", normalFont));
+                // Receiver details - with dots like nomuna
+                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং………………………………...…", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন  ……………………………………...........", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেওয়া হল:", normalFont));
-                cell.AddElement(new Paragraph("উৎপাদির্", normalFont));
+                cell.AddElement(new Paragraph("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
+                cell.AddElement(new Paragraph("উৎপাদিত", normalFont));
             }
 
             return cell;
@@ -544,28 +539,23 @@ namespace IMS.Application.Services
 
             if (isProvider)
             {
-                // Provider details (Sender)
-                string providerUnit = receive.ReceivedFromBattalion?.Name ??
-                                      receive.ReceivedFromRange?.Name ??
-                                      receive.ReceivedFromZila?.Name ??
-                                      ".....................";
-
-                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং: {receive.VoucherNo ?? "....................."}", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট: {providerUnit}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: {receive.Source ?? "....................."}", normalFont));
+                // Provider details (Sender) - with dots like nomuna
+                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং………………………………...…", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন ……………………………………...........", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph($"আদেশানুসারে {receive.ReceivedFrom ?? "................"} কর্তৃক", normalFont));
-                cell.AddElement(new Paragraph($"কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব:", normalFont));
+                cell.AddElement(new Paragraph($"…………….আদেশানুসারে ………………….. কর্তৃক", normalFont));
+                cell.AddElement(new Paragraph($"…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :", normalFont));
             }
             else
             {
-                // Receiver details
-                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং: {receive.VoucherNo ?? "....................."}", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট: {receive.Store?.Name ?? "....................."}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: {receive.Store?.Location ?? "....................."}", normalFont));
+                // Receiver details - with dots like nomuna
+                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং………………………………...…", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন  ……………………………………...........", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেওয়া হল:", normalFont));
-                cell.AddElement(new Paragraph("উৎপাদির্", normalFont));
+                cell.AddElement(new Paragraph("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
+                cell.AddElement(new Paragraph("উৎপাদিত", normalFont));
             }
 
             return cell;
@@ -608,14 +598,7 @@ namespace IMS.Application.Services
                 serialNo++;
             }
 
-            // Add empty rows to fill space (at least 5 more rows)
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    table.AddCell(CreateTableCell("", normalFont));
-                }
-            }
+            // No empty rows - table adjusts to item count automatically
 
             return table;
         }
@@ -659,14 +642,7 @@ namespace IMS.Application.Services
                 serialNo++;
             }
 
-            // Add empty rows to fill space
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    table.AddCell(CreateTableCell("", normalFont));
-                }
-            }
+            // No empty rows - table adjusts to item count automatically
 
             return table;
         }
@@ -682,8 +658,8 @@ namespace IMS.Application.Services
             leftCell.Border = Rectangle.NO_BORDER;
             leftCell.AddElement(new Paragraph("বিতরণকারীর স্বাক্ষর", normalFont));
             leftCell.AddElement(new Paragraph("\n\n", normalFont));
-            leftCell.AddElement(new Paragraph($"পদবী: {issue.SignerDesignation ?? ".........................."}", normalFont));
-            leftCell.AddElement(new Paragraph($"তারিখ: {issue.IssueDate:dd/MM/yyyy}", normalFont));
+            leftCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
+            leftCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
             table.AddCell(leftCell);
 
             // Right side - Receiver signature
@@ -691,8 +667,8 @@ namespace IMS.Application.Services
             rightCell.Border = Rectangle.NO_BORDER;
             rightCell.AddElement(new Paragraph("গ্রহণকারীর স্বাক্ষর", normalFont));
             rightCell.AddElement(new Paragraph("\n\n", normalFont));
-            rightCell.AddElement(new Paragraph($"পদবী: {issue.ReceiverDesignation ?? ".........................."}", normalFont));
-            rightCell.AddElement(new Paragraph($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}", normalFont));
+            rightCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
+            rightCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
             table.AddCell(rightCell);
 
             return table;
@@ -709,8 +685,8 @@ namespace IMS.Application.Services
             leftCell.Border = Rectangle.NO_BORDER;
             leftCell.AddElement(new Paragraph("বিতরণকারীর স্বাক্ষর", normalFont));
             leftCell.AddElement(new Paragraph("\n\n", normalFont));
-            leftCell.AddElement(new Paragraph($"পদবী: ..........................", normalFont));
-            leftCell.AddElement(new Paragraph($"তারিখ: {receive.ReceivedDate:dd/MM/yyyy}", normalFont));
+            leftCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
+            leftCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
             table.AddCell(leftCell);
 
             // Right side - Receiver signature
@@ -718,8 +694,8 @@ namespace IMS.Application.Services
             rightCell.Border = Rectangle.NO_BORDER;
             rightCell.AddElement(new Paragraph("গ্রহণকারীর স্বাক্ষর", normalFont));
             rightCell.AddElement(new Paragraph("\n\n", normalFont));
-            rightCell.AddElement(new Paragraph($"পদবী: {receive.ReceiverDesignation ?? ".........................."}", normalFont));
-            rightCell.AddElement(new Paragraph($"তারিখ: {receive.ReceivedDate:dd/MM/yyyy}", normalFont));
+            rightCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
+            rightCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
             table.AddCell(rightCell);
 
             return table;
@@ -749,12 +725,28 @@ namespace IMS.Application.Services
         {
             if (_bengaliFont != null)
             {
-                return new Font(_bengaliFont, size, style);
+                return new Font(_bengaliFont, size, style, BaseColor.BLACK);
             }
             else
             {
-                // Fallback to default font if Bengali font not available
-                return FontFactory.GetFont(FontFactory.HELVETICA, size, style);
+                // Try to load font on-demand if not loaded during construction
+                try
+                {
+                    string fontPath = Path.Combine(Directory.GetCurrentDirectory(), BANGLA_FONT_PATH);
+                    if (File.Exists(fontPath))
+                    {
+                        _bengaliFont = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                        return new Font(_bengaliFont, size, style, BaseColor.BLACK);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load Bengali font on-demand");
+                }
+
+                // Final fallback - use Arial Unicode or Helvetica
+                _logger.LogWarning("Using fallback font for Bengali text");
+                return FontFactory.GetFont(FontFactory.HELVETICA, size, style, BaseColor.BLACK);
             }
         }
 
