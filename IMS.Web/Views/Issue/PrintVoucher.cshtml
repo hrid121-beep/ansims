@@ -1,4 +1,4 @@
-﻿@using IMS.Application.DTOs
+@using IMS.Application.DTOs
 @model IssueVoucherDto
 @{
     Layout = null;
@@ -9,11 +9,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ইস্যু ভাউচার - @Model.VoucherNumber</title>
+    <title>প্রাপ্তি বিলি ও ব্যয়ের রশিদ - @Model.VoucherNumber</title>
     <style>
         @@page {
             size: A4;
-            margin: 15mm;
+            margin: 20mm;
         }
 
         body {
@@ -21,80 +21,61 @@
             margin: 0;
             padding: 20px;
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.4;
         }
 
-        .voucher-container {
-            max-width: 210mm;
-            margin: 0 auto;
-            border: 2px solid #000;
-            padding: 15px;
-        }
-
-        .header {
+        .voucher-title {
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-
-        .header h1 {
-            margin: 5px 0;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
+            margin-bottom: 30px;
         }
 
-        .header h2 {
-            margin: 5px 0;
-            font-size: 18px;
+        .top-section {
+            display: table;
+            width: 100%;
+            border: 1px solid #000;
+            margin-bottom: 20px;
+        }
+
+        .top-row {
+            display: table-row;
+        }
+
+        .top-cell {
+            display: table-cell;
+            width: 50%;
+            border: 1px solid #000;
+            padding: 10px;
+            vertical-align: top;
+        }
+
+        .top-cell-header {
             font-weight: bold;
+            margin-bottom: 10px;
         }
 
-        .header h3 {
-            margin: 5px 0;
-            font-size: 16px;
-            text-decoration: underline;
-        }
-
-        .voucher-info {
-            margin-bottom: 15px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .info-item {
-            flex: 1;
-        }
-
-        .info-label {
-            font-weight: bold;
-            display: inline-block;
-            min-width: 100px;
+        .field-line {
+            margin-bottom: 5px;
         }
 
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
-            font-size: 12px;
+            margin-bottom: 20px;
         }
 
-        .items-table th {
-            background-color: #f0f0f0;
+        .items-table th,
+        .items-table td {
             border: 1px solid #000;
             padding: 6px 4px;
             text-align: center;
-            font-weight: bold;
+            font-size: 13px;
         }
 
-        .items-table td {
-            border: 1px solid #000;
-            padding: 5px 4px;
-            text-align: center;
+        .items-table th {
+            font-weight: bold;
+            background-color: #fff;
         }
 
         .items-table td.text-left {
@@ -105,38 +86,30 @@
             text-align: right;
         }
 
-        .items-table tfoot td {
-            font-weight: bold;
-            background-color: #f9f9f9;
-        }
-
         .signature-section {
+            display: table;
+            width: 100%;
             margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
         }
 
-        .signature-box {
-            width: 45%;
-            text-align: center;
+        .signature-row {
+            display: table-row;
         }
 
-        .signature-line {
-            border-top: 1px solid #000;
-            margin-top: 50px;
-            padding-top: 5px;
+        .signature-cell {
+            display: table-cell;
+            width: 50%;
+            padding: 20px;
+            vertical-align: top;
         }
 
-        .qr-section {
-            text-align: center;
-            margin: 20px 0;
+        .signature-label {
+            font-weight: bold;
+            margin-bottom: 60px;
         }
 
-        .footer-note {
-            margin-top: 20px;
-            font-size: 11px;
-            text-align: center;
-            color: #666;
+        .signature-field {
+            margin-top: 5px;
         }
 
         @@media print {
@@ -147,164 +120,116 @@
             body {
                 padding: 0;
             }
-
-            .voucher-container {
-                border: none;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="voucher-container">
-        <!-- Header -->
-        <div class="header">
-            <h1>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h1>
-            <h1>বাংলাদেশ আনসার ও ভিডিপি</h1>
-            <h2>মালামাল সরবরাহ ভাউচার</h2>
-            <h3>ভাউচার নং: @Model.VoucherNumber</h3>
+    <!-- Title -->
+    <div class="voucher-title">
+        প্রাপ্তি বিলি ও ব্যয়ের রশিদ
+    </div>
+
+    <!-- Top Section - Two Columns -->
+    <div class="top-section">
+        <div class="top-row">
+            <!-- Left Column - Provider Officer -->
+            <div class="top-cell">
+                <div class="top-cell-header">প্রদানকারী অফিসার পূরণ করবেন:</div>
+                <div class="field-line">প্রদান- ভাউচার নং: @Model.VoucherNumber</div>
+                <div class="field-line">ইউনিট: @(Model.IssuedTo ?? "...........................................")</div>
+                <div class="field-line">স্টেশন: ............................................</div>
+                <div class="field-line" style="margin-top: 15px;">
+                    .................আদেশানুসারে .................. কর্তৃক<br />
+                    .................কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :
+                </div>
+            </div>
+
+            <!-- Right Column - Receiver Officer -->
+            <div class="top-cell">
+                <div class="top-cell-header">গ্রহনকারী অফিসার পূরণ করবেন:</div>
+                <div class="field-line">প্রাপ্ত- ভাউচার নং: @Model.VoucherNumber</div>
+                <div class="field-line">ইউনিট: ............................................</div>
+                <div class="field-line">স্টেশন: ............................................</div>
+                <div class="field-line" style="margin-top: 15px;">
+                    <strong>প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেওয়া হল:</strong><br />
+                    <strong>উৎপাদির্</strong>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- Voucher Info -->
-        <div class="voucher-info">
-            <div class="info-row">
-                <div class="info-item">
-                    <span class="info-label">ইস্যু নং:</span> @Model.IssueNo
-                </div>
-                <div class="info-item">
-                    <span class="info-label">তারিখ:</span> @Model.IssueDate.ToString("dd/MM/yyyy")
-                </div>
-            </div>
-
-            @if (!string.IsNullOrEmpty(Model.MemoNo))
-            {
-                <div class="info-row">
-                    <div class="info-item">
-                        <span class="info-label">স্মারক নং:</span> @Model.MemoNo
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">স্মারক তারিখ:</span> @(Model.MemoDate?.ToString("dd/MM/yyyy") ?? "প্রযোজ্য নয়")
-                    </div>
-                </div>
-            }
-
-            <div class="info-row">
-                <div class="info-item">
-                    <span class="info-label">প্রদান করা হয়েছে:</span> @Model.IssuedTo
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-item">
-                    <span class="info-label">উদ্দেশ্য:</span> @(Model.Purpose ?? "সরবরাহ")
-                </div>
-            </div>
-
-            @if (!string.IsNullOrEmpty(Model.IssuedToDetails))
-            {
-                <div class="info-row">
-                    <div class="info-item">
-                        <span class="info-label">বিস্তারিত:</span> @Model.IssuedToDetails
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- Items Table -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width: 4%;">ক্রমিক</th>
-                    <th rowspan="2" style="width: 10%;">পণ্য কোড</th>
-                    <th rowspan="2" style="width: 18%;">পণ্যের নাম</th>
-                    <th rowspan="2" style="width: 8%;">পরিমাণ</th>
-                    <th rowspan="2" style="width: 6%;">একক</th>
-                    <th rowspan="2" style="width: 8%;">ব্যাচ নং</th>
-                    <th colspan="2" style="width: 14%;">খতিয়ান</th>
-                    <th colspan="3" style="width: 21%;">অবস্থা</th>
-                    <th rowspan="2" style="width: 11%;">মন্তব্য</th>
-                </tr>
-                <tr>
-                    <th style="width: 7%;">খতিয়ান নং</th>
-                    <th style="width: 7%;">পৃষ্ঠা নং</th>
-                    <th style="width: 7%;">ব্যবহারযোগ্য</th>
-                    <th style="width: 7%;">আংশিক</th>
-                    <th style="width: 7%;">অব্যবহারযোগ্য</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    var sn = 1;
-                }
-                @foreach (var item in Model.Items)
+    <!-- Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">ক্রম</th>
+                <th style="width: 8%;">লেজার<br />নং</th>
+                <th style="width: 6%;">পৃষ্ঠা<br />নং</th>
+                <th style="width: 22%;">দ্রব্যাদির বিবরণ</th>
+                <th style="width: 8%;">মোট<br />সংখ্যা</th>
+                <th style="width: 10%;">ব্যবহার<br />যোগ্য</th>
+                <th style="width: 10%;">আংশিক<br />ব্যবহারযোগ্য</th>
+                <th style="width: 8%;">অকেজো</th>
+                <th style="width: 10%;">একক<br />দর</th>
+                <th style="width: 13%;">মোট<br />মূল্য</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var serialNo = 1;
+                foreach (var item in Model.Items)
                 {
+                    var totalPrice = (item.UnitPrice ?? 0) * item.Quantity;
                     <tr>
-                        <td>@(sn++)</td>
-                        <td>@item.ItemCode</td>
+                        <td>@(serialNo++)</td>
+                        <td>@(item.LedgerNo ?? "")</td>
+                        <td>@(item.PageNo ?? "")</td>
                         <td class="text-left">@item.ItemName</td>
                         <td class="text-right">@item.Quantity.ToString("0.##")</td>
-                        <td>@item.Unit</td>
-                        <td>@(item.BatchNumber ?? "-")</td>
-                        <td>@(item.LedgerNo ?? "-")</td>
-                        <td>@(item.PageNo ?? "-")</td>
-                        <td class="text-right">@(item.UsableQuantity?.ToString("0.##") ?? "-")</td>
-                        <td class="text-right">@(item.PartiallyUsableQuantity?.ToString("0.##") ?? "-")</td>
-                        <td class="text-right">@(item.UnusableQuantity?.ToString("0.##") ?? "-")</td>
-                        <td class="text-left">@(item.Remarks ?? "-")</td>
+                        <td class="text-right">@(item.UsableQuantity?.ToString("0.##") ?? "")</td>
+                        <td class="text-right">@(item.PartiallyUsableQuantity?.ToString("0.##") ?? "")</td>
+                        <td class="text-right">@(item.UnusableQuantity?.ToString("0.##") ?? "")</td>
+                        <td class="text-right">@((item.UnitPrice ?? 0).ToString("0.##"))</td>
+                        <td class="text-right">@totalPrice.ToString("0.##")</td>
                     </tr>
                 }
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-right"><strong>সর্বমোট:</strong></td>
-                    <td class="text-right"><strong>@Model.Items.Sum(i => i.Quantity).ToString("0.##")</strong></td>
-                    <td colspan="8"></td>
-                </tr>
-            </tfoot>
-        </table>
 
-        <!-- QR Code -->
-        @if (!string.IsNullOrEmpty(Model.QRCodeImage))
-        {
-            <div class="qr-section">
-                <img src="data:image/png;base64,@Model.QRCodeImage" alt="QR Code" style="width: 100px; height: 100px; border: 1px solid #ccc;" />
-                <p style="margin: 5px 0; font-size: 11px;">উপরের QR কোড স্ক্যান করে তথ্য যাচাই করুন</p>
+                @* Add empty rows to fill the table *@
+                @for (int i = Model.Items.Count; i < 12; i++)
+                {
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-row">
+            <!-- Left - Provider Signature -->
+            <div class="signature-cell">
+                <div class="signature-label">বিতরণকারীর স্বাক্ষর</div>
+                <div class="signature-field">পদবী ………………………………………………</div>
+                <div class="signature-field">তারিখ…………………………………………………</div>
             </div>
-        }
 
-        <!-- Signature Section -->
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-line">
-                    <strong>সরবরাহকারীর স্বাক্ষর</strong><br />
-                    @if (!string.IsNullOrEmpty(Model.IssuedBy))
-                    {
-                        <span>নাম: @Model.IssuedBy</span><br />
-                    }
-                    <span>তারিখ: @Model.IssueDate.ToString("dd/MM/yyyy")</span>
-                </div>
+            <!-- Right - Receiver Signature -->
+            <div class="signature-cell">
+                <div class="signature-label">গ্রহণকারীর স্বাক্ষর</div>
+                <div class="signature-field">পদবী ………………………………………………</div>
+                <div class="signature-field">তারিখ…………………………………………………</div>
             </div>
-
-            <div class="signature-box">
-                <div class="signature-line">
-                    <strong>গ্রহণকারীর স্বাক্ষর</strong><br />
-                    <span>নাম: ____________________</span><br />
-                    <span>পদবি: ____________________</span><br />
-                    <span>তারিখ: ____________________</span>
-                </div>
-            </div>
-        </div>
-
-        @if (!string.IsNullOrEmpty(Model.SignatureImage))
-        {
-            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #999;">
-                <img src="data:image/png;base64,@Model.SignatureImage" alt="Digital Signature" style="max-width: 150px; max-height: 60px;" />
-                <p style="margin: 5px 0;"><strong>অনুমোদনকারী: @(Model.ApprovedBy ?? "N/A")</strong></p>
-            </div>
-        }
-
-        <!-- Footer Note -->
-        <div class="footer-note">
-            <p>এই ভাউচারটি কম্পিউটার দ্বারা তৈরি এবং স্বয়ংক্রিয়ভাবে অনুমোদিত। কোনো প্রশ্নের জন্য অনুগ্রহ করে উপরে উল্লেখিত ইস্যু নম্বর উল্লেখ করুন।</p>
         </div>
     </div>
 
