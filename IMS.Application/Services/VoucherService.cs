@@ -442,24 +442,26 @@ namespace IMS.Application.Services
                             table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(leftCol =>
                             {
                                 leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
-                                leftCol.Item().Text("প্রদান- ভাউচার নং………………………………...…").FontFamily("Kalpurush");
-                                leftCol.Item().Text("ইউনিট ……………………………………...........").FontFamily("Kalpurush");
-                                leftCol.Item().Text("স্টেশন ……………………………………...........").FontFamily("Kalpurush");
+                                leftCol.Item().Text($"প্রদান- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontFamily("Kalpurush");
+                                leftCol.Item().Text($"ইউনিট: {issue.FromStore?.Name ?? "………………"}").FontFamily("Kalpurush");
+                                leftCol.Item().Text($"স্টেশন: {issue.FromStore?.Location ?? "………………"}").FontFamily("Kalpurush");
                                 leftCol.Item().PaddingTop(10);
-                                leftCol.Item().Text("…………….আদেশানুসারে ………………….. কর্তৃক").FontFamily("Kalpurush");
-                                leftCol.Item().Text("…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :").FontFamily("Kalpurush");
+                                leftCol.Item().Text($"তারিখ: {issue.IssueDate:dd/MM/yyyy}").FontFamily("Kalpurush");
+                                leftCol.Item().Text($"অনুমোদনকারী: {issue.ApprovedByName ?? "………………"}").FontFamily("Kalpurush");
+                                leftCol.Item().Text("দ্রব্যাদির হিসাব নিম্নোক্ত:").FontFamily("Kalpurush");
                             });
 
                             // Right Column - Receiver
                             table.Cell().Border(1).BorderColor(Colors.Black).Padding(10).Column(rightCol =>
                             {
                                 rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontFamily("Kalpurush");
-                                rightCol.Item().Text("প্রাপ্ত- ভাউচার নং………………………………...…").FontFamily("Kalpurush");
-                                rightCol.Item().Text("ইউনিট ……………………………………...........").FontFamily("Kalpurush");
-                                rightCol.Item().Text("স্টেশন  ……………………………………...........").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"ইউনিট: {issue.IssuedTo ?? "………………"}").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"স্টেশন: {issue.DeliveryLocation ?? "………………"}").FontFamily("Kalpurush");
                                 rightCol.Item().PaddingTop(10);
-                                rightCol.Item().Text("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:").FontFamily("Kalpurush");
-                                rightCol.Item().Text("উৎপাদিত").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"গ্রহণকারী: {issue.ReceivedBy ?? "………………"}").FontFamily("Kalpurush");
+                                rightCol.Item().Text($"পদবী: {issue.ReceiverDesignation ?? "………………"}").FontFamily("Kalpurush");
                             });
                         });
 
@@ -533,16 +535,18 @@ namespace IMS.Application.Services
                             {
                                 leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
                                 leftSig.Item().PaddingTop(40);
-                                leftSig.Item().Text("পদবী …………………………………………").FontFamily("Kalpurush");
-                                leftSig.Item().Text("তারিখ………………………………………….").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"নাম: {issue.IssuedBy ?? "…………………"}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"পদবী: {issue.SignerDesignation ?? "…………………"}").FontFamily("Kalpurush");
+                                leftSig.Item().Text($"তারিখ: {issue.SignedDate?.ToString("dd/MM/yyyy") ?? "…………………"}").FontFamily("Kalpurush");
                             });
 
                             sigTable.Cell().Padding(10).Column(rightSig =>
                             {
                                 rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
                                 rightSig.Item().PaddingTop(40);
-                                rightSig.Item().Text("পদবী …………………………………………").FontFamily("Kalpurush");
-                                rightSig.Item().Text("তারিখ………………………………………….").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"নাম: {issue.ReceivedBy ?? "…………………"}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {issue.ReceiverDesignation ?? "…………………"}").FontFamily("Kalpurush");
+                                rightSig.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontFamily("Kalpurush");
                             });
                         });
                     });
