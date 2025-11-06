@@ -414,24 +414,24 @@ PRINT ''
 
 -- Show created ledger books
 SELECT
-    LedgerNo,
-    BookName,
-    BookType,
+    lb.LedgerNo,
+    lb.BookName,
+    lb.BookType,
     s.Name AS StoreName,
-    TotalPages,
-    CurrentPageNo,
-    (TotalPages - CurrentPageNo + 1) AS PagesRemaining,
+    lb.TotalPages,
+    lb.CurrentPageNo,
+    (lb.TotalPages - lb.CurrentPageNo + 1) AS PagesRemaining,
     CASE
-        WHEN IsClosed = 1 THEN 'Closed'
-        WHEN (TotalPages - CurrentPageNo + 1) <= 10 THEN 'Almost Full'
-        WHEN (TotalPages - CurrentPageNo + 1) <= 50 THEN 'Low'
+        WHEN lb.IsClosed = 1 THEN 'Closed'
+        WHEN (lb.TotalPages - lb.CurrentPageNo + 1) <= 10 THEN 'Almost Full'
+        WHEN (lb.TotalPages - lb.CurrentPageNo + 1) <= 50 THEN 'Low'
         ELSE 'Active'
     END AS Status,
-    Location
+    lb.Location
 FROM LedgerBooks lb
 LEFT JOIN Stores s ON lb.StoreId = s.Id
 WHERE lb.IsActive = 1
-ORDER BY BookType, LedgerNo
+ORDER BY lb.BookType, lb.LedgerNo
 
 PRINT ''
 PRINT 'Statistics:'
