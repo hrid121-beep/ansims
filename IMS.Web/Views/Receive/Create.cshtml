@@ -207,45 +207,62 @@
                     <!-- Items Section -->
                     <div class="card card-info">
                         <div class="card-header">
-                            <h3 class="card-title">Receive Items</h3>
+                            <h3 class="card-title">
+                                <i class="fas fa-boxes"></i> Receive Items
+                            </h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool btn-sm" onclick="bulkAddItems()">
-                                    <i class="fas fa-list"></i> Bulk Add
+                                <button type="button" class="btn btn-sm btn-default" id="scanBarcodeBtn">
+                                    <i class="fas fa-barcode"></i> Scan Barcode
                                 </button>
-                                <button type="button" class="btn btn-tool btn-sm" onclick="scanBarcodes()">
-                                    <i class="fas fa-barcode"></i> Scan
-                                </button>
-                                <button type="button" class="btn btn-tool btn-sm" onclick="addItem()">
+                                <button type="button" class="btn btn-sm btn-primary" id="addItemBtn">
                                     <i class="fas fa-plus"></i> Add Item
                                 </button>
                             </div>
                         </div>
                         <div class="card-body">
+                            <!-- Barcode Scanner Section -->
+                            <div id="barcodeSection" style="display: none;" class="mb-3">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                    </div>
+                                    <input type="text" id="barcodeInput" class="form-control"
+                                           placeholder="Scan or enter barcode" />
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary" id="processBarcodeBtn">
+                                            Process
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="table-responsive">
                                 <table class="table table-bordered table-sm" id="itemsTable">
-                                    <thead>
+                                    <thead class="bg-light">
                                         <tr>
                                             <th width="3%">#</th>
-                                            <th width="15%">Item</th>
-                                            <th width="12%">Store</th>
-                                            <th width="8%">Quantity</th>
-                                            <th width="8%">Condition</th>
-                                            <th width="6%">Ledger No</th>
-                                            <th width="6%">Page No</th>
-                                            <th width="8%">Usable</th>
-                                            <th width="8%">Partial</th>
-                                            <th width="8%">Unusable</th>
-                                            <th width="15%">Remarks</th>
-                                            <th width="3%">Action</th>
+                                            <th width="18%">ITEM CODE/NAME</th>
+                                            <th width="10%">CATEGORY</th>
+                                            <th width="8%">CURRENT STOCK</th>
+                                            <th width="8%">RECEIVE QTY</th>
+                                            <th width="6%">UNIT</th>
+                                            <th width="8%">BATCH NO</th>
+                                            <th width="6%">LEDGER NO</th>
+                                            <th width="6%">PAGE NO</th>
+                                            <th width="8%">USABLE</th>
+                                            <th width="8%">PARTIAL</th>
+                                            <th width="8%">UNUSABLE</th>
+                                            <th width="3%">ACTION</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="itemsBody">
+                                    <tbody id="itemsContainer">
+                                        <!-- Items will be added dynamically -->
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="3">Total</th>
-                                            <th><span id="totalQuantity">0</span></th>
-                                            <th colspan="8"></th>
+                                            <td colspan="4" class="text-right"><strong>Total Items:</strong></td>
+                                            <td id="totalItems" class="text-center font-weight-bold">0</td>
+                                            <td colspan="8"></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -425,6 +442,52 @@
     </div>
 </div>
 
+<!-- Item Selection Modal -->
+<div class="modal fade" id="itemModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Item</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" id="itemSearch" class="form-control"
+                               placeholder="Search by name or code..." />
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary" id="searchItemsBtn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Unit</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsList">
+                            <tr>
+                                <td colspan="6" class="text-center">Select a store first to view items</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <!-- Select2 -->
     <script src="~/adminlte/plugins/select2/js/select2.full.min.js"></script>
@@ -437,6 +500,8 @@
     <script>
         let itemIndex = 0;
         let signaturePad;
+        let selectedItems = [];
+        window.storeItems = [];
 
         $(document).ready(function() {
             // Initialize Select2
@@ -447,13 +512,91 @@
             // Initialize signature pad
             initSignaturePad();
 
-            // Add first item
-            addItem();
-
             // Set today's date as default
             if (!$('#ReceiveDate').val()) {
                 $('#ReceiveDate').val(new Date().toISOString().split('T')[0]);
             }
+
+            // ==================== Item Modal Handlers ====================
+            $('#addItemBtn').click(function() {
+                const storeId = $('#StoreId').val();
+                if (!storeId) {
+                    toastr.warning('Please select a receiving store first', 'Store Required');
+                    return;
+                }
+                loadStoreItems(storeId);
+                $('#itemModal').modal('show');
+            });
+
+            $('#searchItemsBtn').click(function() {
+                const storeId = $('#StoreId').val();
+                if (storeId) {
+                    loadStoreItems(storeId);
+                }
+            });
+
+            $('#itemSearch').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    $('#searchItemsBtn').click();
+                }
+            });
+
+            // ==================== Barcode Scanner Handlers ====================
+            $('#scanBarcodeBtn').click(function() {
+                const storeId = $('#StoreId').val();
+                if (!storeId) {
+                    toastr.warning('Please select a receiving store first', 'Store Required');
+                    return;
+                }
+                $('#barcodeSection').slideToggle();
+                $('#barcodeInput').focus();
+            });
+
+            $('#processBarcodeBtn').click(function() {
+                processBarcode();
+            });
+
+            $('#barcodeInput').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    processBarcode();
+                }
+            });
+
+            // ==================== Item Selection Handler ====================
+            $(document).on('click', '.select-item:not(:disabled)', function() {
+                const item = $(this).data('item');
+                if (item) {
+                    addItemToTable(item);
+                    $(this).prop('disabled', true)
+                           .removeClass('btn-primary')
+                           .addClass('btn-secondary')
+                           .html('Already Added');
+
+                    if (!event.shiftKey) {
+                        $('#itemModal').modal('hide');
+                    }
+                }
+            });
+
+            // ==================== Remove Item Handler ====================
+            $(document).on('click', '.remove-item', function() {
+                const row = $(this).closest('tr');
+                const itemId = row.attr('id').replace('item_', '');
+                const itemIdValue = row.find('input[name*=".ItemId"]').val();
+
+                row.remove();
+                selectedItems = selectedItems.filter(id => id != itemIdValue);
+
+                // Re-enable item in modal
+                $(`.select-item[data-item-id="${itemIdValue}"]`)
+                    .prop('disabled', false)
+                    .removeClass('btn-secondary')
+                    .addClass('btn-primary')
+                    .html('<i class="fas fa-plus"></i> Select');
+
+                updateSummary();
+                toastr.info('Item removed', '', {timeOut: 1500, positionClass: 'toast-bottom-right'});
+            });
 
             // ==================== Ledger Book Management ====================
             // Load ledger books when store is selected
@@ -713,6 +856,214 @@
             $('#itemCount').text(itemCount);
             $('#goodCount').text(goodCount);
             $('#damagedCount').text(damagedCount);
+        }
+
+        // ==================== Load Store Items (for modal) ====================
+        function loadStoreItems(storeId) {
+            const searchTerm = $('#itemSearch').val() || '';
+
+            $.ajax({
+                url: '/Store/GetStoreItems',
+                type: 'GET',
+                data: { storeId: storeId, searchTerm: searchTerm },
+                beforeSend: function() {
+                    $('#itemsList').html('<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
+                },
+                success: function(items) {
+                    const tbody = $('#itemsList');
+                    tbody.empty();
+
+                    if (!items || items.length === 0) {
+                        tbody.append('<tr><td colspan="6" class="text-center">No items found</td></tr>');
+                        return;
+                    }
+
+                    window.storeItems = items;
+                    items.forEach(function(item) {
+                        tbody.append(createItemRow(item));
+                    });
+                },
+                error: function(xhr) {
+                    $('#itemsList').html('<tr><td colspan="6" class="text-center text-danger">Error loading items</td></tr>');
+                }
+            });
+        }
+
+        function createItemRow(item) {
+            const stockClass = item.quantity <= 0 ? 'text-danger font-weight-bold' :
+                             item.quantity <= (item.minimumStock || 0) ? 'text-warning font-weight-bold' :
+                             'text-success';
+
+            const isDisabled = selectedItems.includes(item.itemId);
+            const buttonClass = isDisabled ? 'btn-secondary' : 'btn-primary';
+            const buttonText = isDisabled ? 'Already Added' : '<i class="fas fa-plus"></i> Select';
+
+            return `
+                <tr data-item-id="${item.itemId}">
+                    <td><strong>${item.itemCode || item.code || '-'}</strong></td>
+                    <td>${item.itemName || item.name || '-'}</td>
+                    <td>${item.categoryName || '-'}</td>
+                    <td class="${stockClass}">${item.quantity || 0} ${item.unit || ''}</td>
+                    <td>${item.unit || '-'}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm ${buttonClass} select-item"
+                                data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'
+                                ${isDisabled ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ==================== Add Item to Table (modal-based) ====================
+        function addItemToTable(item) {
+            if (selectedItems.includes(item.itemId)) {
+                toastr.info('Item already added', '', {timeOut: 1500});
+                return;
+            }
+
+            const stockValue = item.currentStock || item.quantity || 0;
+            const storeId = $('#StoreId').val();
+
+            const row = `
+                <tr id="item_${item.itemId}" class="item-row">
+                    <td class="text-center">${itemIndex + 1}</td>
+                    <td>
+                        <input type="hidden" name="Items[${itemIndex}].ItemId" value="${item.itemId}" />
+                        <input type="hidden" name="Items[${itemIndex}].StoreId" value="${storeId}" />
+                        <strong>${item.itemCode || item.code || '-'}</strong><br/>
+                        <small class="text-muted">${item.itemName || item.name || '-'}</small>
+                    </td>
+                    <td>${item.categoryName || '-'}</td>
+                    <td class="text-success">
+                        ${stockValue} ${item.unit || ''}
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].Quantity"
+                               class="form-control form-control-sm item-quantity"
+                               min="0.01" step="0.01"
+                               value="1" required />
+                    </td>
+                    <td>${item.unit || '-'}
+                        <input type="hidden" name="Items[${itemIndex}].Unit" value="${item.unit || ''}" />
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${itemIndex}].BatchNumber"
+                               class="form-control form-control-sm"
+                               value="${item.batchNumber || ''}" placeholder="Batch No" />
+                    </td>
+                    <td>
+                        <select name="Items[${itemIndex}].LedgerBookId"
+                                class="form-control form-control-sm ledger-book-select"
+                                data-item-index="${itemIndex}"
+                                onchange="updatePageNumber(this)">
+                            <option value="">Select Ledger</option>
+                        </select>
+                        <input type="hidden" name="Items[${itemIndex}].LedgerNo" class="ledger-no-hidden" />
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${itemIndex}].PageNo"
+                               class="form-control form-control-sm page-no-field"
+                               placeholder="Page" readonly />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].UsableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Usable" />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].PartiallyUsableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Partial" />
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${itemIndex}].UnusableQuantity"
+                               class="form-control form-control-sm"
+                               min="0" step="0.01" placeholder="Unusable" />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-item" title="Remove">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $('#itemsContainer').append(row);
+            selectedItems.push(item.itemId);
+
+            // Populate ledger dropdown
+            const newLedgerDropdown = $(`#item_${item.itemId}`).find('.ledger-book-select');
+            if (newLedgerDropdown.length > 0) {
+                populateLedgerDropdown(newLedgerDropdown[0]);
+            }
+
+            itemIndex++;
+            updateSummary();
+
+            toastr.success(`${item.itemName || item.name} added`, 'Item Added', {
+                timeOut: 1500,
+                positionClass: 'toast-bottom-right'
+            });
+        }
+
+        // ==================== Process Barcode ====================
+        function processBarcode() {
+            const barcode = $('#barcodeInput').val().trim();
+            if (!barcode) {
+                toastr.warning('Please enter a barcode', 'Barcode Required');
+                return;
+            }
+
+            const item = window.storeItems.find(i => i.barcode === barcode || i.itemCode === barcode || i.code === barcode);
+
+            if (item) {
+                addItemToTable(item);
+                $('#barcodeInput').val('').focus();
+                toastr.success('Item added via barcode', '', {timeOut: 1500, positionClass: 'toast-bottom-right'});
+            } else {
+                toastr.error('Item not found with this barcode', 'Not Found');
+                $('#barcodeInput').select();
+            }
+        }
+
+        // ==================== Populate Ledger Dropdown ====================
+        function populateLedgerDropdown(selectElement) {
+            const storeId = $('#StoreId').val();
+            if (!storeId) return;
+
+            $.ajax({
+                url: '/LedgerBook/GetActiveLedgerBooks',
+                type: 'GET',
+                data: {
+                    storeId: storeId,
+                    bookType: 'Receive'
+                },
+                success: function(ledgerBooks) {
+                    const $select = $(selectElement);
+                    $select.empty();
+                    $select.append('<option value="">Select Ledger</option>');
+
+                    ledgerBooks.forEach(function(book) {
+                        let status = '';
+                        if (book.pagesRemaining <= 10) {
+                            status = '⚠️ Almost Full';
+                        } else if (book.pagesRemaining <= 50) {
+                            status = '⏰ Low';
+                        }
+
+                        $select.append(`<option value="${book.id}"
+                                              data-ledger-no="${book.ledgerNo}"
+                                              data-next-page="${book.currentPageNo}">
+                                           ${book.ledgerNo} - Page: ${book.currentPageNo} ${status}
+                                       </option>`);
+                    });
+                },
+                error: function() {
+                    console.error('Failed to load ledger books for dropdown');
+                }
+            });
         }
 
         // ==================== Update Page Number from Ledger Book ====================
