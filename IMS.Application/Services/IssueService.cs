@@ -1056,7 +1056,7 @@ namespace IMS.Application.Services
 
                 if (!string.IsNullOrEmpty(issueType))
                 {
-                    filteredIssues = filteredIssues.Where(i => i.IssueType == issueType);
+                    filteredIssues = filteredIssues.Where(i => i.IssuedToType == issueType);
                 }
 
                 if (fromDate.HasValue)
