@@ -770,13 +770,20 @@
                 categoryId: '@Model.CategoryId',
                 subCategoryId: '@Model.SubCategoryId',
                 brandId: '@Model.BrandId',
-                itemModelId: '@Model.ItemModelId'
+                itemModelId: '@Model.ItemModelId',
+                type: @((int)Model.Type) // Cast enum to int
             };
             console.log('Initial form values:', initialValues);
 
             // Set initial values
             if (initialValues.categoryId && initialValues.categoryId !== '0') {
                 $('#CategoryDropdown').val(initialValues.categoryId).trigger('change.select2');
+            }
+
+            // Set Item Type value explicitly (important for Select2)
+            if (initialValues.type && initialValues.type !== 0) {
+                console.log('Setting Item Type to:', initialValues.type);
+                $('select[name="Type"]').val(initialValues.type).trigger('change');
             }
 
             // Show/hide conditional fields based on checkbox states
