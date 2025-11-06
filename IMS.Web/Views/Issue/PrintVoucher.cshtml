@@ -5,177 +5,317 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
     <meta charset="utf-8">
-    <title>Issue Voucher - @Model.VoucherNumber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইস্যু ভাউচার - @Model.VoucherNumber</title>
     <style>
+        @@page {
+            size: A4;
+            margin: 15mm;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .voucher-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            border: 2px solid #000;
+            padding: 15px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
         }
 
-            .header h1 {
-                margin: 0;
-            }
+        .header h1 {
+            margin: 5px 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .header h2 {
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .header h3 {
+            margin: 5px 0;
+            font-size: 16px;
+            text-decoration: underline;
+        }
 
         .voucher-info {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-            .voucher-info table {
-                width: 100%;
-            }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
 
-            .voucher-info td {
-                padding: 5px;
-            }
+        .info-item {
+            flex: 1;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            min-width: 100px;
+        }
 
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 15px 0;
+            font-size: 12px;
         }
 
-            .items-table th, .items-table td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }
-
-            .items-table th {
-                background-color: #f2f2f2;
-            }
-
-        .qr-code {
+        .items-table th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 6px 4px;
             text-align: center;
-            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .items-table td {
+            border: 1px solid #000;
+            padding: 5px 4px;
+            text-align: center;
+        }
+
+        .items-table td.text-left {
+            text-align: left;
+        }
+
+        .items-table td.text-right {
+            text-align: right;
+        }
+
+        .items-table tfoot td {
+            font-weight: bold;
+            background-color: #f9f9f9;
         }
 
         .signature-section {
             margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .signature-box {
-            display: inline-block;
             width: 45%;
             text-align: center;
         }
 
         .signature-line {
-            border-bottom: 1px solid #000;
-            margin: 60px 20px 5px 20px;
+            border-top: 1px solid #000;
+            margin-top: 50px;
+            padding-top: 5px;
         }
+
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            font-size: 11px;
+            text-align: center;
+            color: #666;
+        }
+
         @@media print {
-            .no-print
+            .no-print {
+                display: none !important;
+            }
 
-        {
-            display: none;
-        }
+            body {
+                padding: 0;
+            }
 
+            .voucher-container {
+                border: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>ANSAR & VDP</h1>
-        <h2>ISSUE VOUCHER</h2>
-        <h3>@Model.VoucherNumber</h3>
-    </div>
+    <div class="voucher-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h1>
+            <h1>বাংলাদেশ আনসার ও ভিডিপি</h1>
+            <h2>মালামাল সরবরাহ ভাউচার</h2>
+            <h3>ভাউচার নং: @Model.VoucherNumber</h3>
+        </div>
 
-    <div class="voucher-info">
-        <table>
-            <tr>
-                <td><strong>Issue Date:</strong> @Model.IssueDate.ToString("dd-MMM-yyyy")</td>
-                <td><strong>Issue No:</strong> @Model.IssueId</td>
-            </tr>
+        <!-- Voucher Info -->
+        <div class="voucher-info">
+            <div class="info-row">
+                <div class="info-item">
+                    <span class="info-label">ইস্যু নং:</span> @Model.IssueNo
+                </div>
+                <div class="info-item">
+                    <span class="info-label">তারিখ:</span> @Model.IssueDate.ToString("dd/MM/yyyy")
+                </div>
+            </div>
+
             @if (!string.IsNullOrEmpty(Model.MemoNo))
             {
-                <tr>
-                    <td><strong>Memo No:</strong> @Model.MemoNo</td>
-                    <td><strong>Memo Date:</strong> @(Model.MemoDate?.ToString("dd-MMM-yyyy") ?? "N/A")</td>
-                </tr>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">স্মারক নং:</span> @Model.MemoNo
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">স্মারক তারিখ:</span> @(Model.MemoDate?.ToString("dd/MM/yyyy") ?? "প্রযোজ্য নয়")
+                    </div>
+                </div>
             }
-            <tr>
-                <td><strong>Issued To:</strong> @Model.IssuedTo</td>
-                <td><strong>Purpose:</strong> @Model.Purpose</td>
-            </tr>
-            <tr>
-                <td colspan="2"><strong>Details:</strong> @Model.IssuedToDetails</td>
-            </tr>
-        </table>
-    </div>
 
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th>S/N</th>
-                <th>Item Code</th>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-                <th>Store</th>
-                <th>Remarks</th>
-            </tr>
-        </thead>
-        <tbody>
-            @{
-                var sn = 1;
-            }
-            @foreach (var item in Model.Items)
+            <div class="info-row">
+                <div class="info-item">
+                    <span class="info-label">প্রদান করা হয়েছে:</span> @Model.IssuedTo
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-item">
+                    <span class="info-label">উদ্দেশ্য:</span> @(Model.Purpose ?? "সরবরাহ")
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.IssuedToDetails))
             {
-                <tr>
-                    <td>@(sn++)</td>
-                    <td>@item.ItemCode</td>
-                    <td>@item.ItemName</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.Unit</td>
-                    <td>@item.StoreName</td>
-                    <td>@item.Remarks</td>
-                </tr>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">বিস্তারিত:</span> @Model.IssuedToDetails
+                    </div>
+                </div>
             }
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="3">Total</th>
-                <th>@Model.Items.Sum(i => i.Quantity)</th>
-                <th colspan="3"></th>
-            </tr>
-        </tfoot>
-    </table>
+        </div>
 
-    <div class="qr-code">
-        <img src="data:image/png;base64,@Model.QRCodeImage" alt="QR Code" style="width: 150px; height: 150px;" />
-        <p><small>Scan this QR code to receive items</small></p>
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width: 4%;">ক্রমিক</th>
+                    <th rowspan="2" style="width: 10%;">পণ্য কোড</th>
+                    <th rowspan="2" style="width: 18%;">পণ্যের নাম</th>
+                    <th rowspan="2" style="width: 8%;">পরিমাণ</th>
+                    <th rowspan="2" style="width: 6%;">একক</th>
+                    <th rowspan="2" style="width: 8%;">ব্যাচ নং</th>
+                    <th colspan="2" style="width: 14%;">খতিয়ান</th>
+                    <th colspan="3" style="width: 21%;">অবস্থা</th>
+                    <th rowspan="2" style="width: 11%;">মন্তব্য</th>
+                </tr>
+                <tr>
+                    <th style="width: 7%;">খতিয়ান নং</th>
+                    <th style="width: 7%;">পৃষ্ঠা নং</th>
+                    <th style="width: 7%;">ব্যবহারযোগ্য</th>
+                    <th style="width: 7%;">আংশিক</th>
+                    <th style="width: 7%;">অব্যবহারযোগ্য</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var sn = 1;
+                }
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@(sn++)</td>
+                        <td>@item.ItemCode</td>
+                        <td class="text-left">@item.ItemName</td>
+                        <td class="text-right">@item.Quantity.ToString("0.##")</td>
+                        <td>@item.Unit</td>
+                        <td>@(item.BatchNumber ?? "-")</td>
+                        <td>@(item.LedgerNo ?? "-")</td>
+                        <td>@(item.PageNo ?? "-")</td>
+                        <td class="text-right">@(item.UsableQuantity?.ToString("0.##") ?? "-")</td>
+                        <td class="text-right">@(item.PartiallyUsableQuantity?.ToString("0.##") ?? "-")</td>
+                        <td class="text-right">@(item.UnusableQuantity?.ToString("0.##") ?? "-")</td>
+                        <td class="text-left">@(item.Remarks ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>সর্বমোট:</strong></td>
+                    <td class="text-right"><strong>@Model.Items.Sum(i => i.Quantity).ToString("0.##")</strong></td>
+                    <td colspan="8"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- QR Code -->
+        @if (!string.IsNullOrEmpty(Model.QRCodeImage))
+        {
+            <div class="qr-section">
+                <img src="data:image/png;base64,@Model.QRCodeImage" alt="QR Code" style="width: 100px; height: 100px; border: 1px solid #ccc;" />
+                <p style="margin: 5px 0; font-size: 11px;">উপরের QR কোড স্ক্যান করে তথ্য যাচাই করুন</p>
+            </div>
+        }
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line">
+                    <strong>সরবরাহকারীর স্বাক্ষর</strong><br />
+                    @if (!string.IsNullOrEmpty(Model.IssuedBy))
+                    {
+                        <span>নাম: @Model.IssuedBy</span><br />
+                    }
+                    <span>তারিখ: @Model.IssueDate.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line">
+                    <strong>গ্রহণকারীর স্বাক্ষর</strong><br />
+                    <span>নাম: ____________________</span><br />
+                    <span>পদবি: ____________________</span><br />
+                    <span>তারিখ: ____________________</span>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.SignatureImage))
+        {
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #999;">
+                <img src="data:image/png;base64,@Model.SignatureImage" alt="Digital Signature" style="max-width: 150px; max-height: 60px;" />
+                <p style="margin: 5px 0;"><strong>অনুমোদনকারী: @(Model.ApprovedBy ?? "N/A")</strong></p>
+            </div>
+        }
+
+        <!-- Footer Note -->
+        <div class="footer-note">
+            <p>এই ভাউচারটি কম্পিউটার দ্বারা তৈরি এবং স্বয়ংক্রিয়ভাবে অনুমোদিত। কোনো প্রশ্নের জন্য অনুগ্রহ করে উপরে উল্লেখিত ইস্যু নম্বর উল্লেখ করুন।</p>
+        </div>
     </div>
 
-    <div class="signature-section">
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <p>Issued By<br>@Model.IssuedBy<br>Date: @Model.IssueDate.ToString("dd-MMM-yyyy")</p>
-        </div>
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <p>Received By<br>Name: ________________<br>Date: ________________</p>
-        </div>
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.SignatureImage))
-    {
-        <div style="text-align: center; margin-top: 20px;">
-            <img src="data:image/png;base64,@Model.SignatureImage" alt="Digital Signature" style="max-width: 200px;" />
-            <p>Approved By: @Model.ApprovedBy</p>
-        </div>
-    }
-
+    <!-- Print Buttons -->
     <div class="no-print" style="text-align: center; margin-top: 30px;">
-        <button onclick="window.print()">Print Voucher</button>
-        <button onclick="window.close()">Close</button>
+        <button onclick="window.print()" style="padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px;">
+            <i class="fas fa-print"></i> মুদ্রণ করুন
+        </button>
+        <button onclick="window.close()" style="padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; background-color: #6c757d; color: white; border: none; border-radius: 5px;">
+            <i class="fas fa-times"></i> বন্ধ করুন
+        </button>
     </div>
 </body>
 </html>
