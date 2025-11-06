@@ -27,7 +27,7 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <form asp-action="Edit" method="post" id="editItemForm">
+        <form asp-action="Edit" method="post" id="editItemForm" enctype="multipart/form-data">
             <!-- Hidden Fields -->
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="ItemCode" />
@@ -633,6 +633,51 @@
                         </div>
                     </div>
 
+                    <!-- Item Image Upload -->
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-image"></i> Item Image
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Current Image Display -->
+                            @if (!string.IsNullOrEmpty(Model.ImagePath))
+                            {
+                                <div class="text-center mb-3">
+                                    <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                    <input type="hidden" asp-for="ImagePath" />
+                                    <p class="text-muted mt-2"><small>Current Image</small></p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center mb-3 p-3 bg-light">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2"><small>No image uploaded</small></p>
+                                </div>
+                            }
+
+                            <!-- Image Upload -->
+                            <div class="form-group">
+                                <label for="itemImageUpload">
+                                    <i class="fas fa-upload"></i> @(!string.IsNullOrEmpty(Model.ImagePath) ? "Change Image" : "Upload Image")
+                                </label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="itemImageUpload" name="ItemImageFile" accept="image/*">
+                                    <label class="custom-file-label" for="itemImageUpload">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Supported: JPG, PNG, GIF (Max 2MB)</small>
+                            </div>
+
+                            <!-- Image Preview -->
+                            <div id="imagePreview" class="text-center mt-3" style="display:none;">
+                                <p class="text-success"><small><i class="fas fa-check-circle"></i> New image selected:</small></p>
+                                <img id="previewImg" src="#" alt="Preview" class="img-fluid img-thumbnail" style="max-height: 150px;">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Quick Info -->
                     <div class="card card-widget widget-user-2">
                         <div class="widget-user-header bg-gradient-primary">
@@ -996,6 +1041,48 @@
 
                 console.log('Form validation passed, submitting...');
                 return true;
+            });
+
+            // ==================== Image Upload Preview ====================
+            $('#itemImageUpload').on('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    // Check file size (2MB = 2097152 bytes)
+                    if (file.size > 2097152) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Image size must be less than 2MB');
+                        }
+                        $(this).val('');
+                        $('#imagePreview').hide();
+                        return;
+                    }
+
+                    // Check file type
+                    if (!file.type.match('image.*')) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Please select a valid image file');
+                        }
+                        $(this).val('');
+                        $('#imagePreview').hide();
+                        return;
+                    }
+
+                    // Update file label
+                    $(this).next('.custom-file-label').html(file.name);
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#previewImg').attr('src', e.target.result);
+                        $('#imagePreview').fadeIn();
+                    };
+                    reader.readAsDataURL(file);
+
+                    console.log('Image file selected:', file.name, 'Size:', file.size, 'bytes');
+                } else {
+                    $('#imagePreview').hide();
+                    $(this).next('.custom-file-label').html('Choose file...');
+                }
             });
 
             // Handle collapsible cards

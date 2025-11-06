@@ -19,6 +19,7 @@ namespace IMS.Web.Controllers
         private readonly IBrandService _brandService;
         private readonly IItemModelService _itemModelService;
         private readonly IBarcodeService _barcodeService;
+        private readonly IFileService _fileService;
         private readonly ILogger<ItemController> _logger;
 
         public ItemController(
@@ -28,6 +29,7 @@ namespace IMS.Web.Controllers
             IBrandService brandService,
             IItemModelService itemModelService,
             IBarcodeService barcodeService,
+            IFileService fileService,
             ILogger<ItemController> logger)
         {
             _itemService = itemService;
@@ -36,6 +38,7 @@ namespace IMS.Web.Controllers
             _brandService = brandService;
             _itemModelService = itemModelService;
             _barcodeService = barcodeService;
+            _fileService = fileService;
             _logger = logger;
         }
 
@@ -136,7 +139,7 @@ namespace IMS.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HasPermission(Permission.UpdateItem)]
-        public async Task<IActionResult> Edit(int id, ItemDto itemDto)
+        public async Task<IActionResult> Edit(int id, ItemDto itemDto, IFormFile ItemImageFile)
         {
             if (id != itemDto.Id)
             {
@@ -165,6 +168,29 @@ namespace IMS.Web.Controllers
                     ModelState.AddModelError("MinimumStock", "Minimum stock cannot be negative");
                     await LoadViewBagData(itemDto);
                     return View(itemDto);
+                }
+
+                // Handle image upload
+                if (ItemImageFile != null && ItemImageFile.Length > 0)
+                {
+                    // Validate image file
+                    if (!_fileService.IsValidImageFile(ItemImageFile))
+                    {
+                        ModelState.AddModelError("", "Invalid image file. Please upload a valid image (JPG, PNG, GIF)");
+                        await LoadViewBagData(itemDto);
+                        TempData["Error"] = "Invalid image file format.";
+                        return View(itemDto);
+                    }
+
+                    // Delete old image if exists
+                    if (!string.IsNullOrEmpty(itemDto.ImagePath))
+                    {
+                        await _fileService.DeleteFileAsync(itemDto.ImagePath);
+                    }
+
+                    // Save new image
+                    itemDto.ImagePath = await _fileService.SaveFileAsync(ItemImageFile, "items");
+                    _logger.LogInformation("Item image uploaded: {ImagePath} for item {ItemId}", itemDto.ImagePath, id);
                 }
 
                 // Set update audit fields
