@@ -731,22 +731,24 @@ namespace IMS.Application.Services
 
             if (isProvider)
             {
-                // Provider details (Sender) - with dots like nomuna
-                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং………………………………...…", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন ……………………………………...........", normalFont));
+                // Provider details (Sender) - shows who sent/returned the items
+                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং: {receive.OriginalVoucherNo ?? receive.VoucherNo ?? "………………"}", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট: {receive.ReceivedFrom ?? "………………"}", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন: ………………", normalFont)); // Location not available in current schema
+                cell.AddElement(new Paragraph($"তারিখ: {receive.ReceiveDate:dd/MM/yyyy}", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
                 cell.AddElement(new Paragraph($"…………….আদেশানুসারে ………………….. কর্তৃক", normalFont));
                 cell.AddElement(new Paragraph($"…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :", normalFont));
             }
             else
             {
-                // Receiver details - with dots like nomuna
-                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং………………………………...…", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট ……………………………………...........", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন  ……………………………………...........", normalFont));
+                // Receiver details (Store receiving the items)
+                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং: {receive.VoucherNo ?? "………………"}", normalFont));
+                cell.AddElement(new Paragraph($"ইউনিট: {receive.Store?.Name ?? "………………"}", normalFont));
+                cell.AddElement(new Paragraph($"স্টেশন: {receive.Store?.Location ?? "………………"}", normalFont));
+                cell.AddElement(new Paragraph($"তারিখ: {receive.ReceivedDate:dd/MM/yyyy}", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
+                cell.AddElement(new Paragraph("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
                 cell.AddElement(new Paragraph("উৎপাদিত", normalFont));
             }
 
@@ -872,22 +874,63 @@ namespace IMS.Application.Services
             table.WidthPercentage = 100;
             table.SetWidths(new float[] { 50f, 50f });
 
-            // Left side - Provider signature
+            // Left side - Provider signature (Sender)
             PdfPCell leftCell = new PdfPCell();
             leftCell.Border = Rectangle.NO_BORDER;
             leftCell.AddElement(new Paragraph("বিতরণকারীর স্বাক্ষর", normalFont));
-            leftCell.AddElement(new Paragraph("\n\n", normalFont));
-            leftCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
-            leftCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
+            leftCell.AddElement(new Paragraph("\n\n\n", normalFont)); // Space for manual signature
+
+            var providerName = receive.ReceivedFrom ?? "…………………";
+            var providerDate = receive.ReceiveDate.ToString("dd/MM/yyyy");
+
+            leftCell.AddElement(new Paragraph($"নাম: {providerName}", normalFont));
+            leftCell.AddElement(new Paragraph("পদবী: …………………………………………", normalFont)); // Not available in schema
+            leftCell.AddElement(new Paragraph($"তারিখ: {providerDate}", normalFont));
             table.AddCell(leftCell);
 
             // Right side - Receiver signature
             PdfPCell rightCell = new PdfPCell();
             rightCell.Border = Rectangle.NO_BORDER;
             rightCell.AddElement(new Paragraph("গ্রহণকারীর স্বাক্ষর", normalFont));
-            rightCell.AddElement(new Paragraph("\n\n", normalFont));
-            rightCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
-            rightCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
+
+            // Try to embed receiver signature image if available
+            if (!string.IsNullOrEmpty(receive.ReceiverSignature))
+            {
+                try
+                {
+                    // Check if it's base64 encoded signature data
+                    var signatureData = receive.ReceiverSignature;
+                    if (signatureData.Contains(","))
+                    {
+                        signatureData = signatureData.Split(',')[1]; // Remove data:image/png;base64, prefix
+                    }
+
+                    // Try to decode as base64
+                    var imageBytes = Convert.FromBase64String(signatureData);
+                    iTextSharp.text.Image signatureImage = iTextSharp.text.Image.GetInstance(imageBytes);
+                    signatureImage.ScaleToFit(80f, 40f);
+                    rightCell.AddElement(signatureImage);
+                    rightCell.AddElement(new Paragraph("\n", normalFont));
+                }
+                catch
+                {
+                    // Not a base64 image, just show space for manual signature
+                    rightCell.AddElement(new Paragraph("\n\n", normalFont));
+                }
+            }
+            else
+            {
+                rightCell.AddElement(new Paragraph("\n\n", normalFont)); // Space for manual signature
+            }
+
+            var receiverName = receive.ReceiverName ?? receive.ReceivedBy ?? "…………………";
+            var receiverBadge = receive.ReceiverBadgeNo ?? "…………………";
+            var receiverDesignation = receive.ReceiverDesignation ?? receiverBadge; // Use badge as designation if no designation
+            var receiverDate = receive.ReceivedDate.ToString("dd/MM/yyyy");
+
+            rightCell.AddElement(new Paragraph($"নাম: {receiverName}", normalFont));
+            rightCell.AddElement(new Paragraph($"পদবী: {receiverDesignation}", normalFont));
+            rightCell.AddElement(new Paragraph($"তারিখ: {receiverDate}", normalFont));
             table.AddCell(rightCell);
 
             return table;
