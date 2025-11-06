@@ -445,9 +445,10 @@ namespace IMS.Application.Services
                                 leftCol.Item().Text($"প্রদান- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                                 leftCol.Item().Text($"ইউনিট: {issue.FromStore?.Name ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                                 leftCol.Item().Text($"স্টেশন: {issue.FromStore?.Location ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
-                                leftCol.Item().PaddingTop(5);
                                 leftCol.Item().Text($"তারিখ: {issue.IssueDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
-                                leftCol.Item().Text($"অনুমোদনকারী: {issue.ApprovedByName ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().PaddingTop(5);
+                                leftCol.Item().Text("…………….আদেশানুসারে ………………….. কর্তৃক").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text("…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :").FontSize(8).FontFamily("Kalpurush");
                             });
 
                             // Right Column - Receiver
@@ -457,9 +458,10 @@ namespace IMS.Application.Services
                                 rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                                 rightCol.Item().Text($"ইউনিট: {issue.IssuedTo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
                                 rightCol.Item().Text($"স্টেশন: {issue.DeliveryLocation ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().PaddingTop(5);
                                 rightCol.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().Text($"গ্রহণকারী: {issue.ReceivedBy ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().PaddingTop(5);
+                                rightCol.Item().Text("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেয়া হল:").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text("উৎপাদিত").FontSize(8).FontFamily("Kalpurush");
                             });
                         });
 
@@ -562,12 +564,10 @@ namespace IMS.Application.Services
                                 // Use digital signature data if available, otherwise fallback to plain fields
                                 var issuerName = issue.IssuerSignature?.SignerName ?? issue.IssuedBy ?? "…………………";
                                 var issuerBadge = issue.IssuerSignature?.SignerBadgeId ?? issue.SignerBadgeId ?? "…………………";
-                                var issuerDesignation = issue.IssuerSignature?.SignerDesignation ?? issue.SignerDesignation ?? "…………………";
                                 var issuerDate = issue.IssuerSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.SignedDate?.ToString("dd/MM/yyyy") ?? "…………………";
 
                                 leftSig.Item().Text($"নাম: {issuerName}").FontSize(8).FontFamily("Kalpurush");
-                                leftSig.Item().Text($"ব্যাজ/আইডি: {issuerBadge}").FontSize(8).FontFamily("Kalpurush");
-                                leftSig.Item().Text($"পদবী: {issuerDesignation}").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text($"পদবী: {issuerBadge}").FontSize(8).FontFamily("Kalpurush");
                                 leftSig.Item().Text($"তারিখ: {issuerDate}").FontSize(8).FontFamily("Kalpurush");
 
                                 // Add "Digital Signature Verified" badge if signature exists
@@ -611,12 +611,10 @@ namespace IMS.Application.Services
                                 // Use digital signature data if available, otherwise fallback to plain fields
                                 var receiverName = issue.ReceiverSignature?.SignerName ?? issue.ReceivedBy ?? "…………………";
                                 var receiverBadge = issue.ReceiverSignature?.SignerBadgeId ?? "…………………";
-                                var receiverDesignation = issue.ReceiverSignature?.SignerDesignation ?? issue.ReceiverDesignation ?? "…………………";
                                 var receiverDate = issue.ReceiverSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.ReceivedDate.ToString("dd/MM/yyyy");
 
                                 rightSig.Item().Text($"নাম: {receiverName}").FontSize(8).FontFamily("Kalpurush");
-                                rightSig.Item().Text($"ব্যাজ/আইডি: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
-                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
                                 rightSig.Item().Text($"তারিখ: {receiverDate}").FontSize(8).FontFamily("Kalpurush");
 
                                 // Add "Digital Signature Verified" badge if signature exists
