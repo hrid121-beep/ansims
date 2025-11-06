@@ -269,10 +269,10 @@ BEGIN
     -- Update IssueItems with LedgerBookId based on their StoreId
     -- Assign to corresponding Issue type ledger books
 
+    -- First, update LedgerBookId and LedgerNo
     UPDATE ii
     SET ii.LedgerBookId = lb.Id,
-        ii.LedgerNo = lb.LedgerNo,
-        ii.PageNo = CAST((ROW_NUMBER() OVER (PARTITION BY lb.Id ORDER BY ii.CreatedAt)) AS VARCHAR(10))
+        ii.LedgerNo = lb.LedgerNo
     FROM IssueItems ii
     INNER JOIN Issues i ON ii.IssueId = i.Id
     INNER JOIN LedgerBooks lb ON (
@@ -284,6 +284,21 @@ BEGIN
 
     DECLARE @UpdatedIssueItems INT = @@ROWCOUNT
     PRINT 'Updated ' + CAST(@UpdatedIssueItems AS VARCHAR) + ' IssueItems with LedgerBookId'
+
+    -- Then, update PageNo using CTE
+    ;WITH PageNumbers AS (
+        SELECT
+            ii.Id,
+            ROW_NUMBER() OVER (PARTITION BY ii.LedgerBookId ORDER BY ii.CreatedAt) AS PageNum
+        FROM IssueItems ii
+        WHERE ii.LedgerBookId IS NOT NULL
+    )
+    UPDATE ii
+    SET ii.PageNo = CAST(pn.PageNum AS VARCHAR(10))
+    FROM IssueItems ii
+    INNER JOIN PageNumbers pn ON ii.Id = pn.Id
+
+    PRINT 'Assigned page numbers to IssueItems'
 
     -- For IssueItems without matching store, assign to first available Issue ledger
     UPDATE ii
@@ -327,10 +342,11 @@ SELECT @ReceiveItemCount = COUNT(*) FROM ReceiveItems
 IF @ReceiveItemCount > 0
 BEGIN
     -- Update ReceiveItems with LedgerBookId based on their StoreId
+
+    -- First, update LedgerBookId and LedgerNo
     UPDATE ri
     SET ri.LedgerBookId = lb.Id,
-        ri.LedgerNo = lb.LedgerNo,
-        ri.PageNo = CAST((ROW_NUMBER() OVER (PARTITION BY lb.Id ORDER BY ri.CreatedAt)) AS VARCHAR(10))
+        ri.LedgerNo = lb.LedgerNo
     FROM ReceiveItems ri
     INNER JOIN Receives r ON ri.ReceiveId = r.Id
     INNER JOIN LedgerBooks lb ON (
@@ -342,6 +358,21 @@ BEGIN
 
     DECLARE @UpdatedReceiveItems INT = @@ROWCOUNT
     PRINT 'Updated ' + CAST(@UpdatedReceiveItems AS VARCHAR) + ' ReceiveItems with LedgerBookId'
+
+    -- Then, update PageNo using CTE
+    ;WITH PageNumbers AS (
+        SELECT
+            ri.Id,
+            ROW_NUMBER() OVER (PARTITION BY ri.LedgerBookId ORDER BY ri.CreatedAt) AS PageNum
+        FROM ReceiveItems ri
+        WHERE ri.LedgerBookId IS NOT NULL
+    )
+    UPDATE ri
+    SET ri.PageNo = CAST(pn.PageNum AS VARCHAR(10))
+    FROM ReceiveItems ri
+    INNER JOIN PageNumbers pn ON ri.Id = pn.Id
+
+    PRINT 'Assigned page numbers to ReceiveItems'
 
     -- For ReceiveItems without matching store, assign to first available Receive ledger
     UPDATE ri
