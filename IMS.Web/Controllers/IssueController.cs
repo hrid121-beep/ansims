@@ -1324,10 +1324,11 @@ namespace IMS.Web.Controllers
         {
             try
             {
-                var pdfBytes = await _voucherService.GetIssueVoucherPdfAsync(id);
+                // Force regenerate PDF with latest template (don't use cache)
+                var pdfBytes = await _voucherService.GenerateIssueVoucherPdfAsync(id);
                 var issue = await _issueService.GetIssueByIdAsync(id);
 
-                string fileName = $"Issue_Voucher_{issue.VoucherNo}_{DateTime.Now:yyyyMMdd}.pdf";
+                string fileName = $"Issue_Voucher_{issue.VoucherNo}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Exception ex)
