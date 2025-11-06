@@ -557,7 +557,7 @@ namespace IMS.Application.Services
             using (MemoryStream ms = new MemoryStream())
             {
                 // Create document in A4 landscape
-                PdfDocument document = new PdfDocument(PageSize.A4, 20, 20, 20, 20);
+                PdfDocument document = new PdfDocument(iTextSharp.text.PageSize.A4, 20, 20, 20, 20);
                 PdfWriter writer = PdfWriter.GetInstance(document, ms);
                 document.Open();
 
