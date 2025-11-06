@@ -425,5 +425,57 @@
                 }
             });
         }
+
+        // Apply Filters
+        function applyFilters() {
+            var status = $('#statusFilter').val();
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+            var searchTerm = $('#searchBox').val();
+
+            // Build URL with query parameters
+            var url = '@Url.Action("Index", "Issue")' + '?';
+            var params = [];
+
+            if (status) {
+                params.push('status=' + encodeURIComponent(status));
+            }
+            if (startDate) {
+                params.push('fromDate=' + encodeURIComponent(startDate));
+            }
+            if (endDate) {
+                params.push('toDate=' + encodeURIComponent(endDate));
+            }
+            if (searchTerm) {
+                params.push('searchTerm=' + encodeURIComponent(searchTerm));
+            }
+
+            if (params.length > 0) {
+                url += params.join('&');
+            }
+
+            // Redirect to filtered URL
+            window.location.href = url;
+        }
+
+        // Allow Enter key to trigger filter
+        $('#searchBox').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                applyFilters();
+            }
+        });
+
+        // Restore filter values from ViewBag
+        $(function() {
+            var status = '@ViewBag.Status';
+            var searchTerm = '@ViewBag.SearchTerm';
+            var fromDate = '@ViewBag.FromDate';
+            var toDate = '@ViewBag.ToDate';
+
+            if (status) $('#statusFilter').val(status).trigger('change');
+            if (searchTerm) $('#searchBox').val(searchTerm);
+            if (fromDate && fromDate !== '') $('#startDate').val(fromDate);
+            if (toDate && toDate !== '') $('#endDate').val(toDate);
+        });
     </script>
 }

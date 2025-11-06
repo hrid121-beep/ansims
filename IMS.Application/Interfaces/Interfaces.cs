@@ -401,7 +401,9 @@ namespace IMS.Application.Interfaces
         Task<bool> IssueNoExistsAsync(string issueNo);
         Task<IEnumerable<IssueDto>> GetPendingIssuesAsync();
         Task<IEnumerable<IssueDto>> GetPagedIssuesAsync(int pageNumber, int pageSize);
-        Task<PagedResult<IssueDto>> GetAllIssuesAsync(int pageNumber = 1, int pageSize = 50);
+        Task<PagedResult<IssueDto>> GetAllIssuesAsync(int pageNumber = 1, int pageSize = 50,
+            string searchTerm = null, string status = null, string issueType = null,
+            DateTime? fromDate = null, DateTime? toDate = null);
 
         // Approval workflow methods - FIXED SIGNATURES
         Task<bool> SubmitForApprovalAsync(int issueId, string submittedBy);

@@ -72,7 +72,7 @@ namespace IMS.Web.Controllers
         public async Task<IActionResult> Index(string searchTerm, string status, string issueType,
             DateTime? fromDate, DateTime? toDate, int pageNumber = 1)
         {
-            var result = await _issueService.GetAllIssuesAsync(pageNumber, 50);
+            var result = await _issueService.GetAllIssuesAsync(pageNumber, 50, searchTerm, status, issueType, fromDate, toDate);
 
             ViewBag.SearchTerm = searchTerm;
             ViewBag.Status = status;
