@@ -228,8 +228,12 @@
                                         <label asp-for="Type" class="control-label">
                                             <i class="fas fa-cube text-success"></i> Item Type <span class="text-danger">*</span>
                                         </label>
-                                        <select asp-for="Type" class="form-control" asp-items="ViewBag.ItemTypes" required>
+                                        <select asp-for="Type" class="form-control" required>
                                             <option value="">-- Select Type --</option>
+                                            @foreach (var item in (List<SelectListItem>)ViewBag.ItemTypes)
+                                            {
+                                                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                                            }
                                         </select>
                                         <span asp-validation-for="Type" class="text-danger"></span>
                                     </div>
@@ -770,8 +774,7 @@
                 categoryId: '@Model.CategoryId',
                 subCategoryId: '@Model.SubCategoryId',
                 brandId: '@Model.BrandId',
-                itemModelId: '@Model.ItemModelId',
-                type: @((int)Model.Type) // Cast enum to int
+                itemModelId: '@Model.ItemModelId'
             };
             console.log('Initial form values:', initialValues);
 
@@ -780,11 +783,7 @@
                 $('#CategoryDropdown').val(initialValues.categoryId).trigger('change.select2');
             }
 
-            // Set Item Type value explicitly (important for Select2)
-            if (initialValues.type && initialValues.type !== 0) {
-                console.log('Setting Item Type to:', initialValues.type);
-                $('select[name="Type"]').val(initialValues.type).trigger('change');
-            }
+            // Note: Item Type is now set server-side via Selected property, no JS needed
 
             // Show/hide conditional fields based on checkbox states
             function toggleConditionalFields() {
