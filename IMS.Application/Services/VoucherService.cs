@@ -44,22 +44,35 @@ namespace IMS.Application.Services
                 Directory.CreateDirectory(_voucherDirectory);
             }
 
-            // Try to load Bengali font (for iTextSharp fallback)
+            // Register Bengali font with QuestPDF
             try
             {
                 string fontPath = Path.Combine(Directory.GetCurrentDirectory(), BANGLA_FONT_PATH);
+                _logger.LogInformation("Attempting to load Bengali font from: {FontPath}", fontPath);
+
                 if (File.Exists(fontPath))
                 {
+                    // Read font into memory to ensure it stays loaded
+                    var fontBytes = File.ReadAllBytes(fontPath);
+                    var fontStream = new MemoryStream(fontBytes);
+
+                    // Register font for QuestPDF with explicit custom name
+                    FontManager.RegisterFontWithCustomName("Kalpurush", fontStream);
+                    _logger.LogInformation("✓ Bengali font 'Kalpurush' registered successfully with {Size} bytes", fontBytes.Length);
+
+                    // Also load for iTextSharp fallback
                     _bengaliFont = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    _logger.LogInformation("✓ iTextSharp Bengali font loaded successfully");
                 }
                 else
                 {
-                    _logger.LogWarning("Bengali font not found at {FontPath}. Using default font.", fontPath);
+                    _logger.LogError("❌ Bengali font not found at {FontPath}", fontPath);
+                    _logger.LogWarning("PDF will use default font - Bengali text may not render correctly");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load Bengali font");
+                _logger.LogError(ex, "❌ Failed to load/register Bengali font");
             }
         }
 
@@ -402,13 +415,14 @@ namespace IMS.Application.Services
                     page.Size(PageSizes.A4);
                     page.Margin(20);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Kalpurush"));
+                    // Set Kalpurush as default font for the entire document
+                    page.DefaultTextStyle(x => x.FontFamily("Kalpurush").FontSize(10));
 
                     page.Content().Column(column =>
                     {
                         // Title
                         column.Item().AlignCenter().Text("প্রাপ্তি বিলি ও ব্যয়ের রশিদ")
-                            .FontSize(18).Bold().FontFamily("Kalpurush");
+                            .FontSize(18).Bold();
 
                         column.Item().PaddingVertical(10);
 
