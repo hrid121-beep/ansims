@@ -534,7 +534,32 @@ namespace IMS.Application.Services
                             sigTable.Cell().Padding(10).Column(leftSig =>
                             {
                                 leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
-                                leftSig.Item().PaddingTop(40);
+
+                                // Embed digital signature image if available
+                                if (issue.IssuerSignature != null && !string.IsNullOrEmpty(issue.IssuerSignature.SignatureData))
+                                {
+                                    try
+                                    {
+                                        // Extract base64 data (remove data:image/png;base64, prefix if exists)
+                                        var base64Data = issue.IssuerSignature.SignatureData;
+                                        if (base64Data.Contains(","))
+                                        {
+                                            base64Data = base64Data.Split(',')[1];
+                                        }
+
+                                        var imageBytes = Convert.FromBase64String(base64Data);
+                                        leftSig.Item().Height(60).Image(imageBytes);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to embed issuer signature image");
+                                        leftSig.Item().PaddingTop(60); // Space for manual signature
+                                    }
+                                }
+                                else
+                                {
+                                    leftSig.Item().PaddingTop(60); // Space for manual signature
+                                }
 
                                 // Use digital signature data if available, otherwise fallback to plain fields
                                 var issuerName = issue.IssuerSignature?.SignerName ?? issue.IssuedBy ?? "…………………";
@@ -558,7 +583,32 @@ namespace IMS.Application.Services
                             sigTable.Cell().Padding(10).Column(rightSig =>
                             {
                                 rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontFamily("Kalpurush");
-                                rightSig.Item().PaddingTop(40);
+
+                                // Embed digital signature image if available
+                                if (issue.ReceiverSignature != null && !string.IsNullOrEmpty(issue.ReceiverSignature.SignatureData))
+                                {
+                                    try
+                                    {
+                                        // Extract base64 data (remove data:image/png;base64, prefix if exists)
+                                        var base64Data = issue.ReceiverSignature.SignatureData;
+                                        if (base64Data.Contains(","))
+                                        {
+                                            base64Data = base64Data.Split(',')[1];
+                                        }
+
+                                        var imageBytes = Convert.FromBase64String(base64Data);
+                                        rightSig.Item().Height(60).Image(imageBytes);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to embed receiver signature image");
+                                        rightSig.Item().PaddingTop(60); // Space for manual signature
+                                    }
+                                }
+                                else
+                                {
+                                    rightSig.Item().PaddingTop(60); // Space for manual signature
+                                }
 
                                 // Use digital signature data if available, otherwise fallback to plain fields
                                 var receiverName = issue.ReceiverSignature?.SignerName ?? issue.ReceivedBy ?? "…………………";
