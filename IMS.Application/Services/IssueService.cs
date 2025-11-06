@@ -1827,6 +1827,10 @@ namespace IMS.Application.Services
             if (issue.IssuedToUpazilaId.HasValue)
                 issue.IssuedToUpazila = await _unitOfWork.Upazilas.GetByIdAsync(issue.IssuedToUpazilaId.Value);
 
+            // Load FromStore - this was missing!
+            if (issue.FromStoreId.HasValue)
+                issue.FromStore = await _unitOfWork.Stores.GetByIdAsync(issue.FromStoreId.Value);
+
             var issueItems = await _unitOfWork.IssueItems.FindAsync(ii => ii.IssueId == issue.Id);
 
             var items = new List<IssueItemDto>();
