@@ -228,7 +228,7 @@
                                         <label asp-for="Type" class="control-label">
                                             <i class="fas fa-cube text-success"></i> Item Type <span class="text-danger">*</span>
                                         </label>
-                                        <select asp-for="Type" class="form-control select2" asp-items="ViewBag.ItemTypes" required>
+                                        <select asp-for="Type" class="form-control" asp-items="ViewBag.ItemTypes" required>
                                             <option value="">-- Select Type --</option>
                                         </select>
                                         <span asp-validation-for="Type" class="text-danger"></span>
