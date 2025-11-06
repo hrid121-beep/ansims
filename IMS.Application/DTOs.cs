@@ -1059,9 +1059,9 @@ namespace IMS.Application.DTOs
         // For partial issues
         public Dictionary<int, decimal> RequestedQuantities { get; set; } = new Dictionary<int, decimal>();
         public Dictionary<int, decimal> ActualQuantities { get; set; } = new Dictionary<int, decimal>();
-        public string Priority { get; internal set; }
-        public string RequestedBy { get; internal set; }
-        public int? FromStoreId { get; internal set; }
+        public string Priority { get; set; }
+        public string RequestedBy { get; set; }
+        public int? FromStoreId { get; set; }
     }
 
     public class IssueItemDto : BaseDto

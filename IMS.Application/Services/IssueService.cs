@@ -1229,6 +1229,35 @@ namespace IMS.Application.Services
                     IsActive = true
                 };
 
+                // Populate IssuedTo field based on entity type
+                if (string.IsNullOrEmpty(issue.IssuedTo))
+                {
+                    if (issueDto.IssuedToBattalionId.HasValue)
+                    {
+                        var battalion = await _unitOfWork.Battalions.GetByIdAsync(issueDto.IssuedToBattalionId.Value);
+                        issue.IssuedTo = battalion?.Name;
+                    }
+                    else if (issueDto.IssuedToRangeId.HasValue)
+                    {
+                        var range = await _unitOfWork.Ranges.GetByIdAsync(issueDto.IssuedToRangeId.Value);
+                        issue.IssuedTo = range?.Name;
+                    }
+                    else if (issueDto.IssuedToZilaId.HasValue)
+                    {
+                        var zila = await _unitOfWork.Zilas.GetByIdAsync(issueDto.IssuedToZilaId.Value);
+                        issue.IssuedTo = zila?.Name;
+                    }
+                    else if (issueDto.IssuedToUpazilaId.HasValue)
+                    {
+                        var upazila = await _unitOfWork.Upazilas.GetByIdAsync(issueDto.IssuedToUpazilaId.Value);
+                        issue.IssuedTo = upazila?.Name;
+                    }
+                    else if (!string.IsNullOrEmpty(issueDto.IssuedToIndividualName))
+                    {
+                        issue.IssuedTo = issueDto.IssuedToIndividualName;
+                    }
+                }
+
                 // Add issue first to get the ID
                 await _unitOfWork.Issues.AddAsync(issue);
                 await _unitOfWork.SaveChangesAsync();
