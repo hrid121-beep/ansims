@@ -725,7 +725,7 @@ namespace IMS.Application.Services
         {
             if (_bengaliFont != null)
             {
-                return new Font(_bengaliFont, size, style, BaseColor.BLACK);
+                return new Font(_bengaliFont, size, style);
             }
             else
             {
@@ -736,7 +736,7 @@ namespace IMS.Application.Services
                     if (File.Exists(fontPath))
                     {
                         _bengaliFont = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-                        return new Font(_bengaliFont, size, style, BaseColor.BLACK);
+                        return new Font(_bengaliFont, size, style);
                     }
                 }
                 catch (Exception ex)
@@ -744,9 +744,9 @@ namespace IMS.Application.Services
                     _logger.LogWarning(ex, "Failed to load Bengali font on-demand");
                 }
 
-                // Final fallback - use Arial Unicode or Helvetica
+                // Final fallback - use Helvetica
                 _logger.LogWarning("Using fallback font for Bengali text");
-                return FontFactory.GetFont(FontFactory.HELVETICA, size, style, BaseColor.BLACK);
+                return FontFactory.GetFont(FontFactory.HELVETICA, size, style);
             }
         }
 
