@@ -493,7 +493,10 @@ namespace IMS.Web.Controllers
                     {
                         Value = ((int)e).ToString(), // Convert enum to int, then to string for HTML value
                         Text = e.ToString(),
-                        Selected = currentItem != null && currentItem.Type == e
+                        // Handle invalid Type values (e.g., 0) by defaulting to Expendable
+                        Selected = currentItem != null &&
+                                   (currentItem.Type == e ||
+                                    (!Enum.IsDefined(typeof(ItemType), currentItem.Type) && e == ItemType.Expendable))
                     })
                     .ToList();
                 ViewBag.ItemTypes = itemTypes;
