@@ -1221,3 +1221,60 @@
         }
     </style>
 }
+
+@section Scripts {
+    @* jQuery Validation Scripts for Client-Side Validation *@
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // TempData Success/Error Messages
+        $(document).ready(function() {
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('@TempData["Success"]', 'Success', {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 3000
+                    });
+                } else {
+                    alert('@TempData["Success"]');
+                }
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('@TempData["Error"]', 'Error', {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 5000
+                    });
+                } else {
+                    alert('@TempData["Error"]');
+                }
+                </text>
+            }
+
+            // Explicitly set Item Type dropdown value
+            @if (Model.Type != 0)
+            {
+                <text>
+                $('#Type').val('@((int)Model.Type)');
+                console.log('Item Type set to:', '@((int)Model.Type)', '(@Model.Type)');
+                </text>
+            }
+            else
+            {
+                <text>
+                // Type is 0 (invalid), default to Expendable (1)
+                $('#Type').val('1');
+                console.log('Item Type defaulted to: 1 (Expendable) - Original Type was 0 (invalid)');
+                </text>
+            }
+        });
+    </script>
+}
