@@ -499,6 +499,18 @@ namespace IMS.Web.Controllers
                                     (!Enum.IsDefined(typeof(ItemType), currentItem.Type) && e == ItemType.Expendable))
                     })
                     .ToList();
+
+                // Debug logging
+                if (currentItem != null)
+                {
+                    _logger.LogInformation("Item Type: {Type} (raw value: {RawValue})", currentItem.Type, (int)currentItem.Type);
+                    _logger.LogInformation("ItemTypes SelectList:");
+                    foreach (var item in itemTypes)
+                    {
+                        _logger.LogInformation("  Value={Value}, Text={Text}, Selected={Selected}", item.Value, item.Text, item.Selected);
+                    }
+                }
+
                 ViewBag.ItemTypes = itemTypes;
 
                 // Load subcategories if CategoryId exists
