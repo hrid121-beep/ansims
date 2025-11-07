@@ -228,7 +228,7 @@
                                         <label asp-for="Type" class="control-label">
                                             <i class="fas fa-cube text-success"></i> Item Type <span class="text-danger">*</span>
                                         </label>
-                                        <select asp-for="Type" class="form-control" required>
+                                        <select id="Type" name="Type" class="form-control" required>
                                             <option value="">-- Select Type --</option>
                                             @foreach (var item in (List<SelectListItem>)ViewBag.ItemTypes)
                                             {
