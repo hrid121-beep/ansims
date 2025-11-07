@@ -317,6 +317,12 @@ namespace IMS.Application.Services
 
         public async Task<ItemDto> CreateItemAsync(ItemDto itemDto)
         {
+            // Validate ItemType
+            if (!Enum.IsDefined(typeof(ItemType), itemDto.Type))
+            {
+                throw new InvalidOperationException("Invalid Item Type. Please select Expendable or NonExpendable.");
+            }
+
             var item = new Item
             {
                 ItemCode = await GenerateItemCodeAsync(itemDto.SubCategoryId),
@@ -359,6 +365,9 @@ namespace IMS.Application.Services
 
             if (itemDto.ReorderLevel < 0)
                 throw new InvalidOperationException("Reorder level cannot be negative");
+
+            if (!Enum.IsDefined(typeof(ItemType), itemDto.Type))
+                throw new InvalidOperationException("Invalid Item Type. Please select Expendable or NonExpendable.");
 
             // ✅ 2. Fetch existing item
             var item = await _unitOfWork.Items.GetByIdAsync(itemDto.Id);
