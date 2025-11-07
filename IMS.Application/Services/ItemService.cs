@@ -2,6 +2,7 @@
 using IMS.Application.Helpers;
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
+using IMS.Domain.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
