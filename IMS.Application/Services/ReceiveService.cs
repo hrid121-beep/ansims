@@ -2001,7 +2001,7 @@ namespace IMS.Application.Services
                     var itemEntity = await _unitOfWork.Items.GetByIdAsync(item.ItemId);
                     if (itemEntity != null)
                     {
-                        totalValue += (item.ReceivedQuantity ?? item.Quantity) * (itemEntity.UnitPrice ?? 0m);
+                        totalValue += ((item.ReceivedQuantity ?? item.Quantity) ?? 0m) * (itemEntity.UnitPrice ?? 0m);
                     }
                 }
 
