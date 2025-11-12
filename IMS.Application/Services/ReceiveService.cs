@@ -1083,6 +1083,7 @@ namespace IMS.Application.Services
                     var storeItem = await _unitOfWork.StoreItems.FirstOrDefaultAsync(
                         si => si.ItemId == item.ItemId && si.StoreId == targetStoreId);
 
+                    bool isNewStoreItem = false;
                     if (storeItem == null)
                     {
                         // Create new store item if not exists
@@ -1100,6 +1101,7 @@ namespace IMS.Application.Services
                             IsActive = true
                         };
                         await _unitOfWork.StoreItems.AddAsync(storeItem);
+                        isNewStoreItem = true;
                     }
 
                     // ✅ FIX: Use Quantity if ReceivedQuantity is null
@@ -1113,7 +1115,12 @@ namespace IMS.Application.Services
 
                     storeItem.UpdatedAt = DateTime.UtcNow;
                     storeItem.UpdatedBy = completedBy;
-                    _unitOfWork.StoreItems.Update(storeItem);
+
+                    // ✅ FIX: Only call Update() if item already existed (not just created)
+                    if (!isNewStoreItem)
+                    {
+                        _unitOfWork.StoreItems.Update(storeItem);
+                    }
 
                     // Create stock movement record
                     var movement = new StockMovement
