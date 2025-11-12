@@ -1030,16 +1030,77 @@ namespace IMS.Web.Controllers
         {
             try
             {
-                // Since DeleteReceiveAsync doesn't exist, implement soft delete manually
-                // For now, just redirect with message
-                TempData["Info"] = "Delete functionality is being implemented.";
-                return RedirectToAction(nameof(Index));
+                var canDelete = await _receiveService.CanDeleteReceiveAsync(id);
+                if (!canDelete)
+                {
+                    TempData["Error"] = "Cannot delete this receive. Completed receives cannot be deleted.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var result = await _receiveService.DeleteReceiveAsync(id);
+
+                if (result)
+                {
+                    TempData["Success"] = "Receive deleted successfully. It can be restored from the Deleted Receives list.";
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to delete receive.";
+                    return RedirectToAction(nameof(Delete), new { id });
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting receive");
-                TempData["Error"] = "Error deleting receive.";
+                TempData["Error"] = $"Error deleting receive: {ex.Message}";
                 return RedirectToAction(nameof(Delete), new { id });
+            }
+        }
+
+        // GET: Receive/Deleted - View deleted receives
+        [HasPermission(Permission.DeleteReceive)]
+        public async Task<IActionResult> Deleted()
+        {
+            try
+            {
+                var deletedReceives = await _receiveService.GetDeletedReceivesAsync();
+                return View(deletedReceives);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading deleted receives");
+                TempData["Error"] = "Error loading deleted receives.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Receive/Restore/{id} - Restore a deleted receive
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.DeleteReceive)]
+        public async Task<IActionResult> Restore(int id)
+        {
+            try
+            {
+                var result = await _receiveService.RestoreReceiveAsync(id);
+
+                if (result)
+                {
+                    TempData["Success"] = "Receive restored successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to restore receive.";
+                }
+
+                return RedirectToAction(nameof(Deleted));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error restoring receive");
+                TempData["Error"] = $"Error restoring receive: {ex.Message}";
+                return RedirectToAction(nameof(Deleted));
             }
         }
 

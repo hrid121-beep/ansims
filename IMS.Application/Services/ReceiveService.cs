@@ -1527,6 +1527,103 @@ namespace IMS.Application.Services
             return receive != null && receive.Status == "Completed";
         }
 
+        public async Task<bool> RestoreReceiveAsync(int id)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var receive = await _unitOfWork.Receives.Query()
+                    .Where(r => r.Id == id)
+                    .FirstOrDefaultAsync();
+
+                if (receive == null)
+                    throw new InvalidOperationException("Receive not found");
+
+                if (receive.IsActive)
+                    throw new InvalidOperationException("Receive is already active");
+
+                // Restore receive
+                receive.IsActive = true;
+                receive.UpdatedAt = DateTime.UtcNow;
+                receive.UpdatedBy = _userContext.CurrentUserName;
+
+                // Restore receive items
+                var receiveItems = await _unitOfWork.ReceiveItems.Query()
+                    .Where(ri => ri.ReceiveId == id)
+                    .ToListAsync();
+
+                foreach (var item in receiveItems)
+                {
+                    item.IsActive = true;
+                    item.UpdatedAt = DateTime.UtcNow;
+                    item.UpdatedBy = _userContext.CurrentUserName;
+                    _unitOfWork.ReceiveItems.Update(item);
+                }
+
+                _unitOfWork.Receives.Update(receive);
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                // Log activity
+                await _activityLogService.LogActivityAsync(
+                    "Receive", receive.Id, "Restore",
+                    $"Restored receive {receive.ReceiveNo}",
+                    _userContext.GetCurrentUserId()
+                );
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Error restoring receive");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<ReceiveDto>> GetDeletedReceivesAsync()
+        {
+            try
+            {
+                var receives = await _unitOfWork.Receives.Query()
+                    .Where(r => !r.IsActive)
+                    .Include(r => r.OriginalIssue)
+                    .Include(r => r.Store)
+                    .OrderByDescending(r => r.UpdatedAt)
+                    .ToListAsync();
+
+                var receiveDtos = new List<ReceiveDto>();
+
+                foreach (var receive in receives)
+                {
+                    var receiveDto = new ReceiveDto
+                    {
+                        Id = receive.Id,
+                        ReceiveNo = receive.ReceiveNo,
+                        ReceiveDate = receive.ReceiveDate,
+                        ReceivedDate = receive.ReceivedDate,
+                        Status = receive.Status,
+                        ReceiveType = receive.ReceiveType,
+                        ReceivedBy = receive.ReceivedBy,
+                        OriginalIssueNo = receive.OriginalIssue?.IssueNo,
+                        StoreName = receive.Store?.Name,
+                        Remarks = receive.Remarks,
+                        UpdatedAt = receive.UpdatedAt,
+                        UpdatedBy = receive.UpdatedBy
+                    };
+                    receiveDtos.Add(receiveDto);
+                }
+
+                return receiveDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting deleted receives");
+                throw;
+            }
+        }
+
         public async Task<bool> ValidateReceiveAsync(int receiveId)
         {
             try

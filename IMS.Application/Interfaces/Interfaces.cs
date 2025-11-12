@@ -503,6 +503,10 @@ namespace IMS.Application.Interfaces
         // Approval workflow methods
         Task<bool> SubmitForApprovalAsync(int receiveId, string submittedBy);
         Task<bool> SubmitForApprovalAsync(int receiveId);
+
+        // Delete and restore methods
+        Task<bool> RestoreReceiveAsync(int id);
+        Task<IEnumerable<ReceiveDto>> GetDeletedReceivesAsync();
     }
 
     public interface ITransferService

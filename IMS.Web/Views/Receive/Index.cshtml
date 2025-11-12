@@ -181,6 +181,9 @@
                         <a asp-action="Pending" class="btn btn-warning btn-sm">
                             <i class="fas fa-clock"></i> Pending (@(Model?.Count(r => r.Status == "Pending" || r.Status == "Processing") ?? 0))
                         </a>
+                        <a asp-action="Deleted" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-restore"></i> Deleted
+                        </a>
                         <div class="btn-group">
                             <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
                                 <i class="fas fa-download"></i> Export
