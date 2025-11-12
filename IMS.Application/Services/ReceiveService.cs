@@ -263,6 +263,7 @@ namespace IMS.Application.Services
                 {
                     ReceiveNo = await GenerateReceiveNoAsync(),
                     ReceiveDate = receiveDto.ReceiveDate,
+                    ReceivedDate = receiveDto.ReceiveDate, // ✅ FIX: Set ReceivedDate for PDF generation
                     ReceiveType = receiveDto.ReceiveType,
                     ReceivedFromBattalionId = receiveDto.ReceivedFromBattalionId,
                     ReceivedFromRangeId = receiveDto.ReceivedFromRangeId,
@@ -356,6 +357,7 @@ namespace IMS.Application.Services
                 {
                     ReceiveNo = await GenerateReceiveNoAsync(),
                     ReceiveDate = receiveDto.ReceiveDate,
+                    ReceivedDate = receiveDto.ReceiveDate, // ✅ FIX: Set ReceivedDate for PDF generation
                     ReceiveType = issue.IssuedToType,
                     ReceivedFromBattalionId = issue.IssuedToBattalionId,
                     ReceivedFromRangeId = issue.IssuedToRangeId,
@@ -1240,6 +1242,7 @@ namespace IMS.Application.Services
                 {
                     ReceiveNo = dto.ReceiveNo,
                     ReceiveDate = dto.ReceiveDate,
+                    ReceivedDate = dto.ReceiveDate, // ✅ FIX: Set ReceivedDate for PDF generation
                     ReceiveType = dto.ReceiveType,
                     ReceivedFromIndividualName = dto.ReceivedFromName,
                     ReceivedFromIndividualBadgeNo = dto.BadgeNo,
