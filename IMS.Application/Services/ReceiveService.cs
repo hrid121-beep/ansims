@@ -2,6 +2,7 @@
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
 using IMS.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -2000,7 +2001,7 @@ namespace IMS.Application.Services
                     var itemEntity = await _unitOfWork.Items.GetByIdAsync(item.ItemId);
                     if (itemEntity != null)
                     {
-                        totalValue += (item.ReceivedQuantity ?? item.Quantity) * (itemEntity.UnitPrice ?? 0);
+                        totalValue += (item.ReceivedQuantity ?? item.Quantity) * (itemEntity.UnitPrice ?? 0m);
                     }
                 }
 
