@@ -310,6 +310,8 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/signature_pad.min.js"></script>
+
     <script>
         let currentItemId = null;
         let stream = null;
@@ -433,12 +435,34 @@
                 $('#savePhotoBtn').hide();
             });
 
+            // Initialize Signature Pad (following exact pattern from Issue/Create.cshtml)
+            let signaturePad = null;
+            const canvas = document.getElementById('signatureCanvas');
+            if (canvas && typeof SignaturePad !== 'undefined') {
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(0, 0, 0)'
+                });
+
+                $('#clearSignature').click(function() {
+                    if (signaturePad) {
+                        signaturePad.clear();
+                        $('#signatureData').val('');
+                    }
+                });
+
+                canvas.addEventListener('mouseup', function() {
+                    if (signaturePad && !signaturePad.isEmpty()) {
+                        $('#signatureData').val(signaturePad.toDataURL());
+                    }
+                });
+            }
+
             // Form validation
             $('#receiveForm').submit(function(e) {
                 // Save signature before submit
-                if (window.signaturePad && !window.signaturePad.isEmpty()) {
-                    const signatureData = window.signaturePad.toDataURL();
-                    $('#signatureData').val(signatureData);
+                if (signaturePad && !signaturePad.isEmpty()) {
+                    $('#signatureData').val(signaturePad.toDataURL());
                 }
 
                 let hasItems = false;
@@ -455,40 +479,6 @@
                     return false;
                 }
             });
-
-            // Initialize Signature Pad
-            function initSignaturePad() {
-                const canvas = document.getElementById('signatureCanvas');
-                if (canvas && typeof SignaturePad !== 'undefined') {
-                    // Resize canvas to match display size
-                    function resizeCanvas() {
-                        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                        const width = canvas.offsetWidth;
-                        const height = canvas.offsetHeight;
-                        canvas.width = width * ratio;
-                        canvas.height = height * ratio;
-                        canvas.getContext("2d").scale(ratio, ratio);
-                    }
-
-                    window.addEventListener("resize", resizeCanvas);
-                    resizeCanvas();
-
-                    // Initialize SignaturePad
-                    window.signaturePad = new SignaturePad(canvas, {
-                        backgroundColor: 'rgb(255, 255, 255)',
-                        penColor: 'rgb(0, 0, 0)'
-                    });
-
-                    // Clear button
-                    $('#clearSignature').click(function() {
-                        window.signaturePad.clear();
-                        $('#signatureData').val('');
-                    });
-                }
-            }
-
-            // Initialize signature pad on page load
-            initSignaturePad();
         });
     </script>
 }
