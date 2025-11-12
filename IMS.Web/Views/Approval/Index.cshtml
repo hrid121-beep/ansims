@@ -149,6 +149,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-indigo">
+                    <div class="inner">
+                        <h3 id="receiveCount">@initialData.Count(x => x.EntityType == "RECEIVE")</h3>
+                        <p>Receive Requests</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row mb-3">
@@ -191,6 +203,7 @@
                             <option value="RETURN">Returns</option>
                             <option value="WRITEOFF">Write-Offs</option>
                             <option value="STOCK_ENTRY">Stock Entries</option>
+                            <option value="RECEIVE">Receives</option>
                         </select>
                     </div>
                     <div class="form-group mr-3">
@@ -398,7 +411,8 @@
                 allotment: approvals.filter(a => a.entityType === 'ALLOTMENT_LETTER').length,
                 return: approvals.filter(a => a.entityType === 'RETURN').length,
                 writeoff: approvals.filter(a => a.entityType === 'WRITEOFF' || a.entityType === 'WRITE_OFF').length,
-                stockEntry: approvals.filter(a => a.entityType === 'STOCK_ENTRY').length
+                stockEntry: approvals.filter(a => a.entityType === 'STOCK_ENTRY').length,
+                receive: approvals.filter(a => a.entityType === 'RECEIVE').length
             };
 
             $('#totalPending').text(counts.total);
@@ -411,6 +425,7 @@
             $('#returnCount').text(counts.return);
             $('#writeoffCount').text(counts.writeoff);
             $('#stockEntryCount').text(counts.stockEntry);
+            $('#receiveCount').text(counts.receive);
         }
 
         function approveItem(id, entityType) {
@@ -492,7 +507,8 @@
                 'RETURN': 'card-orange',
                 'WRITEOFF': 'card-maroon',
                 'WRITE_OFF': 'card-maroon',
-                'STOCK_ENTRY': 'card-primary'
+                'STOCK_ENTRY': 'card-primary',
+                'RECEIVE': 'card-indigo'
             };
             return colors[type] || 'card-secondary';
         }
@@ -508,7 +524,8 @@
                 'RETURN': 'fas fa-undo',
                 'WRITEOFF': 'fas fa-trash-alt',
                 'WRITE_OFF': 'fas fa-trash-alt',
-                'STOCK_ENTRY': 'fas fa-boxes'
+                'STOCK_ENTRY': 'fas fa-boxes',
+                'RECEIVE': 'fas fa-download'
             };
             return icons[type] || 'fas fa-file';
         }
@@ -524,7 +541,8 @@
                 'RETURN': 'Return Requests',
                 'WRITEOFF': 'Write-Off Requests',
                 'WRITE_OFF': 'Write-Off Requests',
-                'STOCK_ENTRY': 'Stock Entries'
+                'STOCK_ENTRY': 'Stock Entries',
+                'RECEIVE': 'Receive Requests'
             };
             return names[type] || type;
         }
@@ -540,7 +558,8 @@
                 'RETURN': 'Return',
                 'WRITEOFF': 'WriteOff',
                 'WRITE_OFF': 'WriteOff',
-                'STOCK_ENTRY': 'StockEntry'
+                'STOCK_ENTRY': 'StockEntry',
+                'RECEIVE': 'Receive'
             };
             return controllers[type] || type;
         }

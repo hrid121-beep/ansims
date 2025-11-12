@@ -499,6 +499,10 @@ namespace IMS.Application.Interfaces
         // Stock update methods
         Task<bool> UpdateStockFromReceiveAsync(int receiveId);
         Task<bool> ReverseStockFromReceiveAsync(int receiveId);
+
+        // Approval workflow methods
+        Task<bool> SubmitForApprovalAsync(int receiveId, string submittedBy);
+        Task<bool> SubmitForApprovalAsync(int receiveId);
     }
 
     public interface ITransferService

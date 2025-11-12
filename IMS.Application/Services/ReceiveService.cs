@@ -25,6 +25,7 @@ namespace IMS.Application.Services
         private readonly IFileService _fileService;
         private readonly IIssueService _issueService;
         private readonly IVoucherService _voucherService;
+        private readonly IApprovalService _approvalService;
         private readonly ILogger<ReceiveService> _logger;
 
         public ReceiveService(
@@ -36,6 +37,7 @@ namespace IMS.Application.Services
             IVoucherService voucherService,
             IPersonnelItemLifeService personnelItemLifeService,
             IActivityLogService activityLogService,
+            IApprovalService approvalService,
             ILogger<ReceiveService> logger)
         {
             _unitOfWork = unitOfWork;
@@ -45,6 +47,7 @@ namespace IMS.Application.Services
             _issueService = issueService;
             _voucherService = voucherService;
             _activityLogService = activityLogService;
+            _approvalService = approvalService;
             _logger = logger;
             _personnelItemLifeService = personnelItemLifeService;
         }
@@ -1859,6 +1862,75 @@ namespace IMS.Application.Services
                 _logger.LogError(ex, "Error reversing stock from receive");
                 return false;
             }
+        }
+
+        public async Task<bool> SubmitForApprovalAsync(int receiveId, string submittedBy)
+        {
+            try
+            {
+                _logger.LogInformation("Starting submission for Receive #{ReceiveId} by {SubmittedBy}", receiveId, submittedBy);
+
+                // Get the receive
+                var receive = await _unitOfWork.Receives.GetByIdAsync(receiveId);
+                if (receive == null)
+                {
+                    _logger.LogError("Receive #{ReceiveId} not found", receiveId);
+                    return false;
+                }
+
+                // Check if already submitted
+                if (receive.Status == "Pending" || receive.Status == "Approved" || receive.Status == "Completed")
+                {
+                    _logger.LogWarning("Receive #{ReceiveId} already submitted. Status: {Status}", receiveId, receive.Status);
+                    return false;
+                }
+
+                // Update receive status
+                receive.Status = "Pending";
+                receive.UpdatedAt = DateTime.UtcNow;
+                receive.UpdatedBy = submittedBy;
+                _unitOfWork.Receives.Update(receive);
+                await _unitOfWork.CompleteAsync();
+
+                // Calculate total value for approval
+                var receiveItems = await _unitOfWork.ReceiveItems.FindAsync(ri => ri.ReceiveId == receiveId && ri.IsActive);
+                decimal totalValue = 0;
+                foreach (var item in receiveItems)
+                {
+                    var itemEntity = await _unitOfWork.Items.GetByIdAsync(item.ItemId);
+                    if (itemEntity != null)
+                    {
+                        totalValue += (item.ReceivedQuantity ?? item.Quantity) * (itemEntity.UnitPrice ?? 0);
+                    }
+                }
+
+                // Create approval request
+                var approvalRequest = new ApprovalRequestDto
+                {
+                    EntityType = "RECEIVE",
+                    EntityId = receiveId,
+                    Description = $"Receive {receive.ReceiveNo}",
+                    Amount = totalValue,
+                    RequestedBy = submittedBy,
+                    RequestedDate = DateTime.UtcNow,
+                    Status = "Pending"
+                };
+
+                await _approvalService.CreateApprovalRequestAsync(approvalRequest);
+
+                _logger.LogInformation("Receive #{ReceiveId} submitted for approval successfully", receiveId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting receive for approval");
+                return false;
+            }
+        }
+
+        public async Task<bool> SubmitForApprovalAsync(int receiveId)
+        {
+            return await SubmitForApprovalAsync(receiveId, _userContext.CurrentUserName);
         }
     }
 }

@@ -246,6 +246,43 @@ namespace IMS.Web.Controllers
             return View(model);
         }
 
+        // POST: Receive/SubmitForApproval
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.CreateReceive)]
+        public async Task<IActionResult> SubmitForApproval(int id)
+        {
+            try
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("User not found when submitting receive {ReceiveId} for approval", id);
+                    TempData["Error"] = "User session expired. Please login again.";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var result = await _receiveService.SubmitForApprovalAsync(id, currentUser.Id);
+
+                if (result)
+                {
+                    TempData["Success"] = "Receive submitted for approval successfully!";
+                }
+                else
+                {
+                    TempData["Error"] = "Unable to submit receive for approval. Please check the receive status.";
+                }
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting receive for approval");
+                TempData["Error"] = $"Error submitting receive: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
         // GET: Receive/ScanVoucher - Page for scanning issue voucher
         [HasPermission(Permission.CreateReceive)]
         public async Task<IActionResult> ScanVoucher()
