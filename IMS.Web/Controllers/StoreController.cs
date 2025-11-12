@@ -1241,7 +1241,7 @@ namespace IMS.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStoreItems(int storeId)
+        public async Task<IActionResult> GetStoreItems(int storeId, string searchTerm = "")
         {
             try
             {
@@ -1269,11 +1269,24 @@ namespace IMS.Web.Controllers
                             minimumStock = si.MinimumStock,
                             unit = si.Unit ?? "Piece",
                             storeId = storeId,
+                            barcode = si.Barcode ?? "",
                             isLowStock = si.Quantity <= si.MinimumStock && si.Quantity > 0,
                             isOutOfStock = si.Quantity <= 0
-                        }).ToList();
+                        }).AsQueryable();
 
-                        return Json(items);
+                        // Apply search filter if provided
+                        if (!string.IsNullOrWhiteSpace(searchTerm))
+                        {
+                            var search = searchTerm.ToLower();
+                            items = items.Where(i =>
+                                i.itemCode.ToLower().Contains(search) ||
+                                i.itemName.ToLower().Contains(search) ||
+                                i.categoryName.ToLower().Contains(search) ||
+                                (i.barcode != null && i.barcode.ToLower().Contains(search))
+                            );
+                        }
+
+                        return Json(items.ToList());
                     }
 
                     return Json(new List<object>());
@@ -1293,11 +1306,24 @@ namespace IMS.Web.Controllers
                     minimumStock = s.MinimumStock,
                     unit = s.Unit ?? "Piece",
                     storeId = s.StoreId,
+                    barcode = s.Barcode ?? "",
                     isLowStock = s.Quantity <= s.MinimumStock && s.Quantity > 0,
                     isOutOfStock = s.Quantity <= 0
-                }).ToList();
+                }).AsQueryable();
 
-                return Json(stockItems);
+                // Apply search filter if provided
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    var search = searchTerm.ToLower();
+                    stockItems = stockItems.Where(i =>
+                        i.itemCode.ToLower().Contains(search) ||
+                        i.itemName.ToLower().Contains(search) ||
+                        i.categoryName.ToLower().Contains(search) ||
+                        (i.barcode != null && i.barcode.ToLower().Contains(search))
+                    );
+                }
+
+                return Json(stockItems.ToList());
             }
             catch (Exception ex)
             {

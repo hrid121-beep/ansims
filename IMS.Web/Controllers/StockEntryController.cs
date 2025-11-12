@@ -203,11 +203,11 @@ namespace IMS.Web.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to complete stock entry ID {id} - may already be completed");
+                    _logger.LogWarning($"Failed to complete stock entry ID {id} - entry not found or status is not Draft");
                     return Json(new
                     {
                         success = false,
-                        message = "Unable to complete stock entry. It may already be completed."
+                        message = "Unable to complete stock entry. Only Draft entries can be completed."
                     });
                 }
             }
@@ -1120,6 +1120,104 @@ namespace IMS.Web.Controllers
         {
             var stream = await _stockEntryService.DownloadBulkUploadTemplateAsync();
             return File(stream, "text/csv", "stock_upload_template.csv");
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ViewStock)]
+        public IActionResult DownloadExampleCSV()
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "templates", "stock_upload_example.csv");
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                TempData["Error"] = "Example file not found.";
+                return RedirectToAction(nameof(BulkUpload));
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, "text/csv", "stock_upload_example.csv");
+        }
+
+        // Approval Actions
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.CreateStock)]
+        public async Task<IActionResult> SubmitForApproval(int id)
+        {
+            try
+            {
+                var result = await _stockEntryService.SubmitStockEntryForApprovalAsync(id);
+                if (result)
+                {
+                    TempData["Success"] = "Stock entry submitted for approval successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to submit stock entry for approval. Entry must be in Draft status.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+                _logger.LogError(ex, "Error submitting stock entry {Id} for approval", id);
+            }
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.ApproveStock)]
+        public async Task<IActionResult> Approve(int id, string comments)
+        {
+            try
+            {
+                var result = await _stockEntryService.ApproveStockEntryAsync(id, comments);
+                if (result)
+                {
+                    TempData["Success"] = "Stock entry approved successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to approve stock entry. Entry must be in Submitted status.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+                _logger.LogError(ex, "Error approving stock entry {Id}", id);
+            }
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.ApproveStock)]
+        public async Task<IActionResult> Reject(int id, string reason)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(reason))
+                {
+                    TempData["Error"] = "Rejection reason is required.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var result = await _stockEntryService.RejectStockEntryAsync(id, reason);
+                if (result)
+                {
+                    TempData["Success"] = "Stock entry rejected.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to reject stock entry. Entry must be in Submitted status.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+                _logger.LogError(ex, "Error rejecting stock entry {Id}", id);
+            }
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         private async Task LoadViewBagData()

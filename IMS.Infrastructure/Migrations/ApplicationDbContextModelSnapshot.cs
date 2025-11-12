@@ -327,6 +327,87 @@ namespace IMS.Infrastructure.Migrations
                     b.ToTable("AllotmentLetters");
                 });
 
+            modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterDistribution", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("AddressBn")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("AllotmentLetterId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AllotmentLetterId1")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PurposeBn")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RecipientTitle")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RecipientTitleBn")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SerialNo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AllotmentLetterId");
+
+                    b.HasIndex("AllotmentLetterId1");
+
+                    b.HasIndex("SerialNo");
+
+                    b.ToTable("AllotmentLetterDistributions");
+                });
+
             modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterItem", b =>
                 {
                     b.Property<int>("Id")
@@ -409,7 +490,13 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int>("AllotmentLetterId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AllotmentLetterId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("BattalionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BattalionId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -426,10 +513,14 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("RangeId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RangeId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("RecipientName")
-                        .HasMaxLength(4000)
+                        .IsRequired()
+                        .HasMaxLength(200)
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("RecipientNameBn")
                         .HasMaxLength(4000)
@@ -437,9 +528,10 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("RecipientType")
-                        .HasMaxLength(4000)
+                        .IsRequired()
+                        .HasMaxLength(50)
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Remarks")
                         .HasMaxLength(4000)
@@ -457,7 +549,13 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("UnionId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UnionId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UpazilaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UpazilaId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -471,19 +569,36 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("ZilaId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ZilaId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AllotmentLetterId");
 
+                    b.HasIndex("AllotmentLetterId1");
+
                     b.HasIndex("BattalionId");
+
+                    b.HasIndex("BattalionId1");
 
                     b.HasIndex("RangeId");
 
+                    b.HasIndex("RangeId1");
+
+                    b.HasIndex("RecipientType");
+
                     b.HasIndex("UnionId");
+
+                    b.HasIndex("UnionId1");
 
                     b.HasIndex("UpazilaId");
 
+                    b.HasIndex("UpazilaId1");
+
                     b.HasIndex("ZilaId");
+
+                    b.HasIndex("ZilaId1");
 
                     b.ToTable("AllotmentLetterRecipients");
                 });
@@ -499,8 +614,11 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int>("AllotmentLetterRecipientId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AllotmentLetterRecipientId1")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("AllottedQuantity")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,3)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -514,7 +632,7 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("IssuedQuantity")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,3)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
@@ -550,6 +668,8 @@ namespace IMS.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AllotmentLetterRecipientId");
+
+                    b.HasIndex("AllotmentLetterRecipientId1");
 
                     b.HasIndex("ItemId");
 
@@ -4422,6 +4542,24 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("BrandId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CatalogueEntryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CatalogueLedgerNo")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("CataloguePageNo")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("CatalogueRemarks")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -4462,6 +4600,9 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FirstReceivedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("HasExpiry")
@@ -4525,11 +4666,11 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)");
 
                     b.Property<decimal?>("MaximumStock")
-                        .HasColumnType("decimal(18,3)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("MinimumStock")
                         .HasPrecision(18, 3)
-                        .HasColumnType("decimal(18,3)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -4548,7 +4689,7 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)");
 
                     b.Property<decimal>("ReorderLevel")
-                        .HasColumnType("decimal(18,3)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("RequiresHigherApproval")
                         .HasColumnType("bit");
@@ -5145,6 +5286,9 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("OriginalIssueId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("OriginalIssueId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("PersonnelBadgeNo")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -5190,6 +5334,9 @@ namespace IMS.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("ReceiveId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReceiveId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ReceivedDate")
@@ -5252,11 +5399,15 @@ namespace IMS.Infrastructure.Migrations
 
                     b.HasIndex("OriginalIssueId");
 
+                    b.HasIndex("OriginalIssueId1");
+
                     b.HasIndex("PersonnelBadgeNo");
 
                     b.HasIndex("RangeId");
 
                     b.HasIndex("ReceiveId");
+
+                    b.HasIndex("ReceiveId1");
 
                     b.HasIndex("Status");
 
@@ -6596,7 +6747,7 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<string>("ReceiverSignature")
                         .HasMaxLength(4000)
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Remarks")
                         .HasMaxLength(500)
@@ -8112,6 +8263,14 @@ namespace IMS.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("ApprovedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -8136,6 +8295,19 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("RejectedBy")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("RejectedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<string>("Remarks")
                         .HasMaxLength(500)
                         .IsUnicode(true)
@@ -8148,6 +8320,14 @@ namespace IMS.Infrastructure.Migrations
 
                     b.Property<int?>("StoreId")
                         .HasColumnType("int");
+
+                    b.Property<string>("SubmittedBy")
+                        .HasMaxLength(4000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("SubmittedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -8253,10 +8433,16 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("DestinationStoreId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DestinationStoreId1")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ItemId1")
                         .HasColumnType("int");
 
                     b.Property<string>("MovedBy")
@@ -8320,7 +8506,13 @@ namespace IMS.Infrastructure.Migrations
                     b.Property<int?>("SourceStoreId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SourceStoreId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("StoreId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StoreId1")
                         .HasColumnType("int");
 
                     b.Property<int?>("StoreItemId")
@@ -8345,15 +8537,29 @@ namespace IMS.Infrastructure.Migrations
 
                     b.HasIndex("DestinationStoreId");
 
+                    b.HasIndex("DestinationStoreId1");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ItemId1");
+
                     b.HasIndex("MovedByUserId");
+
+                    b.HasIndex("MovementDate");
 
                     b.HasIndex("SourceStoreId");
 
+                    b.HasIndex("SourceStoreId1");
+
                     b.HasIndex("StoreId");
+
+                    b.HasIndex("StoreId1");
 
                     b.HasIndex("StoreItemId");
 
                     b.HasIndex("ItemId", "MovementDate");
+
+                    b.HasIndex("ReferenceType", "ReferenceId");
 
                     b.ToTable("StockMovements");
                 });
@@ -8872,6 +9078,11 @@ namespace IMS.Infrastructure.Migrations
 
                     b.Property<decimal?>("ReservedStock")
                         .HasColumnType("decimal(18,3)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -11630,6 +11841,21 @@ namespace IMS.Infrastructure.Migrations
                     b.Navigation("IssuedToZila");
                 });
 
+            modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterDistribution", b =>
+                {
+                    b.HasOne("IMS.Domain.Entities.AllotmentLetter", "AllotmentLetter")
+                        .WithMany()
+                        .HasForeignKey("AllotmentLetterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IMS.Domain.Entities.AllotmentLetter", null)
+                        .WithMany("DistributionList")
+                        .HasForeignKey("AllotmentLetterId1");
+
+                    b.Navigation("AllotmentLetter");
+                });
+
             modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterItem", b =>
                 {
                     b.HasOne("IMS.Domain.Entities.AllotmentLetter", "AllotmentLetter")
@@ -11651,31 +11877,60 @@ namespace IMS.Infrastructure.Migrations
 
             modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterRecipient", b =>
                 {
-                    b.HasOne("IMS.Domain.Entities.AllotmentLetter", "AllotmentLetter")
-                        .WithMany("Recipients")
+                    b.HasOne("IMS.Domain.Entities.AllotmentLetter", null)
+                        .WithMany()
                         .HasForeignKey("AllotmentLetterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("IMS.Domain.Entities.AllotmentLetter", "AllotmentLetter")
+                        .WithMany("Recipients")
+                        .HasForeignKey("AllotmentLetterId1");
+
+                    b.HasOne("IMS.Domain.Entities.Battalion", null)
+                        .WithMany()
+                        .HasForeignKey("BattalionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("IMS.Domain.Entities.Battalion", "Battalion")
                         .WithMany()
-                        .HasForeignKey("BattalionId");
+                        .HasForeignKey("BattalionId1");
+
+                    b.HasOne("IMS.Domain.Entities.Range", null)
+                        .WithMany()
+                        .HasForeignKey("RangeId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IMS.Domain.Entities.Range", "Range")
                         .WithMany()
-                        .HasForeignKey("RangeId");
+                        .HasForeignKey("RangeId1");
+
+                    b.HasOne("IMS.Domain.Entities.Union", null)
+                        .WithMany()
+                        .HasForeignKey("UnionId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IMS.Domain.Entities.Union", "Union")
                         .WithMany()
-                        .HasForeignKey("UnionId");
+                        .HasForeignKey("UnionId1");
+
+                    b.HasOne("IMS.Domain.Entities.Upazila", null)
+                        .WithMany()
+                        .HasForeignKey("UpazilaId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IMS.Domain.Entities.Upazila", "Upazila")
                         .WithMany()
-                        .HasForeignKey("UpazilaId");
+                        .HasForeignKey("UpazilaId1");
+
+                    b.HasOne("IMS.Domain.Entities.Zila", null)
+                        .WithMany()
+                        .HasForeignKey("ZilaId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IMS.Domain.Entities.Zila", "Zila")
                         .WithMany()
-                        .HasForeignKey("ZilaId");
+                        .HasForeignKey("ZilaId1");
 
                     b.Navigation("AllotmentLetter");
 
@@ -11693,15 +11948,19 @@ namespace IMS.Infrastructure.Migrations
             modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetterRecipientItem", b =>
                 {
                     b.HasOne("IMS.Domain.Entities.AllotmentLetterRecipient", "Recipient")
-                        .WithMany("Items")
+                        .WithMany()
                         .HasForeignKey("AllotmentLetterRecipientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("IMS.Domain.Entities.AllotmentLetterRecipient", null)
+                        .WithMany("Items")
+                        .HasForeignKey("AllotmentLetterRecipientId1");
+
                     b.HasOne("IMS.Domain.Entities.Item", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -12485,17 +12744,27 @@ namespace IMS.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("IMS.Domain.Entities.Issue", null)
+                        .WithMany()
+                        .HasForeignKey("OriginalIssueId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("IMS.Domain.Entities.Issue", "OriginalIssue")
                         .WithMany()
-                        .HasForeignKey("OriginalIssueId");
+                        .HasForeignKey("OriginalIssueId1");
 
                     b.HasOne("IMS.Domain.Entities.Range", "Range")
                         .WithMany()
                         .HasForeignKey("RangeId");
 
+                    b.HasOne("IMS.Domain.Entities.Receive", null)
+                        .WithMany()
+                        .HasForeignKey("ReceiveId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("IMS.Domain.Entities.Receive", "Receive")
                         .WithMany()
-                        .HasForeignKey("ReceiveId");
+                        .HasForeignKey("ReceiveId1");
 
                     b.HasOne("IMS.Domain.Entities.Store", "Store")
                         .WithMany()
@@ -13065,27 +13334,46 @@ namespace IMS.Infrastructure.Migrations
 
             modelBuilder.Entity("IMS.Domain.Entities.StockMovement", b =>
                 {
+                    b.HasOne("IMS.Domain.Entities.Store", null)
+                        .WithMany()
+                        .HasForeignKey("DestinationStoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("IMS.Domain.Entities.Store", "DestinationStore")
                         .WithMany()
-                        .HasForeignKey("DestinationStoreId");
+                        .HasForeignKey("DestinationStoreId1");
+
+                    b.HasOne("IMS.Domain.Entities.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("IMS.Domain.Entities.Item", "Item")
                         .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ItemId1");
 
                     b.HasOne("IMS.Domain.Entities.User", "MovedByUser")
                         .WithMany()
                         .HasForeignKey("MovedByUserId");
 
+                    b.HasOne("IMS.Domain.Entities.Store", null)
+                        .WithMany()
+                        .HasForeignKey("SourceStoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("IMS.Domain.Entities.Store", "SourceStore")
                         .WithMany()
-                        .HasForeignKey("SourceStoreId");
+                        .HasForeignKey("SourceStoreId1");
+
+                    b.HasOne("IMS.Domain.Entities.Store", null)
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IMS.Domain.Entities.Store", "Store")
                         .WithMany()
-                        .HasForeignKey("StoreId");
+                        .HasForeignKey("StoreId1");
 
                     b.HasOne("IMS.Domain.Entities.StoreItem", null)
                         .WithMany("StockMovements")
@@ -13214,13 +13502,13 @@ namespace IMS.Infrastructure.Migrations
                     b.HasOne("IMS.Domain.Entities.Item", "Item")
                         .WithMany("StoreItems")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("IMS.Domain.Entities.Store", "Store")
                         .WithMany("StoreItems")
                         .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Item");
 
@@ -13681,6 +13969,8 @@ namespace IMS.Infrastructure.Migrations
 
             modelBuilder.Entity("IMS.Domain.Entities.AllotmentLetter", b =>
                 {
+                    b.Navigation("DistributionList");
+
                     b.Navigation("Issues");
 
                     b.Navigation("Items");

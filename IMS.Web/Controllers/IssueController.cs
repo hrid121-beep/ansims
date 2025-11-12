@@ -1039,18 +1039,36 @@ namespace IMS.Web.Controllers
 
         [HttpGet]
         [HasPermission(Permission.ExportIssues)]
-        public async Task<IActionResult> Export(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> ExportToCsv(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
-                var fileContent = await _issueService.ExportIssuesToExcelAsync(searchTerm, status, issueType, fromDate, toDate);
-                var fileName = $"Issues_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                var fileContent = await _issueService.ExportIssuesToCsvAsync(searchTerm, status, issueType, fromDate, toDate);
+                var fileName = $"Issues_{DateTime.Now:yyyyMMddHHmmss}.csv";
+                return File(fileContent, "text/csv", fileName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error exporting issues");
-                TempData["Error"] = "Error exporting data.";
+                _logger.LogError(ex, "Error exporting issues to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ExportIssues)]
+        public async Task<IActionResult> ExportToPdf(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate)
+        {
+            try
+            {
+                var fileContent = await _issueService.ExportIssuesToPdfAsync(searchTerm, status, issueType, fromDate, toDate);
+                var fileName = $"Issues_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                return File(fileContent, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting issues to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
                 return RedirectToAction(nameof(Index));
             }
         }

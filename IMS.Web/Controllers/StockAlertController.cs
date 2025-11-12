@@ -163,6 +163,12 @@ namespace IMS.Web.Controllers
         {
             try
             {
+                // Return empty result if user is not authenticated
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Json(new { success = true, alerts = new List<object>(), count = 0 });
+                }
+
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var dashboard = await _stockAlertService.GetPersonalizedAlertsAsync(userId);
 
@@ -192,7 +198,7 @@ namespace IMS.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting recent alerts");
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = ex.Message, alerts = new List<object>(), count = 0 });
             }
         }
 

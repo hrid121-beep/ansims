@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IMS.Web.Controllers
 {
     [Authorize]
+    [HasPermission(Permission.ViewReports)] // CRITICAL FIX: Require ViewReports permission for all report access
     public class ReportController : Controller
     {
         private readonly IReportService _reportService;
@@ -801,6 +802,204 @@ namespace IMS.Web.Controllers
             {
                 TempData["Error"] = "Error generating PDF report: " + ex.Message;
                 return RedirectToAction(nameof(ABCAnalysis));
+            }
+        }
+
+        // ========== CENTRAL STORE REGISTER REPORT (কেন্দ্রীয় ভান্ডার মজুদ তালিকা) ==========
+
+        [HasPermission(Permission.ViewStockReport)]
+        public async Task<IActionResult> CentralStoreRegister(
+            int? storeId,
+            int? categoryId,
+            string sortBy = "Ledger",
+            string period = "",
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            // Calculate date range based on period
+            DateTime? calculatedStartDate = startDate;
+            DateTime? calculatedEndDate = endDate;
+
+            if (!string.IsNullOrEmpty(period) && period != "Custom")
+            {
+                var today = DateTime.Today;
+                switch (period)
+                {
+                    case "Today":
+                        calculatedStartDate = today;
+                        calculatedEndDate = today;
+                        break;
+                    case "Yesterday":
+                        calculatedStartDate = today.AddDays(-1);
+                        calculatedEndDate = today.AddDays(-1);
+                        break;
+                    case "ThisWeek":
+                        var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+                        calculatedStartDate = startOfWeek;
+                        calculatedEndDate = today;
+                        break;
+                    case "LastWeek":
+                        var lastWeekStart = today.AddDays(-(int)today.DayOfWeek - 7);
+                        var lastWeekEnd = lastWeekStart.AddDays(6);
+                        calculatedStartDate = lastWeekStart;
+                        calculatedEndDate = lastWeekEnd;
+                        break;
+                    case "ThisMonth":
+                        calculatedStartDate = new DateTime(today.Year, today.Month, 1);
+                        calculatedEndDate = today;
+                        break;
+                    case "LastMonth":
+                        var lastMonth = today.AddMonths(-1);
+                        calculatedStartDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                        calculatedEndDate = new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month));
+                        break;
+                }
+            }
+
+            var report = await _reportService.GetCentralStoreRegisterAsync(storeId, categoryId, sortBy, calculatedStartDate, calculatedEndDate);
+            await LoadViewBagData();
+
+            // Add sort options
+            ViewBag.SortOptions = new SelectList(new[]
+            {
+                new { Value = "Ledger", Text = "Ledger Number (লেজার নং)" },
+                new { Value = "Item", Text = "Item Name (নাম)" },
+                new { Value = "Category", Text = "Category (শ্রেণী)" },
+                new { Value = "Quantity", Text = "Quantity (পরিমাণ)" }
+            }, "Value", "Text", sortBy);
+
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.StartDate = calculatedStartDate?.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = calculatedEndDate?.ToString("yyyy-MM-dd");
+
+            return View(report);
+        }
+
+        [HasPermission(Permission.ViewStockReport)]
+        public async Task<IActionResult> ExportCentralStoreRegisterPdf(
+            int? storeId,
+            int? categoryId,
+            string sortBy = "Ledger",
+            string period = "",
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            try
+            {
+                // Calculate date range based on period
+                DateTime? calculatedStartDate = startDate;
+                DateTime? calculatedEndDate = endDate;
+
+                if (!string.IsNullOrEmpty(period) && period != "Custom")
+                {
+                    var today = DateTime.Today;
+                    switch (period)
+                    {
+                        case "Today":
+                            calculatedStartDate = today;
+                            calculatedEndDate = today;
+                            break;
+                        case "Yesterday":
+                            calculatedStartDate = today.AddDays(-1);
+                            calculatedEndDate = today.AddDays(-1);
+                            break;
+                        case "ThisWeek":
+                            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+                            calculatedStartDate = startOfWeek;
+                            calculatedEndDate = today;
+                            break;
+                        case "LastWeek":
+                            var lastWeekStart = today.AddDays(-(int)today.DayOfWeek - 7);
+                            var lastWeekEnd = lastWeekStart.AddDays(6);
+                            calculatedStartDate = lastWeekStart;
+                            calculatedEndDate = lastWeekEnd;
+                            break;
+                        case "ThisMonth":
+                            calculatedStartDate = new DateTime(today.Year, today.Month, 1);
+                            calculatedEndDate = today;
+                            break;
+                        case "LastMonth":
+                            var lastMonth = today.AddMonths(-1);
+                            calculatedStartDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                            calculatedEndDate = new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month));
+                            break;
+                    }
+                }
+
+                var reportData = await _reportService.GenerateCentralStoreRegisterPdfAsync(storeId, categoryId, sortBy, calculatedStartDate, calculatedEndDate);
+                var fileName = $"CentralStoreRegister_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+                return File(reportData, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error generating PDF report: " + ex.Message;
+                return RedirectToAction(nameof(CentralStoreRegister));
+            }
+        }
+
+        [HasPermission(Permission.ViewStockReport)]
+        public async Task<IActionResult> ExportCentralStoreRegisterExcel(
+            int? storeId,
+            int? categoryId,
+            string sortBy = "Ledger",
+            string period = "",
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            try
+            {
+                // Calculate date range based on period
+                DateTime? calculatedStartDate = startDate;
+                DateTime? calculatedEndDate = endDate;
+
+                if (!string.IsNullOrEmpty(period) && period != "Custom")
+                {
+                    var today = DateTime.Today;
+                    switch (period)
+                    {
+                        case "Today":
+                            calculatedStartDate = today;
+                            calculatedEndDate = today;
+                            break;
+                        case "Yesterday":
+                            calculatedStartDate = today.AddDays(-1);
+                            calculatedEndDate = today.AddDays(-1);
+                            break;
+                        case "ThisWeek":
+                            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+                            calculatedStartDate = startOfWeek;
+                            calculatedEndDate = today;
+                            break;
+                        case "LastWeek":
+                            var lastWeekStart = today.AddDays(-(int)today.DayOfWeek - 7);
+                            var lastWeekEnd = lastWeekStart.AddDays(6);
+                            calculatedStartDate = lastWeekStart;
+                            calculatedEndDate = lastWeekEnd;
+                            break;
+                        case "ThisMonth":
+                            calculatedStartDate = new DateTime(today.Year, today.Month, 1);
+                            calculatedEndDate = today;
+                            break;
+                        case "LastMonth":
+                            var lastMonth = today.AddMonths(-1);
+                            calculatedStartDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                            calculatedEndDate = new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month));
+                            break;
+                    }
+                }
+
+                var reportData = await _reportService.GenerateCentralStoreRegisterExcelAsync(storeId, categoryId, sortBy, calculatedStartDate, calculatedEndDate);
+                var fileName = $"CentralStoreRegister_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+                return File(reportData,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error generating Excel report: " + ex.Message;
+                return RedirectToAction(nameof(CentralStoreRegister));
             }
         }
     }

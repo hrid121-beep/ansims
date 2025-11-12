@@ -161,12 +161,12 @@
                                 <h5>Audit Information</h5>
                                 <dl class="row">
                                     <dt class="col-sm-4">Created</dt>
-                                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @Model.CreatedBy</dd>
+                                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.CreatedByName ?? Model.CreatedBy ?? "System")</dd>
 
                                     @if (Model.UpdatedAt.HasValue)
                                     {
                                         <dt class="col-sm-4">Last Updated</dt>
-                                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedBy ?? "-")</dd>
+                                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedByName ?? Model.UpdatedBy ?? "System")</dd>
                                     }
                                 </dl>
                             </div>
@@ -304,7 +304,7 @@
                                             <span class="time"><i class="fas fa-clock"></i> @Model.CreatedAt.ToString("dd-MMM-yyyy")</span>
                                             <h3 class="timeline-header">Range Created</h3>
                                             <div class="timeline-body">
-                                                Range was created by @Model.CreatedBy
+                                                Range was created by @(Model.CreatedByName ?? Model.CreatedBy ?? "System")
                                             </div>
                                         </div>
                                     </div>
@@ -316,7 +316,7 @@
                                                 <span class="time"><i class="fas fa-clock"></i> @Model.UpdatedAt.Value.ToString("dd-MMM-yyyy")</span>
                                                 <h3 class="timeline-header">Range Updated</h3>
                                                 <div class="timeline-body">
-                                                    Last updated by @(Model.UpdatedBy ?? "System")
+                                                    Last updated by @(Model.UpdatedByName ?? Model.UpdatedBy ?? "System")
                                                 </div>
                                             </div>
                                         </div>
@@ -328,57 +328,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Dashboard Cards -->
-        @if (statistics != null)
-        {
-            <div class="row mt-3">
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-info">
-                        <div class="inner">
-                            <h3>@statistics.TotalBattalions</h3>
-                            <p>Total Battalions</p>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-success">
-                        <div class="inner">
-                            <h3>@statistics.TotalZilas</h3>
-                            <p>Total Districts</p>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-map"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-warning">
-                        <div class="inner">
-                            <h3>@statistics.TotalStores</h3>
-                            <p>Total Stores</p>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-warehouse"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-danger">
-                        <div class="inner">
-                            <h3>@statistics.TotalPersonnel</h3>
-                            <p>Total Personnel</p>
-                        </div>
-                        <div class="icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
     </div>
 </section>
 

@@ -1,15 +1,11 @@
+@using IMS.Application.Helpers
 @model IMS.Application.DTOs.AllotmentLetterDto
 @{
     Layout = null;
     var fileName = $"Allotment_{Model.AllotmentNo}_{DateTime.Now:yyyyMMdd}.pdf";
 
-    // Bengali month names
-    var bengaliMonths = new Dictionary<int, string>
-    {
-        {1, "জানুয়ারি"}, {2, "ফেব্রুয়ারি"}, {3, "মার্চ"}, {4, "এপ্রিল"},
-        {5, "মে"}, {6, "জুন"}, {7, "জুলাই"}, {8, "আগস্ট"},
-        {9, "সেপ্টেম্বর"}, {10, "অক্টোবর"}, {11, "নভেম্বর"}, {12, "ডিসেম্বর"}
-    };
+    // Get Bengali formatted dates
+    var (bengaliCalendarDate, gregorianBengaliDate) = BengaliDateHelper.GetBothFormats(Model.AllotmentDate);
 }
 
 <!DOCTYPE html>
@@ -317,7 +313,7 @@
         <!-- ========== MEMO & DATE (Single Line with spaces) ========== -->
         <div class="memo-date-line">
             স্মারক নং- @(Model.ReferenceNo ?? Model.AllotmentNo)
-            <span style="float: right;">তারিখ: @(Model.BengaliDate ?? "-------------------------")</span>
+            <span style="float: right;">তারিখ: @gregorianBengaliDate</span>
         </div>
         <div style="clear: both;"></div>
 
@@ -338,7 +334,7 @@
             {
                 <p>
                     উপরোক্ত বিষয়ের প্রেক্ষিতে বিভিন্ন দপ্তর/ইউনিটের চাহিদার আলোকে আয়ুষ্কাল বিবেচনায়
-                    রোডপত্র-"ক" অনুযায়ী @(Model.SubjectBn ?? "উপকরণ") বরাদ্দ প্রদান করা হলো।
+                    ক্রোড়পত্র-"ক" অনুযায়ী @(Model.SubjectBn ?? "উপকরণ") বরাদ্দ প্রদান করা হলো।
                 </p>
 
                 <p>
@@ -436,50 +432,71 @@
             <!-- Repeat Memo & Date -->
             <div class="memo-date-line">
                 স্মারক নং- @(Model.ReferenceNo ?? Model.AllotmentNo)
-                <span style="float: right;">তারিখ: @(Model.BengaliDate ?? "-------------------------")</span>
+                <span style="float: right;">তারিখ: @gregorianBengaliDate</span>
             </div>
             <div style="clear: both;"></div>
 
             <div class="distribution-title">অনুলিপি:</div>
 
-            <ul class="distribution-list">
-                <li><strong>১।</strong> মহাপরিচালক মহোদয়ের সচিবালয়<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
+            @if (Model.DistributionList != null && Model.DistributionList.Any())
+            {
+                <ul class="distribution-list">
+                    @foreach (var item in Model.DistributionList.OrderBy(d => d.DisplayOrder).ThenBy(d => d.SerialNo))
+                    {
+                        <li>
+                            <strong>@BengaliDateHelper.ConvertToBengaliDigits(item.SerialNo)।</strong>
+                            @(item.RecipientTitleBn ?? item.RecipientTitle)
+                            @if (!string.IsNullOrEmpty(item.AddressBn ?? item.Address))
+                            {
+                                <br />
+                                <text>&nbsp;&nbsp;&nbsp;&nbsp;@(item.AddressBn ?? item.Address)</text>
+                            }
+                            @if (!string.IsNullOrEmpty(item.PurposeBn ?? item.Purpose))
+                            {
+                                <text> @(item.PurposeBn ?? item.Purpose)।</text>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <!-- Default distribution list if none specified -->
+                <ul class="distribution-list">
+                    <li><strong>১।</strong> মহাপরিচালক মহোদয়ের সচিবালয়<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
 
-                <li><strong>২।</strong> অতিরিক্ত মহাপরিচালক মহোদয়ের দপ্তর<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা। সময় অবগতির জন্য।</li>
+                    <li><strong>২।</strong> অতিরিক্ত মহাপরিচালক মহোদয়ের দপ্তর<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা। সময় অবগতির জন্য।</li>
 
-                <li><strong>৩।</strong> কমান্ডান্ট<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর।</li>
+                    <li><strong>৩।</strong> কমান্ডান্ট<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর।</li>
 
-                <li><strong>৪।</strong> উপমহাপরিচালক (প্রশাসন/অপারেশনস্/প্রশিক্ষণ)<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
+                    <li><strong>৪।</strong> উপমহাপরিচালক (প্রশাসন/অপারেশনস্/প্রশিক্ষণ)<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
 
-                <li><strong>৫।</strong> উপমহাপরিচালক/পরিচালক<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;…………………………………(সংশ্লিষ্ট রেঞ্জ)। সময় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।</li>
+                    <li><strong>৫।</strong> উপমহাপরিচালক/পরিচালক<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;…………………………………(সংশ্লিষ্ট রেঞ্জ)। সময় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।</li>
 
-                <li><strong>৬।</strong> সহকারী পরিচালক<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;কেন্দ্রীয় আনসার/ভিডিপি ভাণ্ডার<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর। অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।</li>
+                    <li><strong>৬।</strong> সহকারী পরিচালক<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;কেন্দ্রীয় আনসার/ভিডিপি ভাণ্ডার<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর। অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য।</li>
 
-                <li><strong>৭।</strong> কোয়াটার মাস্টার<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;ভাণ্ডার শাখা, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
+                    <li><strong>৭।</strong> কোয়াটার মাস্টার<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;ভাণ্ডার শাখা, সদর দপ্তর, খিলগাঁও, ঢাকা।</li>
 
-                <li><strong>৮।</strong> দপ্তর/মাস্টার কপি- উপপরিচালক (ভাণ্ডার)</li>
-            </ul>
+                    <li><strong>৮।</strong> দপ্তর/মাস্টার কপি- উপপরিচালক (ভাণ্ডার)</li>
+                </ul>
+            }
 
             <div class="bengali-dates">
-                @if (!string.IsNullOrEmpty(Model.BengaliDate))
-                {
-                    <div>@Model.BengaliDate</div>
-                }
-                <div>@Model.AllotmentDate.ToString("dd") @bengaliMonths[Model.AllotmentDate.Month] @Model.AllotmentDate.Year</div>
-                <div>খ্রিস্টাব্দ</div>
+                <div>@bengaliCalendarDate</div>
+                <div>@gregorianBengaliDate</div>
             </div>
 
             <div class="attachment-footer">
-                সংযুক্ত-রোডপত্র "ক" ০১ (এক) পাতা।
+                সংযুক্ত-ক্রোড়পত্র "ক" ০১ (এক) পাতা।
             </div>
 
             <!-- Signature on Page 2 (bottom right) -->
@@ -499,11 +516,11 @@
         @if (Model.Recipients != null && Model.Recipients.Any())
         {
             <div class="annexure-section">
-                <div class="annexure-heading">ক্রেডেন্টপত্র-'ক'</div>
+                <div class="annexure-heading">ক্রোড়পত্র-'ক'</div>
 
                 <div class="memo-date-line">
                     স্মারক নং- @(Model.ReferenceNo ?? Model.AllotmentNo)
-                    <span style="float: right;">তারিখ: @(Model.BengaliDate ?? "-------------------------")</span>
+                    <span style="float: right;">তারিখ: @gregorianBengaliDate</span>
                 </div>
                 <div style="clear: both;"></div>
 
@@ -569,11 +586,11 @@
         {
             <!-- Fallback: Show simple items table when there are no recipients -->
             <div class="annexure-section">
-                <div class="annexure-heading">ক্রেডেন্টপত্র-'ক'</div>
+                <div class="annexure-heading">ক্রোড়পত্র-'ক'</div>
 
                 <div class="memo-date-line">
                     স্মারক নং- @(Model.ReferenceNo ?? Model.AllotmentNo)
-                    <span style="float: right;">তারিখ: @(Model.BengaliDate ?? "-------------------------")</span>
+                    <span style="float: right;">তারিখ: @gregorianBengaliDate</span>
                 </div>
                 <div style="clear: both;"></div>
 

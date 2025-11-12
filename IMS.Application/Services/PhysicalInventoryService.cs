@@ -1445,16 +1445,20 @@ namespace IMS.Application.Services
                 .Include(ss => ss.Item)
                     .ThenInclude(i => i.SubCategory)
                         .ThenInclude(sc => sc.Category)  // Fix: Use proper navigation
-                .Where(ss => ss.StoreId == storeId)
+                .Where(ss => ss.StoreId == storeId && ss.Item != null)  // ✅ Ensure Item is not null
                 .ToListAsync();
 
-            return storeStock.Select(ss => new ItemDto
-            {
-                Id = ss.ItemId,
-                Code = ss.Item.Code,
-                Name = ss.Item.Name,
-                CategoryName = ss.Item.SubCategory?.Category?.Name  // Fix: Navigate through SubCategory
-            });
+            return storeStock
+                .Where(ss => ss.Item != null)  // ✅ Double check for null items
+                .Select(ss => new ItemDto
+                {
+                    Id = ss.ItemId,
+                    ItemCode = ss.Item.ItemCode ?? ss.Item.Code ?? "",  // ✅ Handle both property names
+                    Code = ss.Item.ItemCode ?? ss.Item.Code ?? "",
+                    Name = ss.Item.Name ?? "Unknown Item",
+                    CategoryName = ss.Item.SubCategory?.Category?.Name ?? "Uncategorized"
+                })
+                .ToList();
         }
         public async Task<string> GetCurrentFiscalYearAsync()
         {

@@ -1,246 +1,181 @@
 @{
-    ViewData["Title"] = "Backup & Restore";
+    ViewData["Title"] = "Database Backup";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- Content Header -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-database"></i> Backup & Restore
-                </h1>
+                <h1 class="m-0">Database Backup & Restore</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item">System</li>
-                    <li class="breadcrumb-item active">Backup & Restore</li>
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="SettingsDashboard">Settings</a></li>
+                    <li class="breadcrumb-item active">Database Backup</li>
                 </ol>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
         <div class="row">
-            <!-- Create Backup -->
-            <div class="col-md-6">
-                <div class="card card-primary">
+            <!-- Database Backup Card -->
+            <div class="col-lg-12 mb-4">
+                <div class="card card-success card-outline">
                     <div class="card-header">
                         <h3 class="card-title">
-                            <i class="fas fa-save"></i> Create Database Backup
+                            <i class="fas fa-database"></i> Database Backup
                         </h3>
                     </div>
                     <div class="card-body">
-                        <div class="callout callout-info">
-                            <h5><i class="fas fa-info-circle"></i> Important</h5>
-                            <p class="mb-0">Creating a backup will save the current state of your database. This process may take a few minutes depending on database size.</p>
+                        <div class="mb-3">
+                            <h5 class="text-success">Backup Entire Database</h5>
+                            <p class="text-muted">
+                                Download a complete backup of your database for safekeeping or migration.
+                            </p>
                         </div>
 
-                        <form asp-action="CreateBackup" method="post" id="backupForm">
-                            @Html.AntiForgeryToken()
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Backup includes:</h6>
+                            <ul class="mb-0">
+                                <li>All database tables and data</li>
+                                <li>User accounts and roles</li>
+                                <li>Approval settings and workflows</li>
+                                <li>Transaction history</li>
+                                <li>All system configurations</li>
+                            </ul>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Backup Name (Optional)</label>
-                                <input type="text" class="form-control" name="backupName" placeholder="Leave empty for auto-generated name" />
-                                <small class="form-text text-muted">Default: IMS_Backup_YYYYMMDD_HHMMSS</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" name="includeSystemData" checked />
-                                    Include System Configuration
-                                </label>
-                                <br />
-                                <label>
-                                    <input type="checkbox" name="compressBackup" checked />
-                                    Compress Backup File
-                                </label>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-block" id="createBackupBtn">
-                                <i class="fas fa-save"></i> Create Backup Now
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Automatic Backup Settings -->
-                <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-clock"></i> Automatic Backup Schedule
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" asp-action="UpdateAutoBackup">
-                            @Html.AntiForgeryToken()
-
-                            <div class="form-group">
-                                <label>Enable Automatic Backups</label>
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="autoBackupSwitch" name="enabled" />
-                                    <label class="custom-control-label" for="autoBackupSwitch">Automatically create backups</label>
+                        <div class="callout callout-success">
+                            <h6><i class="fas fa-shield-alt"></i> Backup Formats Available</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>.BAK Format (Binary Backup)</strong>
+                                    <ul class="mb-2">
+                                        <li>Native SQL Server backup file</li>
+                                        <li>Compressed and optimized</li>
+                                        <li>Restore using SQL Server Management Studio</li>
+                                        <li>Fastest backup option</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>.SQL Format (Script Export)</strong>
+                                    <ul class="mb-0">
+                                        <li>Complete SQL script with schema + data</li>
+                                        <li>Portable and readable</li>
+                                        <li>Can be edited in any text editor</li>
+                                        <li>Useful for migration and inspection</li>
+                                    </ul>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Backup Frequency</label>
-                                <select class="form-control" name="frequency">
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
-                                </select>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock"></i>
+                            <strong>Please wait:</strong> Backup process may take several minutes. Do not close the browser.
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <a asp-action="BackupDatabase" asp-route-format="bak" class="btn btn-success btn-lg btn-block" onclick="showBackupProgress()">
+                                        <i class="fas fa-database"></i> Download .BAK Backup (Binary)
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <a asp-action="BackupDatabase" asp-route-format="sql" class="btn btn-info btn-lg btn-block" onclick="showBackupProgress()">
+                                        <i class="fas fa-file-code"></i> Download .SQL Script (Text)
+                                    </a>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Backup Time</label>
-                                <input type="time" class="form-control" name="backupTime" value="02:00" />
-                                <small class="form-text text-muted">Recommended: Off-peak hours (e.g., 2:00 AM)</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Retention Period (Days)</label>
-                                <input type="number" class="form-control" name="retentionDays" value="30" min="1" max="365" />
-                                <small class="form-text text-muted">Backups older than this will be automatically deleted</small>
-                            </div>
-
-                            <button type="submit" class="btn btn-info btn-block">
-                                <i class="fas fa-check"></i> Save Schedule Settings
-                            </button>
-                        </form>
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Backup files can be restored using SQL Server Management Studio or sqlcmd
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Backup History & Restore -->
-            <div class="col-md-6">
-                <div class="card card-success">
+        <!-- How to Use Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-outline card-info">
                     <div class="card-header">
                         <h3 class="card-title">
-                            <i class="fas fa-history"></i> Backup History
-                        </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-sm btn-tool" onclick="location.reload()">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Backup Name</th>
-                                        <th>Date</th>
-                                        <th>Size</th>
-                                        <th width="120">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Sample data - replace with actual backup list -->
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            <i class="fas fa-database fa-2x mb-2"></i>
-                                            <p>No backups available yet</p>
-                                            <small>Create your first backup to see it here</small>
-                                        </td>
-                                    </tr>
-                                    <!-- Example row:
-                                    <tr>
-                                        <td>
-                                            <i class="fas fa-database text-primary"></i>
-                                            IMS_Backup_20250111_143022
-                                        </td>
-                                        <td>
-                                            <small>11/01/2025 14:30</small>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-info">45.2 MB</span>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-xs btn-success" title="Restore">
-                                                <i class="fas fa-undo"></i>
-                                            </button>
-                                            <button class="btn btn-xs btn-info" title="Download">
-                                                <i class="fas fa-download"></i>
-                                            </button>
-                                            <button class="btn btn-xs btn-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Restore from File -->
-                <div class="card card-warning card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-upload"></i> Restore from File
+                            <i class="fas fa-question-circle"></i> How to Use
                         </h3>
                     </div>
                     <div class="card-body">
-                        <div class="callout callout-warning">
-                            <h5><i class="fas fa-exclamation-triangle"></i> Warning</h5>
-                            <p class="mb-0">Restoring a backup will <strong>replace all current data</strong>. Make sure to create a backup before restoring!</p>
-                        </div>
-
-                        <form asp-action="RestoreBackup" method="post" enctype="multipart/form-data" id="restoreForm">
-                            @Html.AntiForgeryToken()
-
-                            <div class="form-group">
-                                <label>Select Backup File</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="backupFile" name="backupFile" accept=".bak,.sql,.zip" required />
-                                    <label class="custom-file-label" for="backupFile">Choose file...</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-database"></i> Creating a Backup</h6>
+                                <ol>
+                                    <li>Choose backup format:
+                                        <ul>
+                                            <li><strong>.BAK</strong> - For SQL Server restore (faster)</li>
+                                            <li><strong>.SQL</strong> - For portability and inspection</li>
+                                        </ul>
+                                    </li>
+                                    <li>Click the corresponding download button</li>
+                                    <li>Wait for backup to complete (progress shown)</li>
+                                    <li>File will download automatically</li>
+                                    <li>Store backup file in a safe location</li>
+                                </ol>
+                                <div class="alert alert-warning mt-2">
+                                    <strong>Recommended:</strong> Take regular backups (daily/weekly)
                                 </div>
-                                <small class="form-text text-muted">Supported formats: .bak, .sql, .zip</small>
                             </div>
 
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" id="confirmRestore" required />
-                                    I understand this will replace all current data
-                                </label>
+                            <div class="col-md-6">
+                                <h6 class="text-primary"><i class="fas fa-redo"></i> Restoring from Backup</h6>
+                                <p class="mb-2"><strong>For .BAK files:</strong></p>
+                                <ol class="mb-3">
+                                    <li>Open SQL Server Management Studio (SSMS)</li>
+                                    <li>Right-click on Databases → Restore Database</li>
+                                    <li>Select "Device" and browse to your .BAK file</li>
+                                    <li>Click OK to restore</li>
+                                </ol>
+                                <p class="mb-2"><strong>For .SQL files:</strong></p>
+                                <ol class="mb-0">
+                                    <li>Open the .SQL file in any text editor</li>
+                                    <li>Review the script before executing</li>
+                                    <li>Execute in SSMS or sqlcmd</li>
+                                </ol>
+                                <div class="alert alert-danger mt-2">
+                                    <strong>Warning:</strong> Restoring will overwrite the existing database!
+                                </div>
                             </div>
-
-                            <button type="submit" class="btn btn-warning btn-block" id="restoreBtn" disabled>
-                                <i class="fas fa-undo"></i> Restore Database
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Quick Info -->
-                <div class="card card-light">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-info-circle"></i> Quick Information
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <dl class="row mb-0">
-                            <dt class="col-sm-6">Database Size:</dt>
-                            <dd class="col-sm-6">-- MB</dd>
-
-                            <dt class="col-sm-6">Last Backup:</dt>
-                            <dd class="col-sm-6">Never</dd>
-
-                            <dt class="col-sm-6">Total Backups:</dt>
-                            <dd class="col-sm-6">0</dd>
-
-                            <dt class="col-sm-6">Backup Location:</dt>
-                            <dd class="col-sm-6"><small>~/Backups/</small></dd>
-                        </dl>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -250,46 +185,31 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Custom file input label update
-            $('.custom-file-input').on('change', function() {
-                var fileName = $(this).val().split('\\').pop();
-                $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
-            });
-
-            // Enable restore button only when checkbox is checked
-            $('#confirmRestore').on('change', function() {
-                $('#restoreBtn').prop('disabled', !this.checked);
-            });
-
-            // Backup form submission
-            $('#backupForm').on('submit', function(e) {
-                e.preventDefault();
-                var btn = $('#createBackupBtn');
-                btn.prop('disabled', true);
-                btn.html('<i class="fas fa-spinner fa-spin"></i> Creating Backup...');
-
-                // Submit form
-                this.submit();
-
-                // Re-enable after 5 seconds
-                setTimeout(function() {
-                    btn.prop('disabled', false);
-                    btn.html('<i class="fas fa-save"></i> Create Backup Now');
-                }, 5000);
-            });
-
-            // Restore form confirmation
-            $('#restoreForm').on('submit', function(e) {
-                if (!confirm('Are you sure you want to restore this backup? This action cannot be undone!')) {
-                    e.preventDefault();
-                    return false;
+        function showBackupProgress() {
+            Swal.fire({
+                title: 'Creating Database Backup',
+                html: `
+                    <div class="text-center">
+                        <i class="fas fa-database fa-3x text-success mb-3"></i>
+                        <p>Please wait while we backup your database...</p>
+                        <p class="text-muted">This may take several minutes</p>
+                        <div class="progress mt-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-
-                var btn = $('#restoreBtn');
-                btn.prop('disabled', true);
-                btn.html('<i class="fas fa-spinner fa-spin"></i> Restoring...');
             });
-        });
+
+            // Close after 3 seconds (backup will continue in background)
+            setTimeout(() => {
+                Swal.close();
+            }, 3000);
+        }
     </script>
 }

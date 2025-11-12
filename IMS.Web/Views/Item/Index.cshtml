@@ -128,18 +128,18 @@
                         <!-- Advanced Filters -->
                         <div class="row mb-3">
                             <div class="col-md-12">
-                                <div class="card collapsed-card card-secondary card-outline">
+                                <div class="card card-secondary card-outline">
                                     <div class="card-header">
                                         <h3 class="card-title">
                                             <i class="fas fa-filter"></i> Advanced Filters
                                         </h3>
                                         <div class="card-tools">
                                             <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                                <i class="fas fa-plus"></i>
+                                                <i class="fas fa-minus"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="card-body" style="display: none;">
+                                    <div class="card-body">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
@@ -282,9 +282,24 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="img-circle bg-gradient-primary d-flex align-items-center justify-content-center mr-2" style="width: 35px; height: 35px;">
-                                                        <i class="fas fa-box text-white"></i>
-                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                    {
+                                                        <img src="/@item.ImagePath"
+                                                             alt="@item.Name"
+                                                             class="img-thumbnail item-thumb mr-2"
+                                                             style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"
+                                                             loading="lazy"
+                                                             onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <div class="img-circle bg-gradient-primary align-items-center justify-content-center mr-2" style="width: 40px; height: 40px; display: none;">
+                                                            <i class="fas fa-box text-white"></i>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="img-circle bg-gradient-primary d-flex align-items-center justify-content-center mr-2" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-box text-white"></i>
+                                                        </div>
+                                                    }
                                                     <div>
                                                         <strong>@item.Name</strong>
                                                         @if (!string.IsNullOrEmpty(item.Description))
@@ -409,17 +424,6 @@
                                                        title="Edit Item">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <button type="button"
-                                                            class="btn btn-success btn-sm"
-                                                            data-toggle="modal"
-                                                            data-target="#stockModal"
-                                                            data-item-id="@item.Id"
-                                                            data-item-name="@item.Name"
-                                                            data-current-stock="@item.CurrentStock"
-                                                            data-unit="@item.Unit"
-                                                            title="Adjust Stock">
-                                                        <i class="fas fa-calculator"></i>
-                                                    </button>
                                                     <div class="btn-group btn-group-sm" role="group">
                                                         <button type="button"
                                                                 class="btn btn-secondary btn-sm dropdown-toggle"
@@ -451,88 +455,13 @@
                             </table>
                         </div>
                     </div>
-
-                    <div class="card-footer">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="description-block">
-                                    <span class="description-text">Showing @Model.Count() items</span>
-                                </div>
-                            </div>
-                            <div class="col-md-6 text-right">
-                                <button type="button" class="btn btn-default btn-sm" onclick="window.print()">
-                                    <i class="fas fa-print"></i> Print
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Stock Adjustment Modal -->
-<div class="modal fade" id="stockModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-gradient-success">
-                <h5 class="modal-title text-white">
-                    <i class="fas fa-calculator"></i> Stock Adjustment
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form asp-action="AdjustStock" method="post">
-                <div class="modal-body">
-                    <input type="hidden" id="stockItemId" name="ItemId" />
-
-                    <div class="callout callout-info">
-                        <h5 id="stockItemName"></h5>
-                        <p>Current Stock: <strong><span id="currentStockDisplay"></span></strong></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="adjustmentType">Adjustment Type</label>
-                        <select class="form-control select2" name="AdjustmentType" id="adjustmentType" style="width: 100%;">
-                            <option value="Add">Add Stock</option>
-                            <option value="Remove">Remove Stock</option>
-                            <option value="Set">Set Stock</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="quantity">Quantity</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" name="Quantity" id="quantity" min="0" step="0.01" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text" id="unitDisplay"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="reason">Reason</label>
-                        <textarea class="form-control" name="Reason" id="reason" rows="3" placeholder="Enter reason for adjustment..." required></textarea>
-                    </div>
-
-                    <div class="alert alert-info" id="stockPreview" style="display:none;">
-                        <i class="fas fa-info-circle"></i> New Stock: <strong><span id="newStockValue"></span></strong>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Apply Adjustment
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Stock Adjustment Modal Removed - Use /StockAdjustment/Create for proper workflow -->
 
 <!-- Bulk Barcode Modal -->
 <div class="modal fade" id="bulkBarcodeModal" tabindex="-1" role="dialog">
@@ -651,7 +580,10 @@
                         extend: 'copyHtml5',
                         className: 'btn btn-secondary btn-sm d-none',
                         text: '<i class="fas fa-copy"></i>',
-                        titleAttr: 'Copy'
+                        titleAttr: 'Copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     },
                     {
                         extend: 'excelHtml5',
@@ -660,20 +592,26 @@
                         titleAttr: 'Excel',
                         title: 'Items List - ' + new Date().toLocaleDateString(),
                         exportOptions: {
-                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                            columns: ':not(.no-export):not(:last-child)'
                         }
                     },
                     {
                         extend: 'csvHtml5',
                         className: 'btn btn-info btn-sm d-none',
                         text: '<i class="fas fa-file-csv"></i>',
-                        titleAttr: 'CSV'
+                        titleAttr: 'CSV',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     },
                     {
                         extend: 'pdfHtml5',
                         className: 'btn btn-danger btn-sm d-none',
                         text: '<i class="fas fa-file-pdf"></i>',
-                        titleAttr: 'PDF'
+                        titleAttr: 'PDF',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     }
                 ],
                 language: {
@@ -825,49 +763,7 @@
                 }, 1000);
             });
 
-            // Stock adjustment modal
-            var currentStock = 0;
-            $('#stockModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var itemId = button.data('item-id');
-                var itemName = button.data('item-name');
-                currentStock = parseFloat(button.data('current-stock')) || 0;
-                var unit = button.data('unit');
-
-                $('#stockItemId').val(itemId);
-                $('#stockItemName').text(itemName);
-                $('#currentStockDisplay').text(currentStock + ' ' + unit);
-                $('#unitDisplay').text(unit);
-                $('#stockPreview').hide();
-                $('#quantity').val('');
-                $('#reason').val('');
-            });
-
-            // Calculate new stock preview
-            $('#quantity, #adjustmentType').on('change keyup', function() {
-                var quantity = parseFloat($('#quantity').val()) || 0;
-                var type = $('#adjustmentType').val();
-                var newStock = 0;
-
-                switch(type) {
-                    case 'Add':
-                        newStock = currentStock + quantity;
-                        break;
-                    case 'Remove':
-                        newStock = Math.max(0, currentStock - quantity);
-                        break;
-                    case 'Set':
-                        newStock = quantity;
-                        break;
-                }
-
-                if (quantity > 0) {
-                    $('#newStockValue').text(newStock.toFixed(2) + ' ' + $('#unitDisplay').text());
-                    $('#stockPreview').slideDown();
-                } else {
-                    $('#stockPreview').slideUp();
-                }
-            });
+            // Stock adjustment modal removed - use /StockAdjustment/Create instead
 
             // Bulk barcode modal
             $('#bulkBarcodeModal').on('show.bs.modal', function() {
@@ -1009,6 +905,23 @@
 
         .table td {
             vertical-align: middle;
+        }
+
+        /* Item Image Styles */
+        .item-thumb {
+            transition: transform 0.2s ease-in-out;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .item-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .img-thumbnail {
+            padding: 2px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
         }
 
         @@media (max-width: 768px) {

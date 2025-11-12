@@ -2,18 +2,12 @@
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
 using IMS.Domain.Enums;
-using IMS.Infrastructure.Repositories;
 using IMS.Web.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace IMS.Web.Controllers
 {
@@ -94,6 +88,11 @@ namespace IMS.Web.Controllers
                 {
                     receives = receives.Where(r => r.ReceiveDate <= toDate.Value);
                 }
+
+                // Order by date - latest first
+                receives = receives.OrderByDescending(r => r.ReceiveDate)
+                                   .ThenByDescending(r => r.CreatedAt)
+                                   .ThenByDescending(r => r.Id);
 
                 // Pagination
                 var pageSize = 10;
@@ -211,8 +210,17 @@ namespace IMS.Web.Controllers
                         // If action is complete, call CompleteReceiveAsync to update stock
                         if (action == "complete")
                         {
-                            await _receiveService.CompleteReceiveAsync(result.Id, model.ReceiverSignature);
-                            TempData["Success"] = "Receive completed successfully!";
+                            try
+                            {
+                                await _receiveService.CompleteReceiveAsync(result.Id, model.ReceiverSignature);
+                                TempData["Success"] = "Receive completed successfully! Stock has been updated.";
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error completing receive {ReceiveId}", result.Id);
+                                TempData["Error"] = $"Receive saved but completion failed: {ex.Message}";
+                                return RedirectToAction(nameof(Details), new { id = result.Id });
+                            }
                         }
                         else
                         {
@@ -220,11 +228,16 @@ namespace IMS.Web.Controllers
                         }
                         return RedirectToAction(nameof(Details), new { id = result.Id });
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Failed to create receive. Please try again.");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating receive");
+                TempData["Error"] = $"Error creating receive: {ex.Message}";
                 ModelState.AddModelError("", "Error creating receive. Please try again.");
             }
 
@@ -299,25 +312,176 @@ namespace IMS.Web.Controllers
                     return Json(new { success = false, message = "Could not extract voucher number from input" });
                 }
 
-                // Create receive from voucher number
-                var receive = await _receiveService.CreateReceiveFromVoucherAsync(voucherNo);
+                // Fetch issue by voucher number (don't create receive yet!)
+                var issue = await _issueService.GetIssueByVoucherNoAsync(voucherNo);
 
-                if (receive != null)
+                if (issue != null)
                 {
                     return Json(new
                     {
                         success = true,
-                        message = $"Receive created successfully for voucher {voucherNo}",
-                        redirectUrl = Url.Action(nameof(Process), new { id = receive.Id })
+                        message = $"Issue found for voucher {voucherNo}. Please review before creating receive.",
+                        redirectUrl = Url.Action("CreateFromIssue", new { issueId = issue.Id })
                     });
                 }
 
-                return Json(new { success = false, message = $"Could not create receive for voucher: {voucherNo}. Please verify the voucher number exists and has not been received yet." });
+                return Json(new { success = false, message = $"Could not find issue for voucher: {voucherNo}. Please verify the voucher number exists." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error scanning voucher: {QrCode}", qrCode);
                 return Json(new { success = false, message = "Error processing voucher: " + ex.Message });
+            }
+        }
+
+        // GET: Receive/CreateFromIssue - Review issue before creating receive
+        [HasPermission(Permission.CreateReceive)]
+        public async Task<IActionResult> CreateFromIssue(int issueId)
+        {
+            try
+            {
+                var issue = await _issueService.GetIssueByIdAsync(issueId);
+                if (issue == null)
+                {
+                    TempData["Error"] = "Issue not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Check if issue is in receivable status (Approved, Issued, or Completed)
+                var receivableStatuses = new[] { "Approved", "Issued", "Completed" };
+                if (!receivableStatuses.Contains(issue.Status))
+                {
+                    TempData["Error"] = $"Issue status is '{issue.Status}'. Only approved/issued/completed issues can be received.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Check for existing receives for this issue
+                var existingReceives = await _receiveService.GetReceivesByIssueIdAsync(issueId);
+                ViewBag.ExistingReceives = existingReceives;
+
+                // Ensure Items collection is not null
+                if (issue.Items == null)
+                {
+                    issue.Items = new List<IssueItemDto>();
+                }
+
+                // Check if there are still pending items to receive
+                var hasPendingItems = issue.Items.Any();
+                ViewBag.HasPendingItems = hasPendingItems;
+
+                // Generate receive number
+                ViewBag.ReceiveNo = await _receiveService.GenerateReceiveNoAsync();
+
+                // Pass issue data
+                ViewBag.Issue = issue;
+
+                // Load stores for destination selection
+                var stores = await _storeService.GetActiveStoresAsync();
+                ViewBag.Stores = stores.Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList();
+
+                // ✅ FIX: Create ReceiveDto pre-populated with Issue data
+                var receiveDto = new ReceiveDto
+                {
+                    ReceiveNo = await _receiveService.GenerateReceiveNoAsync(),
+                    ReceiveDate = DateTime.Now,
+                    ReceiveType = "Issue",
+                    OriginalIssueId = issueId,
+                    OriginalIssueNo = issue.IssueNo,
+                    OriginalVoucherNo = issue.VoucherNumber,
+                    StoreId = null, // User must select receiving store
+                    Items = issue.Items?.Select(i => new ReceiveItemDto
+                    {
+                        ItemId = i.ItemId,
+                        ItemName = i.ItemName,
+                        ItemCode = i.ItemCode,
+                        CategoryName = i.CategoryName,
+                        IssuedQuantity = i.IssuedQuantity ?? i.ApprovedQuantity ?? i.RequestedQuantity,
+                        ReceivedQuantity = 0, // Will be calculated from previous receives
+                        Unit = i.Unit,
+                        StoreId = i.StoreId,
+                        Condition = "Good",
+                        Remarks = i.Remarks
+                    }).ToList() ?? new List<ReceiveItemDto>()
+                };
+
+                return View(receiveDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading CreateFromIssue for issue: {IssueId}", issueId);
+                TempData["Error"] = "Error loading issue details: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Receive/CreateFromIssue - Create receive from issue
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.CreateReceive)]
+        public async Task<IActionResult> CreateFromIssue(int issueId, ReceiveDto model)
+        {
+            try
+            {
+                // Validate receiving store is selected
+                if (!model.StoreId.HasValue || model.StoreId.Value == 0)
+                {
+                    TempData["Error"] = "Please select a receiving store.";
+                    var issue = await _issueService.GetIssueByIdAsync(issueId);
+                    ViewBag.Issue = issue;
+                    ViewBag.ReceiveNo = await _receiveService.GenerateReceiveNoAsync();
+                    var stores = await _storeService.GetActiveStoresAsync();
+                    ViewBag.Stores = stores.Select(s => new SelectListItem
+                    {
+                        Value = s.Id.ToString(),
+                        Text = s.Name
+                    }).ToList();
+                    return View(model);
+                }
+
+                // Set issue ID
+                model.OriginalIssueId = issueId;
+
+                // Get issue details
+                var issue2 = await _issueService.GetIssueByIdAsync(issueId);
+                if (issue2 == null)
+                {
+                    TempData["Error"] = "Issue not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Set receive type based on issue
+                model.ReceiveType = "Issue";
+                model.OriginalIssueNo = issue2.IssueNo;
+                model.OriginalVoucherNo = issue2.VoucherNumber;
+
+                // Create the receive
+                var receive = await _receiveService.CreateReceiveAsync(model);
+
+                TempData["Success"] = $"Receive {receive.ReceiveNo} created successfully from issue {issue2.IssueNo}";
+                return RedirectToAction(nameof(Details), new { id = receive.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating receive from issue: {IssueId}", issueId);
+                TempData["Error"] = "Error creating receive: " + ex.Message;
+
+                // Reload view data
+                var issue = await _issueService.GetIssueByIdAsync(issueId);
+                ViewBag.Issue = issue;
+                ViewBag.ReceiveNo = await _receiveService.GenerateReceiveNoAsync();
+
+                var stores = await _storeService.GetActiveStoresAsync();
+                ViewBag.Stores = stores.Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList();
+
+                return View(model);
             }
         }
 
@@ -386,57 +550,124 @@ namespace IMS.Web.Controllers
             }
         }
 
-        // POST: Receive/Complete - Complete the receive process
+        // POST: Receive/UpdateStore - Update receiving store for old receives
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        [HasPermission(Permission.CreateReceive)]
-        public async Task<IActionResult> Complete(int id, string receiverSignature,
-            string receiverName, string receiverBadgeNo, string notes)
+        [HasPermission(Permission.EditReceive)]
+        public async Task<IActionResult> UpdateStore(int id, int storeId)
         {
             try
             {
-                var currentUser = await _userManager.GetUserAsync(User);
-                var receive = await _receiveService.GetReceiveByIdAsync(id);
-
+                var receive = await _unitOfWork.Receives.GetByIdAsync(id);
                 if (receive == null)
                 {
                     return Json(new { success = false, message = "Receive not found" });
                 }
 
-                // Validate items are assessed
-                if (receive.Items.Any(i => string.IsNullOrEmpty(i.Condition)))
+                receive.StoreId = storeId;
+                _unitOfWork.Receives.Update(receive);
+                await _unitOfWork.CompleteAsync();
+
+                return Json(new { success = true, message = "Receiving store updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating receive store");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Receive/Complete - Complete the receive process
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.CreateReceive)]
+        public async Task<IActionResult> Complete(int id, string receiverSignature = null,
+            string receiverName = null, string receiverBadgeNo = null, string notes = null)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to complete receive {ReceiveId}", id);
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                var receive = await _receiveService.GetReceiveByIdAsync(id);
+
+                if (receive == null)
                 {
-                    return Json(new { success = false, message = "Please assess condition of all items" });
+                    _logger.LogWarning("Receive {ReceiveId} not found", id);
+                    return Json(new { success = false, message = "Receive not found" });
                 }
 
+                // Check if already completed
+                if (receive.Status == "Completed")
+                {
+                    _logger.LogWarning("Receive {ReceiveId} is already completed", id);
+                    return Json(new { success = false, message = "This receive is already completed" });
+                }
+
+                // Validate StoreId is set
+                if (!receive.StoreId.HasValue || receive.StoreId.Value == 0)
+                {
+                    _logger.LogWarning("Receive {ReceiveId} has no store set", id);
+                    return Json(new { success = false, message = "Please select a receiving store first" });
+                }
+
+                // Validate items exist
+                if (receive.Items == null || !receive.Items.Any())
+                {
+                    _logger.LogWarning("Receive {ReceiveId} has no items", id);
+                    return Json(new { success = false, message = "Cannot complete receive without items" });
+                }
+
+                // Validate items are assessed (skip this check as it's optional)
+                // if (receive.Items.Any(i => string.IsNullOrEmpty(i.Condition)))
+                // {
+                //     return Json(new { success = false, message = "Please assess condition of all items" });
+                // }
+
+                _logger.LogInformation("Calling CompleteReceiveAsync for receive {ReceiveId}", id);
+
+                // Use existing signature if not provided
+                var signatureToUse = receiverSignature ?? receive.ReceiverSignature;
+
                 // Complete the receive
-                var result = await _receiveService.CompleteReceiveAsync(id, receiverSignature);
+                var result = await _receiveService.CompleteReceiveAsync(id, signatureToUse);
 
                 if (result)
                 {
-                    // Send notification
-                    await _notificationService.SendNotificationAsync(new NotificationDto
-                    {
-                        UserId = currentUser.Id,
-                        Title = "Receive Completed",
-                        Message = $"Receive {receive.ReceiveNo} has been completed successfully",
-                        Type = "Success"
-                    });
+                    _logger.LogInformation("Receive {ReceiveId} completed successfully", id);
 
-                    TempData["Success"] = "Items received successfully!";
+                    // Send notification
+                    try
+                    {
+                        await _notificationService.SendNotificationAsync(new NotificationDto
+                        {
+                            UserId = currentUser.Id,
+                            Title = "Receive Completed",
+                            Message = $"Receive {receive.ReceiveNo} has been completed successfully",
+                            Type = "Success"
+                        });
+                    }
+                    catch (Exception notifEx)
+                    {
+                        _logger.LogWarning(notifEx, "Failed to send notification for receive {ReceiveId}", id);
+                        // Don't fail the whole operation if notification fails
+                    }
+
+                    TempData["Success"] = "Items received successfully! Stock has been updated.";
                     return Json(new
                     {
                         success = true,
+                        message = "Receive completed successfully",
                         redirectUrl = Url.Action(nameof(Details), new { id })
                     });
                 }
 
-                return Json(new { success = false, message = "Error completing receive" });
+                _logger.LogWarning("CompleteReceiveAsync returned false for receive {ReceiveId}", id);
+                return Json(new { success = false, message = "Error completing receive. Please check the logs." });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error completing receive");
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error completing receive {ReceiveId}: {ErrorMessage}", id, ex.Message);
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
@@ -449,7 +680,9 @@ namespace IMS.Web.Controllers
                 var receives = await _receiveService.GetAllReceivesAsync();
                 var pendingReceives = receives.Where(r =>
                     r.Status == "Pending" || r.Status == "Processing" || r.Status == "Draft"
-                ).OrderBy(r => r.ReceiveDate);
+                ).OrderByDescending(r => r.ReceiveDate)
+                 .ThenByDescending(r => r.CreatedAt)
+                 .ThenByDescending(r => r.Id);
 
                 return View("Index", pendingReceives);
             }
@@ -484,6 +717,9 @@ namespace IMS.Web.Controllers
                     Value = i.Id.ToString(),
                     Text = $"{i.ItemCode} - {i.Name}"
                 }).ToList();
+
+                // Pass full items data for image display
+                ViewBag.ItemsData = items.ToList();
 
                 // Load organization data from UnitOfWork and convert to SelectListItem
                 var battalions = await _unitOfWork.Battalions.GetAllAsync();
@@ -838,14 +1074,26 @@ namespace IMS.Web.Controllers
         {
             try
             {
+                // Generate voucher
                 var voucherNo = await _voucherService.GenerateReceiveVoucherAsync(id);
+
+                _logger.LogInformation("Voucher generated: {VoucherNo} for Receive {ReceiveId}", voucherNo, id);
+
+                // Get PDF bytes
+                var pdfBytes = await _voucherService.GetReceiveVoucherPdfAsync(id);
+                var receive = await _receiveService.GetReceiveByIdAsync(id);
+
+                // Return PDF for download
+                string fileName = $"Receive_Voucher_{receive.VoucherNo}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
                 TempData["Success"] = $"ভাউচার তৈরি হয়েছে: {voucherNo}";
-                return RedirectToAction(nameof(Details), new { id });
+
+                return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating voucher for Receive {ReceiveId}", id);
-                TempData["Error"] = "ভাউচার তৈরিতে সমস্যা হয়েছে।";
+                TempData["Error"] = $"ভাউচার তৈরিতে সমস্যা হয়েছে: {ex.Message}";
                 return RedirectToAction(nameof(Details), new { id });
             }
         }
@@ -921,6 +1169,9 @@ namespace IMS.Web.Controllers
                 Value = i.Id.ToString(),
                 Text = $"{i.ItemCode} - {i.Name}"
             }).ToList();
+
+            // Pass full items data for image display
+            ViewBag.ItemsData = items.ToList();
 
             ViewBag.ReceiveTypes = new List<SelectListItem>
             {

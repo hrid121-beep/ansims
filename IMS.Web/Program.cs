@@ -82,8 +82,7 @@ builder.Services.AddScoped<AutoMapper.IMapper>(sp =>
 */
 
 // Configure Email Settings
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // ========================================
 // REGISTER REPOSITORIES AND UNIT OF WORK

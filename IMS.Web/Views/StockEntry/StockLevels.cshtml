@@ -140,7 +140,7 @@
         </div>
 
         <!-- Filter Card -->
-        <div class="card card-primary card-outline">
+        <div class="card card-primary">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fas fa-filter"></i> Filter Options
@@ -219,17 +219,17 @@
                                         <i class="fas fa-redo"></i> Reset
                                     </a>
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-download"></i> Export
                                         </button>
                                         <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" onclick="exportStock('csv')">
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="exportStock('csv'); return false;">
                                                 <i class="fas fa-file-csv"></i> Export as CSV
                                             </a>
-                                            <a class="dropdown-item" href="#" onclick="exportStock('excel')">
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="exportStock('excel'); return false;">
                                                 <i class="fas fa-file-excel"></i> Export as Excel
                                             </a>
-                                            <a class="dropdown-item" href="#" onclick="exportStock('pdf')">
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="exportStock('pdf'); return false;">
                                                 <i class="fas fa-file-pdf"></i> Export as PDF
                                             </a>
                                         </div>
@@ -243,7 +243,7 @@
         </div>
 
         <!-- Stock Levels Table -->
-        <div class="card card-success card-outline">
+        <div class="card card-success">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fas fa-table"></i> Current Stock Levels

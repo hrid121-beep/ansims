@@ -221,7 +221,7 @@
                         text: '<i class="far fa-file-excel"></i> Export to Excel',
                         className: 'btn btn-success btn-sm',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude QR Code and Actions columns
+                            columns: ':not(.no-export):not(:last-child)'
                         }
                     },
                     {
@@ -229,7 +229,7 @@
                         text: '<i class="far fa-file-pdf"></i> Export to PDF',
                         className: 'btn btn-danger btn-sm',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6]
+                            columns: ':not(.no-export):not(:last-child)'
                         }
                     },
                     {
@@ -237,7 +237,7 @@
                         text: '<i class="fas fa-print"></i> Print List',
                         className: 'btn btn-info btn-sm',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6]
+                            columns: ':not(.no-export):not(:last-child)'
                         }
                     },
                     {

@@ -131,6 +131,7 @@ namespace IMS.Application.Services
                     StoreId = adjustmentDto.StoreId,
                     OldQuantity = oldQuantity,
                     NewQuantity = newQuantity,
+                    Quantity = Math.Abs((decimal)adjustmentQuantity), // CRITICAL FIX: Set required Quantity property
                     AdjustmentQuantity = Math.Abs((decimal)adjustmentQuantity),
                     AdjustmentType = adjustmentType,
                     Reason = adjustmentDto.Reason,
@@ -462,7 +463,8 @@ namespace IMS.Application.Services
 
         private string GetCurrentUserId()
         {
-            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value ?? "System";
+            // CRITICAL FIX: Use NameIdentifier (User.Id) not Name (Username)
+            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "System";
         }
 
         private bool HasApprovalPermission()

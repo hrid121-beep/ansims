@@ -34,8 +34,8 @@
                         <div class="card-header">
                             <h3 class="card-title">Receive Information</h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" onclick="scanVoucherModal()">
-                                    <i class="fas fa-qrcode"></i> Scan Issue Voucher
+                                <button type="button" class="btn btn-tool btn-sm" onclick="scanVoucherModal()">
+                                    <i class="fas fa-qrcode"></i> Scan by Voucher
                                 </button>
                             </div>
                         </div>
@@ -78,16 +78,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label asp-for="OriginalIssueId">Linked Issue (Optional)</label>
-                                        <div class="input-group">
-                                            <input type="hidden" asp-for="OriginalIssueId" id="originalIssueId" />
-                                            <input type="text" id="originalIssueNo" class="form-control"
-                                                   placeholder="Issue number (if receiving against issue)" readonly />
-                                            <div class="input-group-append">
-                                                <button type="button" class="btn btn-info" onclick="searchIssue()">
-                                                    <i class="fas fa-search"></i>
-                                                </button>
-                                            </div>
+                                        <label>&nbsp;</label>
+                                        <div class="alert alert-info mb-0 py-2">
+                                            <i class="fas fa-info-circle"></i> <strong>Tip:</strong> To receive items against an Issue, use the <strong>"Scan by Voucher"</strong> button above.
                                         </div>
                                     </div>
                                 </div>
@@ -396,12 +389,12 @@
                     </div>
 
                     <!-- Instructions -->
-                    <div class="card card-info collapsed-card">
+                    <div class="card card-info">
                         <div class="card-header">
                             <h3 class="card-title">Instructions</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                    <i class="fas fa-plus"></i>
+                                    <i class="fas fa-minus"></i>
                                 </button>
                             </div>
                         </div>
@@ -422,25 +415,6 @@
         </form>
     </div>
 </section>
-
-<!-- Issue Search Modal -->
-<div class="modal fade" id="issueSearchModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Search Approved Issues</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="issueSearchInput" class="form-control mb-3"
-                       placeholder="Search by issue number...">
-                <div id="issueSearchResults"></div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Item Selection Modal -->
 <div class="modal fade" id="itemModal" tabindex="-1" role="dialog">
@@ -478,7 +452,7 @@
                         </thead>
                         <tbody id="itemsList">
                             <tr>
-                                <td colspan="6" class="text-center">Select a store first to view items</td>
+                                <td colspan="6" class="text-center">Click "Add Item" or search to view items</td>
                             </tr>
                         </tbody>
                     </table>
@@ -503,6 +477,14 @@
         let selectedItems = [];
         window.storeItems = [];
 
+        // Items data with images
+        const itemsData = [
+            @foreach (var item in (List<IMS.Application.DTOs.ItemDto>)ViewBag.ItemsData)
+            {
+                @:{id: @item.Id, code: '@item.ItemCode', name: '@item.Name', imagePath: '@(item.ImagePath ?? "")', unit: '@item.Unit'},
+            }
+        ];
+
         $(document).ready(function() {
             // Initialize Select2
             $('.select2').select2({
@@ -519,20 +501,12 @@
 
             // ==================== Item Modal Handlers ====================
             $('#addItemBtn').click(function() {
-                const storeId = $('#StoreId').val();
-                if (!storeId) {
-                    toastr.warning('Please select a receiving store first', 'Store Required');
-                    return;
-                }
-                loadStoreItems(storeId);
+                loadAllItems();
                 $('#itemModal').modal('show');
             });
 
             $('#searchItemsBtn').click(function() {
-                const storeId = $('#StoreId').val();
-                if (storeId) {
-                    loadStoreItems(storeId);
-                }
+                loadAllItems();
             });
 
             $('#itemSearch').on('keyup', function(e) {
@@ -543,11 +517,11 @@
 
             // ==================== Barcode Scanner Handlers ====================
             $('#scanBarcodeBtn').click(function() {
-                const storeId = $('#StoreId').val();
-                if (!storeId) {
-                    toastr.warning('Please select a receiving store first', 'Store Required');
-                    return;
+                // Auto-load items if not already loaded
+                if (window.storeItems.length === 0) {
+                    loadAllItems();
                 }
+
                 $('#barcodeSection').slideToggle();
                 $('#barcodeInput').focus();
             });
@@ -723,14 +697,22 @@
                 <tr id="item_${itemIndex}" class="item-row">
                     <td>${rowNumber}</td>
                     <td>
-                        <select name="Items[${itemIndex}].ItemId" class="form-control form-control-sm item-select select2"
-                                onchange="updateSummary()" required>
-                            <option value="">Select Item</option>
-                            @foreach (var item in ViewBag.Items)
-                            {
-                                    <option value="@item.Value">@item.Text</option>
-                            }
-                        </select>
+                        <div class="d-flex align-items-center">
+                            <div class="item-image-container mr-2" id="item-img-${itemIndex}" style="width: 40px; height: 40px; display: none;">
+                                <img src="" alt="Item" class="img-thumbnail" style="width: 40px; height: 40px; object-fit: cover;">
+                            </div>
+                            <div class="flex-grow-1">
+                                <select name="Items[${itemIndex}].ItemId" class="form-control form-control-sm item-select select2"
+                                        data-row-index="${itemIndex}"
+                                        onchange="updateItemImage(this); updateSummary()" required>
+                                    <option value="">Select Item</option>
+                                    @foreach (var item in ViewBag.Items)
+                                    {
+                                            <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <select name="Items[${itemIndex}].StoreId" class="form-control form-control-sm store-select" required>
@@ -796,7 +778,7 @@
                     </td>
                 </tr>
             `;
-            $('#itemsBody').append(row);
+            $('#itemsContainer').append(row);
 
             // Reinitialize Select2 for new elements
             $(`#item_${itemIndex} .select2`).select2({
@@ -812,6 +794,26 @@
 
             itemIndex++;
             updateSummary();
+        }
+
+        function updateItemImage(selectElement) {
+            const itemId = parseInt($(selectElement).val());
+            const rowIndex = $(selectElement).data('row-index');
+            const imageContainer = $(`#item-img-${rowIndex}`);
+            const imgElement = imageContainer.find('img');
+
+            if (itemId) {
+                const itemData = itemsData.find(item => item.id === itemId);
+                if (itemData && itemData.imagePath) {
+                    imgElement.attr('src', '/' + itemData.imagePath);
+                    imgElement.attr('alt', itemData.name);
+                    imageContainer.show();
+                } else {
+                    imageContainer.hide();
+                }
+            } else {
+                imageContainer.hide();
+            }
         }
 
         function removeItem(rowId) {
@@ -853,19 +855,20 @@
             });
 
             $('#totalQuantity').text(totalQuantity.toFixed(2));
-            $('#itemCount').text(itemCount);
+            $('#totalItems').text(itemCount);  // ✅ FIX: Changed from #itemCount to #totalItems
+            $('#itemCount').text(itemCount);   // Keep both for compatibility
             $('#goodCount').text(goodCount);
             $('#damagedCount').text(damagedCount);
         }
 
-        // ==================== Load Store Items (for modal) ====================
-        function loadStoreItems(storeId) {
+        // ==================== Load All Items (for modal - not store dependent) ====================
+        function loadAllItems() {
             const searchTerm = $('#itemSearch').val() || '';
 
             $.ajax({
-                url: '/Store/GetStoreItems',
+                url: '/Item/GetAllItemsForReceive',
                 type: 'GET',
-                data: { storeId: storeId, searchTerm: searchTerm },
+                data: { searchTerm: searchTerm },
                 beforeSend: function() {
                     $('#itemsList').html('<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
                 },
@@ -925,6 +928,12 @@
 
             const stockValue = item.currentStock || item.quantity || 0;
             const storeId = $('#StoreId').val();
+
+            // Validate that store is selected
+            if (!storeId) {
+                toastr.warning('Please select a receiving store first', 'Store Required');
+                return;
+            }
 
             const row = `
                 <tr id="item_${item.itemId}" class="item-row">
@@ -1121,14 +1130,37 @@
             }
         });
 
+        // Update all item store IDs when main store dropdown changes
+        $('#StoreId').change(function() {
+            const newStoreId = $(this).val();
+            if (newStoreId) {
+                $('input[name$=".StoreId"]').val(newStoreId);
+                toastr.info('Store updated for all items', 'Store Changed', {
+                    timeOut: 2000,
+                    positionClass: 'toast-bottom-right'
+                });
+            }
+        });
+
         // Form validation
         $('#receiveForm').submit(function(e) {
             // Check items
-            if ($('#itemsBody tr').length === 0) {
+            if ($('#itemsContainer tr').length === 0) {
                 e.preventDefault();
                 toastr.error('Please add at least one item to receive.');
                 return false;
             }
+
+            // Check that all items have a store set
+            const mainStoreId = $('#StoreId').val();
+            if (!mainStoreId) {
+                e.preventDefault();
+                toastr.error('Please select a receiving store.');
+                return false;
+            }
+
+            // Update all item store IDs to match the main store before submitting
+            $('input[name$=".StoreId"]').val(mainStoreId);
 
             // Save signature data if present (BEFORE validation)
             if (signaturePad && !signaturePad.isEmpty()) {
@@ -1145,77 +1177,35 @@
                 }
             }
 
-            return true;
-        });
+            // Show loading feedback
+            const submitter = $(e.originalEvent.submitter);
+            const originalText = submitter.html();
+            const loadingText = action === 'complete' ?
+                '<i class="fas fa-spinner fa-spin"></i> Completing Receive...' :
+                '<i class="fas fa-spinner fa-spin"></i> Saving Draft...';
 
-        function searchIssue() {
-            $('#issueSearchModal').modal('show');
-        }
+            submitter.html(loadingText).prop('disabled', true);
+            $('.btn-success, .btn-primary, .btn-secondary').not(submitter).prop('disabled', true);
 
-        $('#issueSearchInput').on('input', function() {
-            const searchTerm = $(this).val();
-            if (searchTerm.length > 2) {
-                $.get('/Issue/SearchApproved', { term: searchTerm }, function(data) {
-                    let html = '<div class="list-group">';
-                    data.forEach(issue => {
-                        html += `
-                            <a href="#" class="list-group-item list-group-item-action"
-                               onclick="selectIssue(${issue.id}, '${issue.issueNo}')">
-                                <strong>${issue.issueNo}</strong> - ${issue.issuedTo}
-                                <br><small>Date: ${issue.issueDate}</small>
-                            </a>
-                        `;
-                    });
-                    html += '</div>';
-                    $('#issueSearchResults').html(html);
+            // Show toastr notification
+            if (action === 'complete') {
+                toastr.info('Processing receive completion...', 'Please wait', {
+                    timeOut: 0,
+                    extendedTimeOut: 0,
+                    closeButton: false,
+                    tapToDismiss: false
+                });
+            } else {
+                toastr.info('Saving receive as draft...', 'Please wait', {
+                    timeOut: 0,
+                    extendedTimeOut: 0,
+                    closeButton: false,
+                    tapToDismiss: false
                 });
             }
+
+            return true;
         });
-
-        function selectIssue(id, issueNo) {
-            $('#originalIssueId').val(id);
-            $('#originalIssueNo').val(issueNo);
-            $('#issueSearchModal').modal('hide');
-
-            // Load issue items
-            $.get('/Receive/GetIssueItems/' + id, function(data) {
-                if (data.success && data.items) {
-                    $('#itemsBody').empty();
-                    itemIndex = 0;
-
-                    // ✅ FIX: Auto-select the CORRECT store (from original issue)
-                    let originalStoreId = null;
-
-                    data.items.forEach(item => {
-                        // Get the original store from the first item
-                        if (originalStoreId === null) {
-                            originalStoreId = item.storeId;
-                            // Auto-select the store in the main form
-                            $('#StoreId').val(originalStoreId).trigger('change');
-                            toastr.info('Store automatically selected from original issue', 'Info', {
-                                timeOut: 3000
-                            });
-                        }
-
-                        addItem();
-                        const row = $(`#item_${itemIndex - 1}`);
-                        row.find('.item-select').val(item.itemId).trigger('change');
-                        row.find('.store-select').val(item.storeId);
-                        row.find('.quantity-input').val(item.quantity);
-                    });
-
-                    // ✅ Make all item stores readonly/disabled to prevent changes
-                    $('.store-select').prop('disabled', true);
-
-                    updateSummary();
-
-                    // Show info message
-                    toastr.warning('Items must be received back to the SAME store from which they were issued!', 'Important', {
-                        timeOut: 5000
-                    });
-                }
-            });
-        }
 
         function bulkAddItems() {
             // Implementation for bulk add modal

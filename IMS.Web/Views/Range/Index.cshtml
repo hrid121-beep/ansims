@@ -224,7 +224,38 @@
                 "responsive": true,
                 "lengthChange": false,
                 "autoWidth": false,
-                "buttons": ["copy", "csv", "excel", "pdf", "print"],
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    }
+                ],
                 "order": [[1, "asc"]]
             }).buttons().container().appendTo('#rangeTable_wrapper .col-md-6:eq(0)');
 

@@ -107,16 +107,43 @@ namespace IMS.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                ViewBag.Statistics = await _unionService.GetUnionStatisticsAsync(id);
-                ViewBag.Stores = await _storeService.GetStoresByUnionAsync(id);
-                ViewBag.DashboardData = await _unionService.GetUnionDashboardDataAsync(id);
+                // Load optional data - don't fail if these throw exceptions
+                try
+                {
+                    ViewBag.Statistics = await _unionService.GetUnionStatisticsAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error loading union statistics for ID {Id}", id);
+                    ViewBag.Statistics = null;
+                }
+
+                try
+                {
+                    ViewBag.Stores = await _storeService.GetStoresByUnionAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error loading stores for union ID {Id}", id);
+                    ViewBag.Stores = new List<IMS.Application.DTOs.StoreDto>();
+                }
+
+                try
+                {
+                    ViewBag.DashboardData = await _unionService.GetUnionDashboardDataAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error loading dashboard data for union ID {Id}", id);
+                    ViewBag.DashboardData = new Dictionary<string, object>();
+                }
 
                 return View(union);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading union details");
-                TempData["Error"] = "An error occurred while loading union details.";
+                _logger.LogError(ex, "Error loading union details for ID {Id}", id);
+                TempData["Error"] = $"An error occurred while loading union details: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }

@@ -64,6 +64,7 @@
                     </div>
                     <form asp-action="Edit" method="post" id="editRangeForm">
                         <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Code" />
                         <input type="hidden" asp-for="CreatedAt" />
                         <input type="hidden" asp-for="CreatedBy" />
 
@@ -98,21 +99,20 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label asp-for="Code" class="control-label">
+                                        <label class="control-label">
                                             <i class="fas fa-barcode text-info"></i> Range Code
                                         </label>
                                         <div class="input-group">
-                                            <input asp-for="Code" class="form-control" placeholder="Range code" />
+                                            <input type="text" class="form-control bg-light" value="@Model.Code" readonly disabled />
                                             <div class="input-group-append">
-                                                <span class="input-group-text bg-warning">
+                                                <span class="input-group-text bg-secondary text-white">
                                                     <i class="fas fa-lock"></i>
                                                 </span>
                                             </div>
                                         </div>
-                                        <span asp-validation-for="Code" class="text-danger"></span>
-                                        <small class="text-warning">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            Changing the code may affect system integrations
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle"></i>
+                                            Code is locked and cannot be changed
                                         </small>
                                     </div>
                                 </div>
@@ -231,7 +231,7 @@
                                 <div class="col-md-6">
                                     <p class="text-muted">
                                         <i class="fas fa-plus-circle"></i>
-                                        <strong>Created:</strong> @Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @Model.CreatedBy
+                                        <strong>Created:</strong> @Model.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.CreatedByName ?? Model.CreatedBy ?? "System")
                                     </p>
                                 </div>
                                 <div class="col-md-6">
@@ -239,7 +239,7 @@
                                     {
                                         <p class="text-muted">
                                             <i class="fas fa-edit"></i>
-                                            <strong>Last Updated:</strong> @Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedBy ?? "System")
+                                            <strong>Last Updated:</strong> @Model.UpdatedAt.Value.ToString("dd-MMM-yyyy hh:mm tt") by @(Model.UpdatedByName ?? Model.UpdatedBy ?? "System")
                                         </p>
                                     }
                                 </div>
@@ -304,25 +304,6 @@
             // Initialize status badge
             updateStatusBadge();
 
-            // Validate code on change
-            $('#Code').on('blur', function() {
-                var code = $(this).val();
-                var originalCode = '@Model.Code';
-
-                if (code && code !== originalCode) {
-                    $.get('@Url.Action("CheckCodeExists")', { code: code, excludeId: @Model.Id })
-                        .done(function(isValid) {
-                            if (!isValid) {
-                                $('#Code').addClass('is-invalid');
-                                showFieldError('Code', 'This code is already in use by another range.');
-                            } else {
-                                $('#Code').removeClass('is-invalid');
-                                hideFieldError('Code');
-                            }
-                        });
-                }
-            });
-
             // Preview changes button
             $('#previewChangesBtn').click(function() {
                 var changes = detectChanges();
@@ -331,15 +312,16 @@
 
             // Form submission handler
             $('#editRangeForm').on('submit', function(e) {
-                // Show loading state
-                $('#updateBtn').html('<i class="fas fa-spinner fa-spin"></i> Updating...').prop('disabled', true);
+                e.preventDefault();
+
+                // Check client-side validation first
+                if (!$(this).valid()) {
+                    return false;
+                }
 
                 // Check for changes
                 var changes = detectChanges();
                 if (changes.length === 0) {
-                    e.preventDefault();
-                    $('#updateBtn').html('<i class="fas fa-save"></i> Update Range').prop('disabled', false);
-
                     Swal.fire({
                         title: 'No Changes Detected',
                         text: 'You haven\'t made any changes to update.',
@@ -348,6 +330,12 @@
                     });
                     return false;
                 }
+
+                // Show loading state
+                $('#updateBtn').html('<i class="fas fa-spinner fa-spin"></i> Updating...').prop('disabled', true);
+
+                // Submit form
+                this.submit();
             });
 
             // Function to detect changes
@@ -355,7 +343,7 @@
                 var changes = [];
 
                 if ($('#Name').val() !== originalValues.name) changes.push('Range Name');
-                if ($('#Code').val() !== originalValues.code) changes.push('Range Code');
+                // Code field is readonly, no need to check for changes
                 if ($('#CommanderName').val() !== originalValues.commander) changes.push('Commander Name');
                 if ($('#CommanderRank').val() !== originalValues.rank) changes.push('Commander Rank');
                 if ($('#HeadquarterLocation').val() !== originalValues.location) changes.push('Headquarter Location');

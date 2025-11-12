@@ -15,6 +15,9 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using PdfDocument = iTextSharp.text.Document;
 
 namespace IMS.Application.Services
 {
@@ -589,18 +592,26 @@ namespace IMS.Application.Services
                     ? handoverDto.SignatureData
                     : handoverDto.ReceiverSignature;
 
-                // Create digital signature record
-                var signature = await _signatureService.CreateSignatureAsync(new DigitalSignatureDto
+                // Create signature record in Signatures table (not DigitalSignatures)
+                var signature = new Signature
                 {
-                    EntityType = "Issue",
-                    EntityId = issueId,
-                    SignedBy = issue.ReceivedBy,
-                    SignedDate = DateTime.Now,
-                    SignatureData = signatureData, // Base64 encoded signature image
+                    ReferenceType = "Issue",
+                    ReferenceId = issueId,
                     SignatureType = "Receiver",
-                    IPAddress = handoverDto.IPAddress,
-                    DeviceInfo = handoverDto.DeviceInfo
-                });
+                    SignatureData = signatureData, // Base64 encoded signature image
+                    SignerName = handoverDto.ReceiverName,
+                    SignerBadgeId = handoverDto.ReceiverBadgeId,
+                    SignerDesignation = handoverDto.ReceiverDesignation,
+                    SignedDate = DateTime.Now,
+                    IPAddress = handoverDto.IPAddress ?? string.Empty,
+                    DeviceInfo = handoverDto.DeviceInfo ?? string.Empty,
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = _userContext.GetCurrentUserId(),
+                    IsActive = true
+                };
+
+                await _unitOfWork.Signatures.AddAsync(signature);
+                await _unitOfWork.CompleteAsync(); // Save to get the ID
 
                 issue.ReceiverSignatureId = signature.Id;
 
@@ -650,7 +661,7 @@ namespace IMS.Application.Services
         }
 
         // Generate Issue Receipt
-        private async Task<IssueReceiptDto> GenerateIssueReceiptAsync(Issue issue, DigitalSignature signature)
+        private async Task<IssueReceiptDto> GenerateIssueReceiptAsync(Issue issue, Signature signature)
         {
             var receipt = new IssueReceiptDto
             {
@@ -752,11 +763,47 @@ namespace IMS.Application.Services
         public async Task<IEnumerable<IssueDto>> GetAllIssuesAsync()
         {
             var issues = await _unitOfWork.Issues.Query()
+                .Include(i => i.IssuedToBattalion)
+                .Include(i => i.IssuedToRange)
+                .Include(i => i.IssuedToZila)
+                .Include(i => i.IssuedToUpazila)
                 .Include(i => i.FromStore)
                 .Include(i => i.Items)
+                    .ThenInclude(ii => ii.Item)
                 .ToListAsync();
 
-            return issues.Select(i => MapToDto(i));
+            var issueDtos = new List<IssueDto>();
+            foreach (var issue in issues)
+            {
+                var items = new List<IssueItemDto>();
+                foreach (var issueItem in issue.Items ?? new List<IssueItem>())
+                {
+                    // Get unit price from last purchase or item
+                    var lastPurchase = await _unitOfWork.PurchaseItems
+                        .Query()
+                        .Where(pi => pi.ItemId == issueItem.ItemId)
+                        .OrderByDescending(pi => pi.CreatedAt)
+                        .FirstOrDefaultAsync();
+                    var unitPrice = lastPurchase?.UnitPrice ?? issueItem.Item?.UnitPrice ?? 0;
+
+                    items.Add(new IssueItemDto
+                    {
+                        Id = issueItem.Id,
+                        ItemId = issueItem.ItemId,
+                        ItemName = issueItem.Item?.Name ?? "Unknown",
+                        Quantity = issueItem.IssuedQuantity,
+                        UnitPrice = unitPrice,
+                        TotalValue = issueItem.IssuedQuantity * unitPrice
+                    });
+                }
+
+                var dto = MapToDto(issue);
+                // Override Items with properly populated collection
+                dto.Items = items;
+                issueDtos.Add(dto);
+            }
+
+            return issueDtos;
         }
 
         public async Task<IssueDto> GetIssueByIdAsync(int id)
@@ -995,6 +1042,52 @@ namespace IMS.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting issue by id: {Id}", id);
+                throw;
+            }
+        }
+
+        public async Task<IssueDto> GetIssueByVoucherNoAsync(string voucherNo)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(voucherNo))
+                {
+                    throw new ArgumentException("Voucher number is required", nameof(voucherNo));
+                }
+
+                // Find issue by voucher number (try VoucherNumber, VoucherNo, OR IssueNo fields)
+                var issue = await _unitOfWork.Issues.Query()
+                    .Include(i => i.IssuedToBattalion)
+                    .Include(i => i.IssuedToRange)
+                    .Include(i => i.IssuedToZila)
+                    .Include(i => i.IssuedToUpazila)
+                    .Include(i => i.FromStore)
+                    .Include(i => i.Items)
+                        .ThenInclude(ii => ii.Item)
+                            .ThenInclude(item => item.SubCategory)
+                                .ThenInclude(sc => sc.Category)
+                    .Include(i => i.Items)
+                        .ThenInclude(ii => ii.Store)
+                    .FirstOrDefaultAsync(i => (i.VoucherNumber == voucherNo ||
+                                               i.VoucherNo == voucherNo ||
+                                               i.IssueNo == voucherNo)  // ✅ Also search by IssueNo
+                                              && i.IsActive
+                                              && (i.Status == "Completed" ||
+                                                  i.Status == "Issued" ||
+                                                  i.Status == "Approved"));  // ✅ Accept Approved too!
+
+                if (issue == null)
+                {
+                    _logger.LogWarning("Issue not found for voucher: {VoucherNo}", voucherNo);
+                    return null;
+                }
+
+                // Use existing GetIssueByIdAsync to get full details
+                return await GetIssueByIdAsync(issue.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting issue by voucher number: {VoucherNo}", voucherNo);
                 throw;
             }
         }
@@ -1289,11 +1382,21 @@ namespace IMS.Application.Services
                 {
                     foreach (var itemDto in issueDto.Items)
                     {
+                        // CRITICAL FIX: Validate StoreId exists instead of defaulting to 0
+                        var storeId = itemDto.StoreId ?? issueDto.FromStoreId;
+                        if (storeId == null || storeId == 0)
+                        {
+                            throw new InvalidOperationException(
+                                $"StoreId is required for item {itemDto.ItemId}. " +
+                                "Please specify StoreId in item or FromStoreId in issue."
+                            );
+                        }
+
                         var issueItem = new IssueItem
                         {
                             IssueId = issue.Id,
                             ItemId = itemDto.ItemId,
-                            StoreId = itemDto.StoreId ?? issueDto.FromStoreId ?? 0,
+                            StoreId = storeId.Value,
                             Quantity = itemDto.Quantity,
                             RequestedQuantity = itemDto.RequestedQuantity ?? itemDto.Quantity,
                             IssuedQuantity = 0,
@@ -2980,7 +3083,7 @@ namespace IMS.Application.Services
             }
         }
 
-        public async Task<byte[]> ExportIssuesToExcelAsync(
+        public async Task<byte[]> ExportIssuesToCsvAsync(
             string searchTerm,
             string status,
             string issueType,
@@ -2992,171 +3095,194 @@ namespace IMS.Application.Services
                 // Get filtered issues
                 var issues = await SearchIssuesAsync(searchTerm, status, issueType, fromDate, toDate);
 
-                using (var package = new ExcelPackage())
+                var csv = new StringBuilder();
+
+                // Add headers
+                csv.AppendLine("Issue No,Voucher No,Issue Date,Status,Type,Recipient,Badge No,Purpose,From Store,Total Items,Issued By,Approved By,Approved Date,Created Date,Created By");
+
+                // Add data
+                foreach (var issue in issues)
                 {
-                    var worksheet = package.Workbook.Worksheets.Add("Issues");
+                    csv.AppendLine($"\"{EscapeCsv(issue.IssueNo)}\"," +
+                        $"\"{EscapeCsv(issue.VoucherNumber)}\"," +
+                        $"\"{issue.IssueDate:dd-MMM-yyyy}\"," +
+                        $"\"{EscapeCsv(issue.Status)}\"," +
+                        $"\"{EscapeCsv(issue.IssuedToType)}\"," +
+                        $"\"{EscapeCsv(issue.IssuedToName)}\"," +
+                        $"\"{EscapeCsv(issue.IssuedToIndividualBadgeNo)}\"," +
+                        $"\"{EscapeCsv(issue.Purpose)}\"," +
+                        $"\"{EscapeCsv(issue.FromStoreName)}\"," +
+                        $"{issue.Items?.Count ?? 0}," +
+                        $"\"{EscapeCsv(issue.IssuedBy)}\"," +
+                        $"\"{EscapeCsv(issue.ApprovedBy)}\"," +
+                        $"\"{issue.ApprovedDate?.ToString("dd-MMM-yyyy")}\"," +
+                        $"\"{issue.CreatedAt:dd-MMM-yyyy HH:mm}\"," +
+                        $"\"{EscapeCsv(issue.CreatedBy)}\"");
+                }
 
-                    // Add headers
-                    var headers = new[]
-                    {
-                "Issue No",
-                "Voucher No",
-                "Issue Date",
-                "Status",
-                "Type",
-                "Recipient",
-                "Badge No",
-                "Purpose",
-                "From Store",
-                "Total Items",
-                "Issued By",
-                "Approved By",
-                "Approved Date",
-                "Created Date",
-                "Created By"
-            };
+                return Encoding.UTF8.GetBytes(csv.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting issues to CSV");
+                throw;
+            }
+        }
 
-                    for (int i = 0; i < headers.Length; i++)
+        // Helper method to escape CSV values
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            // Escape double quotes by doubling them
+            return value.Replace("\"", "\"\"");
+        }
+
+        public async Task<byte[]> ExportIssuesToPdfAsync(
+            string searchTerm,
+            string status,
+            string issueType,
+            DateTime? fromDate,
+            DateTime? toDate)
+        {
+            try
+            {
+                // Get filtered issues
+                var issues = await SearchIssuesAsync(searchTerm, status, issueType, fromDate, toDate);
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    // Create PDF document (A4 size, landscape for better table display)
+                    var document = new PdfDocument(PageSize.A4.Rotate(), 25, 25, 30, 30);
+                    var writer = PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    // Define fonts
+                    var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
+                    var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+                    var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+                    var smallFont = FontFactory.GetFont(FontFactory.HELVETICA, 8);
+
+                    // Add title
+                    var titleParagraph = new Paragraph("ANSAR & VDP - Issue Report", titleFont);
+                    titleParagraph.Alignment = Element.ALIGN_CENTER;
+                    titleParagraph.SpacingAfter = 10f;
+                    document.Add(titleParagraph);
+
+                    // Add report info
+                    var infoParagraph = new Paragraph($"Report Generated: {DateTime.Now:dd-MMM-yyyy HH:mm} | Total Issues: {issues.Count()}", normalFont);
+                    infoParagraph.Alignment = Element.ALIGN_CENTER;
+                    infoParagraph.SpacingAfter = 15f;
+                    document.Add(infoParagraph);
+
+                    // Create main table (Issues)
+                    var mainTable = new PdfPTable(11);
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 10f, 10f, 9f, 7f, 8f, 12f, 8f, 12f, 8f, 10f, 9f });
+
+                    // Add table headers
+                    var headerTexts = new[] { "Issue No", "Voucher No", "Issue Date", "Status", "Type", "Recipient", "Badge No", "From Store", "Total Items", "Issued By", "Approved By" };
+
+                    foreach (var headerText in headerTexts)
                     {
-                        worksheet.Cells[1, i + 1].Value = headers[i];
-                        worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                        worksheet.Cells[1, i + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        worksheet.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        var cell = new PdfPCell(new Phrase(headerText, headerFont));
+                        cell.BackgroundColor = new BaseColor(220, 220, 220);
+                        cell.HorizontalAlignment = Element.ALIGN_CENTER;
+                        cell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        cell.Padding = 5f;
+                        mainTable.AddCell(cell);
                     }
 
-                    // Add data
-                    int row = 2;
+                    // Add data rows
                     foreach (var issue in issues)
                     {
-                        worksheet.Cells[row, 1].Value = issue.IssueNo;
-                        worksheet.Cells[row, 2].Value = issue.VoucherNumber;
-                        worksheet.Cells[row, 3].Value = issue.IssueDate.ToString("dd-MMM-yyyy");
-                        worksheet.Cells[row, 4].Value = issue.Status;
-                        worksheet.Cells[row, 5].Value = issue.IssuedToType;
-                        worksheet.Cells[row, 6].Value = issue.IssuedToName;
-                        worksheet.Cells[row, 7].Value = issue.IssuedToIndividualBadgeNo;
-                        worksheet.Cells[row, 8].Value = issue.Purpose;
-                        worksheet.Cells[row, 9].Value = issue.FromStoreName;
-                        worksheet.Cells[row, 10].Value = issue.Items?.Count ?? 0;
-                        worksheet.Cells[row, 11].Value = issue.IssuedBy;
-                        worksheet.Cells[row, 12].Value = issue.ApprovedBy;
-                        worksheet.Cells[row, 13].Value = issue.ApprovedDate?.ToString("dd-MMM-yyyy");
-                        worksheet.Cells[row, 14].Value = issue.CreatedAt.ToString("dd-MMM-yyyy HH:mm");
-                        worksheet.Cells[row, 15].Value = issue.CreatedBy;
-
-                        row++;
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssueNo ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.VoucherNumber ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssueDate.ToString("dd-MMM-yy"), smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.Status ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssuedToType ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssuedToName ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssuedToIndividualBadgeNo ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.FromStoreName ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase((issue.Items?.Count ?? 0).ToString(), smallFont)) { Padding = 4f, HorizontalAlignment = Element.ALIGN_CENTER });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.IssuedBy ?? "-", smallFont)) { Padding = 4f });
+                        mainTable.AddCell(new PdfPCell(new Phrase(issue.ApprovedBy ?? "-", smallFont)) { Padding = 4f });
                     }
 
-                    // Add Items Sheet
-                    var itemsSheet = package.Workbook.Worksheets.Add("Issue Items");
+                    document.Add(mainTable);
 
-                    // Add headers for items
-                    var itemHeaders = new[]
-                    {
-                "Issue No",
-                "Item Code",
-                "Item Name",
-                "Category",
-                "Store",
-                "Requested Qty",
-                "Approved Qty",
-                "Issued Qty",
-                "Unit",
-                "Batch No",
-                "Condition",
-                "Remarks"
-            };
+                    // Add new page for summary
+                    document.NewPage();
 
-                    for (int i = 0; i < itemHeaders.Length; i++)
-                    {
-                        itemsSheet.Cells[1, i + 1].Value = itemHeaders[i];
-                        itemsSheet.Cells[1, i + 1].Style.Font.Bold = true;
-                        itemsSheet.Cells[1, i + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        itemsSheet.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
-                    }
-
-                    // Add items data
-                    int itemRow = 2;
-                    foreach (var issue in issues)
-                    {
-                        if (issue.Items != null)
-                        {
-                            foreach (var item in issue.Items)
-                            {
-                                itemsSheet.Cells[itemRow, 1].Value = issue.IssueNo;
-                                itemsSheet.Cells[itemRow, 2].Value = item.ItemCode;
-                                itemsSheet.Cells[itemRow, 3].Value = item.ItemName;
-                                itemsSheet.Cells[itemRow, 4].Value = item.CategoryName;
-                                itemsSheet.Cells[itemRow, 5].Value = item.StoreName;
-                                itemsSheet.Cells[itemRow, 6].Value = item.RequestedQuantity;
-                                itemsSheet.Cells[itemRow, 7].Value = item.ApprovedQuantity;
-                                itemsSheet.Cells[itemRow, 8].Value = item.IssuedQuantity;
-                                itemsSheet.Cells[itemRow, 9].Value = item.Unit;
-                                itemsSheet.Cells[itemRow, 10].Value = item.BatchNumber;
-                                itemsSheet.Cells[itemRow, 11].Value = item.Condition;
-                                itemsSheet.Cells[itemRow, 12].Value = item.Remarks;
-
-                                itemRow++;
-                            }
-                        }
-                    }
-
-                    // Auto-fit columns
-                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-                    itemsSheet.Cells[itemsSheet.Dimension.Address].AutoFitColumns();
-
-                    // Add summary sheet
-                    var summarySheet = package.Workbook.Worksheets.Add("Summary");
-                    summarySheet.Cells[1, 1].Value = "Issue Summary Report";
-                    summarySheet.Cells[1, 1].Style.Font.Bold = true;
-                    summarySheet.Cells[1, 1].Style.Font.Size = 14;
-
-                    summarySheet.Cells[3, 1].Value = "Report Generated:";
-                    summarySheet.Cells[3, 2].Value = DateTime.Now.ToString("dd-MMM-yyyy HH:mm");
-
-                    summarySheet.Cells[4, 1].Value = "Total Issues:";
-                    summarySheet.Cells[4, 2].Value = issues.Count();
+                    // Summary title
+                    var summaryTitle = new Paragraph("Summary Statistics", titleFont);
+                    summaryTitle.SpacingBefore = 10f;
+                    summaryTitle.SpacingAfter = 15f;
+                    document.Add(summaryTitle);
 
                     // Status breakdown
-                    summarySheet.Cells[6, 1].Value = "Status Breakdown:";
-                    summarySheet.Cells[6, 1].Style.Font.Bold = true;
-
                     var statusGroups = issues.GroupBy(i => i.Status)
                         .Select(g => new { Status = g.Key, Count = g.Count() })
+                        .OrderByDescending(x => x.Count)
                         .ToList();
 
-                    int summaryRow = 7;
+                    var statusHeader = new Paragraph("Status Breakdown:", headerFont);
+                    statusHeader.SpacingAfter = 10f;
+                    document.Add(statusHeader);
+
+                    var statusTable = new PdfPTable(2);
+                    statusTable.WidthPercentage = 50;
+                    statusTable.SetWidths(new float[] { 70f, 30f });
+
+                    // Status table header
+                    statusTable.AddCell(new PdfPCell(new Phrase("Status", headerFont)) { BackgroundColor = new BaseColor(220, 220, 220), Padding = 5f });
+                    statusTable.AddCell(new PdfPCell(new Phrase("Count", headerFont)) { BackgroundColor = new BaseColor(220, 220, 220), Padding = 5f, HorizontalAlignment = Element.ALIGN_CENTER });
+
                     foreach (var statusGroup in statusGroups)
                     {
-                        summarySheet.Cells[summaryRow, 1].Value = statusGroup.Status + ":";
-                        summarySheet.Cells[summaryRow, 2].Value = statusGroup.Count;
-                        summaryRow++;
+                        statusTable.AddCell(new PdfPCell(new Phrase(statusGroup.Status ?? "Unknown", normalFont)) { Padding = 5f });
+                        statusTable.AddCell(new PdfPCell(new Phrase(statusGroup.Count.ToString(), normalFont)) { Padding = 5f, HorizontalAlignment = Element.ALIGN_CENTER });
                     }
+
+                    document.Add(statusTable);
 
                     // Type breakdown
-                    summarySheet.Cells[summaryRow + 1, 1].Value = "Type Breakdown:";
-                    summarySheet.Cells[summaryRow + 1, 1].Style.Font.Bold = true;
-
                     var typeGroups = issues.GroupBy(i => i.IssuedToType)
                         .Select(g => new { Type = g.Key, Count = g.Count() })
+                        .OrderByDescending(x => x.Count)
                         .ToList();
 
-                    summaryRow += 2;
+                    var typeHeader = new Paragraph("Type Breakdown:", headerFont);
+                    typeHeader.SpacingBefore = 20f;
+                    typeHeader.SpacingAfter = 10f;
+                    document.Add(typeHeader);
+
+                    var typeTable = new PdfPTable(2);
+                    typeTable.WidthPercentage = 50;
+                    typeTable.SetWidths(new float[] { 70f, 30f });
+
+                    // Type table header
+                    typeTable.AddCell(new PdfPCell(new Phrase("Type", headerFont)) { BackgroundColor = new BaseColor(220, 220, 220), Padding = 5f });
+                    typeTable.AddCell(new PdfPCell(new Phrase("Count", headerFont)) { BackgroundColor = new BaseColor(220, 220, 220), Padding = 5f, HorizontalAlignment = Element.ALIGN_CENTER });
+
                     foreach (var typeGroup in typeGroups)
                     {
-                        summarySheet.Cells[summaryRow, 1].Value = typeGroup.Type + ":";
-                        summarySheet.Cells[summaryRow, 2].Value = typeGroup.Count;
-                        summaryRow++;
+                        typeTable.AddCell(new PdfPCell(new Phrase(typeGroup.Type ?? "Unknown", normalFont)) { Padding = 5f });
+                        typeTable.AddCell(new PdfPCell(new Phrase(typeGroup.Count.ToString(), normalFont)) { Padding = 5f, HorizontalAlignment = Element.ALIGN_CENTER });
                     }
 
-                    summarySheet.Cells[summarySheet.Dimension.Address].AutoFitColumns();
+                    document.Add(typeTable);
 
-                    return package.GetAsByteArray();
+                    document.Close();
+                    writer.Close();
+
+                    return memoryStream.ToArray();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error exporting issues to Excel");
+                _logger.LogError(ex, "Error exporting issues to PDF");
                 throw;
             }
         }

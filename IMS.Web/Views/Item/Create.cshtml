@@ -423,6 +423,77 @@
                         </div>
                     </div>
 
+                    <!-- Master Catalogue Register -->
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title text-white">
+                                <i class="fas fa-book"></i> Master Catalogue Register (মাস্টার ক্যাটালগ রেজিস্টার)
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>নোট:</strong> এই তথ্যগুলো Master Stock Register এর জন্য। প্রথমবার Item কেন্দ্রীয় ভান্ডারে গ্রহণের সময় এন্ট্রি করুন।
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="CatalogueLedgerNo" class="control-label">
+                                            <i class="fas fa-bookmark text-info"></i> লেজার নং
+                                        </label>
+                                        <input asp-for="CatalogueLedgerNo" class="form-control" placeholder="e.g., CAT-UC" maxlength="10" />
+                                        <small class="text-muted">Master Register Ledger Number</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="CataloguePageNo" class="control-label">
+                                            <i class="fas fa-file text-info"></i> পাতা নং
+                                        </label>
+                                        <input asp-for="CataloguePageNo" class="form-control" placeholder="e.g., 14" maxlength="10" />
+                                        <small class="text-muted">Master Register Page Number</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="CatalogueEntryDate" class="control-label">
+                                            <i class="fas fa-calendar-plus text-info"></i> ক্যাটালগ এন্ট্রি তারিখ
+                                        </label>
+                                        <input asp-for="CatalogueEntryDate" type="date" class="form-control" />
+                                        <small class="text-muted">Catalogue Entry Date</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="FirstReceivedDate" class="control-label">
+                                            <i class="fas fa-calendar-check text-info"></i> প্রথম গ্রহণের তারিখ
+                                        </label>
+                                        <input asp-for="FirstReceivedDate" type="date" class="form-control" />
+                                        <small class="text-muted">First Received Date</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label asp-for="CatalogueRemarks" class="control-label">
+                                            <i class="fas fa-comment text-info"></i> মন্তব্য
+                                        </label>
+                                        <textarea asp-for="CatalogueRemarks" class="form-control" rows="2" placeholder="Optional remarks for catalogue entry" maxlength="500"></textarea>
+                                        <small class="text-muted">Optional notes/remarks</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Product Details Card -->
                     <div class="card card-secondary card-outline">
                         <div class="card-header">
@@ -628,18 +699,18 @@
                     </div>
 
                     <!-- Quick Help -->
-                    <div class="card card-info collapsed-card">
+                    <div class="card card-info">
                         <div class="card-header">
                             <h3 class="card-title text-white">
                                 <i class="fas fa-question-circle"></i> Quick Help
                             </h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                    <i class="fas fa-plus"></i>
+                                    <i class="fas fa-minus"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="card-body" style="display: none;">
+                        <div class="card-body">
                             <small>
                                 <ul class="pl-3">
                                     <li>Fields marked with <span class="text-danger">*</span> are required</li>

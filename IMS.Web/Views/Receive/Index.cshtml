@@ -73,12 +73,12 @@
         </div>
 
         <!-- Search Section -->
-        <div class="card card-default collapsed-card">
+        <div class="card card-default">
             <div class="card-header">
                 <h3 class="card-title">Search & Filter</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
@@ -99,9 +99,14 @@
                                     var receiveTypes = new List<SelectListItem>
                                     {
                                     new SelectListItem("All Types", ""),
+                                    new SelectListItem("Issue Return", "Issue"),
+                                    new SelectListItem("Zila", "Zila"),
                                     new SelectListItem("Battalion", "Battalion"),
                                     new SelectListItem("Range", "Range"),
+                                    new SelectListItem("Upazila", "Upazila"),
+                                    new SelectListItem("Union", "Union"),
                                     new SelectListItem("Individual", "Individual"),
+                                    new SelectListItem("Return", "Return"),
                                     new SelectListItem("External", "External")
                                     };
                                     var selectedValue = ViewBag.ReceiveType as string ?? "";
@@ -295,6 +300,14 @@
                                                class="btn btn-info btn-xs" title="View Details" data-toggle="tooltip">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+                                            @* Show download button for completed receives (both standalone and from Issue) *@
+                                            @if (receive.Status == "Completed")
+                                            {
+                                                <a asp-action="DownloadVoucher" asp-route-id="@receive.Id"
+                                                   class="btn btn-primary btn-xs" title="Download Voucher" data-toggle="tooltip">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            }
                                             @if (receive.Status != "Completed")
                                             {
                                                 <a asp-action="Process" asp-route-id="@receive.Id"

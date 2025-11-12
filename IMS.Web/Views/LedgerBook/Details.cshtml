@@ -100,6 +100,9 @@
                                     <i class="fas fa-lock"></i> Close Book
                                 </button>
                             </form>
+                            <button type="button" class="btn btn-danger" onclick="deleteLedgerBook(@Model.Id, '@Model.LedgerNo')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                         }
                         <a asp-action="Index" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Back to List
@@ -179,3 +182,40 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        function deleteLedgerBook(id, ledgerNo) {
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `Do you want to delete Ledger Book <strong>${ledgerNo}</strong>?<br><br>This action cannot be undone!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '<i class="fas fa-trash"></i> Yes, Delete it!',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create a form and submit it
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '@Url.Action("Delete", "LedgerBook")/' + id;
+
+                    // Add anti-forgery token
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (token) {
+                        const tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = '__RequestVerificationToken';
+                        tokenInput.value = token.value;
+                        form.appendChild(tokenInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+}

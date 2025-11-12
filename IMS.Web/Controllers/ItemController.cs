@@ -1,4 +1,4 @@
-﻿using IMS.Application.DTOs;
+using IMS.Application.DTOs;
 using IMS.Application.Helpers;
 using IMS.Application.Interfaces;
 using IMS.Domain.Enums;
@@ -114,32 +114,35 @@ namespace IMS.Web.Controllers
         }
 
 
-        [HasPermission(Permission.UpdateItem)]
-        public async Task<IActionResult> Edit(int id)
-        {
-            try
-            {
-                var item = await _itemService.GetItemByIdAsync(id);
-                if (item == null)
-                {
-                    TempData["Error"] = "Item not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-                await LoadViewBagData(item);
-                return View(item);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading edit form for item id: {Id}", id);
-                TempData["Error"] = "An error occurred while loading the item.";
-                return RedirectToAction(nameof(Index));
-            }
-        }
+        // OLD EDIT METHOD - REPLACED BY NEW IMPLEMENTATION BELOW (Line 592+)
+        // [HasPermission(Permission.UpdateItem)]
+        // public async Task<IActionResult> Edit(int id)
+        // {
+        //     try
+        //     {
+        //         var item = await _itemService.GetItemByIdAsync(id);
+        //         if (item == null)
+        //         {
+        //             TempData["Error"] = "Item not found.";
+        //             return RedirectToAction(nameof(Index));
+        //         }
+        //         await LoadViewBagData(item);
+        //         return View(item);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Error loading edit form for item id: {Id}", id);
+        //         TempData["Error"] = "An error occurred while loading the item.";
+        //         return RedirectToAction(nameof(Index));
+        //     }
+        // }
 
+        // OLD EDIT POST METHOD - REPLACED BY NEW IMPLEMENTATION BELOW (Line ~617+)
+        // Renamed to EditOld to avoid conflicts - can be deleted after testing
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HasPermission(Permission.UpdateItem)]
-        public async Task<IActionResult> Edit(int id, ItemDto itemDto, IFormFile ItemImageFile)
+        public async Task<IActionResult> EditOld(int id, ItemDto itemDto, IFormFile ItemImageFile)
         {
             if (id != itemDto.Id)
             {
@@ -148,10 +151,126 @@ namespace IMS.Web.Controllers
 
             try
             {
+                // Get existing item to preserve values
+                var existingItem = await _itemService.GetItemByIdAsync(id);
+                if (existingItem == null)
+                {
+                    TempData["Error"] = "Item not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Preserve SubCategoryId if not provided (0 or null)
+                if (!itemDto.SubCategoryId.HasValue || itemDto.SubCategoryId.Value == 0)
+                {
+                    itemDto.SubCategoryId = existingItem.SubCategoryId;
+                    ModelState.Remove("SubCategoryId");
+                }
+
+                // Preserve CategoryId if not provided
+                if (itemDto.CategoryId == 0)
+                {
+                    itemDto.CategoryId = existingItem.CategoryId;
+                    ModelState.Remove("CategoryId");
+                }
+
+                // Preserve BrandId if not provided (optional field)
+                if (!itemDto.BrandId.HasValue || itemDto.BrandId.Value == 0)
+                {
+                    itemDto.BrandId = existingItem.BrandId;
+                    ModelState.Remove("BrandId");
+                }
+
+                // Preserve ItemModelId if not provided (optional field)
+                if (!itemDto.ItemModelId.HasValue || itemDto.ItemModelId.Value == 0)
+                {
+                    itemDto.ItemModelId = existingItem.ItemModelId;
+                    ModelState.Remove("ItemModelId");
+                }
+
+                // Preserve Type if Type is 0
+                if ((int)itemDto.Type == 0)
+                {
+                    itemDto.Type = existingItem.Type;
+                    ModelState.Remove("Type");
+                }
+
+                // Preserve Status if Status is 0 (invalid enum value)
+                if ((int)itemDto.Status == 0)
+                {
+                    itemDto.Status = existingItem.Status;
+                    ModelState.Remove("Status");
+                }
+
+                // Preserve ImagePath if empty (not uploading new image)
+                if (string.IsNullOrWhiteSpace(itemDto.ImagePath))
+                {
+                    itemDto.ImagePath = existingItem.ImagePath;
+                }
+
+                // Preserve other optional string fields if empty
+                // Note: Barcode has internal set, so can't be set here - it's auto-generated
+
+                if (string.IsNullOrWhiteSpace(itemDto.BarcodePath))
+                {
+                    itemDto.BarcodePath = existingItem.BarcodePath;
+                }
+
+                if (string.IsNullOrWhiteSpace(itemDto.QRCodeData))
+                {
+                    itemDto.QRCodeData = existingItem.QRCodeData;
+                }
+
+                if (string.IsNullOrWhiteSpace(itemDto.ItemImage))
+                {
+                    itemDto.ItemImage = existingItem.ItemImage;
+                }
+
+                // Debug logging - Log ALL properties
+                _logger.LogInformation("=== EDIT ITEM DEBUG - Item ID: {ItemId} ===", id);
+                _logger.LogInformation("CategoryId: {CategoryId}, SubCategoryId: {SubCategoryId}", itemDto.CategoryId, itemDto.SubCategoryId);
+                _logger.LogInformation("BrandId: {BrandId}, ItemModelId: {ItemModelId}", itemDto.BrandId, itemDto.ItemModelId);
+                _logger.LogInformation("Type: {Type} (int value: {TypeInt})", itemDto.Type, (int)itemDto.Type);
+                _logger.LogInformation("Unit: {Unit}, MinimumStock: {MinStock}", itemDto.Unit, itemDto.MinimumStock);
+                _logger.LogInformation("Name: {Name}, Status: {Status} (int value: {StatusInt})", itemDto.Name, itemDto.Status, (int)itemDto.Status);
+
+                // Log ModelState errors BEFORE validation
+                _logger.LogInformation("ModelState.IsValid: {IsValid}, Error Count: {ErrorCount}",
+                    ModelState.IsValid, ModelState.ErrorCount);
+
+                if (ModelState.ErrorCount > 0)
+                {
+                    foreach (var key in ModelState.Keys)
+                    {
+                        var state = ModelState[key];
+                        if (state.Errors.Count > 0)
+                        {
+                            _logger.LogWarning("Field '{Field}' has errors: {Errors}, AttemptedValue: '{AttemptedValue}'",
+                                key,
+                                string.Join("; ", state.Errors.Select(e => e.ErrorMessage)),
+                                state.AttemptedValue);
+                        }
+                    }
+                }
+
                 if (!ModelState.IsValid)
                 {
+                    // Log validation errors for debugging
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new {
+                            Field = x.Key,
+                            Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList(),
+                            AttemptedValue = x.Value.AttemptedValue
+                        })
+                        .ToList();
+
+                    _logger.LogError("Item Edit validation failed for ID {ItemId}. Errors: {@ValidationErrors}", id, errors);
+
+                    // Show detailed error to user - use ; separator instead of \n to avoid JavaScript issues
+                    var errorMessage = "Validation errors: " + string.Join("; ", errors.Select(e => $"{e.Field}: {string.Join(", ", e.Errors)}"));
+                    TempData["Error"] = errorMessage;
+
                     await LoadViewBagData(itemDto);
-                    TempData["Error"] = "Please check the form and fix any errors.";
                     return View(itemDto);
                 }
 
@@ -470,6 +589,150 @@ namespace IMS.Web.Controllers
             return Json(models.Select(m => new { id = m.Id, name = m.Name }));
         }
 
+        // ==================== NEW CLEAN EDIT IMPLEMENTATION ====================
+
+        [HasPermission(Permission.UpdateItem)]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var item = await _itemService.GetItemByIdAsync(id);
+                if (item == null)
+                {
+                    TempData["Error"] = "Item not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                await LoadViewBagData(item);
+                return View(item);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading edit form for item id: {Id}", id);
+                TempData["Error"] = "An error occurred while loading the item.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.UpdateItem)]
+        public async Task<IActionResult> Edit(int id, ItemDto itemDto, IFormFile ItemImageFile)
+        {
+            _logger.LogInformation("=== EDIT - Starting edit for Item ID: {ItemId} ===", id);
+
+            if (id != itemDto.Id)
+            {
+                _logger.LogWarning("ID mismatch: URL id={UrlId}, DTO id={DtoId}", id, itemDto.Id);
+                return NotFound();
+            }
+
+            try
+            {
+                // Get existing item
+                var existingItem = await _itemService.GetItemByIdAsync(id);
+                if (existingItem == null)
+                {
+                    TempData["Error"] = "Item not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _logger.LogInformation("Existing item loaded: {ItemName}, CategoryId={CategoryId}",
+                    existingItem.Name, existingItem.CategoryId);
+
+                // Handle image upload FIRST
+                if (ItemImageFile != null && ItemImageFile.Length > 0)
+                {
+                    _logger.LogInformation("Image file uploaded: {FileName}, Size: {Size}",
+                        ItemImageFile.FileName, ItemImageFile.Length);
+
+                    if (!_fileService.IsValidImageFile(ItemImageFile))
+                    {
+                        ModelState.AddModelError("", "Invalid image file. Please upload JPG, PNG, or GIF.");
+                        TempData["Error"] = "Invalid image file format.";
+                        await LoadViewBagData(itemDto);
+                        return View(itemDto);
+                    }
+
+                    // Delete old image if exists
+                    if (!string.IsNullOrEmpty(existingItem.ImagePath))
+                    {
+                        await _fileService.DeleteFileAsync(existingItem.ImagePath);
+                        _logger.LogInformation("Deleted old image: {OldImage}", existingItem.ImagePath);
+                    }
+
+                    // Save new image
+                    itemDto.ImagePath = await _fileService.SaveFileAsync(ItemImageFile, "items");
+                    _logger.LogInformation("New image saved: {NewImage}", itemDto.ImagePath);
+                }
+                else
+                {
+                    // Keep existing image path
+                    itemDto.ImagePath = existingItem.ImagePath;
+                }
+
+                // Preserve fields that should not change
+                itemDto.CurrentStock = existingItem.CurrentStock;
+                itemDto.CreatedAt = existingItem.CreatedAt;
+                itemDto.CreatedBy = existingItem.CreatedBy;
+                itemDto.ItemCode = existingItem.ItemCode;
+
+                // Preserve barcode-related fields (auto-generated)
+                itemDto.BarcodePath = existingItem.BarcodePath;
+                itemDto.QRCodeData = existingItem.QRCodeData;
+                itemDto.ItemImage = existingItem.ItemImage;
+
+                // Set update info
+                itemDto.UpdatedAt = DateTime.Now;
+                itemDto.UpdatedBy = User.Identity?.Name;
+
+                // Log what we're about to save
+                _logger.LogInformation("Updating item: Name={Name}, CategoryId={CategoryId}, Type={Type}, Status={Status}",
+                    itemDto.Name, itemDto.CategoryId, itemDto.Type, itemDto.Status);
+
+                // Validate ModelState
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new {
+                            Field = x.Key,
+                            Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                        })
+                        .ToList();
+
+                    _logger.LogWarning("Validation failed: {@Errors}", errors);
+
+                    TempData["Error"] = "Validation failed: " +
+                        string.Join("; ", errors.Select(e => $"{e.Field}: {string.Join(", ", e.Errors)}"));
+
+                    await LoadViewBagData(itemDto);
+                    return View(itemDto);
+                }
+
+                // Update the item
+                await _itemService.UpdateItemAsync(itemDto);
+                _logger.LogInformation("Item {ItemId} updated successfully", id);
+
+                TempData["Success"] = "Item updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Validation error updating item {ItemId}", id);
+                TempData["Error"] = ex.Message;
+                await LoadViewBagData(itemDto);
+                return View(itemDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating item {ItemId}", id);
+                TempData["Error"] = "An error occurred while updating the item. Please try again.";
+                await LoadViewBagData(itemDto);
+                return View(itemDto);
+            }
+        }
+
         private async Task LoadViewBagData(ItemDto currentItem = null)
         {
             try
@@ -486,32 +749,29 @@ namespace IMS.Web.Controllers
                 ViewBag.Categories = new SelectList(categories, "Id", "Name", currentItem?.CategoryId);
                 ViewBag.Brands = new SelectList(brands, "Id", "Name", currentItem?.BrandId);
 
-                // Create SelectList for ItemType enum - use enum values directly for proper asp-for binding
-                var itemTypes = Enum.GetValues(typeof(ItemType))
+                // Create SelectList for ItemType enum - properly configure for asp-for binding
+                var itemTypesData = Enum.GetValues(typeof(ItemType))
                     .Cast<ItemType>()
-                    .Select(e => new SelectListItem
+                    .Select(e => new
                     {
-                        Value = ((int)e).ToString(), // Convert enum to int, then to string for HTML value
-                        Text = e.ToString(),
-                        // Handle invalid Type values (e.g., 0) by defaulting to Expendable
-                        Selected = currentItem != null &&
-                                   (currentItem.Type == e ||
-                                    (!Enum.IsDefined(typeof(ItemType), currentItem.Type) && e == ItemType.Expendable))
+                        Value = (int)e,
+                        Text = e.ToString()
                     })
                     .ToList();
+
+                // Determine selected value - handle invalid Type values by defaulting to Expendable
+                int selectedType = currentItem != null && Enum.IsDefined(typeof(ItemType), currentItem.Type)
+                    ? (int)currentItem.Type
+                    : (int)ItemType.Expendable;
 
                 // Debug logging
                 if (currentItem != null)
                 {
-                    _logger.LogInformation("Item Type: {Type} (raw value: {RawValue})", currentItem.Type, (int)currentItem.Type);
-                    _logger.LogInformation("ItemTypes SelectList:");
-                    foreach (var item in itemTypes)
-                    {
-                        _logger.LogInformation("  Value={Value}, Text={Text}, Selected={Selected}", item.Value, item.Text, item.Selected);
-                    }
+                    _logger.LogInformation("Item Type: {Type} (raw value: {RawValue}), Selected: {Selected}",
+                        currentItem.Type, (int)currentItem.Type, selectedType);
                 }
 
-                ViewBag.ItemTypes = itemTypes;
+                ViewBag.ItemTypes = new SelectList(itemTypesData, "Value", "Text", selectedType);
 
                 // Load subcategories if CategoryId exists
                 if (currentItem?.CategoryId > 0)
@@ -544,6 +804,56 @@ namespace IMS.Web.Controllers
                 ViewBag.Brands = new SelectList(new List<object>());
                 ViewBag.ItemModels = new SelectList(new List<object>());
                 ViewBag.ItemTypes = new SelectList(new List<object>());
+            }
+        }
+
+        /// <summary>
+        /// Get all items for Receive modal (not store-dependent)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetAllItemsForReceive(string searchTerm = "")
+        {
+            try
+            {
+                var items = await _itemService.GetAllItemsAsync();
+
+                // Filter by search term if provided
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    var search = searchTerm.ToLower();
+                    items = items.Where(i =>
+                        (i.ItemCode != null && i.ItemCode.ToLower().Contains(search)) ||
+                        (i.Code != null && i.Code.ToLower().Contains(search)) ||
+                        (i.Name != null && i.Name.ToLower().Contains(search)) ||
+                        (i.CategoryName != null && i.CategoryName.ToLower().Contains(search)) ||
+                        (i.Barcode != null && i.Barcode.ToLower().Contains(search))
+                    ).ToList();
+                }
+
+                // Map to the format expected by the modal
+                var result = items.Select(i => new
+                {
+                    itemId = i.Id,
+                    itemCode = i.ItemCode ?? i.Code ?? "",
+                    code = i.ItemCode ?? i.Code ?? "",
+                    itemName = i.Name ?? "",
+                    name = i.Name ?? "",
+                    categoryName = i.CategoryName ?? "N/A",
+                    quantity = 0, // No stock info for receive
+                    currentStock = 0,
+                    minimumStock = i.MinimumStock ?? 0,
+                    unit = i.Unit ?? "Piece",
+                    barcode = i.Barcode ?? "",
+                    isLowStock = false,
+                    isOutOfStock = false
+                }).ToList();
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all items for receive");
+                return Json(new List<object>());
             }
         }
     }

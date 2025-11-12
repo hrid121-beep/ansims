@@ -148,9 +148,22 @@
                         <a asp-action="Create" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> New Purchase Order
                         </a>
-                        <button type="button" class="btn btn-info btn-sm" onclick="exportData()">
-                            <i class="fas fa-download"></i> Export
-                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="exportData('pdf')">
+                                    <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                </a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="exportData('csv')">
+                                    <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                </a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="exportData('excel')">
+                                    <i class="fas fa-file-excel text-primary"></i> Export to Excel
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -256,7 +269,39 @@
                 "lengthChange": false,
                 "autoWidth": false,
                 "order": [[1, "desc"]],
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    'colvis'
+                ]
             }).buttons().container().appendTo('#purchaseTable_wrapper .col-md-6:eq(0)');
 
             $('.select2').select2();
@@ -282,8 +327,28 @@
             });
         });
 
-        function exportData() {
-            window.location.href = '@Url.Action("Export")' + window.location.search;
+        function exportData(format) {
+            // Get current filter parameters
+            const params = new URLSearchParams(window.location.search);
+            params.append('format', format);
+
+            // Show loading indicator
+            Swal.fire({
+                title: 'Generating Export...',
+                html: 'Please wait while we generate your ' + format.toUpperCase() + ' file',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Navigate to export URL
+            window.location.href = '@Url.Action("Export", "Purchase")?' + params.toString();
+
+            // Close loading after a delay
+            setTimeout(() => {
+                Swal.close();
+            }, 2000);
         }
     </script>
 }

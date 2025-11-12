@@ -254,6 +254,17 @@ namespace IMS.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                // Code cannot be changed - always use original code
+                rangeDto.Code = originalRange.Code;
+
+                // Remove ALL Code-related validation errors (Code field is readonly and cannot be changed)
+                ModelState.Remove("Code");
+                var codeErrors = ModelState.Keys.Where(k => k.Contains("Code")).ToList();
+                foreach (var key in codeErrors)
+                {
+                    ModelState.Remove(key);
+                }
+
                 if (ModelState.IsValid)
                 {
                     // Fix: Use User ID instead of Username

@@ -93,12 +93,12 @@
         </div>
 
         <!-- Filters Card -->
-        <div class="card card-secondary collapsed-card">
+        <div class="card card-secondary">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-filter"></i> Advanced Filters</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
@@ -367,18 +367,27 @@
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i> Excel',
-                        className: 'btn btn-success btn-sm'
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i> PDF',
                         className: 'btn btn-danger btn-sm',
-                        orientation: 'landscape'
+                        orientation: 'landscape',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     },
                     {
                         extend: 'print',
                         text: '<i class="fas fa-print"></i> Print',
-                        className: 'btn btn-info btn-sm'
+                        className: 'btn btn-info btn-sm',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
                     }
                 ],
                 language: {

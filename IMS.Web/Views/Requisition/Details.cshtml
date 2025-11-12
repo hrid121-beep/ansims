@@ -150,9 +150,9 @@
                             <tr>
                                 <td>@item.ItemCode</td>
                                 <td>@item.ItemName</td>
-                                <td>@item.RequestedQuantity @item.Unit</td>
-                                <td>@(item.ApprovedQuantity != null ? $"{item.ApprovedQuantity} {item.Unit}" : "-")</td>
-                                <td>@(item.IssuedQuantity != null ? $"{item.IssuedQuantity} {item.Unit}" : "-")</td>
+                                <td>@FormatQuantity(item.RequestedQuantity, item.Unit)</td>
+                                <td>@(item.ApprovedQuantity != null ? FormatQuantity(item.ApprovedQuantity.Value, item.Unit) : "-")</td>
+                                <td>@(item.IssuedQuantity != null ? FormatQuantity(item.IssuedQuantity.Value, item.Unit) : "-")</td>
                                 <td>৳ @item.UnitPrice.ToString("N2")</td>
                                 <td>৳ @item.TotalPrice.ToString("N2")</td>
                                 <td>@item.Specification</td>
@@ -260,3 +260,25 @@
         </div>
     </div>
 </div>
+
+@functions {
+    string FormatQuantity(decimal quantity, string unit)
+    {
+        // Units that should be displayed as whole numbers (no decimals)
+        var integerUnits = new[] { "Piece", "Pcs", "Unit", "Box", "Packet", "Carton", "Pack", "Nos", "Set", "Pair" };
+
+        // Check if unit requires integer display
+        bool isIntegerUnit = integerUnits.Any(u => unit != null && unit.Equals(u, StringComparison.OrdinalIgnoreCase));
+
+        if (isIntegerUnit && quantity == Math.Floor(quantity))
+        {
+            // Display as integer for whole numbers
+            return $"{quantity:N0} {unit}";
+        }
+        else
+        {
+            // Display with decimals for fractional quantities or measurement units
+            return $"{quantity:N3} {unit}";
+        }
+    }
+}

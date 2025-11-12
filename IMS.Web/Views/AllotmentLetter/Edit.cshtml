@@ -69,10 +69,10 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>স্মারক নং (Memo No)</label>
-                                <input asp-for="ReferenceNo" class="form-control"
+                                <input asp-for="ReferenceNo" id="referenceNoInput" class="form-control"
                                        placeholder="৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪"
                                        pattern="[০-৯.]+" />
-                                <small class="text-muted">শুধু বাংলা সংখ্যা ব্যবহার করুন। উদাহরণ: ৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪</small>
+                                <small class="text-muted">শুধু বাংলা সংখ্যা ব্যবহার করুন। উদাহরণ: ৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪ (স্পেস নিষিদ্ধ / No spaces allowed)</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -103,12 +103,12 @@
             </div>
 
             <!-- Government Format Fields (Bengali Support) -->
-            <div class="card card-info collapsed-card">
+            <div class="card card-info">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-language"></i> Government Format (Optional)</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-plus"></i>
+                            <i class="fas fa-minus"></i>
                         </button>
                     </div>
                 </div>
@@ -239,6 +239,38 @@
                         <p>Click "Add Recipient" to start adding recipients and their items</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Distribution List Section (অনুলিপি) -->
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-share-alt"></i> Distribution List (অনুলিপি)</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-default btn-sm" onclick="useDefaultDistribution()">
+                            <i class="fas fa-copy"></i> Use Default List
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addDistributionEntry()">
+                            <i class="fas fa-plus"></i> Add Entry
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Distribution List (অনুলিপি)</strong> - Specify who should receive copies of this allotment letter.
+                        Use "Default List" for standard distribution or add custom entries.
+                    </div>
+                    <div id="distributionContainer">
+                        <!-- Distribution entries will be added here -->
+                    </div>
+                    <div class="text-center text-muted" id="noDistributionMessage">
+                        <p>Click "Use Default List" to use standard distribution list or "Add Entry" to add custom entries</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="card">
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save"></i> Update Allotment Letter
@@ -686,8 +718,308 @@
             }
         });
 
+        // ===== Distribution List Functions =====
+        let distributionIndex = 0;
+
+        function addDistributionEntry() {
+            $('#noDistributionMessage').hide();
+
+            const entryHtml = `
+                <div class="card card-outline card-warning distribution-entry" data-dist-index="${distributionIndex}" style="border-left: 3px solid #ffc107; margin-bottom: 10px;">
+                    <div class="card-header py-2">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-user-tie"></i> Entry #<span class="entry-serial">${distributionIndex + 1}</span>
+                        </h6>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool text-danger" onclick="removeDistribution(${distributionIndex})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <div class="form-group mb-2">
+                                    <label class="small">ক্রম</label>
+                                    <input name="DistributionList[${distributionIndex}].SerialNo"
+                                           type="number" class="form-control form-control-sm"
+                                           value="${distributionIndex + 1}" min="1" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <label class="small">Recipient Title (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].RecipientTitle"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="e.g., Director General" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <label class="small">প্রাপক পদবি (বাংলা) <span class="text-danger">*</span></label>
+                                    <input name="DistributionList[${distributionIndex}].RecipientTitleBn"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="যেমনঃ মহাপরিচালক মহোদয়ের সচিবালয়" required />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="small">Purpose (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].Purpose"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="e.g., For information" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="small">উদ্দেশ্য (বাংলা)</label>
+                                    <input name="DistributionList[${distributionIndex}].PurposeBn"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="যেমনঃ অবগতির জন্য" />
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group mb-2">
+                                    <label class="small">Order</label>
+                                    <input name="DistributionList[${distributionIndex}].DisplayOrder"
+                                           type="number" class="form-control form-control-sm"
+                                           value="${distributionIndex}" min="0" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">Address (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].Address"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="e.g., Ansar-VDP HQ, Khilgaon, Dhaka" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">ঠিকানা (বাংলা)</label>
+                                    <input name="DistributionList[${distributionIndex}].AddressBn"
+                                           type="text" class="form-control form-control-sm"
+                                           placeholder="যেমনঃ বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।" />
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="DistributionList[${distributionIndex}].AllotmentLetterId" value="@Model.Id" />
+                    </div>
+                </div>
+            `;
+
+            $('#distributionContainer').append(entryHtml);
+            distributionIndex++;
+        }
+
+        function removeDistribution(index) {
+            if (confirm('Remove this distribution entry?')) {
+                $(`.distribution-entry[data-dist-index="${index}"]`).remove();
+                updateDistributionSerials();
+
+                // Show message if no entries left
+                if ($('#distributionContainer .distribution-entry').length === 0) {
+                    $('#noDistributionMessage').show();
+                }
+            }
+        }
+
+        function updateDistributionSerials() {
+            let serial = 1;
+            $('.distribution-entry').each(function() {
+                $(this).find('.entry-serial').text(serial);
+                serial++;
+            });
+        }
+
+        function useDefaultDistribution() {
+            // Clear existing entries
+            $('#distributionContainer').empty();
+            $('#noDistributionMessage').hide();
+
+            // Default distribution list (8 entries)
+            const defaultList = [
+                {
+                    title: 'Director General\'s Secretariat',
+                    titleBn: 'মহাপরিচালক মহোদয়ের সচিবালয়',
+                    address: 'Bangladesh Ansar & VDP, HQ, Khilgaon, Dhaka',
+                    addressBn: 'বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।',
+                    purpose: '',
+                    purposeBn: ''
+                },
+                {
+                    title: 'Additional Director General\'s Office',
+                    titleBn: 'অতিরিক্ত মহাপরিচালক মহোদয়ের দপ্তর',
+                    address: 'Bangladesh Ansar & VDP, HQ, Khilgaon, Dhaka',
+                    addressBn: 'বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা',
+                    purpose: 'For information',
+                    purposeBn: 'সময় অবগতির জন্য'
+                },
+                {
+                    title: 'Commandant',
+                    titleBn: 'কমান্ডান্ট',
+                    address: 'Bangladesh Ansar-VDP Academy, Safipur, Gazipur',
+                    addressBn: 'বাংলাদেশ আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর',
+                    purpose: '',
+                    purposeBn: ''
+                },
+                {
+                    title: 'Deputy Director General (Admin/Ops/Training)',
+                    titleBn: 'উপমহাপরিচালক (প্রশাসন/অপারেশনস্/প্রশিক্ষণ)',
+                    address: 'Bangladesh Ansar & VDP, HQ, Khilgaon, Dhaka',
+                    addressBn: 'বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা',
+                    purpose: '',
+                    purposeBn: ''
+                },
+                {
+                    title: 'Deputy Director General/Director',
+                    titleBn: 'উপমহাপরিচালক/পরিচালক',
+                    address: 'Bangladesh Ansar & VDP (Concerned Range)',
+                    addressBn: 'বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী (সংশ্লিষ্ট রেঞ্জ)',
+                    purpose: 'For information and necessary action',
+                    purposeBn: 'সময় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য'
+                },
+                {
+                    title: 'Assistant Director - Central Ansar/VDP Store',
+                    titleBn: 'সহকারী পরিচালক - কেন্দ্রীয় আনসার/ভিডিপি ভাণ্ডার',
+                    address: 'Ansar-VDP Academy, Safipur, Gazipur',
+                    addressBn: 'আনসার-ভিডিপি একাডেমী, সফিপুর, গাজীপুর',
+                    purpose: 'For information and necessary action',
+                    purposeBn: 'অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য'
+                },
+                {
+                    title: 'Quarter Master',
+                    titleBn: 'কোয়াটার মাস্টার',
+                    address: 'Store Branch, HQ, Khilgaon, Dhaka',
+                    addressBn: 'ভাণ্ডার শাখা, সদর দপ্তর, খিলগাঁও, ঢাকা',
+                    purpose: '',
+                    purposeBn: ''
+                },
+                {
+                    title: 'Office/Master Copy - Deputy Director (Store)',
+                    titleBn: 'দপ্তর/মাস্টার কপি - উপপরিচালক (ভাণ্ডার)',
+                    address: '',
+                    addressBn: '',
+                    purpose: '',
+                    purposeBn: ''
+                }
+            ];
+
+            // Reset distribution index
+            distributionIndex = 0;
+
+            // Add each default entry
+            defaultList.forEach((entry, idx) => {
+                addDistributionEntryWithData(
+                    idx + 1,
+                    entry.title,
+                    entry.titleBn,
+                    entry.address,
+                    entry.addressBn,
+                    entry.purpose,
+                    entry.purposeBn
+                );
+            });
+        }
+
+        function addDistributionEntryWithData(serialNo, title, titleBn, address, addressBn, purpose, purposeBn) {
+            $('#noDistributionMessage').hide();
+
+            const entryHtml = `
+                <div class="card card-outline card-warning distribution-entry" data-dist-index="${distributionIndex}" style="border-left: 3px solid #ffc107; margin-bottom: 10px;">
+                    <div class="card-header py-2">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-user-tie"></i> Entry #<span class="entry-serial">${serialNo}</span>
+                        </h6>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool text-danger" onclick="removeDistribution(${distributionIndex})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <div class="form-group mb-2">
+                                    <label class="small">ক্রম</label>
+                                    <input name="DistributionList[${distributionIndex}].SerialNo"
+                                           type="number" class="form-control form-control-sm"
+                                           value="${serialNo}" min="1" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <label class="small">Recipient Title (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].RecipientTitle"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${title}" placeholder="e.g., Director General" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <label class="small">প্রাপক পদবি (বাংলা) <span class="text-danger">*</span></label>
+                                    <input name="DistributionList[${distributionIndex}].RecipientTitleBn"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${titleBn}" placeholder="যেমনঃ মহাপরিচালক মহোদয়ের সচিবালয়" required />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="small">Purpose (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].Purpose"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${purpose}" placeholder="e.g., For information" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="small">উদ্দেশ্য (বাংলা)</label>
+                                    <input name="DistributionList[${distributionIndex}].PurposeBn"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${purposeBn}" placeholder="যেমনঃ অবগতির জন্য" />
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group mb-2">
+                                    <label class="small">Order</label>
+                                    <input name="DistributionList[${distributionIndex}].DisplayOrder"
+                                           type="number" class="form-control form-control-sm"
+                                           value="${distributionIndex}" min="0" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">Address (English)</label>
+                                    <input name="DistributionList[${distributionIndex}].Address"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${address}" placeholder="e.g., Ansar-VDP HQ, Khilgaon, Dhaka" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">ঠিকানা (বাংলা)</label>
+                                    <input name="DistributionList[${distributionIndex}].AddressBn"
+                                           type="text" class="form-control form-control-sm"
+                                           value="${addressBn}" placeholder="যেমনঃ বাংলাদেশ আনসার ও গ্রাম প্রতিরক্ষা বাহিনী, সদর দপ্তর, খিলগাঁও, ঢাকা।" />
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="DistributionList[${distributionIndex}].AllotmentLetterId" value="@Model.Id" />
+                    </div>
+                </div>
+            `;
+
+            $('#distributionContainer').append(entryHtml);
+            distributionIndex++;
+        }
+
         // Load existing recipients on page load (for Edit mode)
         $(document).ready(function() {
+            // Load Recipients
             @if (Model.Recipients != null && Model.Recipients.Any())
             {
                 <text>
@@ -757,6 +1089,62 @@
                 addRecipient();
                 </text>
             }
+
+            // Load Distribution List
+            @if (Model.DistributionList != null && Model.DistributionList.Any())
+            {
+                <text>
+                // Load existing distribution list entries
+                $('#noDistributionMessage').hide();
+                @foreach (var distEntry in Model.DistributionList.OrderBy(d => d.DisplayOrder).ThenBy(d => d.SerialNo))
+                {
+                    <text>
+                    addDistributionEntryWithData(
+                        @distEntry.SerialNo,
+                        '@Html.Raw(distEntry.RecipientTitle?.Replace("'", "\\'") ?? "")',
+                        '@Html.Raw(distEntry.RecipientTitleBn?.Replace("'", "\\'") ?? "")',
+                        '@Html.Raw(distEntry.Address?.Replace("'", "\\'") ?? "")',
+                        '@Html.Raw(distEntry.AddressBn?.Replace("'", "\\'") ?? "")',
+                        '@Html.Raw(distEntry.Purpose?.Replace("'", "\\'") ?? "")',
+                        '@Html.Raw(distEntry.PurposeBn?.Replace("'", "\\'") ?? "")'
+                    );
+                    </text>
+                }
+                </text>
+            }
+
+            // ===== Prevent Whitespace in ReferenceNo (স্মারক নং) =====
+            $('#referenceNoInput').on('keypress', function(e) {
+                // Prevent spacebar (keyCode 32)
+                if (e.which === 32) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Remove whitespace on paste
+            $('#referenceNoInput').on('paste', function(e) {
+                setTimeout(function() {
+                    var $input = $('#referenceNoInput');
+                    var value = $input.val();
+                    // Remove all whitespace characters
+                    $input.val(value.replace(/\s/g, ''));
+                }, 10);
+            });
+
+            // Remove whitespace on blur (when user leaves field)
+            $('#referenceNoInput').on('blur', function() {
+                var value = $(this).val();
+                $(this).val(value.replace(/\s/g, ''));
+            });
+
+            // Prevent whitespace on input (covers all scenarios)
+            $('#referenceNoInput').on('input', function() {
+                var value = $(this).val();
+                if (/\s/.test(value)) {
+                    $(this).val(value.replace(/\s/g, ''));
+                }
+            });
         });
     </script>
 }

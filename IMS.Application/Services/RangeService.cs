@@ -3,6 +3,7 @@ using IMS.Application.DTOs;
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
 using IMS.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,15 +21,18 @@ namespace IMS.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RangeService> _logger;
         private readonly IActivityLogService _activityLogService;
+        private readonly UserManager<User> _userManager;
 
         public RangeService(
             IUnitOfWork unitOfWork,
             ILogger<RangeService> logger,
-            IActivityLogService activityLogService)
+            IActivityLogService activityLogService,
+            UserManager<User> userManager)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _activityLogService = activityLogService ?? throw new ArgumentNullException(nameof(activityLogService));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public async Task<IEnumerable<RangeDto>> GetAllRangesAsync()
@@ -96,7 +100,12 @@ namespace IMS.Application.Services
                     return null;
                 }
 
-                return MapToDto(range);
+                var dto = MapToDto(range);
+
+                // Populate user names
+                await PopulateUserNamesAsync(dto);
+
+                return dto;
             }
             catch (Exception ex)
             {
@@ -651,6 +660,25 @@ namespace IMS.Application.Services
                 UpdatedAt = range.UpdatedAt,
                 UpdatedBy = range.UpdatedBy ?? string.Empty
             };
+        }
+
+        private async Task PopulateUserNamesAsync(RangeDto dto)
+        {
+            if (dto == null) return;
+
+            // Get Created By user name
+            if (!string.IsNullOrEmpty(dto.CreatedBy))
+            {
+                var createdByUser = await _userManager.FindByIdAsync(dto.CreatedBy);
+                dto.CreatedByName = createdByUser?.UserName ?? dto.CreatedBy;
+            }
+
+            // Get Updated By user name
+            if (!string.IsNullOrEmpty(dto.UpdatedBy))
+            {
+                var updatedByUser = await _userManager.FindByIdAsync(dto.UpdatedBy);
+                dto.UpdatedByName = updatedByUser?.UserName ?? dto.UpdatedBy;
+            }
         }
     }
 }

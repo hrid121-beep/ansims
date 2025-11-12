@@ -237,7 +237,39 @@
                 "lengthChange": true,
                 "autoWidth": false,
                 "order": [[1, "asc"]],
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    'colvis'
+                ],
                 "pageLength": 25
             });
 
@@ -268,8 +300,8 @@
                 return false;
             });
 
-            // Delete confirmation
-            $('.delete-btn').click(function () {
+            // Delete confirmation (using event delegation for DataTable dynamic rows)
+            $(document).on('click', '.delete-btn', function () {
                 var id = $(this).data('id');
                 var name = $(this).data('name');
                 $('#deleteName').text(name);

@@ -48,6 +48,45 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        @Html.AntiForgeryToken()
+
+        <!-- Success/Error Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        @if (TempData["Info"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle"></i> @TempData["Info"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
         <!-- Action Buttons -->
         <div class="row mb-3">
             <div class="col-12">
@@ -247,11 +286,29 @@
                                                 <td><strong>@(index++)</strong></td>
                                                 <td><span class="badge badge-secondary">@item.ItemCode</span></td>
                                                 <td>
-                                                    <strong>@item.ItemName</strong>
-                                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
-                                                    {
-                                                        <br /><small class="text-muted"><i class="fas fa-barcode"></i> Batch: @item.BatchNumber</small>
-                                                    }
+                                                    <div class="d-flex align-items-center">
+                                                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                        {
+                                                            <img src="/@item.ImagePath"
+                                                                 alt="@item.ItemName"
+                                                                 class="img-thumbnail mr-2"
+                                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="bg-light rounded d-flex align-items-center justify-content-center mr-2"
+                                                                 style="width: 40px; height: 40px;">
+                                                                <i class="fas fa-box text-muted"></i>
+                                                            </div>
+                                                        }
+                                                        <div>
+                                                            <strong>@item.ItemName</strong>
+                                                            @if (!string.IsNullOrEmpty(item.BatchNumber))
+                                                            {
+                                                                <br /><small class="text-muted"><i class="fas fa-barcode"></i> Batch: @item.BatchNumber</small>
+                                                            }
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td>@item.CategoryName</td>
                                                 <td>@item.StoreName</td>
@@ -601,6 +658,48 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
+            // Display TempData messages with toastr
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                toastr.success('@TempData["Success"]', 'Success', {
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true
+                });
+                </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                toastr.error('@TempData["Error"]', 'Error', {
+                    timeOut: 0,
+                    closeButton: true,
+                    progressBar: true
+                });
+                </text>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <text>
+                toastr.warning('@TempData["Warning"]', 'Warning', {
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true
+                });
+                </text>
+            }
+            @if (TempData["Info"] != null)
+            {
+                <text>
+                toastr.info('@TempData["Info"]', 'Information', {
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true
+                });
+                </text>
+            }
+
             // Complete Receive
             $('#completeBtn').click(function() {
                 Swal.fire({
@@ -612,23 +711,80 @@
                     confirmButtonColor: '#28a745'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        var formData = {
+                            id: @Model.Id,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        };
+
+                        console.log('Sending Complete Receive request:', formData);
+
                         $.ajax({
                             url: '@Url.Action("Complete", "Receive")',
                             type: 'POST',
-                            data: {
-                                id: @Model.Id,
-                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-                            },
+                            data: formData,
                             success: function(response) {
                                 if (response.success) {
-                                    Swal.fire('Success!', 'Receive completed successfully!', 'success')
-                                        .then(() => location.reload());
+                                    toastr.success('Receive completed successfully! Stock has been updated.', 'Success', {
+                                        timeOut: 3000,
+                                        closeButton: true,
+                                        progressBar: true,
+                                        onHidden: function() {
+                                            location.reload();
+                                        }
+                                    });
                                 } else {
-                                    Swal.fire('Error!', response.message || 'Failed to complete receive', 'error');
+                                    toastr.error(response.message || 'Failed to complete receive', 'Error', {
+                                        timeOut: 0,
+                                        closeButton: true,
+                                        progressBar: true
+                                    });
                                 }
                             },
-                            error: function() {
-                                Swal.fire('Error!', 'An error occurred while completing receive', 'error');
+                            error: function(xhr, status, error) {
+                                console.error('Complete Receive Error:', {
+                                    status: xhr.status,
+                                    statusText: xhr.statusText,
+                                    responseText: xhr.responseText,
+                                    error: error
+                                });
+
+                                var errorMessage = 'An error occurred while completing receive';
+
+                                if (xhr.status === 400) {
+                                    errorMessage = 'Bad Request: Please check all required fields are filled';
+                                } else if (xhr.status === 403) {
+                                    errorMessage = 'Permission Denied: You do not have permission to complete this receive';
+                                } else if (xhr.status === 404) {
+                                    errorMessage = 'Receive not found';
+                                } else if (xhr.status === 500) {
+                                    errorMessage = 'Server Error: Please contact administrator';
+                                }
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.responseText) {
+                                    try {
+                                        var response = JSON.parse(xhr.responseText);
+                                        if (response.message) {
+                                            errorMessage = response.message;
+                                        } else if (response.errors) {
+                                            errorMessage = 'Validation errors: ';
+                                            for (var key in response.errors) {
+                                                errorMessage += response.errors[key].join(', ') + '; ';
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.error('Failed to parse error response:', e);
+                                    }
+                                }
+
+                                errorMessage += ' (Status: ' + xhr.status + ')';
+
+                                toastr.error(errorMessage, 'Error', {
+                                    timeOut: 0,
+                                    closeButton: true,
+                                    progressBar: true
+                                });
                             }
                         });
                     }

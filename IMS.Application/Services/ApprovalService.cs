@@ -22,19 +22,22 @@ namespace IMS.Application.Services
         private readonly ILogger<ApprovalService> _logger;
         private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IVoucherService _voucherService;
 
         public ApprovalService(
             IUnitOfWork unitOfWork,
             INotificationService notificationService,
             UserManager<User> userManager,
             ILogger<ApprovalService> logger,
-            IHttpContextAccessor httpContextAccessor)  // Add this
+            IHttpContextAccessor httpContextAccessor,
+            IVoucherService voucherService)
         {
             _unitOfWork = unitOfWork;
             _notificationService = notificationService;
             _logger = logger;
             _userManager = userManager;
-            _httpContextAccessor = httpContextAccessor;  // Add this
+            _httpContextAccessor = httpContextAccessor;
+            _voucherService = voucherService;
         }
 
         public async Task<ApprovalRequest> CreateApprovalRequestAsync(ApprovalRequestDto dto)
@@ -126,6 +129,27 @@ namespace IMS.Application.Services
                 if (request == null)
                     throw new InvalidOperationException("Approval request not found or not pending");
 
+                // CRITICAL FIX: Validate user has required role to approve
+                var approvalSteps = await _unitOfWork.ApprovalSteps
+                    .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
+                                        step.Status == ApprovalStatus.Pending);
+
+                if (approvalSteps.Any())
+                {
+                    var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
+                    if (currentStep != null)
+                    {
+                        var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
+                        if (!canApprove)
+                        {
+                            await _unitOfWork.RollbackTransactionAsync();
+                            throw new UnauthorizedAccessException(
+                                $"User does not have required role '{currentStep.ApproverRole}' to approve this request"
+                            );
+                        }
+                    }
+                }
+
                 // Update the approval request
                 request.Status = "Approved";
                 request.ApprovedBy = dto.ApprovedBy;
@@ -188,6 +212,27 @@ namespace IMS.Application.Services
 
                 if (request == null)
                     throw new InvalidOperationException("Approval request not found or not pending");
+
+                // CRITICAL FIX: Validate user has required role to reject
+                var approvalSteps = await _unitOfWork.ApprovalSteps
+                    .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
+                                        step.Status == ApprovalStatus.Pending);
+
+                if (approvalSteps.Any())
+                {
+                    var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
+                    if (currentStep != null)
+                    {
+                        var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
+                        if (!canApprove)
+                        {
+                            await _unitOfWork.RollbackTransactionAsync();
+                            throw new UnauthorizedAccessException(
+                                $"User does not have required role '{currentStep.ApproverRole}' to reject this request"
+                            );
+                        }
+                    }
+                }
 
                 // Update the approval request
                 request.Status = "Rejected";
@@ -287,6 +332,13 @@ namespace IMS.Application.Services
 
             var userRoles = await _userManager.GetRolesAsync(user);
 
+            // ✅ ADMIN AND DIRECTOR CAN APPROVE EVERYTHING
+            if (userRoles.Contains("Admin") || userRoles.Contains("Director"))
+            {
+                _logger.LogInformation($"User {userId} with Admin/Director role can approve all requests");
+                return true;
+            }
+
             // Check direct role
             if (userRoles.Contains(requiredRole))
                 return true;
@@ -320,7 +372,16 @@ namespace IMS.Application.Services
 
             var threshold = thresholds.OrderByDescending(t => t.MinAmount).FirstOrDefault();
 
-            if (threshold == null) return null;
+            // CRITICAL FIX: If no threshold found, throw exception instead of returning null
+            // This prevents auto-approval of high-value transactions when thresholds are not configured
+            if (threshold == null)
+            {
+                _logger.LogWarning($"No approval threshold configured for {entityType} with value {value:C}. Requiring approval by default.");
+                throw new InvalidOperationException(
+                    $"Approval thresholds must be configured for {entityType} transactions. " +
+                    "Please configure approval thresholds in the system settings before proceeding."
+                );
+            }
 
             return new ApprovalThresholdDto
             {
@@ -339,7 +400,8 @@ namespace IMS.Application.Services
         public async Task<bool> ValidateApprovalAsync(string userId, string entityType, int entityId, decimal value)
         {
             var requirement = await GetApprovalRequirementAsync(entityType, value);
-            if (requirement == null) return true; // No approval required
+            // CRITICAL FIX: This now throws if threshold not configured, so null check is defensive only
+            if (requirement == null) return false; // Deny if somehow null (should not reach here)
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return false;
@@ -715,6 +777,7 @@ namespace IMS.Application.Services
                             {
                                 adjustment.ApprovedBy = _httpContextAccessor?.HttpContext?.User?.Identity?.Name;
                                 adjustment.ApprovedDate = DateTime.Now;
+                                adjustment.IsApproved = true; // ✅ FIX: Set IsApproved boolean
 
                                 // Stock adjustment will be applied by StockAdjustmentService when approved
                                 // No need to handle it here
@@ -742,6 +805,36 @@ namespace IMS.Application.Services
                             }
 
                             _unitOfWork.Requisitions.Update(requisition);
+                        }
+                        break;
+
+                    case "RECEIVE":
+                        var receive = await _unitOfWork.Receives.GetByIdAsync(entityId);
+                        if (receive != null)
+                        {
+                            receive.Status = status; // "Approved" or "Rejected"
+                            receive.UpdatedBy = _httpContextAccessor?.HttpContext?.User?.Identity?.Name;
+                            receive.UpdatedAt = DateTime.Now;
+
+                            if (status == "Approved")
+                            {
+                                // ✅ Regenerate Issue voucher to include Receive info
+                                if (receive.OriginalIssueId.HasValue)
+                                {
+                                    try
+                                    {
+                                        _logger.LogInformation($"Regenerating Issue voucher for Issue ID: {receive.OriginalIssueId.Value} after Receive approval");
+                                        await _voucherService.RegenerateIssueVoucherAsync(receive.OriginalIssueId.Value);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"Failed to regenerate Issue voucher for Issue ID: {receive.OriginalIssueId.Value}");
+                                        // Don't fail the approval if voucher regeneration fails
+                                    }
+                                }
+                            }
+
+                            _unitOfWork.Receives.Update(receive);
                         }
                         break;
 
@@ -1189,6 +1282,20 @@ namespace IMS.Application.Services
                     }
                     break;
 
+                case "StockAdjustment":
+                case "STOCK_ADJUSTMENT":
+                case "STOCKADJUSTMENT":
+                    var adjustment = await _unitOfWork.StockAdjustments.GetByIdAsync(approval.EntityId);
+                    if (adjustment != null)
+                    {
+                        adjustment.Status = "Approved";
+                        adjustment.ApprovedBy = approval.ApprovedBy;
+                        adjustment.ApprovedDate = approval.ApprovedDate;
+                        adjustment.IsApproved = true;
+                        _unitOfWork.StockAdjustments.Update(adjustment);
+                    }
+                    break;
+
                     // Add other entity types as needed
             }
 
@@ -1218,6 +1325,20 @@ namespace IMS.Application.Services
                         po.RejectedBy = approval.RejectedBy;
                         po.RejectedDate = approval.RejectedDate;
                         _unitOfWork.PurchaseOrders.Update(po);
+                    }
+                    break;
+
+                case "StockAdjustment":
+                case "STOCK_ADJUSTMENT":
+                case "STOCKADJUSTMENT":
+                    var adjustment = await _unitOfWork.StockAdjustments.GetByIdAsync(approval.EntityId);
+                    if (adjustment != null)
+                    {
+                        adjustment.Status = "Rejected";
+                        adjustment.RejectedBy = approval.RejectedBy;
+                        adjustment.RejectedDate = approval.RejectedDate;
+                        adjustment.RejectionReason = approval.RejectionReason;
+                        _unitOfWork.StockAdjustments.Update(adjustment);
                     }
                     break;
 
@@ -1650,6 +1771,133 @@ namespace IMS.Application.Services
 
             _logger.LogInformation($"Approval for {entityType} {(isRequired ? "enabled" : "disabled")}");
             return true;
+        }
+
+        public async Task<ServiceResult> InitializeDefaultApprovalSettingsAsync()
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var currentUser = _httpContextAccessor?.HttpContext?.User?.Identity?.Name ?? "System";
+                var createdCount = 0;
+
+                // Define default approval thresholds for all entity types
+                var defaultThresholds = new List<(string EntityType, decimal MinAmount, decimal? MaxAmount, int Level, string Role, string ApproverRole)>
+                {
+                    // PURCHASE thresholds
+                    ("PURCHASE", 0, 50000, 1, "StoreManager", "StoreManager"),
+                    ("PURCHASE", 50001, 200000, 1, "DDGAdmin", "DDGAdmin"),
+                    ("PURCHASE", 200001, null, 1, "Director", "Director"),
+
+                    // REQUISITION thresholds
+                    ("REQUISITION", 0, 30000, 1, "StoreManager", "StoreManager"),
+                    ("REQUISITION", 30001, 100000, 1, "DDGAdmin", "DDGAdmin"),
+                    ("REQUISITION", 100001, null, 1, "Director", "Director"),
+
+                    // ISSUE thresholds
+                    ("ISSUE", 0, 50000, 1, "StoreManager", "StoreManager"),
+                    ("ISSUE", 50001, 150000, 1, "DDStore", "DDStore"),
+                    ("ISSUE", 150001, null, 1, "Director", "Director"),
+
+                    // TRANSFER thresholds
+                    ("TRANSFER", 0, 50000, 1, "StoreManager", "StoreManager"),
+                    ("TRANSFER", 50001, 200000, 1, "DDStore", "DDStore"),
+                    ("TRANSFER", 200001, null, 1, "Director", "Director"),
+
+                    // WRITEOFF thresholds
+                    ("WRITEOFF", 0, 10000, 1, "StoreManager", "StoreManager"),
+                    ("WRITEOFF", 10001, 50000, 1, "DDStore", "DDStore"),
+                    ("WRITEOFF", 50001, null, 1, "DDGAdmin", "DDGAdmin"),
+
+                    // STOCK_ADJUSTMENT thresholds
+                    ("STOCK_ADJUSTMENT", 0, 10000, 1, "StoreManager", "StoreManager"),
+                    ("STOCK_ADJUSTMENT", 10001, 50000, 1, "DDStore", "DDStore"),
+                    ("STOCK_ADJUSTMENT", 50001, null, 1, "Director", "Director"),
+
+                    // PHYSICAL_INVENTORY thresholds
+                    ("PHYSICAL_INVENTORY", 0, null, 1, "StoreManager", "StoreManager"),
+
+                    // ALLOTMENT_LETTER thresholds
+                    ("ALLOTMENT_LETTER", 0, 100000, 1, "DDProvision", "DDProvision"),
+                    ("ALLOTMENT_LETTER", 100001, null, 1, "Director", "Director"),
+
+                    // STOCK_ENTRY thresholds
+                    ("STOCK_ENTRY", 0, 50000, 1, "StoreManager", "StoreManager"),
+                    ("STOCK_ENTRY", 50001, 100000, 1, "DDStore", "DDStore"),
+                    ("STOCK_ENTRY", 100001, null, 1, "Director", "Director")
+                };
+
+                foreach (var (entityType, minAmount, maxAmount, level, role, approverRole) in defaultThresholds)
+                {
+                    // Check if threshold already exists
+                    var exists = await _unitOfWork.ApprovalThresholds
+                        .Query()
+                        .AnyAsync(t => t.EntityType == entityType &&
+                                      t.MinAmount == minAmount &&
+                                      t.MaxAmount == maxAmount);
+
+                    if (!exists)
+                    {
+                        var threshold = new ApprovalThreshold
+                        {
+                            EntityType = entityType,
+                            MinAmount = minAmount,
+                            MaxAmount = maxAmount,
+                            ApprovalLevel = level,
+                            RequiredRole = role,
+                            Description = $"{entityType} approval for amounts {minAmount:C} to {(maxAmount.HasValue ? maxAmount.Value.ToString("C") : "unlimited")}",
+                            IsActive = true,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = currentUser
+                        };
+
+                        await _unitOfWork.ApprovalThresholds.AddAsync(threshold);
+                        createdCount++;
+                    }
+                }
+
+                // Define default workflows for each entity type
+                var entityTypes = new[] { "PURCHASE", "REQUISITION", "ISSUE", "TRANSFER", "WRITEOFF",
+                                         "STOCK_ADJUSTMENT", "PHYSICAL_INVENTORY", "ALLOTMENT_LETTER", "STOCK_ENTRY" };
+
+                foreach (var entityType in entityTypes)
+                {
+                    // Check if workflow already exists
+                    var workflowExists = await _unitOfWork.ApprovalWorkflows
+                        .Query()
+                        .AnyAsync(w => w.EntityType == entityType);
+
+                    if (!workflowExists)
+                    {
+                        var workflow = new ApprovalWorkflow
+                        {
+                            Name = $"{entityType} Default Workflow",
+                            EntityType = entityType,
+                            MinAmount = 0,
+                            MaxAmount = null,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = currentUser
+                        };
+
+                        await _unitOfWork.ApprovalWorkflows.AddAsync(workflow);
+                        createdCount++;
+                    }
+                }
+
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation($"Default approval settings initialized. Created {createdCount} records.");
+                return ServiceResult.SuccessResult($"Successfully initialized {createdCount} default approval settings");
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Error initializing default approval settings");
+                return ServiceResult.Failure($"Error: {ex.Message}");
+            }
         }
     }
 }

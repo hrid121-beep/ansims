@@ -1072,6 +1072,248 @@ namespace IMS.Web.Controllers
             }
         }
 
+        // GET: Purchase/Export
+        [HttpGet]
+        public async Task<IActionResult> Export(string format = "pdf", string searchTerm = "", string status = "", int? vendorId = null, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                // Get filtered purchases
+                var purchases = await _purchaseService.GetAllPurchasesAsync();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    purchases = purchases.Where(p =>
+                        p.PurchaseOrderNo.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                        p.VendorName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    purchases = purchases.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (vendorId.HasValue)
+                {
+                    purchases = purchases.Where(p => p.VendorId == vendorId.Value);
+                }
+
+                if (startDate.HasValue)
+                {
+                    purchases = purchases.Where(p => p.PurchaseDate >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    purchases = purchases.Where(p => p.PurchaseDate <= endDate.Value);
+                }
+
+                var purchaseList = purchases.OrderByDescending(p => p.PurchaseDate).ToList();
+
+                // Generate export based on format
+                switch (format.ToLower())
+                {
+                    case "pdf":
+                        return await ExportToPdf(purchaseList);
+                    case "csv":
+                        return ExportToCsv(purchaseList);
+                    case "excel":
+                        return ExportToExcel(purchaseList);
+                    default:
+                        return BadRequest("Invalid export format");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting purchases");
+                TempData["Error"] = "Failed to export purchases.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private async Task<IActionResult> ExportToPdf(List<PurchaseDto> purchases)
+        {
+            try
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate());
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+
+                    document.Open();
+
+                    // Title
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 16);
+                    var title = new iTextSharp.text.Paragraph("Purchase Orders Report", titleFont);
+                    title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    document.Add(title);
+                    document.Add(new iTextSharp.text.Paragraph(" "));
+
+                    // Export date
+                    var dateFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+                    var dateText = new iTextSharp.text.Paragraph($"Generated on: {DateTime.Now:dd-MMM-yyyy HH:mm}", dateFont);
+                    document.Add(dateText);
+                    document.Add(new iTextSharp.text.Paragraph(" "));
+
+                    // Table with 7 columns
+                    var table = new iTextSharp.text.pdf.PdfPTable(7);
+                    table.WidthPercentage = 100;
+                    table.SetWidths(new float[] { 12f, 12f, 18f, 15f, 10f, 13f, 10f });
+
+                    // Header
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
+                    string[] headers = { "PO Number", "Date", "Vendor/Source", "Store", "Type", "Total Amount", "Status" };
+                    foreach (var header in headers)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(192, 192, 192); // Light gray
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.Padding = 5;
+                        table.AddCell(cell);
+                    }
+
+                    // Data
+                    var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+                    foreach (var purchase in purchases)
+                    {
+                        table.AddCell(new iTextSharp.text.Phrase(purchase.PurchaseOrderNo ?? "", dataFont));
+                        table.AddCell(new iTextSharp.text.Phrase(purchase.PurchaseDate.ToString("dd-MMM-yyyy"), dataFont));
+
+                        var vendorSource = purchase.IsMarketplacePurchase ? "Marketplace Purchase" : (purchase.VendorName ?? "");
+                        table.AddCell(new iTextSharp.text.Phrase(vendorSource, dataFont));
+
+                        table.AddCell(new iTextSharp.text.Phrase(purchase.StoreName ?? "", dataFont));
+
+                        var purchaseType = purchase.IsMarketplacePurchase ? "Marketplace" : "Vendor";
+                        table.AddCell(new iTextSharp.text.Phrase(purchaseType, dataFont));
+
+                        table.AddCell(new iTextSharp.text.Phrase($"৳{purchase.TotalAmount:N2}", dataFont));
+                        table.AddCell(new iTextSharp.text.Phrase(purchase.Status ?? "", dataFont));
+                    }
+
+                    document.Add(table);
+
+                    // Summary
+                    document.Add(new iTextSharp.text.Paragraph(" "));
+                    var summaryFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 11);
+                    document.Add(new iTextSharp.text.Paragraph($"Total Records: {purchases.Count}", summaryFont));
+                    document.Add(new iTextSharp.text.Paragraph($"Total Amount: ৳{purchases.Sum(p => p.TotalAmount):N2}", summaryFont));
+
+                    document.Close();
+
+                    var fileName = $"PurchaseOrders_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                    return File(memoryStream.ToArray(), "application/pdf", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating PDF");
+                throw;
+            }
+        }
+
+        private IActionResult ExportToCsv(List<PurchaseDto> purchases)
+        {
+            try
+            {
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("PO Number,Purchase Date,Vendor/Source,Store,Type,Items Count,Total Amount,Discount,Status,Created By,Created Date");
+
+                foreach (var purchase in purchases)
+                {
+                    var vendorSource = purchase.IsMarketplacePurchase ? "Marketplace Purchase" : purchase.VendorName;
+                    var purchaseType = purchase.IsMarketplacePurchase ? "Marketplace" : "Vendor";
+
+                    csv.AppendLine($"\"{purchase.PurchaseOrderNo}\"," +
+                                  $"\"{purchase.PurchaseDate:dd-MMM-yyyy}\"," +
+                                  $"\"{vendorSource}\"," +
+                                  $"\"{purchase.StoreName}\"," +
+                                  $"\"{purchaseType}\"," +
+                                  $"\"{purchase.Items?.Count ?? 0}\"," +
+                                  $"\"{purchase.TotalAmount:N2}\"," +
+                                  $"\"{purchase.Discount:N2}\"," +
+                                  $"\"{purchase.Status}\"," +
+                                  $"\"{purchase.CreatedBy}\"," +
+                                  $"\"{purchase.CreatedAt:dd-MMM-yyyy HH:mm}\"");
+                }
+
+                var fileName = $"PurchaseOrders_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating CSV");
+                throw;
+            }
+        }
+
+        private IActionResult ExportToExcel(List<PurchaseDto> purchases)
+        {
+            try
+            {
+                using (var workbook = new ClosedXML.Excel.XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("Purchase Orders");
+
+                    // Header
+                    worksheet.Cell(1, 1).Value = "PO Number";
+                    worksheet.Cell(1, 2).Value = "Purchase Date";
+                    worksheet.Cell(1, 3).Value = "Vendor/Source";
+                    worksheet.Cell(1, 4).Value = "Store";
+                    worksheet.Cell(1, 5).Value = "Type";
+                    worksheet.Cell(1, 6).Value = "Items Count";
+                    worksheet.Cell(1, 7).Value = "Total Amount";
+                    worksheet.Cell(1, 8).Value = "Discount";
+                    worksheet.Cell(1, 9).Value = "Status";
+                    worksheet.Cell(1, 10).Value = "Created By";
+                    worksheet.Cell(1, 11).Value = "Created Date";
+
+                    // Style header
+                    var headerRange = worksheet.Range(1, 1, 1, 11);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+                    headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+                    // Data
+                    int row = 2;
+                    foreach (var purchase in purchases)
+                    {
+                        var vendorSource = purchase.IsMarketplacePurchase ? "Marketplace Purchase" : purchase.VendorName;
+                        var purchaseType = purchase.IsMarketplacePurchase ? "Marketplace" : "Vendor";
+
+                        worksheet.Cell(row, 1).Value = purchase.PurchaseOrderNo;
+                        worksheet.Cell(row, 2).Value = purchase.PurchaseDate.ToString("dd-MMM-yyyy");
+                        worksheet.Cell(row, 3).Value = vendorSource;
+                        worksheet.Cell(row, 4).Value = purchase.StoreName;
+                        worksheet.Cell(row, 5).Value = purchaseType;
+                        worksheet.Cell(row, 6).Value = purchase.Items?.Count ?? 0;
+                        worksheet.Cell(row, 7).Value = purchase.TotalAmount;
+                        worksheet.Cell(row, 8).Value = purchase.Discount;
+                        worksheet.Cell(row, 9).Value = purchase.Status;
+                        worksheet.Cell(row, 10).Value = purchase.CreatedBy;
+                        worksheet.Cell(row, 11).Value = purchase.CreatedAt.ToString("dd-MMM-yyyy HH:mm");
+                        row++;
+                    }
+
+                    // Auto-fit columns
+                    worksheet.Columns().AdjustToContents();
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var fileName = $"PurchaseOrders_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating Excel");
+                throw;
+            }
+        }
+
         #endregion
     }
 }

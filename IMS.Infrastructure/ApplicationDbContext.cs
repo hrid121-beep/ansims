@@ -183,6 +183,7 @@ namespace IMS.Infrastructure.Data
         public DbSet<AllotmentLetterRecipient> AllotmentLetterRecipients { get; set; }
         public DbSet<AllotmentLetterRecipientItem> AllotmentLetterRecipientItems { get; set; }
         public DbSet<SignatoryPreset> SignatoryPresets { get; set; }
+        public DbSet<AllotmentLetterDistribution> AllotmentLetterDistributions { get; set; }
 
 
         // FIXED: Properly configure conventions for EF Core 9
@@ -496,9 +497,9 @@ namespace IMS.Infrastructure.Data
                 entity.Property(e => e.Status).HasConversion<int>();
                 entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.UnitCost).HasColumnType("decimal(18,2)");
-                entity.Property(e => e.MinimumStock).HasColumnType("decimal(18,3)");
-                entity.Property(e => e.MaximumStock).HasColumnType("decimal(18,3)");
-                entity.Property(e => e.ReorderLevel).HasColumnType("decimal(18,3)");
+                entity.Property(e => e.MinimumStock).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.MaximumStock).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.ReorderLevel).HasColumnType("decimal(18,2)");
 
                 entity.HasIndex(e => e.ItemCode).IsUnique();
                 entity.HasIndex(e => e.Code).IsUnique().HasFilter("[Code] IS NOT NULL");
@@ -632,15 +633,20 @@ namespace IMS.Infrastructure.Data
                 entity.Property(e => e.Location).HasMaxLength(200);
                 entity.Property(e => e.Status).HasConversion<int>();
 
+                // CRITICAL FIX: Configure RowVersion for optimistic concurrency control
+                entity.Property(e => e.RowVersion)
+                    .IsRowVersion()
+                    .IsConcurrencyToken();
+
                 entity.HasOne(si => si.Store)
                     .WithMany(s => s.StoreItems)
                     .HasForeignKey(si => si.StoreId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX: Prevent cascade delete of all stock
 
                 entity.HasOne(si => si.Item)
                     .WithMany(i => i.StoreItems)
                     .HasForeignKey(si => si.ItemId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX: Prevent cascade delete across all stores
 
                 entity.HasIndex(e => new { e.StoreId, e.ItemId }).IsUnique();
             });
@@ -1083,6 +1089,17 @@ namespace IMS.Infrastructure.Data
                     .HasForeignKey(e => e.StoreId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                // CRITICAL FIX: Add missing foreign key constraints
+                entity.HasOne<Issue>()
+                    .WithMany()
+                    .HasForeignKey(e => e.OriginalIssueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Receive>()
+                    .WithMany()
+                    .HasForeignKey(e => e.ReceiveId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasIndex(e => e.PersonnelBadgeNo);
                 entity.HasIndex(e => e.LifeExpiryDate);
                 entity.HasIndex(e => e.Status);
@@ -1156,6 +1173,113 @@ namespace IMS.Infrastructure.Data
                     .HasForeignKey(e => e.ItemId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // CRITICAL FIX: Add AllotmentLetterRecipient configuration
+            modelBuilder.Entity<AllotmentLetterRecipient>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.RecipientType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.RecipientName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                // AllotmentLetter FK
+                entity.HasOne<AllotmentLetter>()
+                    .WithMany()
+                    .HasForeignKey(e => e.AllotmentLetterId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Organization FKs
+                entity.HasOne<Range>()
+                    .WithMany()
+                    .HasForeignKey(e => e.RangeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Battalion>()
+                    .WithMany()
+                    .HasForeignKey(e => e.BattalionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Zila>()
+                    .WithMany()
+                    .HasForeignKey(e => e.ZilaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Upazila>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UpazilaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Union>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UnionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.AllotmentLetterId);
+                entity.HasIndex(e => e.RecipientType);
+            });
+
+            // CRITICAL FIX: Add AllotmentLetterRecipientItem configuration
+            modelBuilder.Entity<AllotmentLetterRecipientItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.AllottedQuantity)
+                    .HasColumnType("decimal(18,3)");
+
+                entity.Property(e => e.IssuedQuantity)
+                    .HasColumnType("decimal(18,3)");
+
+                entity.HasOne(e => e.Recipient)
+                    .WithMany()
+                    .HasForeignKey(e => e.AllotmentLetterRecipientId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Item)
+                    .WithMany()
+                    .HasForeignKey(e => e.ItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.AllotmentLetterRecipientId);
+                entity.HasIndex(e => e.ItemId);
+            });
+
+            // CRITICAL FIX: Add AllotmentLetterDistribution configuration
+            modelBuilder.Entity<AllotmentLetterDistribution>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.RecipientTitle)
+                    .IsRequired()
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.RecipientTitleBn)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.Address)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.AddressBn)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.Purpose)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.PurposeBn)
+                    .HasMaxLength(500);
+
+                entity.HasOne(e => e.AllotmentLetter)
+                    .WithMany()
+                    .HasForeignKey(e => e.AllotmentLetterId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.AllotmentLetterId);
+                entity.HasIndex(e => e.SerialNo);
+            });
         }
 
         private void ConfigureStockEntities(ModelBuilder modelBuilder)
@@ -1166,6 +1290,32 @@ namespace IMS.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Quantity).HasColumnType("decimal(18,3)");
                 entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
+
+                // CRITICAL FIX: Add foreign key constraints for StockMovement
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(e => e.ItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Store>()
+                    .WithMany()
+                    .HasForeignKey(e => e.StoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Store>()
+                    .WithMany()
+                    .HasForeignKey(e => e.SourceStoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Store>()
+                    .WithMany()
+                    .HasForeignKey(e => e.DestinationStoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => e.ItemId);
+                entity.HasIndex(e => e.StoreId);
+                entity.HasIndex(e => e.MovementDate);
+                entity.HasIndex(e => new { e.ReferenceType, e.ReferenceId });
             });
         }
 

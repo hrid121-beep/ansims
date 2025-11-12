@@ -1,6 +1,7 @@
 ﻿using IMS.Application.DTOs;
 using IMS.Application.Interfaces;
 using IMS.Application.Services;
+using IMS.Application.Helpers;
 using IMS.Domain.Entities;
 using IMS.Domain.Enums;
 using IMS.Web.Attributes;
@@ -147,14 +148,58 @@ namespace IMS.Web.Controllers
         [HasPermission(Permission.CreateAllotmentLetter)]
         public async Task<IActionResult> Create(AllotmentLetterDto dto, IFormFile documentFile)
         {
+            Console.WriteLine("=== CREATE ALLOTMENT LETTER - START ===");
+            Console.WriteLine($"ModelState Valid: {ModelState.IsValid}");
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("=== MODEL STATE ERRORS ===");
+                foreach (var modelError in ModelState)
+                {
+                    if (modelError.Value.Errors.Any())
+                    {
+                        Console.WriteLine($"Key: {modelError.Key}");
+                        foreach (var error in modelError.Value.Errors)
+                        {
+                            Console.WriteLine($"  Error: {error.ErrorMessage}");
+                            if (error.Exception != null)
+                            {
+                                Console.WriteLine($"  Exception: {error.Exception.Message}");
+                            }
+                        }
+                    }
+                }
+
                 await LoadViewBagData();
                 return View(dto);
             }
 
             try
             {
+                Console.WriteLine($"FromStoreId: {dto.FromStoreId}");
+                Console.WriteLine($"ValidFrom: {dto.ValidFrom}");
+                Console.WriteLine($"ValidUntil: {dto.ValidUntil}");
+                Console.WriteLine($"Purpose: {dto.Purpose}");
+                Console.WriteLine($"ReferenceNo (Before Trim): '{dto.ReferenceNo}'");
+                Console.WriteLine($"Recipients Count: {dto.Recipients?.Count ?? 0}");
+                Console.WriteLine($"DistributionList Count: {dto.DistributionList?.Count ?? 0}");
+
+                // IMPORTANT: Remove all whitespace from ReferenceNo (স্মারক নং)
+                if (!string.IsNullOrEmpty(dto.ReferenceNo))
+                {
+                    dto.ReferenceNo = System.Text.RegularExpressions.Regex.Replace(dto.ReferenceNo, @"\s+", "");
+                    Console.WriteLine($"ReferenceNo (After Trim): '{dto.ReferenceNo}'");
+                }
+
+                // Validate Recipients
+                if (dto.Recipients == null || !dto.Recipients.Any())
+                {
+                    Console.WriteLine("ERROR: No recipients provided!");
+                    TempData["Error"] = "Please add at least one recipient with items.";
+                    await LoadViewBagData();
+                    return View(dto);
+                }
+
                 // IMPORTANT: Populate Items from Recipients for government format support
                 // Items list represents table column headers, Recipients.Items contain actual quantities per recipient
                 if (dto.Recipients != null && dto.Recipients.Any())
@@ -163,10 +208,14 @@ namespace IMS.Web.Controllers
 
                     foreach (var recipient in dto.Recipients)
                     {
+                        Console.WriteLine($"Processing Recipient: {recipient.RecipientName}, Items: {recipient.Items?.Count ?? 0}");
+
                         if (recipient.Items != null)
                         {
                             foreach (var recipientItem in recipient.Items)
                             {
+                                Console.WriteLine($"  Item ID: {recipientItem.ItemId}, Qty: {recipientItem.AllottedQuantity}");
+
                                 if (!uniqueItems.ContainsKey(recipientItem.ItemId))
                                 {
                                     uniqueItems[recipientItem.ItemId] = new AllotmentLetterItemDto
@@ -187,11 +236,23 @@ namespace IMS.Web.Controllers
                     }
 
                     dto.Items = uniqueItems.Values.ToList();
+                    Console.WriteLine($"Total unique items aggregated: {dto.Items.Count}");
+                }
+
+                // Log Distribution List
+                if (dto.DistributionList != null && dto.DistributionList.Any())
+                {
+                    Console.WriteLine("=== DISTRIBUTION LIST ===");
+                    foreach (var distEntry in dto.DistributionList)
+                    {
+                        Console.WriteLine($"  {distEntry.SerialNo}. {distEntry.RecipientTitleBn ?? distEntry.RecipientTitle}");
+                    }
                 }
 
                 // Handle document upload
                 if (documentFile != null && documentFile.Length > 0)
                 {
+                    Console.WriteLine($"Document upload: {documentFile.FileName}, Size: {documentFile.Length} bytes");
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "allotments");
                     Directory.CreateDirectory(uploadsFolder);
 
@@ -204,20 +265,42 @@ namespace IMS.Web.Controllers
                     }
 
                     dto.DocumentPath = $"/uploads/allotments/{uniqueFileName}";
+                    Console.WriteLine($"Document saved: {dto.DocumentPath}");
                 }
 
                 dto.CreatedBy = User.Identity.Name;
+                Console.WriteLine($"CreatedBy: {dto.CreatedBy}");
+
+                Console.WriteLine("Calling CreateAllotmentLetterAsync...");
                 var result = await _allotmentLetterService.CreateAllotmentLetterAsync(dto);
+                Console.WriteLine($"SUCCESS! Created Allotment Letter #{result.AllotmentNo}, ID: {result.Id}");
 
                 TempData["Success"] = $"Allotment Letter #{result.AllotmentNo} created successfully!";
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating allotment letter");
-                TempData["Error"] = "Failed to create allotment letter.";
+                Console.WriteLine("=== EXCEPTION OCCURRED ===");
+                Console.WriteLine($"Exception Type: {ex.GetType().FullName}");
+                Console.WriteLine($"Exception Message: {ex.Message}");
+                Console.WriteLine($"Stack Trace:\n{ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("=== INNER EXCEPTION ===");
+                    Console.WriteLine($"Inner Exception Type: {ex.InnerException.GetType().FullName}");
+                    Console.WriteLine($"Inner Exception Message: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner Stack Trace:\n{ex.InnerException.StackTrace}");
+                }
+
+                _logger.LogError(ex, "Error creating allotment letter: {Message}", ex.Message);
+                TempData["Error"] = $"Failed to create allotment letter: {ex.Message}";
                 await LoadViewBagData();
                 return View(dto);
+            }
+            finally
+            {
+                Console.WriteLine("=== CREATE ALLOTMENT LETTER - END ===");
             }
         }
 
@@ -261,19 +344,64 @@ namespace IMS.Web.Controllers
         [HasPermission(Permission.EditAllotmentLetter)]
         public async Task<IActionResult> Edit(int id, AllotmentLetterDto dto, IFormFile documentFile)
         {
+            Console.WriteLine("=== EDIT ALLOTMENT LETTER - START ===");
+            Console.WriteLine($"Allotment ID: {id}");
+            Console.WriteLine($"DTO ID: {dto.Id}");
+
             if (id != dto.Id)
             {
+                Console.WriteLine("ERROR: ID mismatch!");
                 return NotFound();
             }
 
+            Console.WriteLine($"ModelState Valid: {ModelState.IsValid}");
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("=== MODEL STATE ERRORS ===");
+                foreach (var modelError in ModelState)
+                {
+                    if (modelError.Value.Errors.Any())
+                    {
+                        Console.WriteLine($"Key: {modelError.Key}");
+                        foreach (var error in modelError.Value.Errors)
+                        {
+                            Console.WriteLine($"  Error: {error.ErrorMessage}");
+                            if (error.Exception != null)
+                            {
+                                Console.WriteLine($"  Exception: {error.Exception.Message}");
+                            }
+                        }
+                    }
+                }
+
                 await LoadViewBagData();
                 return View(dto);
             }
 
             try
             {
+                Console.WriteLine($"FromStoreId: {dto.FromStoreId}");
+                Console.WriteLine($"ReferenceNo (Before Trim): '{dto.ReferenceNo}'");
+                Console.WriteLine($"Recipients Count: {dto.Recipients?.Count ?? 0}");
+                Console.WriteLine($"DistributionList Count: {dto.DistributionList?.Count ?? 0}");
+
+                // IMPORTANT: Remove all whitespace from ReferenceNo (স্মারক নং)
+                if (!string.IsNullOrEmpty(dto.ReferenceNo))
+                {
+                    dto.ReferenceNo = System.Text.RegularExpressions.Regex.Replace(dto.ReferenceNo, @"\s+", "");
+                    Console.WriteLine($"ReferenceNo (After Trim): '{dto.ReferenceNo}'");
+                }
+
+                // Validate Recipients
+                if (dto.Recipients == null || !dto.Recipients.Any())
+                {
+                    Console.WriteLine("ERROR: No recipients provided!");
+                    TempData["Error"] = "Please add at least one recipient with items.";
+                    await LoadViewBagData();
+                    return View(dto);
+                }
+
                 // IMPORTANT: Populate Items from Recipients for government format support
                 // Items list represents table column headers, Recipients.Items contain actual quantities per recipient
                 if (dto.Recipients != null && dto.Recipients.Any())
@@ -282,10 +410,14 @@ namespace IMS.Web.Controllers
 
                     foreach (var recipient in dto.Recipients)
                     {
+                        Console.WriteLine($"Processing Recipient: {recipient.RecipientName}, Items: {recipient.Items?.Count ?? 0}");
+
                         if (recipient.Items != null)
                         {
                             foreach (var recipientItem in recipient.Items)
                             {
+                                Console.WriteLine($"  Item ID: {recipientItem.ItemId}, Qty: {recipientItem.AllottedQuantity}");
+
                                 if (!uniqueItems.ContainsKey(recipientItem.ItemId))
                                 {
                                     uniqueItems[recipientItem.ItemId] = new AllotmentLetterItemDto
@@ -306,11 +438,23 @@ namespace IMS.Web.Controllers
                     }
 
                     dto.Items = uniqueItems.Values.ToList();
+                    Console.WriteLine($"Total unique items aggregated: {dto.Items.Count}");
+                }
+
+                // Log Distribution List
+                if (dto.DistributionList != null && dto.DistributionList.Any())
+                {
+                    Console.WriteLine("=== DISTRIBUTION LIST ===");
+                    foreach (var distEntry in dto.DistributionList)
+                    {
+                        Console.WriteLine($"  {distEntry.SerialNo}. {distEntry.RecipientTitleBn ?? distEntry.RecipientTitle}");
+                    }
                 }
 
                 // Handle document upload
                 if (documentFile != null && documentFile.Length > 0)
                 {
+                    Console.WriteLine($"Document upload: {documentFile.FileName}, Size: {documentFile.Length} bytes");
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "allotments");
                     Directory.CreateDirectory(uploadsFolder);
 
@@ -323,20 +467,42 @@ namespace IMS.Web.Controllers
                     }
 
                     dto.DocumentPath = $"/uploads/allotments/{uniqueFileName}";
+                    Console.WriteLine($"Document saved: {dto.DocumentPath}");
                 }
 
                 dto.UpdatedBy = User.Identity.Name;
+                Console.WriteLine($"UpdatedBy: {dto.UpdatedBy}");
+
+                Console.WriteLine("Calling UpdateAllotmentLetterAsync...");
                 var result = await _allotmentLetterService.UpdateAllotmentLetterAsync(dto);
+                Console.WriteLine($"SUCCESS! Updated Allotment Letter ID: {result.Id}");
 
                 TempData["Success"] = "Allotment Letter updated successfully!";
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating allotment letter");
-                TempData["Error"] = "Failed to update allotment letter.";
+                Console.WriteLine("=== EXCEPTION OCCURRED ===");
+                Console.WriteLine($"Exception Type: {ex.GetType().FullName}");
+                Console.WriteLine($"Exception Message: {ex.Message}");
+                Console.WriteLine($"Stack Trace:\n{ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("=== INNER EXCEPTION ===");
+                    Console.WriteLine($"Inner Exception Type: {ex.InnerException.GetType().FullName}");
+                    Console.WriteLine($"Inner Exception Message: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner Stack Trace:\n{ex.InnerException.StackTrace}");
+                }
+
+                _logger.LogError(ex, "Error updating allotment letter: {Message}", ex.Message);
+                TempData["Error"] = $"Failed to update allotment letter: {ex.Message}";
                 await LoadViewBagData();
                 return View(dto);
+            }
+            finally
+            {
+                Console.WriteLine("=== EDIT ALLOTMENT LETTER - END ===");
             }
         }
 
@@ -345,26 +511,34 @@ namespace IMS.Web.Controllers
         [HasPermission(Permission.CreateAllotmentLetter)]
         public async Task<IActionResult> SubmitForApproval(int id)
         {
+            Console.WriteLine($"=== SUBMIT FOR APPROVAL - ID: {id} ===");
+
             try
             {
                 var result = await _allotmentLetterService.SubmitForApprovalAsync(id, User.Identity.Name);
+                Console.WriteLine($"Submit result - Success: {result.Success}, Message: {result.Message}");
 
                 if (result.Success)
                 {
                     TempData["Success"] = "Allotment Letter submitted for approval successfully!";
+                    return Json(new { success = true, message = "Allotment Letter submitted for approval successfully!" });
                 }
                 else
                 {
                     TempData["Error"] = result.Message ?? "Failed to submit allotment letter for approval.";
+                    return Json(new { success = false, message = result.Message ?? "Failed to submit allotment letter for approval." });
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"=== EXCEPTION in SubmitForApproval ===");
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
                 _logger.LogError(ex, "Error submitting allotment letter {Id} for approval", id);
                 TempData["Error"] = "An error occurred while submitting for approval.";
+                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
-
-            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
@@ -479,20 +653,10 @@ namespace IMS.Web.Controllers
         }
 
         // Helper method to convert English date to Bengali date
+        // Returns both Bengali calendar and Gregorian date in Bengali format
         private string ConvertToBengaliDate(DateTime date)
         {
-            // Simple conversion - you can enhance this with proper Bengali calendar conversion
-            var months = new[] { "বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "শ্রাবণ", "ভাদ্র", "আশ্বিন",
-                                "কার্তিক", "অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন", "চৈত্র" };
-
-            // Rough approximation: Bengali month ≈ English month + 1 (with adjustments)
-            int bengaliMonth = date.Month;
-            int bengaliYear = date.Year - 593; // Bengali calendar is ~593 years behind Gregorian
-
-            if (date.Month >= 4) bengaliMonth = date.Month - 3;
-            else { bengaliMonth = date.Month + 9; bengaliYear--; }
-
-            return $"{months[bengaliMonth - 1]} {bengaliYear} বঙ্গাব্দ";
+            return BengaliDateHelper.GetCompleteDateString(date);
         }
 
         // API Endpoints for cascading dropdowns

@@ -20,19 +20,19 @@ namespace IMS.Application.Services
             _unitOfWork = unitOfWork;
             _logger = logger;  
         }
-        public async Task<string> GenerateItemCodeAsync(int subCategoryId)
+        public async Task<string> GenerateItemCodeAsync(int? subCategoryId)
         {
             try
             {
-                // Handle case when called from Create form with subCategoryId = 0
-                if (subCategoryId <= 0)
+                // Handle case when called from Create form with subCategoryId = 0 or null
+                if (!subCategoryId.HasValue || subCategoryId.Value <= 0)
                 {
                     // Generate a temporary code that will be replaced when actual subcategory is selected
                     var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
                     return $"TEMP-{timestamp}";
                 }
 
-                var subCategory = await _unitOfWork.SubCategories.GetByIdAsync(subCategoryId);
+                var subCategory = await _unitOfWork.SubCategories.GetByIdAsync(subCategoryId.Value);
 
                 // Check if subcategory exists
                 if (subCategory == null)
@@ -213,19 +213,26 @@ namespace IMS.Application.Services
                     Description = item.Description,
                     SubCategoryId = item.SubCategoryId,
                     SubCategoryName = subCategory?.Name,
-                    CategoryId = subCategory?.CategoryId ?? 0,  // <-- ADD THIS LINE
+                    CategoryId = subCategory?.CategoryId ?? 0,
                     CategoryName = category?.Name,
                     ItemModelId = item.ItemModelId,
                     ModelName = model?.Name,
-                    BrandId = item.BrandId,  // ✅ FIX: Use item.BrandId
+                    BrandId = item.BrandId,
                     BrandName = brand?.Name,
                     Type = item.Type,
                     Unit = item.Unit,
                     MinimumStock = item.MinimumStock,
                     CurrentStock = currentStock,
-                    ReorderLevel = item.ReorderLevel,  // Add this if you're keeping ReorderLevel
+                    ReorderLevel = item.ReorderLevel,
                     IsActive = item.IsActive,
-                    CreatedAt = item.CreatedAt
+                    CreatedAt = item.CreatedAt,
+                    UnitCost = item.UnitCost,  // ✅ ADDED - This is the fix!
+
+                    // Image and Barcode fields - ADDED
+                    ImagePath = item.ImagePath,
+                    ItemImage = item.ItemImage,
+                    BarcodePath = item.BarcodePath,
+                    QRCodeData = item.QRCodeData
                 });
             }
 
@@ -307,6 +314,13 @@ namespace IMS.Application.Services
                 Location = storeItem?.Location,  // From StoreItems
                 CurrentStock = currentStock,  // Calculated
 
+                // Master Catalogue fields
+                CatalogueLedgerNo = item.CatalogueLedgerNo,
+                CataloguePageNo = item.CataloguePageNo,
+                CatalogueEntryDate = item.CatalogueEntryDate,
+                FirstReceivedDate = item.FirstReceivedDate,
+                CatalogueRemarks = item.CatalogueRemarks,
+
                 // Audit
                 CreatedAt = item.CreatedAt,
                 CreatedBy = item.CreatedBy,
@@ -329,7 +343,7 @@ namespace IMS.Application.Services
                 ItemCode = await GenerateItemCodeAsync(itemDto.SubCategoryId),
                 Name = itemDto.Name,
                 Description = itemDto.Description,
-                SubCategoryId = itemDto.SubCategoryId,
+                SubCategoryId = itemDto.SubCategoryId ?? 0,
                 ItemModelId = itemDto.ItemModelId,
                 Type = itemDto.Type,
                 Unit = itemDto.Unit,
@@ -387,7 +401,7 @@ namespace IMS.Application.Services
             item.Description = itemDto.Description;
             item.Code = itemDto.Code;
             item.CategoryId = itemDto.CategoryId;
-            item.SubCategoryId = itemDto.SubCategoryId;
+            item.SubCategoryId = itemDto.SubCategoryId ?? item.SubCategoryId;
             item.BrandId = itemDto.BrandId;
             item.ItemModelId = itemDto.ItemModelId;
             item.Type = itemDto.Type;
@@ -424,6 +438,13 @@ namespace IMS.Application.Services
             item.Barcode = itemDto.Barcode;
             item.BarcodePath = itemDto.BarcodePath;
             item.QRCodeData = itemDto.QRCodeData;
+
+            // Master Catalogue fields
+            item.CatalogueLedgerNo = itemDto.CatalogueLedgerNo;
+            item.CataloguePageNo = itemDto.CataloguePageNo;
+            item.CatalogueEntryDate = itemDto.CatalogueEntryDate;
+            item.FirstReceivedDate = itemDto.FirstReceivedDate;
+            item.CatalogueRemarks = itemDto.CatalogueRemarks;
 
             // Status & Audit
             item.IsActive = itemDto.IsActive;

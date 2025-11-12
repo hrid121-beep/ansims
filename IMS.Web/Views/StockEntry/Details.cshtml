@@ -119,6 +119,21 @@
                                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
+                                <button type="button" class="btn btn-sm btn-info" onclick="submitForApproval(@Model.Id)">
+                                    <i class="fas fa-paper-plane"></i> Submit for Approval
+                                </button>
+                            }
+                            @if (Model.Status == "Submitted")
+                            {
+                                <button type="button" class="btn btn-sm btn-success" onclick="approveEntry(@Model.Id)">
+                                    <i class="fas fa-check-circle"></i> Approve
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="rejectEntry(@Model.Id)">
+                                    <i class="fas fa-times-circle"></i> Reject
+                                </button>
+                            }
+                            @if (Model.Status == "Approved")
+                            {
                                 <button type="button" class="btn btn-sm btn-success" onclick="completeEntry(@Model.Id)">
                                     <i class="fas fa-check"></i> Complete
                                 </button>
@@ -162,6 +177,15 @@
                                                 break;
                                             case "Draft":
                                                 <span class="badge badge-warning">Draft</span>
+                                                break;
+                                            case "Submitted":
+                                                <span class="badge badge-info">Submitted for Approval</span>
+                                                break;
+                                            case "Approved":
+                                                <span class="badge badge-primary">Approved</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge badge-danger">Rejected</span>
                                                 break;
                                             case "Cancelled":
                                                 <span class="badge badge-danger">Cancelled</span>
@@ -208,6 +232,68 @@
                 </div>
             </div>
         </div>
+
+        <!-- Approval History -->
+        @if (!string.IsNullOrEmpty(Model.SubmittedBy) || !string.IsNullOrEmpty(Model.ApprovedBy) || !string.IsNullOrEmpty(Model.RejectedBy))
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i> Approval History
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @if (!string.IsNullOrEmpty(Model.SubmittedBy))
+                                {
+                                    <div class="col-md-4">
+                                        <dl>
+                                            <dt><i class="fas fa-paper-plane text-info"></i> Submitted By:</dt>
+                                            <dd>@Model.SubmittedBy</dd>
+                                            <dt>Submitted Date:</dt>
+                                            <dd>@Model.SubmittedDate?.ToString("dd-MMM-yyyy HH:mm")</dd>
+                                        </dl>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                                {
+                                    <div class="col-md-4">
+                                        <dl>
+                                            <dt><i class="fas fa-check-circle text-success"></i> Approved By:</dt>
+                                            <dd>@Model.ApprovedBy</dd>
+                                            <dt>Approved Date:</dt>
+                                            <dd>@Model.ApprovedDate?.ToString("dd-MMM-yyyy HH:mm")</dd>
+                                        </dl>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.RejectedBy))
+                                {
+                                    <div class="col-md-4">
+                                        <dl>
+                                            <dt><i class="fas fa-times-circle text-danger"></i> Rejected By:</dt>
+                                            <dd>@Model.RejectedBy</dd>
+                                            <dt>Rejected Date:</dt>
+                                            <dd>@Model.RejectedDate?.ToString("dd-MMM-yyyy HH:mm")</dd>
+                                            @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                                            {
+                                                <dt>Rejection Reason:</dt>
+                                                <dd>
+                                                    <div class="alert alert-danger mb-0">
+                                                        <i class="fas fa-exclamation-triangle"></i> @Model.RejectionReason
+                                                    </div>
+                                                </dd>
+                                            }
+                                        </dl>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
 
         <!-- Items Details -->
         <div class="row">
@@ -305,6 +391,228 @@
 
 @section Scripts {
     <script>
+        function submitForApproval(id) {
+            Swal.fire({
+                title: 'Submit for Approval?',
+                text: "This will submit the stock entry for approval.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#17a2b8',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Yes, Submit!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    title: 'swal-title-bold',
+                    content: 'swal-content-bold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("SubmitForApproval", "StockEntry")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Submitted!',
+                                text: 'Stock entry submitted for approval successfully',
+                                confirmButtonColor: '#28a745',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            let errorMessage = xhr.responseJSON?.message || 'Failed to submit stock entry for approval';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage,
+                                confirmButtonColor: '#dc3545',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function approveEntry(id) {
+            Swal.fire({
+                title: 'Approve Stock Entry?',
+                html: '<textarea id="approvalComments" class="swal2-input" placeholder="Optional comments..." style="width: 80%; height: 80px; font-size: 1rem;"></textarea>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Yes, Approve!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    title: 'swal-title-bold',
+                    content: 'swal-content-bold'
+                },
+                preConfirm: () => {
+                    return {
+                        comments: document.getElementById('approvalComments').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("Approve", "StockEntry")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            comments: result.value.comments,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Approved!',
+                                text: 'Stock entry approved successfully',
+                                confirmButtonColor: '#28a745',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            let errorMessage = xhr.responseJSON?.message || 'Failed to approve stock entry';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage,
+                                confirmButtonColor: '#dc3545',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function rejectEntry(id) {
+            Swal.fire({
+                title: 'Reject Stock Entry?',
+                html: '<textarea id="rejectionReason" class="swal2-input" placeholder="Rejection reason (required)..." style="width: 80%; height: 80px; font-size: 1rem;"></textarea>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Reject',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    title: 'swal-title-bold',
+                    content: 'swal-content-bold'
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('rejectionReason').value;
+                    if (!reason || reason.trim() === '') {
+                        Swal.showValidationMessage('Rejection reason is required');
+                        return false;
+                    }
+                    return { reason: reason };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("Reject", "StockEntry")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            reason: result.value.reason,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Rejected',
+                                text: 'Stock entry rejected',
+                                confirmButtonColor: '#28a745',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            let errorMessage = xhr.responseJSON?.message || 'Failed to reject stock entry';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage,
+                                confirmButtonColor: '#dc3545',
+                                customClass: {
+                                    title: 'swal-title-bold',
+                                    content: 'swal-content-bold'
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
         function completeEntry(id) {
             Swal.fire({
                 title: 'Complete Stock Entry?',

@@ -2022,6 +2022,7 @@ namespace IMS.Application.Services
                     Unit = ss.Item?.Unit ?? "Piece",
                     UnitPrice = ss.Item?.UnitPrice ?? 0,
                     TotalValue = ss.Quantity * (ss.Item?.UnitPrice ?? 0),
+                    Barcode = ss.Item?.Barcode ?? "",
                     IsActive = ss.Item?.IsActive ?? false
                 }).ToList();
             }
@@ -2152,6 +2153,7 @@ namespace IMS.Application.Services
                     ReorderLevel = si.ReorderLevel,
                     Unit = si.Item?.Unit ?? "Piece",
                     Location = si.Location,
+                    Barcode = si.Item?.Barcode ?? "",
                     IsActive = si.IsActive
                 }).ToList();
             }

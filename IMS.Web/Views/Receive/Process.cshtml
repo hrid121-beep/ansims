@@ -30,15 +30,89 @@
                         <h3 class="card-title">Receive Details - #@Model.ReceiveNo</h3>
                     </div>
                     <div class="card-body">
+                        @* Show warning if critical data is missing *@
+                        @if (!Model.StoreId.HasValue || !Model.OriginalIssueId.HasValue)
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Incomplete Data:</strong> This receive is missing some required information. Please complete before processing.
+                            </div>
+                        }
+
                         <dl class="row">
                             <dt class="col-sm-3">Original Issue:</dt>
-                            <dd class="col-sm-9">@Model.OriginalIssueNo</dd>
+                            <dd class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.OriginalIssueNo))
+                                {
+                                    <strong>@Model.OriginalIssueNo</strong>
+                                }
+                                else if (ViewBag.OriginalIssue != null)
+                                {
+                                    <strong>@ViewBag.OriginalIssue.IssueNo</strong>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not linked to any issue</span>
+                                }
+                            </dd>
 
                             <dt class="col-sm-3">Voucher No:</dt>
-                            <dd class="col-sm-9">@Model.OriginalVoucherNo</dd>
+                            <dd class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.OriginalVoucherNo))
+                                {
+                                    @Model.OriginalVoucherNo
+                                }
+                                else if (ViewBag.OriginalIssue != null)
+                                {
+                                    @ViewBag.OriginalIssue.VoucherNumber
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </dd>
 
                             <dt class="col-sm-3">Received From:</dt>
-                            <dd class="col-sm-9">@Model.ReceivedFromType - @Model.ReceivedFromName</dd>
+                            <dd class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.ReceivedFromName))
+                                {
+                                    <text>@Model.ReceivedFromType - @Model.ReceivedFromName</text>
+                                }
+                                else if (ViewBag.OriginalIssue != null)
+                                {
+                                    <span class="badge badge-info">Issue: @ViewBag.OriginalIssue.IssueNo</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Unknown</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-3">Receiving Store:</dt>
+                            <dd class="col-sm-9">
+                                @if (!Model.StoreId.HasValue || Model.StoreId.Value == 0)
+                                {
+                                    <div class="form-group mb-0">
+                                        <select id="storeIdSelect" class="form-control form-control-sm" required>
+                                            <option value="">-- Select Receiving Store --</option>
+                                            @if (ViewBag.Stores != null)
+                                            {
+                                                foreach (var store in ViewBag.Stores)
+                                                {
+                                                    <option value="@store.Id">@store.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-danger">Please select the store where items were received</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-warehouse"></i> @Model.StoreName
+                                    </span>
+                                }
+                            </dd>
 
                             <dt class="col-sm-3">Date:</dt>
                             <dd class="col-sm-9">@Model.ReceiveDate.ToString("dd-MMM-yyyy")</dd>
@@ -54,7 +128,6 @@
                                         <th>Issued Qty</th>
                                         <th>Received Qty</th>
                                         <th>Condition</th>
-                                        <th>Photo</th>
                                         <th>Notes</th>
                                     </tr>
                                 </thead>
@@ -63,8 +136,31 @@
                                     {
                                         <tr data-item-id="@item.ItemId">
                                             <td>
-                                                @item.ItemName<br>
-                                                <small class="text-muted">@item.ItemCode</small>
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                    {
+                                                        <img src="/@item.ImagePath"
+                                                             alt="@item.ItemName"
+                                                             class="img-thumbnail mr-2"
+                                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mr-2"
+                                                             style="width: 50px; height: 50px; display: none;">
+                                                            <i class="fas fa-box fa-2x text-muted"></i>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mr-2"
+                                                             style="width: 50px; height: 50px;">
+                                                            <i class="fas fa-box fa-2x text-muted"></i>
+                                                        </div>
+                                                    }
+                                                    <div>
+                                                        <strong>@item.ItemName</strong><br>
+                                                        <small class="text-muted">@item.ItemCode</small>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td>@(item.IssuedQuantity ?? item.Quantity ?? 0) @item.Unit</td>
                                             <td>
@@ -80,14 +176,6 @@
                                                     <option value="Damaged">Damaged</option>
                                                     <option value="Missing">Missing</option>
                                                 </select>
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-secondary damage-photo-btn"
-                                                        data-item-id="@item.ItemId" style="display:none;">
-                                                    <i class="fas fa-camera"></i>
-                                                </button>
-                                                <canvas class="damage-canvas" id="canvas-@item.ItemId" 
-                                                        style="display:none;" width="320" height="240"></canvas>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control form-control-sm item-notes"

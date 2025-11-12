@@ -2,6 +2,7 @@
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
 using IMS.Domain.Enums;
+using IMS.Web.Attributes;
 using IMS.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -181,10 +182,28 @@ namespace IMS.Web.Controllers
 
         [HttpGet]
         [Route("api/dashboard/pendingcounts")]
+        [HasPermission(Permission.ViewDashboard)]
         public async Task<IActionResult> GetPendingCounts()
         {
             try
             {
+                // Return zeros if user is not authenticated
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Json(new
+                    {
+                        requisitions = 0,
+                        purchases = 0,
+                        issues = 0,
+                        adjustments = 0,
+                        transfers = 0,
+                        allotments = 0,
+                        stockEntries = 0,
+                        lowStock = 0,
+                        expiringBatches = 0
+                    });
+                }
+
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
@@ -197,6 +216,7 @@ namespace IMS.Web.Controllers
                         adjustments = 0,
                         transfers = 0,
                         allotments = 0,
+                        stockEntries = 0,
                         lowStock = 0,
                         expiringBatches = 0
                     });
@@ -280,6 +300,31 @@ namespace IMS.Web.Controllers
                 var lowStockCount = await _unitOfWork.StoreItems
                     .CountAsync(si => si.IsActive && si.Quantity <= si.MinimumStock && si.Quantity > 0);
 
+                // Get Stock Entry approvals count (uses direct approval fields, not ApprovalRequest table)
+                int stockEntryCount = 0;
+                try
+                {
+                    var pendingStockEntries = await _unitOfWork.StockEntries
+                        .GetAllAsync(se => se.Status == "Submitted" && se.IsActive);
+
+                    // Check if user can approve stock entries
+                    bool canApprove = userRoles.Contains("Admin") ||
+                                     userRoles.Contains("StoreManager") ||
+                                     userRoles.Contains("Director") ||
+                                     userRoles.Contains("DDStore") ||
+                                     userRoles.Contains("ADStore");
+
+                    if (canApprove)
+                    {
+                        stockEntryCount = pendingStockEntries.Count();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error if needed
+                    stockEntryCount = 0;
+                }
+
                 // Get expiring batches count using BatchTrackings entity
                 var expiringBatchCount = 0;
                 try
@@ -306,6 +351,7 @@ namespace IMS.Web.Controllers
                     adjustments = adjustmentCount,
                     transfers = transferCount,
                     allotments = allotmentCount,
+                    stockEntries = stockEntryCount,
                     lowStock = lowStockCount,
                     expiringBatches = expiringBatchCount
                 });
@@ -374,6 +420,7 @@ namespace IMS.Web.Controllers
         }
 
         [HttpPost]
+        [HasPermission(Permission.ViewDashboard)]
         public async Task<IActionResult> RefreshDashboard()
         {
             try
@@ -388,6 +435,7 @@ namespace IMS.Web.Controllers
         }
 
         [HttpGet]
+        [HasPermission(Permission.ViewDashboard)]
         public async Task<IActionResult> GetChartData(string chartType)
         {
             switch (chartType?.ToLower())

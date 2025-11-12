@@ -24,6 +24,7 @@ namespace IMS.Application.Services
         private readonly IBarcodeService _barcodeService;
         private readonly IFileService _fileService;
         private readonly IIssueService _issueService;
+        private readonly IVoucherService _voucherService;
         private readonly ILogger<ReceiveService> _logger;
 
         public ReceiveService(
@@ -32,6 +33,7 @@ namespace IMS.Application.Services
             IBarcodeService barcodeService,
             IFileService fileService,
             IIssueService issueService,
+            IVoucherService voucherService,
             IPersonnelItemLifeService personnelItemLifeService,
             IActivityLogService activityLogService,
             ILogger<ReceiveService> logger)
@@ -41,6 +43,7 @@ namespace IMS.Application.Services
             _barcodeService = barcodeService;
             _fileService = fileService;
             _issueService = issueService;
+            _voucherService = voucherService;
             _activityLogService = activityLogService;
             _logger = logger;
             _personnelItemLifeService = personnelItemLifeService;
@@ -69,6 +72,14 @@ namespace IMS.Application.Services
                     var item = await _unitOfWork.Items.GetByIdAsync(ri.ItemId);
                     var store = await _unitOfWork.Stores.GetByIdAsync(ri.StoreId);
 
+                    // Get category name
+                    string categoryName = null;
+                    if (item?.CategoryId > 0)
+                    {
+                        var category = await _unitOfWork.Categories.GetByIdAsync(item.CategoryId);
+                        categoryName = category?.Name;
+                    }
+
                     // Get issued quantity from original issue if available
                     var issueItem = issueItems?.FirstOrDefault(ii => ii.ItemId == ri.ItemId);
 
@@ -77,6 +88,8 @@ namespace IMS.Application.Services
                         ItemId = ri.ItemId,
                         ItemCode = item?.Code,
                         ItemName = item?.Name,
+                        CategoryName = categoryName,
+                        ImagePath = item?.ImagePath,  // Add item image
                         StoreId = ri.StoreId,
                         StoreName = store?.Name,
                         Quantity = ri.Quantity,
@@ -169,6 +182,14 @@ namespace IMS.Application.Services
                 var item = await _unitOfWork.Items.GetByIdAsync(ri.ItemId);
                 var store = await _unitOfWork.Stores.GetByIdAsync(ri.StoreId);
 
+                // Get category name
+                string categoryName = null;
+                if (item?.CategoryId > 0)
+                {
+                    var category = await _unitOfWork.Categories.GetByIdAsync(item.CategoryId);
+                    categoryName = category?.Name;
+                }
+
                 // Get issued quantity from original issue if available
                 var issueItem = issueItems?.FirstOrDefault(ii => ii.ItemId == ri.ItemId);
 
@@ -177,6 +198,8 @@ namespace IMS.Application.Services
                     ItemId = ri.ItemId,
                     ItemCode = item?.Code,
                     ItemName = item?.Name,
+                    CategoryName = categoryName,
+                    ImagePath = item?.ImagePath,  // Add item image
                     StoreId = ri.StoreId,
                     StoreName = store?.Name,
                     Quantity = ri.Quantity,
@@ -245,6 +268,14 @@ namespace IMS.Application.Services
                     ReceivedFromIndividualName = receiveDto.ReceivedFromIndividualName,
                     ReceivedFromIndividualBadgeNo = receiveDto.ReceivedFromIndividualBadgeNo,
                     ReceivedBy = receiveDto.ReceivedBy ?? _userContext.CurrentUserName,
+                    StoreId = receiveDto.StoreId,
+                    OriginalIssueId = receiveDto.OriginalIssueId,
+                    OriginalIssueNo = receiveDto.OriginalIssueNo,
+                    OriginalVoucherNo = receiveDto.OriginalVoucherNo,
+                    ReceiverName = receiveDto.ReceiverName,
+                    ReceiverBadgeNo = receiveDto.ReceiverBadgeNo,
+                    ReceiverDesignation = receiveDto.ReceiverDesignation,
+                    ReceiverSignature = receiveDto.ReceiverSignature,
                     OverallCondition = receiveDto.OverallCondition ?? "Good",
                     AssessmentNotes = receiveDto.AssessmentNotes,
                     AssessedBy = receiveDto.ReceivedBy ?? _userContext.CurrentUserName,
@@ -368,6 +399,8 @@ namespace IMS.Application.Services
                     await _unitOfWork.ReceiveItems.AddAsync(receiveItem);
 
                     // Update stock based on condition
+                    // This method creates receive with Status="Completed" so stock is updated immediately
+                    // CompleteReceiveAsync has a check to prevent double-counting (line 977)
                     if (itemDto.Condition != "Damaged")
                     {
                         var storeItem = await _unitOfWork.StoreItems.SingleOrDefaultAsync(
@@ -647,6 +680,8 @@ namespace IMS.Application.Services
         {
             switch (receive.ReceiveType)
             {
+                case "Issue":
+                    return receive.OriginalIssue?.IssueNo ?? receive.OriginalIssueNo ?? $"Issue ID: {receive.OriginalIssueId}";
                 case "Battalion":
                     return receive.ReceivedFromBattalion?.Name ?? $"Battalion ID: {receive.ReceivedFromBattalionId}";
                 case "Range":
@@ -776,11 +811,20 @@ namespace IMS.Application.Services
                     var item = await _unitOfWork.Items.GetByIdAsync(barcodeEntity.ItemId);
                     if (item != null)
                     {
+                        // Get category name
+                        string categoryName = null;
+                        if (item.CategoryId > 0)
+                        {
+                            var category = await _unitOfWork.Categories.GetByIdAsync(item.CategoryId);
+                            categoryName = category?.Name;
+                        }
+
                         receiveDto.Items.Add(new ReceiveItemDto
                         {
                             ItemId = item.Id,
                             ItemCode = item.Code,
                             ItemName = item.Name,
+                            CategoryName = categoryName,
                             Quantity = 1,
                             Condition = "Good"
                         });
@@ -996,6 +1040,14 @@ namespace IMS.Application.Services
                 var receive = await _unitOfWork.Receives.GetByIdAsync(receiveId);
                 if (receive == null) throw new InvalidOperationException("Receive not found");
 
+                // ✅ FIX: Validate that StoreId is set
+                if (!receive.StoreId.HasValue || receive.StoreId.Value == 0)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogError($"Receive {receiveId} has no StoreId set. Cannot complete receive.");
+                    throw new InvalidOperationException("Receive must have a store selected before completion");
+                }
+
                 // ✅ FIX: Prevent double stock addition if already completed
                 if (receive.Status == "Completed")
                 {
@@ -1006,19 +1058,37 @@ namespace IMS.Application.Services
 
                 var receiveItems = await _unitOfWork.ReceiveItems.FindAsync(ri => ri.ReceiveId == receiveId);
 
+                // ✅ FIX: Validate that receive has items
+                if (!receiveItems.Any())
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogError($"Receive {receiveId} has no items. Cannot complete receive.");
+                    throw new InvalidOperationException("Receive must have at least one item before completion");
+                }
+
                 // Update stock for each item
                 foreach (var item in receiveItems)
                 {
+                    // ✅ FIX: Use receive's StoreId if item's StoreId is null
+                    var targetStoreId = item.StoreId ?? receive.StoreId.Value;
+
+                    // Update item.StoreId if it was null
+                    if (!item.StoreId.HasValue && receive.StoreId.HasValue)
+                    {
+                        item.StoreId = receive.StoreId.Value;
+                        _unitOfWork.ReceiveItems.Update(item);
+                    }
+
                     // Get store item
                     var storeItem = await _unitOfWork.StoreItems.FirstOrDefaultAsync(
-                        si => si.ItemId == item.ItemId && si.StoreId == item.StoreId);
+                        si => si.ItemId == item.ItemId && si.StoreId == targetStoreId);
 
                     if (storeItem == null)
                     {
                         // Create new store item if not exists
                         storeItem = new StoreItem
                         {
-                            StoreId = item.StoreId,
+                            StoreId = targetStoreId,
                             ItemId = item.ItemId,
                             Quantity = 0,
                             MinimumStock = 0,
@@ -1032,10 +1102,13 @@ namespace IMS.Application.Services
                         await _unitOfWork.StoreItems.AddAsync(storeItem);
                     }
 
+                    // ✅ FIX: Use Quantity if ReceivedQuantity is null
+                    var receivedQty = item.ReceivedQuantity ?? item.Quantity;
+
                     // Update quantity based on condition
                     if (item.Condition != "Damaged")
                     {
-                        storeItem.Quantity += item.ReceivedQuantity;
+                        storeItem.Quantity += receivedQty;
                     }
 
                     storeItem.UpdatedAt = DateTime.UtcNow;
@@ -1046,18 +1119,18 @@ namespace IMS.Application.Services
                     var movement = new StockMovement
                     {
                         ItemId = item.ItemId,
-                        StoreId = item.StoreId,
+                        StoreId = targetStoreId,
                         MovementType = "Receive",
-                        Quantity = item.ReceivedQuantity,
+                        Quantity = receivedQty,
                         MovementDate = DateTime.Now,
                         ReferenceType = "Receive",
                         ReferenceId = receive.Id,
                         ReferenceNo = receive.ReceiveNo,
                         SourceStoreId = null,
-                        DestinationStoreId = item.StoreId,
+                        DestinationStoreId = targetStoreId,
                         Remarks = $"Received from {receive.ReceivedFromType}",
                         MovedBy = completedBy,
-                        OldBalance = (decimal)(storeItem.Quantity - item.ReceivedQuantity),
+                        OldBalance = (decimal)(storeItem.Quantity - receivedQty),
                         NewBalance = (decimal)storeItem.Quantity,
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = completedBy,
@@ -1083,6 +1156,24 @@ namespace IMS.Application.Services
                     {
                         // Start life tracking for controlled items
                         await _personnelItemLifeService.StartLifeTrackingFromReceiveAsync(receive.Id);
+                    }
+
+                    // ✅ FIX: Regenerate Issue voucher if this receive came from an Issue
+                    // This ensures the Issue voucher shows the receive information
+                    if (receive.OriginalIssueId.HasValue)
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Regenerating Issue voucher {IssueId} to include Receive {ReceiveId} information",
+                                receive.OriginalIssueId.Value, receive.Id);
+                            await _voucherService.RegenerateIssueVoucherAsync(receive.OriginalIssueId.Value);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to regenerate Issue voucher {IssueId} after completing Receive {ReceiveId}",
+                                receive.OriginalIssueId.Value, receive.Id);
+                            // Don't throw - this is not critical, receive is still completed
+                        }
                     }
                 }
 
@@ -1576,6 +1667,14 @@ namespace IMS.Application.Services
                     var item = await _unitOfWork.Items.GetByIdAsync(ri.ItemId);
                     var store = await _unitOfWork.Stores.GetByIdAsync(ri.StoreId);
 
+                    // Get category name
+                    string categoryName = null;
+                    if (item?.CategoryId > 0)
+                    {
+                        var category = await _unitOfWork.Categories.GetByIdAsync(item.CategoryId);
+                        categoryName = category?.Name;
+                    }
+
                     // Get issued quantity from original issue if available
                     var issueItem = issueItems?.FirstOrDefault(ii => ii.ItemId == ri.ItemId);
 
@@ -1585,6 +1684,7 @@ namespace IMS.Application.Services
                         ItemId = ri.ItemId,
                         ItemCode = item?.Code,
                         ItemName = item?.Name,
+                        CategoryName = categoryName,
                         StoreId = ri.StoreId,
                         StoreName = store?.Name,
                         Quantity = ri.Quantity,

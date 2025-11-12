@@ -58,6 +58,26 @@
     <!-- Custom styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
 
+    <!-- Custom Navigation Menu Badge Styles -->
+    <style>
+        .nav-sidebar .nav-link p .badge-sm {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            margin-top: 0.2rem;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .nav-sidebar .nav-link p br {
+            line-height: 1.2;
+        }
+
+        .nav-sidebar .nav-link p {
+            display: inline-block;
+            width: 100%;
+        }
+    </style>
+
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="hold-transition sidebar-mini layout-fixed text-sm">
@@ -101,79 +121,6 @@
 
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
-                <!-- Search Form -->
-                <li class="nav-item d-none d-md-inline-block">
-                    <a class="nav-link" data-widget="navbar-search" href="#" role="button">
-                        <i class="fas fa-search"></i>
-                    </a>
-                    <div class="navbar-search-block">
-                        <form class="form-inline">
-                            <div class="input-group input-group-sm">
-                                <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
-                                <div class="input-group-append">
-                                    <button class="btn btn-navbar" type="submit">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                    <button class="btn btn-navbar" type="button" data-widget="navbar-search">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </li>
-
-                <!-- Barcode Scanner -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="openBarcodeScanner()" title="Barcode Scanner">
-                        <i class="fas fa-barcode"></i>
-                    </a>
-                </li>
-
-                <!-- Quick Actions Dropdown -->
-                @if (User.IsInRole("StoreKeeper") || User.IsInRole("Admin") || User.IsInRole("Officer"))
-                {
-                    <li class="nav-item dropdown">
-                        <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
-                            <i class="fas fa-bolt"></i>
-                            <span class="d-none d-md-inline ml-1">Quick Actions</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                            <span class="dropdown-header">Quick Operations</span>
-                            <div class="dropdown-divider"></div>
-
-                            <a asp-controller="Issue" asp-action="Create" class="dropdown-item">
-                                <i class="fas fa-share mr-2 text-primary"></i> New Issue
-                                <span class="float-right text-muted text-sm">Ctrl+I</span>
-                            </a>
-
-                            <a asp-controller="Receive" asp-action="ScanVoucher" class="dropdown-item">
-                                <i class="fas fa-qrcode mr-2 text-success"></i> Scan & Receive
-                                <span class="float-right text-muted text-sm">Ctrl+S</span>
-                            </a>
-
-                            <a asp-controller="StockEntry" asp-action="Create" class="dropdown-item">
-                                <i class="fas fa-dolly mr-2 text-info"></i> Stock Entry
-                                <span class="float-right text-muted text-sm">Ctrl+E</span>
-                            </a>
-
-                            <a asp-controller="Transfer" asp-action="Create" class="dropdown-item">
-                                <i class="fas fa-exchange-alt mr-2 text-warning"></i> Store Transfer
-                                <span class="float-right text-muted text-sm">Ctrl+T</span>
-                            </a>
-
-                            <a asp-controller="PhysicalInventory" asp-action="QuickCount" class="dropdown-item">
-                                <i class="fas fa-clipboard-check mr-2 text-danger"></i> Quick Count
-                            </a>
-
-                            <div class="dropdown-divider"></div>
-
-                            <a asp-controller="Barcode" asp-action="Generate" class="dropdown-item">
-                                <i class="fas fa-barcode mr-2"></i> Generate Barcode
-                            </a>
-                        </div>
-                    </li>
-                }
 
                 <!-- Pending Approvals (for Officers/Admin) -->
                 @if (User.IsInRole("Admin") || User.IsInRole("Director") || User.IsInRole("FinanceManager") ||
@@ -220,6 +167,11 @@
                             <a asp-controller="Approval" asp-action="Index" class="dropdown-item">
                                 <i class="fas fa-file-alt mr-2 text-navy"></i> Allotment Letters
                                 <span class="badge badge-navy float-right" id="pendingAllotments">0</span>
+                            </a>
+
+                            <a asp-controller="StockEntry" asp-action="Index" asp-route-status="Submitted" class="dropdown-item">
+                                <i class="fas fa-boxes mr-2 text-success"></i> Stock Entries
+                                <span class="badge badge-success float-right" id="pendingStockEntries">0</span>
                             </a>
 
                             <div class="dropdown-divider"></div>
@@ -284,63 +236,6 @@
                     </a>
                 </li>
 
-                <!-- User Account Menu -->
-                <li class="nav-item dropdown user-menu">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
-                        <img src="@GetUserAvatar()" class="user-image img-circle elevation-2" alt="User Image">
-                        <span class="d-none d-md-inline">@GetUserDisplayName()</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <!-- User image -->
-                        <li class="user-header bg-primary">
-                            <img src="@GetUserAvatar()" class="img-circle elevation-2" alt="User Image">
-                            <p>
-                                @GetUserDisplayName()
-                                <small>@GetUserRole()</small>
-                            </p>
-                        </li>
-                        <!-- Menu Body -->
-                        <li class="user-body">
-                            <div class="row">
-                                <div class="col-4 text-center">
-                                    <a asp-controller="Dashboard" asp-action="MyTasks">Tasks</a>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <a asp-controller="Dashboard" asp-action="MyReports">Reports</a>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <a asp-controller="Dashboard" asp-action="MyActivity">Activity</a>
-                                </div>
-                            </div>
-                        </li>
-                        <!-- Menu Footer-->
-                        <li class="user-footer">
-                            <a asp-controller="Account" asp-action="Profile" class="btn btn-default btn-flat">
-                                <i class="fas fa-user mr-1"></i> Profile
-                            </a>
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="float-right">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-default btn-flat">
-                                    <i class="fas fa-sign-out-alt mr-1"></i> Sign out
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Fullscreen Toggle -->
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                    </a>
-                </li>
-
-                <!-- Control Sidebar Toggle -->
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-                        <i class="fas fa-th-large"></i>
-                    </a>
-                </li>
             </ul>
         </nav>
         <!-- /.navbar -->
@@ -926,18 +821,6 @@
                                     </a>
                                 </li>
 
-                                <!-- Quick Issue -->
-                                <li class="nav-item">
-                                    <a asp-controller="Issue" asp-action="QuickIssue" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "QuickIssue" ? "active" : "")">
-                                        <i class="fas fa-bolt nav-icon text-warning"></i>
-                                        <p>Quick Issue</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <hr class="dropdown-divider" style="margin: 5px 0;">
-                                </li>
-
                                 <!-- Issue Vouchers -->
                                 <li class="nav-item">
                                     <a asp-controller="Issue" asp-action="Vouchers" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Vouchers" ? "active" : "")">
@@ -1294,6 +1177,16 @@
                                         <p>ABC Analysis</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Report" asp-action="CentralStoreRegister" class="nav-link">
+                                        <i class="fas fa-warehouse nav-icon"></i>
+                                        <p>
+                                            Central Store Register
+                                            <br />
+                                            <span class="badge badge-info badge-sm">কেন্দ্রীয় ভান্ডার</span>
+                                        </p>
+                                    </a>
+                                </li>
                                 @* <li class="nav-item">
                                     <a asp-controller="Report" asp-action="AuditReport" class="nav-link">
                                         <i class="fas fa-clipboard-list nav-icon"></i>
@@ -1309,8 +1202,11 @@
                                 <li class="nav-item">
                                     <a asp-controller="WriteOff" asp-action="Report" class="nav-link">
                                         <i class="fas fa-trash-alt nav-icon"></i>
-                                        <p>Write-off Report</p>
-                                        <small class="text-muted ml-2">(Includes Damage)</small>
+                                        <p>
+                                            Write-off Report
+                                            <br />
+                                            <span class="badge badge-warning badge-sm">Includes Damage</span>
+                                        </p>
                                     </a>
                                 </li>
                             </ul>
@@ -1514,7 +1410,39 @@
             $('.datatable').DataTable({
                 responsive: true,
                 autoWidth: false,
-                buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                buttons: [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    'colvis'
+                ]
             });
 
             // Load notifications, alerts, and counts
@@ -1659,7 +1587,8 @@
                         $('#notificationCount').text(data.length).show();
 
                         var html = '';
-                        $.each(data.slice(0, 5), function(i, notification) {
+                        // Display ALL notifications (removed slice limit)
+                        $.each(data, function(i, notification) {
                             html += '<a href="' + (notification.url || '#') + '" class="dropdown-item">';
                             html += '<div class="media">';
                             html += '<div class="media-body">';
@@ -1713,6 +1642,7 @@
                     $('#pendingAdjustments').text(data.adjustments || 0);
                     $('#pendingTransfers').text(data.transfers || 0);
                     $('#pendingAllotments').text(data.allotments || 0);
+                    $('#pendingStockEntries').text(data.stockEntries || 0);
 
                     // Calculate and update total
                     var total = (data.requisitions || 0) +
@@ -1720,7 +1650,8 @@
                                (data.issues || 0) +
                                (data.adjustments || 0) +
                                (data.transfers || 0) +
-                               (data.allotments || 0);
+                               (data.allotments || 0) +
+                               (data.stockEntries || 0);
 
                     if (total > 0) {
                         $('#totalPendingCount').text(total).show();

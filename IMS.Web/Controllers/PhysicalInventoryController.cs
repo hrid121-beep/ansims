@@ -550,6 +550,16 @@ namespace IMS.Web.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             var stores = await _storeService.GetUserAccessibleStoresAsync(currentUser.Id);
 
+            // If user has no accessible stores, check if admin and show all stores
+            if (!stores.Any())
+            {
+                var userRoles = await _userManager.GetRolesAsync(currentUser);
+                if (userRoles.Contains("Admin") || userRoles.Contains("StoreManager") || userRoles.Contains("Director"))
+                {
+                    stores = await _storeService.GetAllStoresAsync();
+                }
+            }
+
             ViewBag.Stores = new SelectList(stores, "Id", "Name", storeId);
             ViewBag.CountTypes = new SelectList(
                 Enum.GetValues(typeof(CountType))

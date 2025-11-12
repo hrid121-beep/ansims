@@ -129,25 +129,33 @@
                     <table class="table table-bordered" id="itemsTable">
                         <thead>
                             <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Specification</th>
-                                <th>Action</th>
+                                <th width="25%">Item</th>
+                                <th width="10%">Quantity</th>
+                                <th width="12%">Unit Price (৳)</th>
+                                <th width="12%">Total Price (৳)</th>
+                                <th width="30%">Specification</th>
+                                <th width="8%">Action</th>
                             </tr>
                         </thead>
                         <tbody id="itemsBody">
                             <tr>
                                 <td>
-                                    <select name="itemIds" class="form-control select2">
+                                    <select name="itemIds" class="form-control select2 item-select" onchange="loadItemPrice(this)">
                                         <option value="">-- Select Item --</option>
                                         @foreach (var item in ViewBag.Items)
                                         {
-                                            <option value="@item.Id">@item.Name (@item.ItemCode)</option>
+                                            <option value="@item.Id" data-price="@item.UnitCost">@item.Name (@item.ItemCode)</option>
                                         }
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="quantities" class="form-control" min="1" step="1" />
+                                    <input type="number" name="quantities" class="form-control quantity-input" min="1" step="1" value="1" onchange="calculateTotal(this)" />
+                                </td>
+                                <td>
+                                    <input type="number" name="unitPrices" class="form-control unit-price" min="0" step="0.01" readonly style="background-color: #e9ecef;" />
+                                </td>
+                                <td>
+                                    <input type="number" name="totalPrices" class="form-control total-price" min="0" step="0.01" readonly style="background-color: #e9ecef;" />
                                 </td>
                                 <td>
                                     <input type="text" name="specifications" class="form-control" />
@@ -159,6 +167,13 @@
                                 </td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="table-secondary">
+                                <td colspan="3" class="text-right"><strong>Total Estimated Value:</strong></td>
+                                <td><strong id="grandTotal">৳ 0.00</strong></td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 <div class="card-footer">
@@ -176,22 +191,39 @@
     <script>
         $(document).ready(function() {
             $('.select2').select2();
+
+            // Validate From Store and To Store are not the same
+            $('#FromStoreId, #ToStoreId').on('change', function() {
+                var fromStoreId = $('#FromStoreId').val();
+                var toStoreId = $('#ToStoreId').val();
+
+                if (fromStoreId && toStoreId && fromStoreId === toStoreId) {
+                    alert('Error: From Store and To Store cannot be the same!');
+                    $(this).val('').trigger('change');
+                }
+            });
         });
 
         function addItem() {
             var newRow = `
                 <tr>
                     <td>
-                        <select name="itemIds" class="form-control select2">
+                        <select name="itemIds" class="form-control select2 item-select" onchange="loadItemPrice(this)">
                             <option value="">-- Select Item --</option>
                             @foreach (var item in ViewBag.Items)
                             {
-                                    <option value="@item.Id">@item.Name (@item.ItemCode)</option>
+                                    <option value="@item.Id" data-price="@item.UnitCost">@item.Name (@item.ItemCode)</option>
                             }
                         </select>
                     </td>
                     <td>
-                        <input type="number" name="quantities" class="form-control" min="1" step="1" />
+                        <input type="number" name="quantities" class="form-control quantity-input" min="1" step="1" value="1" onchange="calculateTotal(this)" />
+                    </td>
+                    <td>
+                        <input type="number" name="unitPrices" class="form-control unit-price" min="0" step="0.01" readonly style="background-color: #e9ecef;" />
+                    </td>
+                    <td>
+                        <input type="number" name="totalPrices" class="form-control total-price" min="0" step="0.01" readonly style="background-color: #e9ecef;" />
                     </td>
                     <td>
                         <input type="text" name="specifications" class="form-control" />
@@ -207,9 +239,73 @@
             $('.select2').select2();
         }
 
+        // Check for duplicate items when item is selected
+        $(document).on('change', '.item-select', function() {
+            var selectedItemId = $(this).val();
+            if (!selectedItemId) return;
+
+            var currentRow = $(this).closest('tr');
+            var duplicateFound = false;
+
+            // Check all other item dropdowns
+            $('.item-select').each(function() {
+                var thisRow = $(this).closest('tr');
+                if (!thisRow.is(currentRow) && $(this).val() === selectedItemId) {
+                    duplicateFound = true;
+                    return false; // break loop
+                }
+            });
+
+            if (duplicateFound) {
+                alert('This item is already added! Please select a different item or increase the quantity of the existing item.');
+                $(this).val('').trigger('change');
+                currentRow.find('.unit-price').val('0.00');
+                currentRow.find('.total-price').val('0.00');
+                calculateGrandTotal();
+            }
+        });
+
         function removeItem(btn) {
             if ($('#itemsBody tr').length > 1) {
                 $(btn).closest('tr').remove();
+                calculateGrandTotal();
+            }
+        }
+
+        function loadItemPrice(selectElement) {
+            var selectedOption = $(selectElement).find('option:selected');
+            var unitPrice = parseFloat(selectedOption.data('price')) || 0;
+            var row = $(selectElement).closest('tr');
+
+            row.find('.unit-price').val(unitPrice.toFixed(2));
+
+            // Calculate total for this row
+            var quantity = parseFloat(row.find('.quantity-input').val()) || 0;
+            var total = unitPrice * quantity;
+            row.find('.total-price').val(total.toFixed(2));
+
+            calculateGrandTotal();
+        }
+
+        function calculateTotal(quantityInput) {
+            var row = $(quantityInput).closest('tr');
+            var unitPrice = parseFloat(row.find('.unit-price').val()) || 0;
+            var quantity = parseFloat($(quantityInput).val()) || 0;
+            var total = unitPrice * quantity;
+
+            row.find('.total-price').val(total.toFixed(2));
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            var grandTotal = 0;
+            $('.total-price').each(function() {
+                grandTotal += parseFloat($(this).val()) || 0;
+            });
+
+            // Display grand total if there's a display element
+            if ($('#grandTotal').length) {
+                $('#grandTotal').text('৳ ' + grandTotal.toFixed(2));
             }
         }
     </script>

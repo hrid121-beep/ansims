@@ -536,7 +536,8 @@ namespace IMS.Application.Services
         }
         private string GetCurrentUserId()
         {
-            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value ?? "System";
+            // CRITICAL FIX: Use NameIdentifier (User.Id) not Name (Username)
+            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "System";
         }
         private string CalculateTimeAgo(DateTime dateTime)
         {

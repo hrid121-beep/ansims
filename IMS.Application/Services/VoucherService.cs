@@ -139,8 +139,26 @@ namespace IMS.Application.Services
                     );
                 }
 
-                // Generate PDF
-                byte[] pdfBytes = CreateIssueVoucherPdf(issueEntity);
+                // Check if there's an approved Receive for this Issue
+                Receive approvedReceive = null;
+                var receives = await _unitOfWork.Receives.FindAsync(r => r.OriginalIssueId == issueId);
+                if (receives != null && receives.Any())
+                {
+                    // Get the first approved receive
+                    approvedReceive = receives.FirstOrDefault(r => r.Status == "Approved");
+
+                    // If found, load with related data
+                    if (approvedReceive != null)
+                    {
+                        approvedReceive = await _unitOfWork.Receives.GetAsync(
+                            r => r.Id == approvedReceive.Id,
+                            includes: new[] { "Items.Item", "Store" }
+                        );
+                    }
+                }
+
+                // Generate PDF with optional receive data
+                byte[] pdfBytes = CreateIssueVoucherPdf(issueEntity, approvedReceive);
 
                 // Save PDF to file
                 string fileName = $"Issue_Voucher_{issueEntity.VoucherNo}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
@@ -312,21 +330,22 @@ namespace IMS.Application.Services
             {
                 var receive = await _unitOfWork.Receives.GetByIdAsync(receiveId);
 
-                if (receive == null || string.IsNullOrEmpty(receive.VoucherDocumentPath))
+                if (receive == null)
                 {
-                    // Generate if not exists
-                    return await GenerateReceiveVoucherPdfAsync(receiveId);
+                    throw new InvalidOperationException($"Receive with ID {receiveId} not found");
                 }
 
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", receive.VoucherDocumentPath);
-
-                if (!File.Exists(filePath))
+                // If this Receive is linked to an Issue, download the Issue voucher (which includes Receive info)
+                if (receive.OriginalIssueId.HasValue)
                 {
-                    // Regenerate if file doesn't exist
-                    return await GenerateReceiveVoucherPdfAsync(receiveId);
+                    _logger.LogInformation("Receive {ReceiveId} is linked to Issue {IssueId}. Downloading Issue voucher with Receive information.", receiveId, receive.OriginalIssueId.Value);
+                    return await GetIssueVoucherPdfAsync(receive.OriginalIssueId.Value);
                 }
 
-                return await File.ReadAllBytesAsync(filePath);
+                // ALWAYS regenerate to ensure latest QuestPDF template with Bengali fonts is used
+                // This ensures old iTextSharp cached PDFs are replaced with new QuestPDF versions
+                _logger.LogInformation("Regenerating receive voucher with QuestPDF for Receive {ReceiveId}", receiveId);
+                return await GenerateReceiveVoucherPdfAsync(receiveId);
             }
             catch (Exception ex)
             {
@@ -408,7 +427,7 @@ namespace IMS.Application.Services
 
         #region PDF Generation Helper Methods
 
-        private byte[] CreateIssueVoucherPdf(Issue issue)
+        private byte[] CreateIssueVoucherPdf(Issue issue, Receive approvedReceive = null)
         {
             // Use QuestPDF for perfect Bengali rendering
             var document = QuestDocument.Create(container =>
@@ -438,7 +457,7 @@ namespace IMS.Application.Services
                                 columns.RelativeColumn();
                             });
 
-                            // Left Column - Provider
+                            // Left Column - Provider (Issue info - always filled)
                             table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(leftCol =>
                             {
                                 leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
@@ -451,14 +470,28 @@ namespace IMS.Application.Services
                                 leftCol.Item().Text("…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :").FontSize(8).FontFamily("Kalpurush");
                             });
 
-                            // Right Column - Receiver
+                            // Right Column - Receiver (Receive info - blank if no approved receive)
                             table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(rightCol =>
                             {
                                 rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().Text($"ইউনিট: {issue.IssuedTo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().Text($"স্টেশন: {issue.DeliveryLocation ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
-                                rightCol.Item().Text($"তারিখ: {issue.ReceivedDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+
+                                // Show Receive data if approved receive exists, otherwise show blank placeholders
+                                if (approvedReceive != null)
+                                {
+                                    rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {issue.VoucherNo}").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text($"ইউনিট: {approvedReceive.Store?.Name ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text($"স্টেশন: {approvedReceive.Store?.Location ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text($"তারিখ: {approvedReceive.ReceiveDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+                                }
+                                else
+                                {
+                                    // Show blank placeholders if no receive yet
+                                    rightCol.Item().Text("প্রাপ্ত- ভাউচার নং: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text("ইউনিট: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text("স্টেশন: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    rightCol.Item().Text("তারিখ: ………………").FontSize(8).FontFamily("Kalpurush");
+                                }
+
                                 rightCol.Item().PaddingTop(5);
                                 rightCol.Item().Text("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেয়া হল:").FontSize(8).FontFamily("Kalpurush");
                                 rightCol.Item().Text("উৎপাদিত").FontSize(8).FontFamily("Kalpurush");
@@ -569,13 +602,6 @@ namespace IMS.Application.Services
                                 leftSig.Item().Text($"নাম: {issuerName}").FontSize(8).FontFamily("Kalpurush");
                                 leftSig.Item().Text($"পদবী: {issuerBadge}").FontSize(8).FontFamily("Kalpurush");
                                 leftSig.Item().Text($"তারিখ: {issuerDate}").FontSize(8).FontFamily("Kalpurush");
-
-                                // Add "Digital Signature Verified" badge if signature exists
-                                if (issue.IssuerSignature != null)
-                                {
-                                    leftSig.Item().PaddingTop(3);
-                                    leftSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(7).FontColor("#28a745").FontFamily("Kalpurush");
-                                }
                             });
 
                             sigTable.Cell().Padding(5).Column(rightSig =>
@@ -608,21 +634,30 @@ namespace IMS.Application.Services
                                     rightSig.Item().PaddingTop(40); // Space for manual signature
                                 }
 
-                                // Use digital signature data if available, otherwise fallback to plain fields
-                                var receiverName = issue.ReceiverSignature?.SignerName ?? issue.ReceivedBy ?? "…………………";
-                                var receiverBadge = issue.ReceiverSignature?.SignerBadgeId ?? "…………………";
-                                var receiverDate = issue.ReceiverSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.ReceivedDate.ToString("dd/MM/yyyy");
+                                // Use Receive data if available (approved receive), otherwise use Issue's receiver signature data
+                                string receiverName, receiverBadge, receiverDate, receiverDesignation;
+
+                                if (approvedReceive != null)
+                                {
+                                    // Use Receive information
+                                    receiverName = approvedReceive.ReceiverName ?? "…………………";
+                                    receiverBadge = approvedReceive.ReceiverBadgeNo ?? "…………………";
+                                    receiverDesignation = approvedReceive.ReceiverDesignation ?? "…………………";
+                                    receiverDate = approvedReceive.ReceiveDate.ToString("dd/MM/yyyy");
+                                }
+                                else
+                                {
+                                    // Fallback to Issue's receiver signature data
+                                    receiverName = issue.ReceiverSignature?.SignerName ?? issue.ReceivedBy ?? "…………………";
+                                    receiverBadge = issue.ReceiverSignature?.SignerBadgeId ?? "…………………";
+                                    receiverDesignation = "…………………";
+                                    receiverDate = issue.ReceiverSignature?.SignedDate.ToString("dd/MM/yyyy") ?? issue.ReceivedDate.ToString("dd/MM/yyyy");
+                                }
 
                                 rightSig.Item().Text($"নাম: {receiverName}").FontSize(8).FontFamily("Kalpurush");
-                                rightSig.Item().Text($"পদবী: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"ব্যাজ নং: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontSize(8).FontFamily("Kalpurush");
                                 rightSig.Item().Text($"তারিখ: {receiverDate}").FontSize(8).FontFamily("Kalpurush");
-
-                                // Add "Digital Signature Verified" badge if signature exists
-                                if (issue.ReceiverSignature != null)
-                                {
-                                    rightSig.Item().PaddingTop(3);
-                                    rightSig.Item().Text("✓ ডিজিটাল স্বাক্ষর যাচাইকৃত").FontSize(7).FontColor("#28a745").FontFamily("Kalpurush");
-                                }
                             });
                         });
                     });
@@ -634,55 +669,201 @@ namespace IMS.Application.Services
 
         private byte[] CreateReceiveVoucherPdf(Receive receive)
         {
-            using (MemoryStream ms = new MemoryStream())
+            // Use QuestPDF for perfect Bengali rendering (same as Issue voucher)
+            var document = QuestDocument.Create(container =>
             {
-                // Create document in A4 landscape
-                PdfDocument document = new PdfDocument(iTextSharp.text.PageSize.A4, 20, 20, 20, 20);
-                PdfWriter writer = PdfWriter.GetInstance(document, ms);
-                document.Open();
+                container.Page(page =>
+                {
+                    page.Size(QuestPageSizes.A4);
+                    page.Margin(20);
+                    page.PageColor(Colors.White);
+                    // Set Kalpurush as default font for the entire document
+                    page.DefaultTextStyle(x => x.FontFamily("Kalpurush").FontSize(10));
 
-                // Create fonts
-                Font bengaliFont = GetBengaliFont(10);
-                Font bengaliFontBold = GetBengaliFont(12, Font.BOLD);
-                Font bengaliFontTitle = GetBengaliFont(16, Font.BOLD);
+                    page.Content().Column(column =>
+                    {
+                        // Title
+                        column.Item().AlignCenter().Text("প্রাপ্তি বিলি ও ব্যয়ের রশিদ")
+                            .FontSize(14).Bold();
 
-                // Add title
-                Paragraph title = new Paragraph("প্রাপ্তি বিলি ও ব্যয়ের রশিদ", bengaliFontTitle);
-                title.Alignment = Element.ALIGN_CENTER;
-                title.SpacingAfter = 20f;
-                document.Add(title);
+                        column.Item().PaddingVertical(5);
 
-                // Create header table (2 columns)
-                PdfPTable headerTable = new PdfPTable(2);
-                headerTable.WidthPercentage = 100;
-                headerTable.SetWidths(new float[] { 50f, 50f });
+                        // Header Table (Two columns)
+                        column.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
 
-                // Left side - Provider (প্রদানকারী)
-                PdfPCell leftCell = CreateReceiveHeaderCell(receive, "প্রদানকারী", bengaliFont, bengaliFontBold, true);
-                headerTable.AddCell(leftCell);
+                            // Left Column - Provider (Sender of items - only for Issue-linked receives)
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(leftCol =>
+                            {
+                                leftCol.Item().Text("প্রদানকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
 
-                // Right side - Receiver (গ্রহনকারী)
-                PdfPCell rightCell = CreateReceiveHeaderCell(receive, "গ্রহনকারী", bengaliFont, bengaliFontBold, false);
-                headerTable.AddCell(rightCell);
+                                // Only show data if this receive came from an Issue, otherwise leave blank
+                                if (receive.OriginalIssueId.HasValue && !string.IsNullOrEmpty(receive.OriginalIssueNo))
+                                {
+                                    leftCol.Item().Text($"প্রদান- ভাউচার নং: {receive.OriginalIssueNo}").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text($"ইউনিট: {(receive.ReceivedFrom ?? "………………")}").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text($"স্টেশন: {(receive.ReceivedFromBattalion?.Name ?? receive.ReceivedFromRange?.Name ?? receive.ReceivedFromZila?.Name ?? "………………")}").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text($"তারিখ: {receive.ReceiveDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+                                }
+                                else
+                                {
+                                    // Standalone receive - leave blank for manual entry
+                                    leftCol.Item().Text("প্রদান- ভাউচার নং: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text("ইউনিট: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text("স্টেশন: ………………").FontSize(8).FontFamily("Kalpurush");
+                                    leftCol.Item().Text("তারিখ: ………………").FontSize(8).FontFamily("Kalpurush");
+                                }
 
-                document.Add(headerTable);
-                document.Add(new Paragraph("\n", bengaliFont));
+                                leftCol.Item().PaddingTop(5);
+                                leftCol.Item().Text("…………….আদেশানুসারে ………………….. কর্তৃক").FontSize(8).FontFamily("Kalpurush");
+                                leftCol.Item().Text("…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :").FontSize(8).FontFamily("Kalpurush");
+                            });
 
-                // Create items table for receive
-                PdfPTable itemsTable = CreateReceiveItemsTable(receive.ReceiveItems, bengaliFont, bengaliFontBold);
-                document.Add(itemsTable);
+                            // Right Column - Receiver (Store receiving the items)
+                            table.Cell().Border(1).BorderColor(Colors.Black).Padding(5).Column(rightCol =>
+                            {
+                                rightCol.Item().Text("গ্রহনকারী অফিসার পূরণ করবেন:").Bold().FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"প্রাপ্ত- ভাউচার নং: {receive.VoucherNo ?? "………………"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"ইউনিট: {receive.Store?.Name ?? "Central Store - Headquarters"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"স্টেশন: {receive.Store?.Location ?? "Headquarters"}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text($"তারিখ: {receive.ReceiveDate:dd/MM/yyyy}").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().PaddingTop(5);
+                                rightCol.Item().Text("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেয়া হল:").FontSize(8).FontFamily("Kalpurush");
+                                rightCol.Item().Text("উৎপাদিত").FontSize(8).FontFamily("Kalpurush");
+                            });
+                        });
 
-                document.Add(new Paragraph("\n\n", bengaliFont));
+                        column.Item().PaddingVertical(5);
 
-                // Create signature table
-                PdfPTable signatureTable = CreateReceiveSignatureTable(receive, bengaliFont);
-                document.Add(signatureTable);
+                        // Items Table
+                        column.Item().Table(itemsTable =>
+                        {
+                            itemsTable.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(25);  // ক্রম
+                                columns.ConstantColumn(40);  // লেজার নং
+                                columns.ConstantColumn(35);  // পৃষ্ঠা নং
+                                columns.RelativeColumn(3);   // দ্রব্যাদির বিবরণ
+                                columns.ConstantColumn(40);  // মোট সংখ্যা
+                                columns.ConstantColumn(40);  // ব্যবহার যোগ্য
+                                columns.ConstantColumn(45);  // আংশিক ব্যবহারযোগ্য
+                                columns.ConstantColumn(40);  // অকেজো
+                                columns.ConstantColumn(45);  // একক দর
+                                columns.ConstantColumn(50);  // মোট মূল্য
+                            });
 
-                document.Close();
-                writer.Close();
+                            // Header Row
+                            itemsTable.Header(header =>
+                            {
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("ক্রম").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("লেজার\nনং").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("পৃষ্ঠা\nনং").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("দ্রব্যাদির বিবরণ").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("মোট\nসংখ্যা").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("ব্যবহার\nযোগ্য").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("আংশিক\nব্যবহারযোগ্য").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("অকেজো").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("একক\nদর").FontSize(7).Bold().FontFamily("Kalpurush");
+                                header.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text("মোট\nমূল্য").FontSize(7).Bold().FontFamily("Kalpurush");
+                            });
 
-                return ms.ToArray();
-            }
+                            // Data Rows
+                            int serialNo = 1;
+                            foreach (var item in receive.ReceiveItems)
+                            {
+                                decimal quantity = item.ReceivedQuantity ?? item.Quantity ?? 0;
+                                var totalPrice = (item.Item?.UnitPrice ?? 0) * quantity;
+
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(serialNo.ToString()).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(item.LedgerNo ?? "").FontSize(7).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignCenter().Text(item.PageNo ?? "").FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignLeft().Text(item.Item?.Name ?? "").FontSize(7).FontFamily("Kalpurush");
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text(quantity.ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.UsableQuantity ?? quantity).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.PartiallyUsableQuantity ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.UnusableQuantity ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text((item.Item?.UnitPrice ?? 0).ToString("0.##")).FontSize(7);
+                                itemsTable.Cell().Border(1).BorderColor(Colors.Black).Padding(2).AlignRight().Text(totalPrice.ToString("0.##")).FontSize(7);
+
+                                serialNo++;
+                            }
+                        });
+
+                        column.Item().PaddingVertical(10);
+
+                        // Signature Section
+                        column.Item().Table(sigTable =>
+                        {
+                            sigTable.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
+
+                            sigTable.Cell().Padding(5).Column(leftSig =>
+                            {
+                                leftSig.Item().Text("বিতরণকারীর স্বাক্ষর").Bold().FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().PaddingTop(40); // Space for manual signature
+
+                                var providerName = receive.ReceivedFrom ?? "…………………";
+                                var providerDate = receive.ReceiveDate.ToString("dd/MM/yyyy");
+
+                                leftSig.Item().Text($"নাম: {providerName}").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text("পদবী: …………………").FontSize(8).FontFamily("Kalpurush");
+                                leftSig.Item().Text($"তারিখ: {providerDate}").FontSize(8).FontFamily("Kalpurush");
+                            });
+
+                            sigTable.Cell().Padding(5).Column(rightSig =>
+                            {
+                                rightSig.Item().Text("গ্রহণকারীর স্বাক্ষর").Bold().FontSize(8).FontFamily("Kalpurush");
+
+                                // Embed digital signature image if available
+                                if (!string.IsNullOrEmpty(receive.ReceiverSignature))
+                                {
+                                    try
+                                    {
+                                        // Extract base64 data (remove data:image/png;base64, prefix if exists)
+                                        var base64Data = receive.ReceiverSignature;
+                                        if (base64Data.Contains(","))
+                                        {
+                                            base64Data = base64Data.Split(',')[1];
+                                        }
+
+                                        var imageBytes = Convert.FromBase64String(base64Data);
+                                        rightSig.Item().Height(40).Image(imageBytes);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to embed receiver signature image");
+                                        rightSig.Item().PaddingTop(40); // Space for manual signature
+                                    }
+                                }
+                                else
+                                {
+                                    rightSig.Item().PaddingTop(40); // Space for manual signature
+                                }
+
+                                var receiverName = receive.ReceiverName ?? receive.ReceivedBy ?? "admin";
+                                var receiverBadge = receive.ReceiverBadgeNo ?? "…………………";
+                                var receiverDesignation = receive.ReceiverDesignation ?? receiverBadge;
+                                var receiverDate = receive.ReceivedDate.ToString("dd/MM/yyyy");
+
+                                rightSig.Item().Text($"নাম: {receiverName}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"ব্যাজ নং: {receiverBadge}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"পদবী: {receiverDesignation}").FontSize(8).FontFamily("Kalpurush");
+                                rightSig.Item().Text($"তারিখ: {receiverDate}").FontSize(8).FontFamily("Kalpurush");
+                            });
+                        });
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
         }
 
         private PdfPCell CreateHeaderCell(Issue issue, string sectionTitle, Font normalFont, Font boldFont, bool isProvider)
@@ -713,42 +894,6 @@ namespace IMS.Application.Services
                 cell.AddElement(new Paragraph($"স্টেশন  ……………………………………...........", normalFont));
                 cell.AddElement(new Paragraph("\n", normalFont));
                 cell.AddElement(new Paragraph("প্রাপ্ত\tদ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
-                cell.AddElement(new Paragraph("উৎপাদিত", normalFont));
-            }
-
-            return cell;
-        }
-
-        private PdfPCell CreateReceiveHeaderCell(Receive receive, string sectionTitle, Font normalFont, Font boldFont, bool isProvider)
-        {
-            PdfPCell cell = new PdfPCell();
-            cell.Border = Rectangle.BOX;
-            cell.Padding = 10f;
-
-            // Section title
-            Paragraph title = new Paragraph($"{sectionTitle} অফিসার পূরণ করবেন:", boldFont);
-            cell.AddElement(title);
-
-            if (isProvider)
-            {
-                // Provider details (Sender) - shows who sent/returned the items
-                cell.AddElement(new Paragraph($"প্রদান- ভাউচার নং: {receive.OriginalVoucherNo ?? receive.VoucherNo ?? "………………"}", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট: {receive.ReceivedFrom ?? "………………"}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: ………………", normalFont)); // Location not available in current schema
-                cell.AddElement(new Paragraph($"তারিখ: {receive.ReceiveDate:dd/MM/yyyy}", normalFont));
-                cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph($"…………….আদেশানুসারে ………………….. কর্তৃক", normalFont));
-                cell.AddElement(new Paragraph($"…………..…….কর্তৃক পরীক্ষানুযায়ী দ্রব্যাদির নিম্নোক্ত হিসাব :", normalFont));
-            }
-            else
-            {
-                // Receiver details (Store receiving the items)
-                cell.AddElement(new Paragraph($"প্রাপ্ত- ভাউচার নং: {receive.VoucherNo ?? "………………"}", normalFont));
-                cell.AddElement(new Paragraph($"ইউনিট: {receive.Store?.Name ?? "………………"}", normalFont));
-                cell.AddElement(new Paragraph($"স্টেশন: {receive.Store?.Location ?? "………………"}", normalFont));
-                cell.AddElement(new Paragraph($"তারিখ: {receive.ReceivedDate:dd/MM/yyyy}", normalFont));
-                cell.AddElement(new Paragraph("\n", normalFont));
-                cell.AddElement(new Paragraph("প্রাপ্ত দ্রব্যাদির হিসাব নিম্নে দেয়া হল:", normalFont));
                 cell.AddElement(new Paragraph("উৎপাদিত", normalFont));
             }
 
@@ -797,50 +942,6 @@ namespace IMS.Application.Services
             return table;
         }
 
-        private PdfPTable CreateReceiveItemsTable(ICollection<ReceiveItem> items, Font normalFont, Font boldFont)
-        {
-            // Create table with 10 columns matching the sample
-            PdfPTable table = new PdfPTable(10);
-            table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 5f, 8f, 8f, 25f, 10f, 10f, 10f, 10f, 10f, 10f });
-
-            // Add headers
-            table.AddCell(CreateTableHeaderCell("ক্রম", boldFont));
-            table.AddCell(CreateTableHeaderCell("লেজার\nনং", boldFont));
-            table.AddCell(CreateTableHeaderCell("পৃষ্ঠা\nনং", boldFont));
-            table.AddCell(CreateTableHeaderCell("দ্রব্যাদির বিবরণ", boldFont));
-            table.AddCell(CreateTableHeaderCell("মোট\nসংখ্যা", boldFont));
-            table.AddCell(CreateTableHeaderCell("ব্যবহার\nযোগ্য", boldFont));
-            table.AddCell(CreateTableHeaderCell("আংশিক\nব্যবহারযোগ্য", boldFont));
-            table.AddCell(CreateTableHeaderCell("অকেজো", boldFont));
-            table.AddCell(CreateTableHeaderCell("একক\nদর", boldFont));
-            table.AddCell(CreateTableHeaderCell("মোট\nমূল্য", boldFont));
-
-            // Add items
-            int serialNo = 1;
-            foreach (var item in items)
-            {
-                decimal quantity = item.ReceivedQuantity ?? item.Quantity ?? 0;
-
-                table.AddCell(CreateTableCell(serialNo.ToString(), normalFont));
-                table.AddCell(CreateTableCell(item.LedgerNo ?? "", normalFont));
-                table.AddCell(CreateTableCell(item.PageNo ?? "", normalFont));
-                table.AddCell(CreateTableCell(item.Item?.Name ?? "", normalFont));
-                table.AddCell(CreateTableCell(quantity.ToString("N2"), normalFont));
-                table.AddCell(CreateTableCell((item.UsableQuantity ?? quantity).ToString("N2"), normalFont));
-                table.AddCell(CreateTableCell((item.PartiallyUsableQuantity ?? 0).ToString("N2"), normalFont));
-                table.AddCell(CreateTableCell((item.UnusableQuantity ?? 0).ToString("N2"), normalFont));
-                table.AddCell(CreateTableCell((item.Item?.UnitPrice ?? 0).ToString("N2"), normalFont));
-                table.AddCell(CreateTableCell((quantity * (item.Item?.UnitPrice ?? 0)).ToString("N2"), normalFont));
-
-                serialNo++;
-            }
-
-            // No empty rows - table adjusts to item count automatically
-
-            return table;
-        }
-
         private PdfPTable CreateSignatureTable(Issue issue, Font normalFont)
         {
             PdfPTable table = new PdfPTable(2);
@@ -863,74 +964,6 @@ namespace IMS.Application.Services
             rightCell.AddElement(new Paragraph("\n\n", normalFont));
             rightCell.AddElement(new Paragraph("পদবী …………………………………………", normalFont));
             rightCell.AddElement(new Paragraph("তারিখ…………………………………………..", normalFont));
-            table.AddCell(rightCell);
-
-            return table;
-        }
-
-        private PdfPTable CreateReceiveSignatureTable(Receive receive, Font normalFont)
-        {
-            PdfPTable table = new PdfPTable(2);
-            table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 50f, 50f });
-
-            // Left side - Provider signature (Sender)
-            PdfPCell leftCell = new PdfPCell();
-            leftCell.Border = Rectangle.NO_BORDER;
-            leftCell.AddElement(new Paragraph("বিতরণকারীর স্বাক্ষর", normalFont));
-            leftCell.AddElement(new Paragraph("\n\n\n", normalFont)); // Space for manual signature
-
-            var providerName = receive.ReceivedFrom ?? "…………………";
-            var providerDate = receive.ReceiveDate.ToString("dd/MM/yyyy");
-
-            leftCell.AddElement(new Paragraph($"নাম: {providerName}", normalFont));
-            leftCell.AddElement(new Paragraph("পদবী: …………………………………………", normalFont)); // Not available in schema
-            leftCell.AddElement(new Paragraph($"তারিখ: {providerDate}", normalFont));
-            table.AddCell(leftCell);
-
-            // Right side - Receiver signature
-            PdfPCell rightCell = new PdfPCell();
-            rightCell.Border = Rectangle.NO_BORDER;
-            rightCell.AddElement(new Paragraph("গ্রহণকারীর স্বাক্ষর", normalFont));
-
-            // Try to embed receiver signature image if available
-            if (!string.IsNullOrEmpty(receive.ReceiverSignature))
-            {
-                try
-                {
-                    // Check if it's base64 encoded signature data
-                    var signatureData = receive.ReceiverSignature;
-                    if (signatureData.Contains(","))
-                    {
-                        signatureData = signatureData.Split(',')[1]; // Remove data:image/png;base64, prefix
-                    }
-
-                    // Try to decode as base64
-                    var imageBytes = Convert.FromBase64String(signatureData);
-                    iTextSharp.text.Image signatureImage = iTextSharp.text.Image.GetInstance(imageBytes);
-                    signatureImage.ScaleToFit(80f, 40f);
-                    rightCell.AddElement(signatureImage);
-                    rightCell.AddElement(new Paragraph("\n", normalFont));
-                }
-                catch
-                {
-                    // Not a base64 image, just show space for manual signature
-                    rightCell.AddElement(new Paragraph("\n\n", normalFont));
-                }
-            }
-            else
-            {
-                rightCell.AddElement(new Paragraph("\n\n", normalFont)); // Space for manual signature
-            }
-
-            var receiverName = receive.ReceiverName ?? receive.ReceivedBy ?? "…………………";
-            var receiverBadge = receive.ReceiverBadgeNo ?? "…………………";
-            var receiverDesignation = receive.ReceiverDesignation ?? receiverBadge; // Use badge as designation if no designation
-            var receiverDate = receive.ReceivedDate.ToString("dd/MM/yyyy");
-
-            rightCell.AddElement(new Paragraph($"নাম: {receiverName}", normalFont));
-            rightCell.AddElement(new Paragraph($"পদবী: {receiverDesignation}", normalFont));
-            rightCell.AddElement(new Paragraph($"তারিখ: {receiverDate}", normalFont));
             table.AddCell(rightCell);
 
             return table;

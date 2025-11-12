@@ -1,0 +1,592 @@
+@model IMS.Application.DTOs.ItemDto
+@{
+    ViewData["Title"] = "Edit Item - New";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    <i class="fas fa-edit text-warning"></i> Edit Item (New)
+                    <small class="text-muted ml-2">@Model.ItemCode</small>
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Item")">Items</a></li>
+                    <li class="breadcrumb-item active">Edit New</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <form asp-action="EditNew" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden fields for data preservation -->
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ItemCode" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="CreatedBy" />
+            <input type="hidden" asp-for="CurrentStock" />
+
+            <div class="row">
+                <!-- Left Column - Main Form Fields -->
+                <div class="col-md-8">
+
+                    <!-- Basic Information Card -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Basic Information</h3>
+                        </div>
+                        <div class="card-body">
+
+                            <!-- Validation Summary -->
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger">
+                                    <h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>
+                                    <div asp-validation-summary="All"></div>
+                                </div>
+                            }
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="required">Item Name</label>
+                                        <input asp-for="Name" class="form-control" placeholder="Enter item name" required />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="NameBn">Item Name (Bengali)</label>
+                                        <input asp-for="NameBn" class="form-control" placeholder="বাংলা নাম" />
+                                        <span asp-validation-for="NameBn" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Code">Alternative Code</label>
+                                        <input asp-for="Code" class="form-control" placeholder="Alternative code" />
+                                        <span asp-validation-for="Code" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label asp-for="Description">Description</label>
+                                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter description..."></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Classification Card -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Classification</h3>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="CategoryId" class="required">Category</label>
+                                        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories" required>
+                                            <option value="">-- Select Category --</option>
+                                        </select>
+                                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SubCategoryId">Sub Category</label>
+                                        <select asp-for="SubCategoryId" class="form-control" asp-items="ViewBag.SubCategories">
+                                            <option value="">-- Select Sub Category --</option>
+                                        </select>
+                                        <span asp-validation-for="SubCategoryId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BrandId">Brand</label>
+                                        <select asp-for="BrandId" class="form-control" asp-items="ViewBag.Brands">
+                                            <option value="">-- Select Brand --</option>
+                                        </select>
+                                        <span asp-validation-for="BrandId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ItemModelId">Model</label>
+                                        <select asp-for="ItemModelId" class="form-control" asp-items="ViewBag.ItemModels">
+                                            <option value="">-- Select Model --</option>
+                                        </select>
+                                        <span asp-validation-for="ItemModelId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Stock Management Card -->
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Stock Management</h3>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Type" class="required">Item Type</label>
+                                        <select asp-for="Type" class="form-control" asp-items="ViewBag.ItemTypes" required>
+                                            <option value="">-- Select Type --</option>
+                                        </select>
+                                        <span asp-validation-for="Type" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Unit" class="required">Unit</label>
+                                        <select asp-for="Unit" class="form-control" required>
+                                            <option value="">Select Unit</option>
+                                            <option value="Piece">Piece</option>
+                                            <option value="Box">Box</option>
+                                            <option value="Pack">Pack</option>
+                                            <option value="Set">Set</option>
+                                            <option value="Kg">Kilogram</option>
+                                            <option value="Gram">Gram</option>
+                                            <option value="Liter">Liter</option>
+                                            <option value="Meter">Meter</option>
+                                            <option value="Dozen">Dozen</option>
+                                        </select>
+                                        <span asp-validation-for="Unit" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="MinimumStock">Min Stock</label>
+                                        <input asp-for="MinimumStock" class="form-control" type="number" step="0.01" min="0" />
+                                        <span asp-validation-for="MinimumStock" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="MaximumStock">Max Stock</label>
+                                        <input asp-for="MaximumStock" class="form-control" type="number" step="0.01" min="0" />
+                                        <span asp-validation-for="MaximumStock" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ReorderLevel">Reorder Level</label>
+                                        <input asp-for="ReorderLevel" class="form-control" type="number" step="0.01" min="0" />
+                                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="UnitPrice">Unit Price (৳)</label>
+                                        <input asp-for="UnitPrice" class="form-control" type="number" step="0.01" min="0" />
+                                        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="UnitCost">Unit Cost (৳)</label>
+                                        <input asp-for="UnitCost" class="form-control" type="number" step="0.01" min="0" />
+                                        <span asp-validation-for="UnitCost" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Item Control & Authorization -->
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Control & Authorization</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ItemControlType">Control Type</label>
+                                        <select asp-for="ItemControlType" class="form-control">
+                                            <option value="">Not Specified</option>
+                                            <option value="Controlled">Controlled</option>
+                                            <option value="Uncontrolled">Uncontrolled</option>
+                                        </select>
+                                        <small class="text-muted">Controlled items require personnel tracking</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Authorization</label>
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="IsAnsarAuthorized" type="checkbox" class="custom-control-input" id="IsAnsarAuthorized">
+                                            <label class="custom-control-label" for="IsAnsarAuthorized">Ansar</label>
+                                        </div>
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="IsVDPAuthorized" type="checkbox" class="custom-control-input" id="IsVDPAuthorized">
+                                            <label class="custom-control-label" for="IsVDPAuthorized">VDP</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ansar Lifespan Configuration -->
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Ansar Personnel Lifespan</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="AnsarLifeSpanMonths">Life Span (Months)</label>
+                                        <input asp-for="AnsarLifeSpanMonths" class="form-control" type="number" min="1" max="120" placeholder="e.g., 12" />
+                                        <small class="text-muted">Service life in months for Ansar</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="AnsarAlertBeforeDays">Alert Before (Days)</label>
+                                        <input asp-for="AnsarAlertBeforeDays" class="form-control" type="number" min="1" max="90" placeholder="30" />
+                                        <small class="text-muted">Alert before expiry for Ansar</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VDP Lifespan Configuration -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">VDP Personnel Lifespan</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="VDPLifeSpanMonths">Life Span (Months)</label>
+                                        <input asp-for="VDPLifeSpanMonths" class="form-control" type="number" min="1" max="120" placeholder="e.g., 6" />
+                                        <small class="text-muted">Service life in months for VDP</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="VDPAlertBeforeDays">Alert Before (Days)</label>
+                                        <input asp-for="VDPAlertBeforeDays" class="form-control" type="number" min="1" max="90" placeholder="30" />
+                                        <small class="text-muted">Alert before expiry for VDP</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Details Card -->
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Product Details</h3>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Manufacturer">Manufacturer</label>
+                                        <input asp-for="Manufacturer" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ManufactureDate">Manufacture Date</label>
+                                        <input asp-for="ManufactureDate" type="date" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Weight">Weight</label>
+                                        <input asp-for="Weight" class="form-control" type="number" step="0.001" min="0" />
+                                        <small class="text-muted">3 decimal precision for accuracy</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label asp-for="WeightUnit">Unit</label>
+                                        <select asp-for="WeightUnit" class="form-control">
+                                            <option value="">Unit</option>
+                                            <option value="KG">KG</option>
+                                            <option value="Gram">Gram</option>
+                                            <option value="Pound">Pound</option>
+                                            <option value="Ton">Ton</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Dimensions">Dimensions</label>
+                                        <input asp-for="Dimensions" class="form-control" placeholder="L x W x H (e.g., 10x5x3 cm)" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Color">Color</label>
+                                        <input asp-for="Color" class="form-control" placeholder="Product color" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Material">Material</label>
+                                        <input asp-for="Material" class="form-control" placeholder="Primary material" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ShelfLife">Shelf Life (Days)</label>
+                                        <input asp-for="ShelfLife" type="number" class="form-control" min="0" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="HasExpiry" type="checkbox" class="custom-control-input" id="HasExpiry">
+                                            <label class="custom-control-label" for="HasExpiry">Has Expiry Date</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="ExpiryDateGroup" style="display: none;">
+                                        <label asp-for="ExpiryDate">Expiry Date</label>
+                                        <input asp-for="ExpiryDate" type="date" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="IsHazardous" type="checkbox" class="custom-control-input" id="IsHazardous">
+                                            <label class="custom-control-label" for="IsHazardous">Hazardous Material</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="HazardClassGroup" style="display: none;">
+                                        <label asp-for="HazardClass">Hazard Class</label>
+                                        <input asp-for="HazardClass" class="form-control" placeholder="Hazard classification" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input asp-for="RequiresSpecialHandling" type="checkbox" class="custom-control-input" id="RequiresSpecialHandling">
+                                            <label class="custom-control-label" for="RequiresSpecialHandling">Requires Special Handling</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="StorageRequirements">Storage Requirements</label>
+                                        <textarea asp-for="StorageRequirements" class="form-control" rows="2" placeholder="Special storage conditions..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="SafetyInstructions">Safety Instructions</label>
+                                        <textarea asp-for="SafetyInstructions" class="form-control" rows="2" placeholder="Safety handling instructions..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column - Status & Image -->
+                <div class="col-md-4">
+
+                    <!-- Current Status Card -->
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Current Status</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Current Stock</span>
+                                    <span class="info-box-number">@Model.CurrentStock @Model.Unit</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input asp-for="IsActive" type="checkbox" class="custom-control-input" id="IsActive">
+                                    <label class="custom-control-label" for="IsActive">Item Active</label>
+                                </div>
+                                <small class="text-muted">Inactive items won't appear in transactions</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload Card -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Item Image</h3>
+                        </div>
+                        <div class="card-body">
+
+                            @if (!string.IsNullOrEmpty(Model.ImagePath))
+                            {
+                                <div class="text-center mb-3">
+                                    <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                    <p class="text-muted mt-2"><small>Current Image</small></p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center mb-3 p-3 bg-light">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2"><small>No image uploaded</small></p>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label for="ItemImageFile">Upload New Image</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="ItemImageFile" name="ItemImageFile" accept="image/*">
+                                    <label class="custom-file-label" for="ItemImageFile">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Supported: JPG, PNG, GIF (Max 2MB)</small>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons Card -->
+                    <div class="card">
+                        <div class="card-body">
+                            <button type="submit" class="btn btn-success btn-block btn-lg">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-block">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $(document).ready(function() {
+            console.log('EditNew page loaded');
+
+            // Update file input label when file selected
+            $('#ItemImageFile').on('change', function() {
+                const fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').html(fileName || 'Choose file...');
+            });
+
+            // Category change - load subcategories
+            $('#CategoryId').on('change', function() {
+                const categoryId = $(this).val();
+                if (categoryId) {
+                    $.get('@Url.Action("GetSubCategoriesByCategory", "Item")', { categoryId: categoryId }, function(data) {
+                        const subCatSelect = $('#SubCategoryId');
+                        subCatSelect.empty().append('<option value="">-- Select Sub Category --</option>');
+                        $.each(data, function(index, item) {
+                            subCatSelect.append($('<option></option>').val(item.id).text(item.name));
+                        });
+                    });
+                }
+            });
+
+            // Brand change - load models
+            $('#BrandId').on('change', function() {
+                const brandId = $(this).val();
+                if (brandId) {
+                    $.get('@Url.Action("GetModelsByBrand", "Item")', { brandId: brandId }, function(data) {
+                        const modelSelect = $('#ItemModelId');
+                        modelSelect.empty().append('<option value="">-- Select Model --</option>');
+                        $.each(data, function(index, item) {
+                            modelSelect.append($('<option></option>').val(item.id).text(item.name));
+                        });
+                    });
+                }
+            });
+
+            // HasExpiry checkbox - show/hide expiry date field
+            $('#HasExpiry').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#ExpiryDateGroup').slideDown();
+                } else {
+                    $('#ExpiryDateGroup').slideUp();
+                }
+            });
+
+            // Initialize expiry date field visibility
+            if ($('#HasExpiry').is(':checked')) {
+                $('#ExpiryDateGroup').show();
+            }
+
+            // IsHazardous checkbox - show/hide hazard class field
+            $('#IsHazardous').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#HazardClassGroup').slideDown();
+                } else {
+                    $('#HazardClassGroup').slideUp();
+                }
+            });
+
+            // Initialize hazard class field visibility
+            if ($('#IsHazardous').is(':checked')) {
+                $('#HazardClassGroup').show();
+            }
+        });
+    </script>
+}

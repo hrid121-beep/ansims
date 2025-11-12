@@ -41,21 +41,44 @@ namespace IMS.Web.Controllers
 
         // GET: Notification/GetUnread
         [HttpGet]
-        public async Task<IActionResult> GetUnread(int count = 5)
+        public async Task<IActionResult> GetUnread(int count = 0)
         {
+            // Return empty array if user is not authenticated
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Json(new List<object>());
+            }
+
             var userId = User.Identity.Name;
-            var notifications = await _notificationService.GetRecentNotificationsAsync(userId, count);
 
-            // Filter only unread notifications
-            var unreadNotifications = notifications.Where(n => !n.IsRead).ToList();
-
-            return Json(unreadNotifications);
+            // If count is 0 or not specified, get ALL unread notifications
+            // Otherwise limit to the specified count
+            if (count <= 0)
+            {
+                // Get all user notifications and filter unread ones
+                var allNotifications = await _notificationService.GetUserNotificationsAsync(userId);
+                var unreadNotifications = allNotifications.Where(n => !n.IsRead).ToList();
+                return Json(unreadNotifications);
+            }
+            else
+            {
+                // Get limited recent notifications and filter unread
+                var notifications = await _notificationService.GetRecentNotificationsAsync(userId, count);
+                var unreadNotifications = notifications.Where(n => !n.IsRead).ToList();
+                return Json(unreadNotifications);
+            }
         }
 
         // GET: Notification/GetUnreadCount
         [HttpGet]
         public async Task<IActionResult> GetUnreadCount()
         {
+            // Return 0 if user is not authenticated
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Json(new { count = 0 });
+            }
+
             var userId = User.Identity.Name;
             var count = await _notificationService.GetUnreadCountAsync(userId);
 

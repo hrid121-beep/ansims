@@ -900,6 +900,9 @@ namespace IMS.Application.DTOs
         // NEW: Total recipients count
         public int TotalRecipients => Recipients?.Count ?? 0;
 
+        // Distribution List (অনুলিপি) - who should receive copies
+        public List<AllotmentLetterDistributionDto> DistributionList { get; set; } = new();
+
         public string Remarks { get; internal set; }
         public string RejectedBy { get; internal set; }
         public DateTime? RejectedDate { get; internal set; }
@@ -965,5 +968,19 @@ namespace IMS.Application.DTOs
         public string UnitBn { get; set; } // Bengali unit
         public string Remarks { get; set; }
         public decimal AvailableStock { get; set; }
+    }
+
+    // DTO for Distribution List (অনুলিপি)
+    public class AllotmentLetterDistributionDto : BaseDto
+    {
+        public int AllotmentLetterId { get; set; }
+        public int SerialNo { get; set; } // ক্রম: ১, ২, ৩...
+        public string RecipientTitle { get; set; } // e.g., "মহাপরিচালক মহোদয়ের সচিবালয়"
+        public string RecipientTitleBn { get; set; } // Bengali version
+        public string Address { get; set; } // Full address
+        public string AddressBn { get; set; } // Bengali address
+        public string Purpose { get; set; } // e.g., "সময় অবগতির জন্য"
+        public string PurposeBn { get; set; }
+        public int DisplayOrder { get; set; }
     }
 }

@@ -1,0 +1,478 @@
+@model IMS.Application.DTOs.CentralStoreRegisterDto
+@{
+    ViewData["Title"] = "Central Store Register - কেন্দ্রীয় ভান্ডার মজুদ তালিকা";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">কেন্দ্রীয় ভান্ডার মজুদ তালিকা</h1>
+                <small>Central Store Register</small>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Central Store Register</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Filter Card -->
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form asp-action="CentralStoreRegister" method="get" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Store (ভান্ডার):</label>
+                                <select id="storeId" name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Category (শ্রেণী):</label>
+                                <select id="categoryId" name="categoryId" asp-items="ViewBag.Categories" class="form-control select2">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Period (সময়কাল):</label>
+                                <select id="period" name="period" class="form-control" onchange="handlePeriodChange()">
+                                    <option value="">All Time (সকল)</option>
+                                    <option value="Today">Today (আজ)</option>
+                                    <option value="Yesterday">Yesterday (গতকাল)</option>
+                                    <option value="ThisWeek">This Week (এই সপ্তাহ)</option>
+                                    <option value="LastWeek">Last Week (গত সপ্তাহ)</option>
+                                    <option value="ThisMonth">This Month (এই মাস)</option>
+                                    <option value="LastMonth">Last Month (গত মাস)</option>
+                                    <option value="Custom">Custom Range (নির্দিষ্ট সময়)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Sort By (ক্রমানুসারে):</label>
+                                <select name="sortBy" asp-items="ViewBag.SortOptions" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="customDateRange" style="display: none;">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>From Date (শুরুর তারিখ):</label>
+                                <input type="date" id="startDate" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>To Date (শেষ তারিখ):</label>
+                                <input type="date" id="endDate" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-info btn-block">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="submitButtonRow">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-info btn-block">
+                                <i class="fas fa-search"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="info-box bg-info">
+                    <span class="info-box-icon"><i class="fas fa-list"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Items (মোট উপকরণ)</span>
+                        <span class="info-box-number">@Model.TotalItems</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Quantity (মোট পরিমাণ)</span>
+                        <span class="info-box-number">@($"{Model.TotalQuantity:N2}")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Value (মোট মূল্য)</span>
+                        <span class="info-box-number">৳@($"{Model.TotalValue:N2}")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-table"></i>
+                    @Model.ReportTitle
+                    @if (!string.IsNullOrEmpty(Model.CategoryNameBn))
+                    {
+                        <br /><small class="text-muted">@Model.CategoryNameBn</small>
+                    }
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF (বাংলা)
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="centralStoreRegisterTable" class="table table-bordered table-striped table-hover text-nowrap">
+                    <thead class="bg-info">
+                        <tr>
+                            <th class="text-center">ক্রম</th>
+                            <th class="text-center">লেজার নং</th>
+                            <th class="text-center">পাতা নং</th>
+                            <th>উপকরণের নাম</th>
+                            <th class="text-center">হিসাবের একক</th>
+                            <th class="text-right">মোট পরিমাণ</th>
+                            <th class="text-right">বরাদ্দকৃত</th>
+                            <th class="text-right">অবশিষ্ট</th>
+                            <th class="text-center">গ্রহণের তারিখ</th>
+                            <th>সরবরাহকারী</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-center"><strong>@item.SerialNo</strong></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-secondary">@item.LedgerNo</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-secondary">@item.PageNo</span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.ItemNameBn</strong>
+                                        @if (!string.IsNullOrEmpty(item.ItemCode))
+                                        {
+                                            <br /><small class="text-muted">Code: @item.ItemCode</small>
+                                        }
+                                    </td>
+                                    <td class="text-center">@item.Unit</td>
+                                    <td class="text-right">
+                                        <strong>@($"{item.TotalQuantity:N2}")</strong>
+                                    </td>
+                                    <td class="text-right text-warning">
+                                        @($"{item.AllocatedQuantity:N2}")
+                                    </td>
+                                    <td class="text-right text-success">
+                                        <strong>@($"{item.RemainingQuantity:N2}")</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.ReceivedDate.HasValue)
+                                        {
+                                            @item.ReceivedDate.Value.ToString("dd/MM/yyyy")
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@item.SupplierName</small>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">
+                                    <i class="fas fa-inbox"></i> No data available
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        <tfoot class="bg-light">
+                            <tr>
+                                <th colspan="5" class="text-right">Total (মোট):</th>
+                                <th class="text-right">@($"{Model.TotalQuantity:N2}")</th>
+                                <th colspan="2" class="text-right">@($"{Model.Items.Sum(i => i.RemainingQuantity):N2}")</th>
+                                <th colspan="2"></th>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    Report generated on: <strong>@Model.ReportDate.ToString("dd MMMM yyyy, hh:mm tt")</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select...'
+            });
+
+            // Set period value on page load if exists
+            var urlParams = new URLSearchParams(window.location.search);
+            var periodParam = urlParams.get('period');
+            if (periodParam) {
+                $('#period').val(periodParam);
+                handlePeriodChange();
+            }
+
+            // Initialize DataTable
+            var table = $('#centralStoreRegisterTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: [[0, 'asc']], // Sort by serial number
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<i class="fas fa-copy"></i> Copy',
+                        className: 'btn btn-sm btn-default',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-sm btn-default',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-sm btn-success',
+                        title: 'Central Store Register - কেন্দ্রীয় ভান্ডার মজুদ তালিকা',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print"></i> Print',
+                        className: 'btn btn-sm btn-info',
+                        title: 'Central Store Register - কেন্দ্রীয় ভান্ডার মজুদ তালিকা',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        },
+                        customize: function(win) {
+                            $(win.document.body).css('font-size', '10pt');
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', '8pt');
+                        }
+                    }
+                ],
+                language: {
+                    search: "অনুসন্ধান:",
+                    lengthMenu: "প্রদর্শন _MENU_ সারি",
+                    info: "দেখানো হচ্ছে _START_ থেকে _END_ পর্যন্ত, মোট _TOTAL_ টি",
+                    infoEmpty: "কোন তথ্য নেই",
+                    infoFiltered: "(মোট _MAX_ টি থেকে ফিল্টার করা হয়েছে)",
+                    paginate: {
+                        first: "প্রথম",
+                        last: "শেষ",
+                        next: "পরবর্তী",
+                        previous: "পূর্ববর্তী"
+                    },
+                    emptyTable: "টেবিলে কোন তথ্য নেই",
+                    zeroRecords: "কোন মিল পাওয়া যায়নি"
+                },
+                columnDefs: [
+                    { className: "text-center", targets: [0, 1, 2, 4, 8] },
+                    { className: "text-right", targets: [5, 6, 7] },
+                    { className: "text-left", targets: [3, 9] }
+                ]
+            });
+
+            // Move DataTable buttons to card-tools area
+            table.buttons().container().appendTo('#centralStoreRegisterTable_wrapper .col-md-6:eq(0)');
+        });
+
+        // Handle period change
+        function handlePeriodChange() {
+            var period = $('#period').val();
+            if (period === 'Custom') {
+                $('#customDateRange').show();
+                $('#submitButtonRow').hide();
+            } else {
+                $('#customDateRange').hide();
+                $('#submitButtonRow').show();
+            }
+        }
+
+        // Export to Excel (Backend)
+        function exportToExcel() {
+            var storeIdElement = document.getElementById('storeId');
+            var categoryIdElement = document.getElementById('categoryId');
+            var sortByElement = document.querySelector('select[name="sortBy"]');
+            var periodElement = document.getElementById('period');
+            var startDateElement = document.getElementById('startDate');
+            var endDateElement = document.getElementById('endDate');
+
+            var storeId = storeIdElement ? storeIdElement.value : '';
+            var categoryId = categoryIdElement ? categoryIdElement.value : '';
+            var sortBy = sortByElement ? sortByElement.value : 'Ledger';
+            var period = periodElement ? periodElement.value : '';
+            var startDate = startDateElement ? startDateElement.value : '';
+            var endDate = endDateElement ? endDateElement.value : '';
+
+            var url = '@Url.Action("ExportCentralStoreRegisterExcel", "Report")';
+            var params = [];
+
+            if (storeId) params.push('storeId=' + storeId);
+            if (categoryId) params.push('categoryId=' + categoryId);
+            if (sortBy) params.push('sortBy=' + sortBy);
+            if (period) params.push('period=' + period);
+            if (startDate) params.push('startDate=' + startDate);
+            if (endDate) params.push('endDate=' + endDate);
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
+            window.location.href = url;
+        }
+
+        // Export to PDF (Bengali)
+        function exportToPDF() {
+            var storeIdElement = document.getElementById('storeId');
+            var categoryIdElement = document.getElementById('categoryId');
+            var sortByElement = document.querySelector('select[name="sortBy"]');
+            var periodElement = document.getElementById('period');
+            var startDateElement = document.getElementById('startDate');
+            var endDateElement = document.getElementById('endDate');
+
+            var storeId = storeIdElement ? storeIdElement.value : '';
+            var categoryId = categoryIdElement ? categoryIdElement.value : '';
+            var sortBy = sortByElement ? sortByElement.value : 'Ledger';
+            var period = periodElement ? periodElement.value : '';
+            var startDate = startDateElement ? startDateElement.value : '';
+            var endDate = endDateElement ? endDateElement.value : '';
+
+            var url = '@Url.Action("ExportCentralStoreRegisterPdf", "Report")';
+            var params = [];
+
+            if (storeId) params.push('storeId=' + storeId);
+            if (categoryId) params.push('categoryId=' + categoryId);
+            if (sortBy) params.push('sortBy=' + sortBy);
+            if (period) params.push('period=' + period);
+            if (startDate) params.push('startDate=' + startDate);
+            if (endDate) params.push('endDate=' + endDate);
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
+            window.location.href = url;
+        }
+    </script>
+
+    <!-- DataTable & Print Styles -->
+    <style>
+        /* DataTable Buttons Styling */
+        .dt-buttons {
+            margin-bottom: 10px;
+        }
+
+        .dt-button {
+            margin-right: 5px !important;
+        }
+
+        /* Make table more compact */
+        #centralStoreRegisterTable {
+            font-size: 0.85rem;
+        }
+
+        #centralStoreRegisterTable thead th {
+            font-size: 0.8rem;
+            padding: 8px 4px !important;
+            vertical-align: middle;
+        }
+
+        #centralStoreRegisterTable tbody td {
+            padding: 6px 4px !important;
+            vertical-align: middle;
+        }
+
+        /* Print Styles */
+        @@media print {
+            .main-sidebar, .main-header, .main-footer, .card-tools, .info-box,
+            .content-header, .dt-buttons, .dataTables_filter, .dataTables_length,
+            .dataTables_info, .dataTables_paginate {
+                display: none !important;
+            }
+
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            #centralStoreRegisterTable {
+                font-size: 8pt !important;
+            }
+
+            #centralStoreRegisterTable thead th,
+            #centralStoreRegisterTable tbody td {
+                padding: 3px !important;
+            }
+        }
+    </style>
+}

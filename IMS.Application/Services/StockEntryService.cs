@@ -199,36 +199,10 @@ namespace IMS.Application.Services
                         await _unitOfWork.CompleteAsync();
                         _logger.LogDebug($"Stock entry item added for ItemId: {itemDto.ItemId}");
 
-                        // Update store stock
-                        var storeItem = await _unitOfWork.StoreItems
-                            .FirstOrDefaultAsync(si => si.StoreId == dto.StoreId && si.ItemId == itemDto.ItemId);
-
-                        if (storeItem != null)
-                        {
-                            var oldQuantity = storeItem.Quantity;
-                            storeItem.Quantity += itemDto.Quantity;
-                            storeItem.Location = itemDto.Location ?? storeItem.Location;
-                            storeItem.UpdatedAt = DateTime.Now;
-                            storeItem.UpdatedBy = _userContext.CurrentUserName;
-                            _unitOfWork.StoreItems.Update(storeItem);
-                            _logger.LogInformation($"Updated existing store item. ItemId: {itemDto.ItemId}, Old Qty: {oldQuantity}, New Qty: {storeItem.Quantity}");
-                        }
-                        else
-                        {
-                            storeItem = new StoreItem
-                            {
-                                StoreId = dto.StoreId,
-                                ItemId = itemDto.ItemId,
-                                Quantity = itemDto.Quantity,
-                                Location = itemDto.Location,
-                                Status = ItemStatus.Available,
-                                CreatedAt = DateTime.Now,
-                                CreatedBy = _userContext.CurrentUserName,
-                                IsActive = true
-                            };
-                            await _unitOfWork.StoreItems.AddAsync(storeItem);
-                            _logger.LogInformation($"Created new store item. ItemId: {itemDto.ItemId}, Qty: {itemDto.Quantity}");
-                        }
+                        // CRITICAL FIX: Stock is NOT updated here anymore
+                        // Stock will only be updated when entry is APPROVED in ApproveStockEntryAsync()
+                        // This prevents phantom inventory from draft/rejected entries
+                        _logger.LogInformation($"Stock entry item created (stock NOT updated yet). ItemId: {itemDto.ItemId}, Qty: {itemDto.Quantity}");
 
                         // Generate barcodes if requested
                         if (itemDto.GenerateBarcodes)
@@ -270,20 +244,8 @@ namespace IMS.Application.Services
 
                         await _unitOfWork.CompleteAsync();
 
-                        // Check for low stock alert
-                        if (item.MinimumStock > 0 && storeItem.Quantity <= item.MinimumStock)
-                        {
-                            _logger.LogWarning($"Low stock alert for ItemId: {itemDto.ItemId}, Current: {storeItem.Quantity}, Minimum: {item.MinimumStock}");
-                            try
-                            {
-                                await SendLowStockAlertAsync(item, storeItem, dto.StoreId);
-                            }
-                            catch (Exception alertEx)
-                            {
-                                // Log but don't fail the transaction for alert failures
-                                _logger.LogError(alertEx, $"Failed to send low stock alert for ItemId: {itemDto.ItemId}");
-                            }
-                        }
+                        // NOTE: Low stock alerts will be checked when entry is APPROVED,
+                        // not at creation time, since stock is not updated yet
                     }
                     catch (Exception itemEx)
                     {
@@ -333,6 +295,223 @@ namespace IMS.Application.Services
                 throw new InvalidOperationException(detailedMessage, ex);
             }
         }
+        public async Task<bool> SubmitStockEntryForApprovalAsync(int id)
+        {
+            try
+            {
+                var entry = await _unitOfWork.StockEntries.GetByIdAsync(id);
+                if (entry == null || entry.Status != "Draft")
+                    return false;
+
+                entry.Status = "Submitted";
+                entry.SubmittedBy = _userContext.CurrentUserName;
+                entry.SubmittedDate = DateTime.Now;
+                entry.UpdatedAt = DateTime.Now;
+                entry.UpdatedBy = _userContext.CurrentUserName;
+
+                _unitOfWork.StockEntries.Update(entry);
+                await _unitOfWork.CompleteAsync();
+
+                await _activityLogService.LogActivityAsync(
+                    "StockEntry",
+                    id,
+                    "Submit",
+                    $"Submitted stock entry {entry.EntryNo} for approval",
+                    _userContext.CurrentUserName
+                );
+
+                // Send notification to approvers
+                await _notificationService.CreateNotificationAsync(new NotificationDto
+                {
+                    Type = "StockEntryApproval",
+                    Title = "Stock Entry Approval Required",
+                    Message = $"Stock entry {entry.EntryNo} has been submitted for approval",
+                    RelatedEntity = "StockEntry",
+                    RelatedEntityId = id,
+                    Priority = "Medium"
+                });
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting stock entry {Id} for approval", id);
+                return false;
+            }
+        }
+
+        public async Task<bool> ApproveStockEntryAsync(int id, string comments = null)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                var entry = await _unitOfWork.StockEntries.GetByIdAsync(id);
+                if (entry == null || entry.Status != "Submitted")
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return false;
+                }
+
+                // CRITICAL FIX: Update stock quantities ONLY on approval
+                // Get all entry items for this stock entry
+                var entryItems = await _unitOfWork.StockEntryItems
+                    .GetAllAsync(ei => ei.StockEntryId == id);
+
+                foreach (var entryItem in entryItems)
+                {
+                    var storeItem = await _unitOfWork.StoreItems
+                        .FirstOrDefaultAsync(si => si.StoreId == entry.StoreId && si.ItemId == entryItem.ItemId);
+
+                    if (storeItem != null)
+                    {
+                        // Update existing store item
+                        var oldQuantity = storeItem.Quantity;
+                        storeItem.Quantity += entryItem.Quantity;
+                        storeItem.Location = entryItem.Location ?? storeItem.Location;
+                        storeItem.UpdatedAt = DateTime.Now;
+                        storeItem.UpdatedBy = _userContext.CurrentUserName;
+                        _unitOfWork.StoreItems.Update(storeItem);
+                        _logger.LogInformation($"Approved: Updated stock for ItemId {entryItem.ItemId} from {oldQuantity} to {storeItem.Quantity}");
+                    }
+                    else
+                    {
+                        // Create new store item
+                        storeItem = new StoreItem
+                        {
+                            StoreId = entry.StoreId,
+                            ItemId = entryItem.ItemId,
+                            Quantity = entryItem.Quantity,
+                            Location = entryItem.Location,
+                            Status = ItemStatus.Available,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = _userContext.CurrentUserName,
+                            IsActive = true
+                        };
+                        await _unitOfWork.StoreItems.AddAsync(storeItem);
+                        _logger.LogInformation($"Approved: Created new stock for ItemId {entryItem.ItemId} with quantity {entryItem.Quantity}");
+                    }
+
+                    // Create stock movement record
+                    var movement = new StockMovement
+                    {
+                        ItemId = entryItem.ItemId,
+                        StoreId = entry.StoreId,
+                        MovementType = "StockEntry",
+                        Quantity = entryItem.Quantity,
+                        MovementDate = DateTime.Now,
+                        ReferenceType = "StockEntry",
+                        ReferenceId = entry.Id,
+                        ReferenceNo = entry.EntryNo,
+                        Remarks = $"Stock entry approved: {entry.EntryNo}",
+                        MovedBy = _userContext.CurrentUserName,
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = _userContext.CurrentUserName,
+                        IsActive = true
+                    };
+                    await _unitOfWork.StockMovements.AddAsync(movement);
+                }
+
+                entry.Status = "Approved";
+                entry.ApprovedBy = _userContext.CurrentUserName;
+                entry.ApprovedDate = DateTime.Now;
+                entry.UpdatedAt = DateTime.Now;
+                entry.UpdatedBy = _userContext.CurrentUserName;
+                if (!string.IsNullOrEmpty(comments))
+                {
+                    entry.Remarks += $"\nApproval Comments: {comments}";
+                }
+
+                _unitOfWork.StockEntries.Update(entry);
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                await _activityLogService.LogActivityAsync(
+                    "StockEntry",
+                    id,
+                    "Approve",
+                    $"Approved stock entry {entry.EntryNo} and updated stock",
+                    _userContext.CurrentUserName
+                );
+
+                // Send notification to submitter
+                if (!string.IsNullOrEmpty(entry.SubmittedBy))
+                {
+                    await _notificationService.CreateNotificationAsync(new NotificationDto
+                    {
+                        Type = "StockEntryApproved",
+                        Title = "Stock Entry Approved",
+                        Message = $"Your stock entry {entry.EntryNo} has been approved and stock updated",
+                        RelatedEntity = "StockEntry",
+                        RelatedEntityId = id,
+                        Priority = "Low",
+                        TargetUserId = entry.SubmittedBy
+                    });
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Error approving stock entry {Id}", id);
+                return false;
+            }
+        }
+
+        public async Task<bool> RejectStockEntryAsync(int id, string reason)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(reason))
+                    throw new ArgumentException("Rejection reason is required");
+
+                var entry = await _unitOfWork.StockEntries.GetByIdAsync(id);
+                if (entry == null || entry.Status != "Submitted")
+                    return false;
+
+                entry.Status = "Rejected";
+                entry.RejectedBy = _userContext.CurrentUserName;
+                entry.RejectedDate = DateTime.Now;
+                entry.RejectionReason = reason;
+                entry.UpdatedAt = DateTime.Now;
+                entry.UpdatedBy = _userContext.CurrentUserName;
+
+                _unitOfWork.StockEntries.Update(entry);
+                await _unitOfWork.CompleteAsync();
+
+                await _activityLogService.LogActivityAsync(
+                    "StockEntry",
+                    id,
+                    "Reject",
+                    $"Rejected stock entry {entry.EntryNo}. Reason: {reason}",
+                    _userContext.CurrentUserName
+                );
+
+                // Send notification to submitter
+                if (!string.IsNullOrEmpty(entry.SubmittedBy))
+                {
+                    await _notificationService.CreateNotificationAsync(new NotificationDto
+                    {
+                        Type = "StockEntryRejected",
+                        Title = "Stock Entry Rejected",
+                        Message = $"Your stock entry {entry.EntryNo} has been rejected. Reason: {reason}",
+                        RelatedEntity = "StockEntry",
+                        RelatedEntityId = id,
+                        Priority = "High",
+                        TargetUserId = entry.SubmittedBy
+                    });
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rejecting stock entry {Id}", id);
+                return false;
+            }
+        }
+
         public async Task<bool> CompleteStockEntryAsync(int id)
         {
             try

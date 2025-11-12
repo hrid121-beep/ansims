@@ -22,6 +22,7 @@
 
 <section class="content">
     <div class="container-fluid">
+        @Html.AntiForgeryToken()
 
         <div class="row mb-3">
             <div class="col-12">
@@ -86,11 +87,11 @@
                 </h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
-            <div class="card-body" style="display: none;">
+            <div class="card-body">
                 <form method="get" asp-action="Index" id="filterForm">
                     <div class="row">
                         <div class="col-md-3">
@@ -289,24 +290,29 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group-vertical btn-group-sm" style="width: 100%;">
                                         <a asp-action="Details" asp-route-id="@allotment.Id"
-                                           class="btn btn-info" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                           class="btn btn-info btn-sm mb-1" title="View Details">
+                                            <i class="fas fa-eye"></i> Details
                                         </a>
                                         @if (allotment.Status == "Draft")
                                         {
                                             <a asp-action="Edit" asp-route-id="@allotment.Id"
-                                               class="btn btn-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                               class="btn btn-primary btn-sm mb-1" title="Edit">
+                                                <i class="fas fa-edit"></i> Edit
                                             </a>
+                                            <button type="button" class="btn btn-warning btn-sm mb-1"
+                                                    onclick="submitForApproval(@allotment.Id, '@allotment.AllotmentNo')"
+                                                    title="Submit for Approval">
+                                                <i class="fas fa-paper-plane"></i> Submit for Approval
+                                            </button>
                                         }
                                         @if (allotment.CanIssue)
                                         {
                                             <a asp-controller="Issue" asp-action="Create"
                                                asp-route-allotmentId="@allotment.Id"
-                                               class="btn btn-success" title="Create Issue">
-                                                <i class="fas fa-share-square"></i>
+                                               class="btn btn-success btn-sm" title="Create Issue">
+                                                <i class="fas fa-share-square"></i> Create Issue
                                             </a>
                                         }
                                     </div>
@@ -345,6 +351,41 @@
         function exportToExcel() {
             var url = '@Url.Action("ExportExcel", "AllotmentLetter")' + window.location.search;
             window.location.href = url;
+        }
+
+        function submitForApproval(id, allotmentNo) {
+            if (confirm('Are you sure you want to submit Allotment Letter "' + allotmentNo + '" for approval?\n\nOnce submitted, you will not be able to edit it.')) {
+                // Show loading indicator
+                var btn = event.target.closest('button');
+                var originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                btn.disabled = true;
+
+                // Submit via AJAX
+                $.ajax({
+                    url: '@Url.Action("SubmitForApproval", "AllotmentLetter")',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Success! Allotment Letter "' + allotmentNo + '" has been submitted for approval.');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (response.message || 'Failed to submit for approval'));
+                            btn.innerHTML = originalHtml;
+                            btn.disabled = false;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error: ' + error);
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                });
+            }
         }
     </script>
 }

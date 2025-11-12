@@ -267,13 +267,16 @@
         });
 
         function loadStores() {
-            $.get('@Url.Action("GetStores", "Store")')
+            $.get('@Url.Action("GetStores", "Barcode")')
                 .done(function(data) {
                     let options = '<option value="">All Stores</option>';
                     data.forEach(item => {
                         options += `<option value="${item.value}">${item.text}</option>`;
                     });
                     $('#storeFilter').html(options);
+                })
+                .fail(function() {
+                    console.error('Failed to load stores');
                 });
         }
 
@@ -294,13 +297,16 @@
 
             if (!categoryId) return;
 
-            $.get('@Url.Action("GetSubCategories", "Category")', { categoryId: categoryId })
+            $.get('@Url.Action("GetSubCategories", "Barcode")', { categoryId: categoryId })
                 .done(function(data) {
                     let options = '<option value="">All Sub Categories</option>';
                     data.forEach(item => {
                         options += `<option value="${item.value}">${item.text}</option>`;
                     });
                     $('#subCategoryFilter').html(options);
+                })
+                .fail(function() {
+                    console.error('Failed to load subcategories');
                 });
         }
 
@@ -315,16 +321,36 @@
 
             $('#itemsTableBody').html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
 
-            $.post('@Url.Action("GetFilteredItems", "Barcode")', filters)
-                .done(function(data) {
+            $.ajax({
+                url: '@Url.Action("GetFilteredItems", "Barcode")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(filters),
+                success: function(data) {
+                    console.log('Items received:', data);
+
+                    // Check if response is an error
+                    if (data && data.error) {
+                        console.error('Server error:', data.message);
+                        $('#itemsTableBody').html('<tr><td colspan="7" class="text-center text-danger">Error: ' + data.message + '</td></tr>');
+                        return;
+                    }
+
+                    console.log('Items count:', data ? data.length : 0);
                     displayItems(data);
-                })
-                .fail(function() {
-                    $('#itemsTableBody').html('<tr><td colspan="7" class="text-center text-danger">Error loading items</td></tr>');
-                });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading items:', error);
+                    console.error('Status:', status);
+                    console.error('Response:', xhr.responseText);
+                    $('#itemsTableBody').html('<tr><td colspan="7" class="text-center text-danger">Error loading items. Check console for details.</td></tr>');
+                }
+            });
         }
 
         function displayItems(items) {
+            console.log('displayItems called with:', items);
+
             if ($.fn.DataTable.isDataTable('#itemsTable')) {
                 $('#itemsTable').DataTable().destroy();
             }
@@ -332,9 +358,12 @@
             $('#itemsTableBody').empty();
 
             if (!items || items.length === 0) {
-                $('#itemsTableBody').append('<tr><td colspan="7" class="text-center text-muted">No items found</td></tr>');
+                console.warn('No items to display');
+                $('#itemsTableBody').append('<tr><td colspan="7" class="text-center text-muted">No items found. Try selecting a different store or filter.</td></tr>');
                 return;
             }
+
+            console.log('Rendering ' + items.length + ' items...');
 
             items.forEach(item => {
                 const row = `

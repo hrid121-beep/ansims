@@ -1,3 +1,4 @@
+@model IEnumerable<IMS.Application.DTOs.ActivityLogDto>
 @{
     ViewData["Title"] = "Activity Logs";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -31,7 +32,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-info">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>@ViewBag.TotalActivitiesToday</h3>
                         <p>Total Activities Today</p>
                     </div>
                     <div class="icon">
@@ -42,7 +43,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>@ViewBag.ActiveUsers</h3>
                         <p>Active Users</p>
                     </div>
                     <div class="icon">
@@ -53,7 +54,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>@ViewBag.FailedLogins</h3>
                         <p>Failed Login Attempts</p>
                     </div>
                     <div class="icon">
@@ -64,7 +65,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-danger">
                     <div class="inner">
-                        <h3>0</h3>
+                        <h3>@ViewBag.CriticalEvents</h3>
                         <p>Critical Events</p>
                     </div>
                     <div class="icon">
@@ -75,14 +76,14 @@
         </div>
 
         <!-- Filter Card -->
-        <div class="card card-primary collapsed-card">
+        <div class="card card-primary">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fas fa-filter"></i> Filter Logs
                 </h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
@@ -94,15 +95,20 @@
                                 <label>Activity Type</label>
                                 <select class="form-control" name="activityType">
                                     <option value="">All Types</option>
-                                    <option value="Login">Login</option>
-                                    <option value="Logout">Logout</option>
-                                    <option value="Create">Create</option>
-                                    <option value="Update">Update</option>
-                                    <option value="Delete">Delete</option>
-                                    <option value="Approve">Approve</option>
-                                    <option value="Reject">Reject</option>
-                                    <option value="Export">Export</option>
-                                    <option value="Import">Import</option>
+                                    @{
+                                        var activityTypes = new[] { "Login", "Logout", "Create", "Update", "Delete", "Approve", "Reject", "Export", "Import" };
+                                        foreach (var type in activityTypes)
+                                        {
+                                            if (ViewBag.CurrentActivityType == type)
+                                            {
+                                                <option value="@type" selected>@type</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@type">@type</option>
+                                            }
+                                        }
+                                    }
                                 </select>
                             </div>
                         </div>
@@ -111,28 +117,46 @@
                                 <label>Module</label>
                                 <select class="form-control" name="module">
                                     <option value="">All Modules</option>
-                                    <option value="Purchase">Purchase</option>
-                                    <option value="Inventory">Inventory</option>
-                                    <option value="Issue">Issue</option>
-                                    <option value="Transfer">Transfer</option>
-                                    <option value="Approval">Approval</option>
-                                    <option value="User">User Management</option>
-                                    <option value="Settings">Settings</option>
+                                    @{
+                                        var modules = new Dictionary<string, string>
+                                        {
+                                            { "Purchase", "Purchase" },
+                                            { "Item", "Item" },
+                                            { "Issue", "Issue" },
+                                            { "Receive", "Receive" },
+                                            { "Transfer", "Transfer" },
+                                            { "Return", "Return" },
+                                            { "StockAdjustment", "Stock Adjustment" },
+                                            { "User", "User Management" },
+                                            { "Store", "Store" }
+                                        };
+                                        foreach (var module in modules)
+                                        {
+                                            if (ViewBag.CurrentModule == module.Key)
+                                            {
+                                                <option value="@module.Key" selected>@module.Value</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@module.Key">@module.Value</option>
+                                            }
+                                        }
+                                    }
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>User</label>
-                                <input type="text" class="form-control" name="userName" placeholder="Search by username" />
+                                <input type="text" class="form-control" name="userName" value="@ViewBag.CurrentUserName" placeholder="Search by username" />
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Date Range</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control" name="fromDate" />
-                                    <input type="date" class="form-control" name="toDate" />
+                                    <input type="date" class="form-control" name="fromDate" value="@ViewBag.CurrentFromDate" />
+                                    <input type="date" class="form-control" name="toDate" value="@ViewBag.CurrentToDate" />
                                 </div>
                             </div>
                         </div>
@@ -179,61 +203,43 @@
                             </tr>
                         </thead>
                         <tbody id="logsTable">
-                            <!-- Sample data - replace with actual logs -->
-                            <tr>
-                                <td colspan="7" class="text-center py-5 text-muted">
-                                    <i class="fas fa-history fa-3x mb-3"></i>
-                                    <p>No activity logs available</p>
-                                    <small>Activity logs will appear here when users perform actions in the system</small>
-                                </td>
-                            </tr>
-                            <!-- Example rows:
-                            <tr>
-                                <td><small>11/01/2025 14:30:22</small></td>
-                                <td>admin</td>
-                                <td><span class="badge badge-info">Login</span></td>
-                                <td>System</td>
-                                <td>User logged in successfully</td>
-                                <td><small>192.168.1.100</small></td>
-                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
-                            </tr>
-                            <tr>
-                                <td><small>11/01/2025 14:25:10</small></td>
-                                <td>storekeeper</td>
-                                <td><span class="badge badge-primary">Create</span></td>
-                                <td>Issue</td>
-                                <td>Created new issue #IS-2025-0045</td>
-                                <td><small>192.168.1.105</small></td>
-                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
-                            </tr>
-                            <tr>
-                                <td><small>11/01/2025 14:20:45</small></td>
-                                <td>manager</td>
-                                <td><span class="badge badge-success">Approve</span></td>
-                                <td>Purchase</td>
-                                <td>Approved purchase order PO-2025-0123</td>
-                                <td><small>192.168.1.102</small></td>
-                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
-                            </tr>
-                            <tr>
-                                <td><small>11/01/2025 14:18:30</small></td>
-                                <td>admin</td>
-                                <td><span class="badge badge-warning">Update</span></td>
-                                <td>Settings</td>
-                                <td>Updated system settings</td>
-                                <td><small>192.168.1.100</small></td>
-                                <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
-                            </tr>
-                            <tr>
-                                <td><small>11/01/2025 14:15:00</small></td>
-                                <td>unknown</td>
-                                <td><span class="badge badge-danger">Login</span></td>
-                                <td>System</td>
-                                <td>Failed login attempt - Invalid credentials</td>
-                                <td><small>192.168.1.200</small></td>
-                                <td><span class="badge badge-danger"><i class="fas fa-times"></i></span></td>
-                            </tr>
-                            -->
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var log in Model)
+                                {
+                                    var badgeClass = log.Action?.ToLower() switch
+                                    {
+                                        "create" => "badge-success",
+                                        "update" => "badge-info",
+                                        "delete" => "badge-danger",
+                                        "approve" => "badge-success",
+                                        "reject" => "badge-warning",
+                                        "login" => "badge-primary",
+                                        "logout" => "badge-secondary",
+                                        _ => "badge-default"
+                                    };
+
+                                    <tr>
+                                        <td><small>@log.Timestamp.ToString("MM/dd/yyyy HH:mm:ss")</small></td>
+                                        <td><strong>@(log.UserName ?? "Unknown")</strong></td>
+                                        <td><span class="badge @badgeClass">@log.Action</span></td>
+                                        <td>@(log.Module ?? log.Entity ?? "-")</td>
+                                        <td>@(log.Description ?? log.Details ?? "-")</td>
+                                        <td><small>@(log.IPAddress ?? "-")</small></td>
+                                        <td><span class="badge badge-success"><i class="fas fa-check"></i></span></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="fas fa-history fa-3x mb-3"></i>
+                                        <p>No activity logs available</p>
+                                        <small>Activity logs will appear here when users perform actions in the system</small>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -241,13 +247,42 @@
             <div class="card-footer">
                 <div class="row">
                     <div class="col-sm-12 col-md-5">
-                        <div class="dataTables_info">Showing 0 to 0 of 0 entries</div>
+                        <div class="dataTables_info">
+                            Showing @(((ViewBag.CurrentPage - 1) * ViewBag.PageSize) + 1) to
+                            @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalLogs))
+                            of @ViewBag.TotalLogs entries
+                        </div>
                     </div>
                     <div class="col-sm-12 col-md-7">
                         <ul class="pagination pagination-sm m-0 float-right">
-                            <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item disabled"><a class="page-link" href="#">»</a></li>
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)&activityType=@ViewBag.CurrentActivityType&module=@ViewBag.CurrentModule&userName=@ViewBag.CurrentUserName&fromDate=@ViewBag.CurrentFromDate&toDate=@ViewBag.CurrentToDate">«</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
+                            }
+
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="?page=@i&activityType=@ViewBag.CurrentActivityType&module=@ViewBag.CurrentModule&userName=@ViewBag.CurrentUserName&fromDate=@ViewBag.CurrentFromDate&toDate=@ViewBag.CurrentToDate">@i</a>
+                                </li>
+                            }
+
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)&activityType=@ViewBag.CurrentActivityType&module=@ViewBag.CurrentModule&userName=@ViewBag.CurrentUserName&fromDate=@ViewBag.CurrentFromDate&toDate=@ViewBag.CurrentToDate">»</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled"><a class="page-link" href="#">»</a></li>
+                            }
                         </ul>
                     </div>
                 </div>
@@ -330,28 +365,34 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Database Size:</strong> -- MB</p>
-                        <p><strong>Total Log Entries:</strong> 0</p>
-                        <p><strong>Oldest Entry:</strong> N/A</p>
+                        <p><strong>Total Log Entries:</strong> @ViewBag.TotalLogEntries</p>
+                        <p><strong>Oldest Entry:</strong> @ViewBag.OldestEntry</p>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> Clearing logs is permanent and cannot be undone.
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Clear logs older than:</label>
-                            <div class="input-group">
-                                <select class="form-control" id="clearLogsDays">
-                                    <option value="30">30 days</option>
-                                    <option value="60">60 days</option>
-                                    <option value="90">90 days</option>
-                                    <option value="180">6 months</option>
-                                    <option value="365">1 year</option>
-                                </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-danger" onclick="clearOldLogs()">
-                                        <i class="fas fa-trash"></i> Clear Old Logs
-                                    </button>
+                        <form asp-action="ClearOldLogs" method="post" id="clearLogsForm">
+                            @Html.AntiForgeryToken()
+                            <div class="form-group">
+                                <label>Clear logs older than:</label>
+                                <div class="input-group">
+                                    <select class="form-control" id="clearLogsDays" name="days">
+                                        <option value="30">30 days</option>
+                                        <option value="60">60 days</option>
+                                        <option value="90">90 days</option>
+                                        <option value="180">6 months</option>
+                                        <option value="365">1 year</option>
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-danger" onclick="clearOldLogs()">
+                                            <i class="fas fa-trash"></i> Clear Old Logs
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -367,21 +408,43 @@
         }
 
         function exportLogs() {
-            alert('Exporting logs... This feature will be implemented.');
-            // Implement actual export logic
+            // Get current filter values
+            var activityType = $('select[name="activityType"]').val() || '';
+            var module = $('select[name="module"]').val() || '';
+            var userName = $('input[name="userName"]').val() || '';
+            var fromDate = $('input[name="fromDate"]').val() || '';
+            var toDate = $('input[name="toDate"]').val() || '';
+
+            // Build export URL
+            var url = '@Url.Action("ExportLogs", "Admin")' +
+                      '?activityType=' + encodeURIComponent(activityType) +
+                      '&module=' + encodeURIComponent(module) +
+                      '&userName=' + encodeURIComponent(userName) +
+                      '&fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            // Trigger download
+            window.location.href = url;
         }
 
         function clearOldLogs() {
             var days = $('#clearLogsDays').val();
-            if (confirm('Are you sure you want to delete logs older than ' + days + ' days? This action cannot be undone.')) {
-                alert('Clearing old logs... This feature will be implemented.');
-                // Implement actual clear logic
-            }
-        }
 
-        // Auto-refresh every 30 seconds (optional)
-        // setInterval(function() {
-        //     location.reload();
-        // }, 30000);
+            Swal.fire({
+                title: 'Clear Old Logs?',
+                html: `<p>Are you sure you want to delete all logs older than <strong>${days} days</strong>?</p>
+                       <p class="text-danger">This action cannot be undone!</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '<i class="fas fa-trash"></i> Yes, Delete Logs',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#clearLogsForm').submit();
+                }
+            });
+        }
     </script>
 }

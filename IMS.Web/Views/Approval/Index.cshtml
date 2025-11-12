@@ -137,6 +137,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3 id="stockEntryCount">@initialData.Count(x => x.EntityType == "STOCK_ENTRY")</h3>
+                        <p>Stock Entries</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row mb-3">
@@ -155,12 +167,12 @@
             </div>
         </div>
 
-        <div class="card card-outline card-primary collapsed-card">
+        <div class="card card-outline card-primary">
             <div class="card-header">
                 <h3 class="card-title">Filters</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
@@ -178,6 +190,7 @@
                             <option value="ALLOTMENT_LETTER">Allotment Letters</option>
                             <option value="RETURN">Returns</option>
                             <option value="WRITEOFF">Write-Offs</option>
+                            <option value="STOCK_ENTRY">Stock Entries</option>
                         </select>
                     </div>
                     <div class="form-group mr-3">
@@ -356,10 +369,10 @@
                             </a>`;
                 }
 
-                html += `<button class="btn btn-success" onclick="approveItem(${item.id})" title="Approve">
+                html += `<button class="btn btn-success" onclick="approveItem(${item.id}, '${type}')" title="Approve">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
-                                <button class="btn btn-danger" onclick="rejectItem(${item.id})" title="Reject">
+                                <button class="btn btn-danger" onclick="rejectItem(${item.id}, '${type}')" title="Reject">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
                                 <a href="/${getControllerName(type)}/Details/${item.entityId}" class="btn btn-info" target="_blank" title="View">
@@ -384,7 +397,8 @@
                 requisition: approvals.filter(a => a.entityType === 'REQUISITION').length,
                 allotment: approvals.filter(a => a.entityType === 'ALLOTMENT_LETTER').length,
                 return: approvals.filter(a => a.entityType === 'RETURN').length,
-                writeoff: approvals.filter(a => a.entityType === 'WRITEOFF' || a.entityType === 'WRITE_OFF').length
+                writeoff: approvals.filter(a => a.entityType === 'WRITEOFF' || a.entityType === 'WRITE_OFF').length,
+                stockEntry: approvals.filter(a => a.entityType === 'STOCK_ENTRY').length
             };
 
             $('#totalPending').text(counts.total);
@@ -396,9 +410,10 @@
             $('#allotmentCount').text(counts.allotment);
             $('#returnCount').text(counts.return);
             $('#writeoffCount').text(counts.writeoff);
+            $('#stockEntryCount').text(counts.stockEntry);
         }
 
-        function approveItem(id) {
+        function approveItem(id, entityType) {
             Swal.fire({
                 title: 'Approve Request?',
                 text: 'Are you sure you want to approve this request?',
@@ -409,11 +424,11 @@
                 confirmButtonText: 'Yes, approve!',
                 confirmButtonColor: '#28a745',
                 showLoaderOnConfirm: true,
-                preConfirm: (comments) => processApproval(id, 'approve', comments || '')
+                preConfirm: (comments) => processApproval(id, 'approve', comments || '', entityType)
             });
         }
 
-        function rejectItem(id) {
+        function rejectItem(id, entityType) {
             Swal.fire({
                 title: 'Reject Request',
                 text: 'Please provide a reason for rejection',
@@ -425,11 +440,11 @@
                 confirmButtonText: 'Reject',
                 confirmButtonColor: '#dc3545',
                 showLoaderOnConfirm: true,
-                preConfirm: (reason) => processApproval(id, 'reject', reason)
+                preConfirm: (reason) => processApproval(id, 'reject', reason, entityType)
             });
         }
 
-        function processApproval(id, action, remarks) {
+        function processApproval(id, action, remarks, entityType) {
             var token = $('input[name="__RequestVerificationToken"]').val();
 
             return new Promise((resolve, reject) => {
@@ -440,6 +455,7 @@
                         id: id,
                         action: action,
                         remarks: remarks,
+                        entityType: entityType,
                         __RequestVerificationToken: token
                     },
                     success: function(response) {
@@ -475,7 +491,8 @@
                 'ALLOTMENT_LETTER': 'card-navy',
                 'RETURN': 'card-orange',
                 'WRITEOFF': 'card-maroon',
-                'WRITE_OFF': 'card-maroon'
+                'WRITE_OFF': 'card-maroon',
+                'STOCK_ENTRY': 'card-primary'
             };
             return colors[type] || 'card-secondary';
         }
@@ -490,7 +507,8 @@
                 'ALLOTMENT_LETTER': 'fas fa-file-alt',
                 'RETURN': 'fas fa-undo',
                 'WRITEOFF': 'fas fa-trash-alt',
-                'WRITE_OFF': 'fas fa-trash-alt'
+                'WRITE_OFF': 'fas fa-trash-alt',
+                'STOCK_ENTRY': 'fas fa-boxes'
             };
             return icons[type] || 'fas fa-file';
         }
@@ -505,7 +523,8 @@
                 'ALLOTMENT_LETTER': 'Allotment Letters',
                 'RETURN': 'Return Requests',
                 'WRITEOFF': 'Write-Off Requests',
-                'WRITE_OFF': 'Write-Off Requests'
+                'WRITE_OFF': 'Write-Off Requests',
+                'STOCK_ENTRY': 'Stock Entries'
             };
             return names[type] || type;
         }
@@ -520,7 +539,8 @@
                 'ALLOTMENT_LETTER': 'AllotmentLetter',
                 'RETURN': 'Return',
                 'WRITEOFF': 'WriteOff',
-                'WRITE_OFF': 'WriteOff'
+                'WRITE_OFF': 'WriteOff',
+                'STOCK_ENTRY': 'StockEntry'
             };
             return controllers[type] || type;
         }

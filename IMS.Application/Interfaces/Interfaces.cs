@@ -197,7 +197,7 @@ namespace IMS.Application.Interfaces
         Task<ItemDto> CreateItemAsync(ItemDto itemDto);
         Task UpdateItemAsync(ItemDto itemDto);
         Task DeleteItemAsync(int id);
-        Task<string> GenerateItemCodeAsync(int subCategoryId);
+        Task<string> GenerateItemCodeAsync(int? subCategoryId);
         Task<IEnumerable<ItemDto>> GetLowStockItemsAsync();
         Task<IEnumerable<ItemDto>> GetItemsByCategoryAsync(int categoryId);
         Task<IEnumerable<ItemDto>> GetItemsBySubCategoryAsync(int subCategoryId);
@@ -372,6 +372,7 @@ namespace IMS.Application.Interfaces
         Task<string> GenerateIssueNoAsync();
         Task<IEnumerable<IssueDto>> GetAllIssuesAsync();
         Task<IssueDto> GetIssueByIdAsync(int id);
+        Task<IssueDto> GetIssueByVoucherNoAsync(string voucherNo);
 
         // Barcode scanning
         Task<IssueScanDto> ScanItemForIssueAsync(string barcodeNumber, int? storeId);
@@ -435,7 +436,8 @@ namespace IMS.Application.Interfaces
         Task<bool> CanDeleteIssueAsync(int issueId);
         Task<ServiceResult> CancelIssueAsync(int issueId, string reason);
         Task<IEnumerable<IssueDto>> SearchIssuesAsync(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate);
-        Task<byte[]> ExportIssuesToExcelAsync(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate);
+        Task<byte[]> ExportIssuesToCsvAsync(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate);
+        Task<byte[]> ExportIssuesToPdfAsync(string searchTerm, string status, string issueType, DateTime? fromDate, DateTime? toDate);
 
     }
 
@@ -787,6 +789,11 @@ namespace IMS.Application.Interfaces
         Task<byte[]> GenerateAuditTrailReportPdfAsync(DateTime? fromDate, DateTime? toDate, string transactionType = null, int? storeId = null);
         Task<byte[]> GenerateVarianceReportPdfAsync(int physicalInventoryId);
         Task<byte[]> GenerateABCAnalysisReportPdfAsync(string analysisMethod = "Value", int months = 12);
+
+        // Central Store Register Report (কেন্দ্রীয় ভান্ডার মজুদ তালিকা)
+        Task<CentralStoreRegisterDto> GetCentralStoreRegisterAsync(int? storeId = null, int? categoryId = null, string sortBy = "Ledger", DateTime? startDate = null, DateTime? endDate = null);
+        Task<byte[]> GenerateCentralStoreRegisterPdfAsync(int? storeId = null, int? categoryId = null, string sortBy = "Ledger", DateTime? startDate = null, DateTime? endDate = null);
+        Task<byte[]> GenerateCentralStoreRegisterExcelAsync(int? storeId = null, int? categoryId = null, string sortBy = "Ledger", DateTime? startDate = null, DateTime? endDate = null);
     }
 
     // User Service Interface
@@ -1228,6 +1235,7 @@ namespace IMS.Application.Interfaces
         Task<bool> AreAllApprovalsCompleteAsync(string entityType, int entityId);
         Task<List<ApprovalDto>> GetApprovalChainAsync(string entityType, int entityId);
         Task InitiateApprovalAsync(string entityType, int entityId);
+        Task<ServiceResult> InitializeDefaultApprovalSettingsAsync();
         Task<int> GetPendingCountAsync(string userId);
 
         // Approval Configuration Management
@@ -1388,6 +1396,9 @@ namespace IMS.Application.Interfaces
         Task<StockEntryDto> UpdateStockEntryAsync(int id, StockEntryDto dto);
         Task<bool> DeleteStockEntryAsync(int id);
         Task<string> GenerateEntryNoAsync();
+        Task<bool> SubmitStockEntryForApprovalAsync(int id);
+        Task<bool> ApproveStockEntryAsync(int id, string comments = null);
+        Task<bool> RejectStockEntryAsync(int id, string reason);
         Task<bool> CompleteStockEntryAsync(int id);
         Task<bool> CancelStockEntryAsync(int id, string reason);
 

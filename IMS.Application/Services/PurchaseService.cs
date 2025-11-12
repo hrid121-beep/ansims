@@ -47,10 +47,11 @@ namespace IMS.Application.Services
 
         public async Task<IEnumerable<PurchaseDto>> GetAllPurchasesAsync()
         {
-            // Include Vendor navigation property
+            // Include Vendor and Store navigation properties
             var purchases = await _unitOfWork.Purchases
                 .Query()
                 .Include(p => p.Vendor)
+                .Include(p => p.Store)
                 .Include(p => p.PurchaseItems)
                     .ThenInclude(pi => pi.Item)
                 .Include(p => p.PurchaseItems)
@@ -68,7 +69,9 @@ namespace IMS.Application.Services
                     PurchaseOrderNo = purchase.PurchaseOrderNo,
                     PurchaseDate = purchase.PurchaseDate,
                     VendorId = purchase.VendorId,
-                    VendorName = purchase.Vendor?.Name, // This should now have value
+                    VendorName = purchase.Vendor?.Name,
+                    StoreId = purchase.StoreId,
+                    StoreName = purchase.Store?.Name,
                     IsMarketplacePurchase = purchase.IsMarketplacePurchase,
                     MarketplaceUrl = purchase.MarketplaceUrl,
                     ExpectedDeliveryDate = purchase.ExpectedDeliveryDate,
@@ -109,6 +112,7 @@ namespace IMS.Application.Services
             var purchase = await _unitOfWork.Purchases
                 .Query()
                 .Include(p => p.Vendor)
+                .Include(p => p.Store)
                 .Include(p => p.PurchaseItems)
                     .ThenInclude(pi => pi.Item)
                 .Include(p => p.PurchaseItems)
@@ -128,6 +132,8 @@ namespace IMS.Application.Services
                 VendorAddress = purchase.Vendor?.Address,
                 VendorPhone = purchase.Vendor?.Phone,
                 VendorEmail = purchase.Vendor?.Email,
+                StoreId = purchase.StoreId,
+                StoreName = purchase.Store?.Name,
                 IsMarketplacePurchase = purchase.IsMarketplacePurchase,
                 MarketplaceUrl = purchase.MarketplaceUrl,
                 ExpectedDeliveryDate = purchase.ExpectedDeliveryDate,
@@ -553,68 +559,60 @@ namespace IMS.Application.Services
                 var totalAmount = purchase.PurchaseItems.Sum(x => x.Quantity * x.UnitPrice);
                 purchase.TotalAmount = totalAmount;
 
-                // Check if approval is needed
+                // CRITICAL FIX: Check approval requirement (will throw if thresholds not configured)
+                // This prevents auto-approval when configuration is missing
                 var approvalRequired = await _approvalService.GetApprovalRequirementAsync("PURCHASE", totalAmount);
 
-                if (approvalRequired != null && approvalRequired.RequiresApproval)
+                // If we reach here, threshold exists and approval is required
+                purchase.Status = "Pending";
+
+                // Create approval request
+                var approval = new ApprovalRequest
                 {
-                    purchase.Status = "Pending";
+                    EntityType = "PURCHASE",
+                    EntityId = purchase.Id,
+                    RequestedBy = _userContext.CurrentUserName,
+                    RequestedDate = DateTime.Now,
+                    Status = ApprovalStatus.Pending.ToString(),
+                    Priority = "Normal",
+                    Amount = totalAmount,
+                    Description = $"Purchase Order {purchase.PurchaseOrderNo}",
+                    CurrentLevel = 1,
+                    MaxLevel = 1,
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = _userContext.CurrentUserName,
+                    IsActive = true
+                };
 
-                    // Create approval request
-                    var approval = new ApprovalRequest
-                    {
-                        EntityType = "PURCHASE",
-                        EntityId = purchase.Id,
-                        RequestedBy = _userContext.CurrentUserName,
-                        RequestedDate = DateTime.Now,
-                        Status = ApprovalStatus.Pending.ToString(),
-                        Priority = "Normal",
-                        Amount = totalAmount,
-                        Description = $"Purchase Order {purchase.PurchaseOrderNo}",
-                        CurrentLevel = 1,
-                        MaxLevel = 1,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = _userContext.CurrentUserName,
-                        IsActive = true
-                    };
+                await _unitOfWork.ApprovalRequests.AddAsync(approval);
+                await _unitOfWork.CompleteAsync();
 
-                    await _unitOfWork.ApprovalRequests.AddAsync(approval);
-                    await _unitOfWork.CompleteAsync();
-
-                    // Create approval step for Level 1
-                    var approvalStep = new ApprovalStep
-                    {
-                        ApprovalRequestId = approval.Id,
-                        StepLevel = 1,
-                        ApproverRole = approvalRequired.ApproverRole,
-                        Status = ApprovalStatus.Pending,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = _userContext.CurrentUserName,
-                        IsActive = true
-                    };
-
-                    await _unitOfWork.ApprovalSteps.AddAsync(approvalStep);
-
-                    // Send notification to approvers
-                    var approvers = await _userManager.GetUsersInRoleAsync(approvalRequired.ApproverRole);
-                    foreach (var approver in approvers)
-                    {
-                        var notification = new NotificationDto
-                        {
-                            Title = "Purchase Order Approval Required",
-                            Message = $"Purchase order {purchase.PurchaseOrderNo} requires your approval. Amount: {totalAmount:C}",
-                            Type = "approval",
-                            UserId = approver.Id
-                        };
-                        await _notificationService.CreateNotificationAsync(notification);
-                    }
-                }
-                else
+                // Create approval step for Level 1
+                var approvalStep = new ApprovalStep
                 {
-                    // Auto-approve if below threshold
-                    purchase.Status = "Approved";
-                    purchase.ApprovedBy = "System";
-                    purchase.ApprovedDate = DateTime.Now;
+                    ApprovalRequestId = approval.Id,
+                    StepLevel = 1,
+                    ApproverRole = approvalRequired.ApproverRole,
+                    Status = ApprovalStatus.Pending,
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = _userContext.CurrentUserName,
+                    IsActive = true
+                };
+
+                await _unitOfWork.ApprovalSteps.AddAsync(approvalStep);
+
+                // Send notification to approvers
+                var approvers = await _userManager.GetUsersInRoleAsync(approvalRequired.ApproverRole);
+                foreach (var approver in approvers)
+                {
+                    var notification = new NotificationDto
+                    {
+                        Title = "Purchase Order Approval Required",
+                        Message = $"Purchase order {purchase.PurchaseOrderNo} requires your approval. Amount: {totalAmount:C}",
+                        Type = "approval",
+                        UserId = approver.Id
+                    };
+                    await _notificationService.CreateNotificationAsync(notification);
                 }
 
                 purchase.UpdatedAt = DateTime.Now;

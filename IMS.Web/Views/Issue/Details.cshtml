@@ -50,6 +50,9 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        @* ✅ FIX: Add antiforgery token for AJAX calls *@
+        @Html.AntiForgeryToken()
+
         <!-- Action Buttons -->
         <div class="row mb-3">
             <div class="col-12">
@@ -855,18 +858,71 @@
                     confirmButtonText: 'Yes, submit it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $.post('@Url.Action("SubmitForApproval", "Issue", new { id = Model.Id })',
-                            { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
-                            function(response) {
+                        // ✅ FIX: Use $.ajax() to properly set headers and handle errors
+                        var token = $('input[name="__RequestVerificationToken"]').val();
+
+                        if (!token) {
+                            console.error('Antiforgery token not found!');
+                            Swal.fire('Error!', 'Security token not found. Please refresh the page.', 'error');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: '@Url.Action("SubmitForApproval", "Issue", new { id = Model.Id })',
+                            type: 'POST',
+                            data: {
+                                __RequestVerificationToken: token
+                            },
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            beforeSend: function() {
+                                Swal.fire({
+                                    title: 'Submitting...',
+                                    text: 'Please wait',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+                            },
+                            success: function(response) {
                                 if (response.success) {
                                     Swal.fire('Success!', 'Issue submitted for approval successfully!', 'success')
                                         .then(() => location.reload());
                                 } else {
                                     Swal.fire('Error!', response.message || 'Failed to submit issue', 'error');
                                 }
-                            }).fail(function() {
-                                Swal.fire('Error!', 'An error occurred while submitting', 'error');
-                            });
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Submit error - Status:', xhr.status);
+                                console.error('Submit error - Response:', xhr.responseText);
+                                console.error('Submit error - Error:', error);
+
+                                var errorMessage = 'An error occurred while submitting';
+
+                                if (xhr.status === 400) {
+                                    errorMessage = 'Bad request. Please check the form data.';
+                                } else if (xhr.status === 401) {
+                                    errorMessage = 'Unauthorized. Please login again.';
+                                } else if (xhr.status === 403) {
+                                    errorMessage = 'Access denied. You do not have permission to submit this issue.';
+                                } else if (xhr.status === 500) {
+                                    errorMessage = 'Server error. Please contact administrator.';
+                                }
+
+                                try {
+                                    var response = JSON.parse(xhr.responseText);
+                                    if (response.message) {
+                                        errorMessage = response.message;
+                                    }
+                                } catch(e) {
+                                    // If response is not JSON, use status-based message
+                                }
+
+                                Swal.fire('Error!', errorMessage, 'error');
+                            }
+                        });
                     }
                 });
             });

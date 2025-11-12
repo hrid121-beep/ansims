@@ -86,20 +86,35 @@ namespace IMS.Web.Controllers
         // POST: Requisition/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(RequisitionDto dto, string[] itemIds, string[] quantities, string[] specifications)
+        public async Task<IActionResult> Create(RequisitionDto dto, string[] itemIds, string[] quantities, string[] unitPrices, string[] specifications)
         {
             try
             {
+                // Validate From Store and To Store are not the same
+                if (dto.FromStoreId.HasValue && dto.ToStoreId.HasValue && dto.FromStoreId == dto.ToStoreId)
+                {
+                    ModelState.AddModelError("", "From Store and To Store cannot be the same.");
+                    await PrepareCreateViewBags();
+                    return View(dto);
+                }
+
                 // Add items to DTO
                 dto.Items = new List<RequisitionItemDto>();
                 for (int i = 0; i < itemIds.Length; i++)
                 {
                     if (!string.IsNullOrEmpty(itemIds[i]) && decimal.TryParse(quantities[i], out decimal qty) && qty > 0)
                     {
+                        decimal unitPrice = 0;
+                        if (unitPrices != null && i < unitPrices.Length)
+                        {
+                            decimal.TryParse(unitPrices[i], out unitPrice);
+                        }
+
                         dto.Items.Add(new RequisitionItemDto
                         {
                             ItemId = int.Parse(itemIds[i]),
                             RequestedQuantity = qty,
+                            UnitPrice = unitPrice,
                             Specification = specifications[i]
                         });
                     }
@@ -258,6 +273,14 @@ namespace IMS.Web.Controllers
 
             try
             {
+                // Validate From Store and To Store are not the same
+                if (dto.FromStoreId.HasValue && dto.ToStoreId.HasValue && dto.FromStoreId == dto.ToStoreId)
+                {
+                    ModelState.AddModelError("", "From Store and To Store cannot be the same.");
+                    await PrepareCreateViewBags();
+                    return View(dto);
+                }
+
                 // Check if still draft
                 var existing = await _requisitionService.GetRequisitionByIdAsync(id);
                 if (existing == null)

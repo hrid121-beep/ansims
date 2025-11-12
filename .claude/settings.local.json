@@ -1,31 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Select-Object -First 5 Name)",
-      "Bash(Select-String -Pattern \"error|warning\")",
-      "Bash(Select-Object -First 10)",
-      "Bash(dotnet ef migrations:*)",
-      "Bash(Select-Object -Last 5)",
-      "Bash(sqlcmd:*)",
-      "Bash(dotnet ef database update:*)",
-      "Bash(dir:*)",
-      "Bash($null)",
-      "Bash(Select-String -Pattern \"error|warning|succeeded\")",
-      "Bash(Select-Object -First 20)",
+      "Bash(echo:*)",
+      "Bash(Select-String -Pattern \"Build succeeded|Build FAILED|Error\\(s\\)|Warning\\(s\\)\")",
       "Bash(dotnet build:*)",
-      "Bash(powershell \"(Get-Content Interfaces.cs | Measure-Object -Line).Lines\")",
-      "Bash(git init:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implement Voucher System with Bengali PDF Generation\n\n- Added voucher generation system for Issue and Receive transactions\n- Implemented Bengali PDF voucher template matching official format\n- Added LedgerNo and PageNo fields to IssueItem and ReceiveItem entities\n- Added voucher fields to Receive entity (VoucherNo, VoucherDate, etc.)\n- Created VoucherService with PDF generation using iTextSharp\n- Added UsableQuantity, PartiallyUsableQuantity, UnusableQuantity breakdown\n- Fixed StoreService GetAllStoresAsync to populate AssignedUserCount\n- Database migration: AddVoucherLedgerPageFields applied successfully\n- Created comprehensive implementation guide (VOUCHER_IMPLEMENTATION_GUIDE.md)\n\nFeatures:\n- Automatic voucher number generation (ISS-YYYYMM-0001, RCV-YYYYMM-0001)\n- Bengali text support for voucher PDF\n- Ledger and page number tracking per item\n- Item condition breakdown (Usable/Partial/Unusable)\n- Signature sections for provider and receiver\n- PDF download and storage in wwwroot/vouchers/\n\nPending Tasks:\n- Fix VoucherService compilation errors (Document class conflict)\n- Add Bengali font file (kalpurush.ttf)\n- Update Issue/Receive forms with ledger/page input fields\n- Add voucher download buttons to details views\n- Update DTOs with new fields\n\n🤖 Generated with Claude Code (https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git config:*)",
-      "Bash(git remote add:*)",
-      "Bash(git push:*)",
-      "Bash(git remote set-url:*)",
-      "Bash(powershell \"(Get-Content ''IMS.Web/Controllers/IssueController.cs'' | Measure-Object -Line).Lines\")",
-      "Bash(Select-String \"IssueService\")",
-      "Bash(Select-String \"Error\\(s\\)|Warning\\(s\\)|Build succeeded|Build FAILED\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Complete Voucher System Integration with Bengali PDF Support\n\nDatabase & Entities:\n- Migration AddVoucherLedgerPageFields already applied\n- Added LedgerNo, PageNo to IssueItem and ReceiveItem entities\n- Added UsableQuantity, PartiallyUsableQuantity, UnusableQuantity breakdown\n- Added VoucherNo, VoucherDate, VoucherQRCode to Receive entity\n\nDTOs & Mappings:\n- Updated IssueItemDto and ReceiveItemDto with new voucher fields\n- Added voucher fields to ReceiveDto (VoucherNo, VoucherNumber, etc.)\n- Updated IssueService entity-to-DTO mapping (2 locations)\n- Updated IssueService DTO-to-entity mapping (2 locations)\n- Updated ReceiveService mappings for all voucher fields\n\nControllers:\n- IssueController: Added DownloadVoucher action\n- ReceiveController: Added GenerateVoucher and DownloadVoucher actions\n- Both controllers integrated with IVoucherService\n\nViews:\n- Issue Create: Added 5 new columns (Ledger, Page, Usable, Partial, Unusable)\n- Receive Create: Added 5 new columns (same as Issue)\n- Issue Details: Added Download Voucher button, fixed Generate button\n- Receive Details: Added Generate and Download Voucher buttons\n\nVoucherService:\n- Fixed Document class conflict (using PdfDocument alias)\n- Fixed repository GetAsync usage with string includes\n- Complete Bengali PDF voucher generation ready\n\nBuild Status: ✅ SUCCESSFUL (0 Errors, 131 Warnings)\n\nFeatures Ready:\n- Bengali PDF voucher generation for Issue/Receive transactions\n- Ledger and Page number tracking per item\n- Item condition breakdown (Usable/Partial/Unusable)\n- Automatic voucher numbering (ISS-YYYYMM-0001, RCV-YYYYMM-0001)\n- PDF download functionality\n- QR code generation for vouchers\n\n🤖 Generated with Claude Code (https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git pull:*)"
+      "Bash(dotnet ef:*)"
     ],
     "deny": [],
     "ask": []

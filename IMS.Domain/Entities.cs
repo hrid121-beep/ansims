@@ -109,10 +109,19 @@ namespace IMS.Domain.Entities
         public int? ItemModelId { get; set; }
         public int? BrandId { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? MinimumStock { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? MaximumStock { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal ReorderLevel { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? UnitPrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? UnitCost { get; set; }
 
         public string Manufacturer { get; set; }
@@ -125,6 +134,7 @@ namespace IMS.Domain.Entities
         public bool RequiresSpecialHandling { get; set; }
         public string SafetyInstructions { get; set; }
 
+        [Column(TypeName = "decimal(18,3)")]
         public decimal? Weight { get; set; }
         public string WeightUnit { get; set; }
         public string Dimensions { get; set; }
@@ -171,6 +181,21 @@ namespace IMS.Domain.Entities
         public bool RequiresHigherApproval { get; set; } = false;
         public string ControlItemCategory { get; set; } // "Weapons", "Electronics", "Vehicles"
 
+        // ===== Master Stock Register/Catalogue Tracking =====
+        // Used for Central Store Stock Register Report (কেন্দ্রীয় ভান্ডার মজুদ তালিকা)
+        // These fields represent the item's permanent entry in the master catalogue
+        [MaxLength(10)]
+        public string CatalogueLedgerNo { get; set; }  // লেজার নং (e.g., "01", "02", "03")
+
+        [MaxLength(10)]
+        public string CataloguePageNo { get; set; }    // পাতা নং (e.g., "29", "94", "148")
+
+        public DateTime? CatalogueEntryDate { get; set; } // When first entered in master catalogue
+
+        public DateTime? FirstReceivedDate { get; set; } // First purchase/receive date
+
+        [MaxLength(500)]
+        public string CatalogueRemarks { get; set; }  // Additional catalogue notes
 
         // Navigation property
         public virtual SubCategory SubCategory { get; set; }
@@ -318,6 +343,10 @@ namespace IMS.Domain.Entities
         public DateTime LastTransferDate { get; set; }
         public DateTime LastAdjustmentDate { get; set; }
         public decimal LastCountQuantity { get; set; }
+
+        // CRITICAL FIX: Add concurrency token to prevent race conditions in stock updates
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
 
         public virtual Store Store { get; set; }
         public virtual Item Item { get; set; }
@@ -557,7 +586,10 @@ namespace IMS.Domain.Entities
         public string OriginalVoucherNo { get; set; }
 
         public string ReceiveType { get; set; }
+
+        [Column(TypeName = "nvarchar(max)")]
         public string ReceiverSignature { get; set; }
+
         public string ReceiverName { get; set; }
         public string ReceiverBadgeNo { get; set; }
         public string ReceiverDesignation { get; set; }
@@ -1112,10 +1144,19 @@ namespace IMS.Domain.Entities
         public string EntryNo { get; set; }
         public DateTime EntryDate { get; set; }
         public string EntryType { get; set; } = "Direct";
-        public string Status { get; set; } = "Draft";
+        public string Status { get; set; } = "Draft";  // Draft, Submitted, Approved, Rejected, Completed
         public string Remarks { get; set; }
 
         public int? StoreId { get; set; }
+
+        // Approval fields
+        public string SubmittedBy { get; set; }
+        public DateTime? SubmittedDate { get; set; }
+        public string ApprovedBy { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public string RejectedBy { get; set; }
+        public DateTime? RejectedDate { get; set; }
+        public string RejectionReason { get; set; }
 
         public virtual Store Store { get; set; }
         public virtual ICollection<StockEntryItem> Items { get; set; } = new List<StockEntryItem>();
@@ -2663,6 +2704,9 @@ namespace IMS.Domain.Entities
 
         // NEW: Multiple recipients support
         public virtual ICollection<AllotmentLetterRecipient> Recipients { get; set; } = new List<AllotmentLetterRecipient>();
+
+        // Distribution List (অনুলিপি) - who should receive copies
+        public virtual ICollection<AllotmentLetterDistribution> DistributionList { get; set; } = new List<AllotmentLetterDistribution>();
     }
 
     public class AllotmentLetterItem : BaseEntity
@@ -2765,6 +2809,42 @@ namespace IMS.Domain.Entities
 
         public bool IsDefault { get; set; } = false;
         public int DisplayOrder { get; set; } = 0;
+    }
+
+    /// <summary>
+    /// Distribution List for Allotment Letter (অনুলিপি)
+    /// Stores the list of recipients who should receive copies of the letter
+    /// </summary>
+    public class AllotmentLetterDistribution : BaseEntity
+    {
+        public int AllotmentLetterId { get; set; }
+
+        [Required]
+        public int SerialNo { get; set; } // ক্রম: ১, ২, ৩...
+
+        [Required]
+        [MaxLength(500)]
+        public string RecipientTitle { get; set; } // e.g., "মহাপরিচালক মহোদয়ের সচিবালয়"
+
+        [MaxLength(500)]
+        public string RecipientTitleBn { get; set; } // Bengali version
+
+        [MaxLength(1000)]
+        public string Address { get; set; } // Full address
+
+        [MaxLength(1000)]
+        public string AddressBn { get; set; } // Bengali address
+
+        [MaxLength(500)]
+        public string Purpose { get; set; } // e.g., "সময় অবগতির জন্য", "প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য"
+
+        [MaxLength(500)]
+        public string PurposeBn { get; set; }
+
+        public int DisplayOrder { get; set; } = 0;
+
+        // Navigation
+        public virtual AllotmentLetter AllotmentLetter { get; set; }
     }
 
     /// <summary>

@@ -79,6 +79,9 @@
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#filterPanel">
                         <i class="fas fa-filter"></i> Filters
                     </button>
+                    <button type="button" id="printSelectedBtn" class="btn btn-sm btn-warning" title="Print selected barcode labels as PDF" disabled>
+                        <i class="fas fa-print"></i> Print Selected (<span id="selectedCount">0</span>)
+                    </button>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-toggle="dropdown">
                             <i class="fas fa-download"></i> Export
@@ -88,7 +91,7 @@
                                 <i class="fas fa-file-excel text-success"></i> Excel
                             </a>
                             <a class="dropdown-item" href="@Url.Action("ExportToPDF", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
-                                <i class="fas fa-file-pdf text-danger"></i> PDF
+                                <i class="fas fa-file-pdf text-danger"></i> PDF Report
                             </a>
                             <a class="dropdown-item" href="@Url.Action("ExportToCSV", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
                                 <i class="fas fa-file-csv text-info"></i> CSV
@@ -98,7 +101,7 @@
                 </div>
             </div>
 
-            <div class="collapse" id="filterPanel">
+            <div class="collapse show" id="filterPanel">
                 <div class="card-body border-bottom">
                     <form method="get" asp-action="Index">
                         <div class="row">
@@ -156,6 +159,9 @@
                 <table class="table table-bordered table-striped" id="barcodesTable">
                     <thead>
                         <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAll" title="Select All">
+                            </th>
                             <th>Barcode Number</th>
                             <th>Item</th>
                             <th>Serial Number</th>
@@ -173,6 +179,9 @@
                             @foreach (var barcode in Model)
                             {
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="barcode-checkbox" value="@barcode.Id" data-barcode="@barcode.BarcodeNumber">
+                                    </td>
                                     <td>
                                         <strong>@barcode.BarcodeNumber</strong>
                                     </td>
@@ -192,7 +201,7 @@
                                         </span>
                                     </td>
                                     <td>@barcode.GeneratedDate.ToString("MM/dd/yyyy")</td>
-                                    <td>@(barcode.GeneratedBy ?? "System")</td>
+                                    <td>@(barcode.GeneratedByName ?? barcode.GeneratedBy ?? "System")</td>
                                     <td>
                                         <span class="badge badge-info">@barcode.ScanCount</span>
                                     </td>
@@ -218,7 +227,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="9" class="text-center">No barcodes found.</td>
+                                <td colspan="10" class="text-center">No barcodes found.</td>
                             </tr>
                         }
                     </tbody>
@@ -235,10 +244,75 @@
                 responsive: true,
                 autoWidth: false,
                 pageLength: 25,
-                order: [[4, 'desc']],
+                order: [[5, 'desc']], // Adjusted for checkbox column
                 dom: 'Bfrtip',
-                buttons: []
+                buttons: [],
+                columnDefs: [
+                    { orderable: false, targets: 0 } // Disable sorting on checkbox column
+                ]
             });
+
+            // Select All checkbox functionality
+            $('#selectAll').on('change', function() {
+                var isChecked = $(this).prop('checked');
+                $('.barcode-checkbox:visible').prop('checked', isChecked);
+                updateSelectedCount();
+            });
+
+            // Individual checkbox change
+            $('.barcode-checkbox').on('change', function() {
+                updateSelectedCount();
+
+                // Update "Select All" checkbox state
+                var totalCheckboxes = $('.barcode-checkbox:visible').length;
+                var checkedCheckboxes = $('.barcode-checkbox:visible:checked').length;
+                $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
+            });
+
+            // Update selected count and button state
+            function updateSelectedCount() {
+                var selectedCount = $('.barcode-checkbox:checked').length;
+                $('#selectedCount').text(selectedCount);
+                $('#printSelectedBtn').prop('disabled', selectedCount === 0);
+            }
+
+            // Print Selected button click
+            $('#printSelectedBtn').on('click', function() {
+                var selectedIds = [];
+                $('.barcode-checkbox:checked').each(function() {
+                    selectedIds.push($(this).val());
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one barcode to print.');
+                    return;
+                }
+
+                // Create form and submit
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': '@Url.Action("PrintSelectedLabels", "Barcode")'
+                });
+
+                // Add anti-forgery token
+                form.append($('@Html.AntiForgeryToken()'));
+
+                // Add selected IDs
+                selectedIds.forEach(function(id) {
+                    form.append($('<input>', {
+                        'type': 'hidden',
+                        'name': 'selectedIds',
+                        'value': id
+                    }));
+                });
+
+                // Submit form
+                $('body').append(form);
+                form.submit();
+            });
+
+            // Initial count update
+            updateSelectedCount();
         });
     </script>
 }

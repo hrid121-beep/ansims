@@ -88,22 +88,6 @@
                 </div>
             </div>
 
-            <!-- Loss Report -->
-            <div class="col-lg-4 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>Loss</h3>
-                        <p>Track damages and write-offs</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <a asp-action="LossReport" class="small-box-footer">
-                        View Report <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-
             <!-- Movement History -->
             <div class="col-lg-4 col-6">
                 <div class="small-box bg-secondary">
@@ -135,6 +119,70 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Central Store Register -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-indigo">
+                    <div class="inner">
+                        <h3>Central Store</h3>
+                        <p>Master catalogue register (কেন্দ্রীয় ভান্ডার)</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <a asp-action="CentralStoreRegister" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Consumption Analysis -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-cyan">
+                    <div class="inner">
+                        <h3>Consumption</h3>
+                        <p>Analyze consumption trends and patterns</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a asp-action="ConsumptionReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Expiry Report -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-orange">
+                    <div class="inner">
+                        <h3>Expiry</h3>
+                        <p>Track expired and expiring items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <a asp-action="ExpiryReport" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ABC Analysis -->
+            <div class="col-lg-4 col-6">
+                <div class="small-box bg-purple">
+                    <div class="inner">
+                        <h3>ABC Analysis</h3>
+                        <p>Inventory classification and prioritization</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                    <a asp-action="ABCAnalysis" class="small-box-footer">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Quick Stats Row -->
@@ -151,7 +199,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3 col-sm-6 col-12">
+                            <div class="col-md-4 col-sm-6 col-12">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-info"><i class="fas fa-shopping-bag"></i></span>
                                     <div class="info-box-content">
@@ -160,7 +208,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-6 col-12">
+                            <div class="col-md-4 col-sm-6 col-12">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-success"><i class="fas fa-arrow-up"></i></span>
                                     <div class="info-box-content">
@@ -169,21 +217,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-6 col-12">
+                            <div class="col-md-4 col-sm-6 col-12">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-warning"><i class="fas fa-sync"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Total Transfers</span>
                                         <span class="info-box-number">@ViewBag.TotalTransfers</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-danger"><i class="fas fa-times"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Losses</span>
-                                        <span class="info-box-number">@ViewBag.TotalLosses</span>
                                     </div>
                                 </div>
                             </div>

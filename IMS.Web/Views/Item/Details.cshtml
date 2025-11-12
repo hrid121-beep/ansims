@@ -389,7 +389,7 @@
                         <div id="itemImage" class="mb-3">
                             @if (!string.IsNullOrEmpty(Model.ImagePath))
                             {
-                                <img src="@Model.ImagePath" alt="@Model.Name" class="img-fluid" style="max-width: 120px; max-height: 120px;">
+                                <img src="/@Model.ImagePath" alt="@Model.Name" class="img-fluid rounded shadow" style="max-width: 120px; max-height: 120px; object-fit: cover;">
                             }
                             else
                             {

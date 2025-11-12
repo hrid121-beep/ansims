@@ -11,6 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace IMS.Web.Controllers
 {
+    // DTO for batch generate filters
+    public class BatchFilterDto
+    {
+        public string StoreId { get; set; }
+        public string CategoryId { get; set; }
+        public string SubCategoryId { get; set; }
+        public string Criteria { get; set; }
+        public string Search { get; set; }
+    }
+
     [Authorize]
     public class BarcodeController : Controller
     {
@@ -457,34 +467,34 @@ namespace IMS.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetFilteredItems([FromBody] dynamic filters)
+        public async Task<IActionResult> GetFilteredItems([FromBody] BatchFilterDto filters)
         {
             try
             {
-                int? storeId = filters.storeId != null && !string.IsNullOrEmpty(filters.storeId.ToString())
-                    ? int.Parse(filters.storeId.ToString())
-                    : (int?)null;
-
-                int? categoryId = filters.categoryId != null && !string.IsNullOrEmpty(filters.categoryId.ToString())
-                    ? int.Parse(filters.categoryId.ToString())
-                    : (int?)null;
-
-                int? subCategoryId = filters.subCategoryId != null && !string.IsNullOrEmpty(filters.subCategoryId.ToString())
-                    ? int.Parse(filters.subCategoryId.ToString())
-                    : (int?)null;
-
-                string criteria = filters.criteria?.ToString() ?? "all";
-                string search = filters.search?.ToString() ?? "";
+                int? storeId = !string.IsNullOrEmpty(filters.StoreId) ? int.Parse(filters.StoreId) : (int?)null;
+                int? categoryId = !string.IsNullOrEmpty(filters.CategoryId) ? int.Parse(filters.CategoryId) : (int?)null;
+                int? subCategoryId = !string.IsNullOrEmpty(filters.SubCategoryId) ? int.Parse(filters.SubCategoryId) : (int?)null;
+                string criteria = filters.Criteria ?? "all";
+                string search = filters.Search ?? "";
 
                 var query = await _unitOfWork.Items.GetAllAsync();
                 var items = query.Where(i => i.IsActive);
 
+                // Get all StoreItems to filter items that are actually in stores
+                var allStoreItems = await _unitOfWork.StoreItems.GetAllAsync();
+
                 if (storeId.HasValue)
                 {
-                    var storeItems = await _unitOfWork.StoreItems
-                        .FindAsync(si => si.StoreId == storeId.Value);
+                    // Filter by specific store
+                    var storeItems = allStoreItems.Where(si => si.StoreId == storeId.Value);
                     var storeItemIds = storeItems.Select(si => si.ItemId).ToList();
                     items = items.Where(i => storeItemIds.Contains(i.Id));
+                }
+                else
+                {
+                    // When "All Stores" selected, show items that exist in ANY store
+                    var itemsInStores = allStoreItems.Select(si => si.ItemId).Distinct().ToList();
+                    items = items.Where(i => itemsInStores.Contains(i.Id));
                 }
 
                 if (categoryId.HasValue)
@@ -519,18 +529,51 @@ namespace IMS.Web.Controllers
                 }
 
                 var result = new List<object>();
+                var allBarcodes = await _unitOfWork.Barcodes.GetAllAsync();
+
                 foreach (var item in items.Take(100))
                 {
                     var category = item.CategoryId > 0
                         ? await _unitOfWork.Categories.GetByIdAsync(item.CategoryId)
                         : null;
 
-                    var store = storeId.HasValue
-                        ? await _unitOfWork.Stores.GetByIdAsync(storeId.Value)
-                        : null;
+                    // Get store name(s) for this item
+                    string storeName;
+                    decimal currentStock = 0;
 
-                    var hasBarcodes = (await _unitOfWork.Barcodes.GetAllAsync())
-                        .Any(b => b.ItemId == item.Id);
+                    if (storeId.HasValue)
+                    {
+                        // Specific store selected
+                        var store = await _unitOfWork.Stores.GetByIdAsync(storeId.Value);
+                        storeName = store?.Name ?? "N/A";
+
+                        var storeItem = allStoreItems.FirstOrDefault(si => si.StoreId == storeId.Value && si.ItemId == item.Id);
+                        currentStock = storeItem?.CurrentStock ?? 0;
+                    }
+                    else
+                    {
+                        // All stores - show first store or count of stores
+                        var itemStores = allStoreItems.Where(si => si.ItemId == item.Id).ToList();
+                        if (itemStores.Any())
+                        {
+                            var firstStore = await _unitOfWork.Stores.GetByIdAsync(itemStores.First().StoreId);
+                            if (itemStores.Count > 1)
+                            {
+                                storeName = $"{firstStore?.Name ?? "Store"} (+{itemStores.Count - 1} more)";
+                            }
+                            else
+                            {
+                                storeName = firstStore?.Name ?? "N/A";
+                            }
+                            currentStock = itemStores.Sum(si => si.CurrentStock);
+                        }
+                        else
+                        {
+                            storeName = "N/A";
+                        }
+                    }
+
+                    var hasBarcodes = allBarcodes.Any(b => b.ItemId == item.Id);
 
                     result.Add(new
                     {
@@ -538,9 +581,9 @@ namespace IMS.Web.Controllers
                         code = item.Code,
                         name = item.Name,
                         categoryName = category?.Name ?? "N/A",
-                        storeName = store?.Name ?? "N/A",
+                        storeName = storeName,
                         hasBarcodes = hasBarcodes,
-                        currentStock = 0
+                        currentStock = currentStock
                     });
                 }
 
@@ -549,7 +592,7 @@ namespace IMS.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error filtering items for batch barcode generation");
-                return Json(new List<object>());
+                return Json(new { error = true, message = ex.Message });
             }
         }
 
@@ -1058,6 +1101,103 @@ namespace IMS.Web.Controllers
             {
                 _logger.LogError(ex, "Error exporting barcodes to CSV");
                 TempData["Error"] = "Error exporting to CSV";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        /// <summary>
+        /// Print all barcode labels in bulk (filtered or all)
+        /// This generates actual printable barcode labels, not a report
+        /// </summary>
+        [HttpGet]
+        [HasPermission(Permission.PrintBarcode)]
+        public async Task<IActionResult> PrintAllLabels(string search, int? storeId, string barcodeType,
+            string referenceType, string scanStatus, DateTime? dateFrom, DateTime? dateTo,
+            int? categoryId, string location)
+        {
+            try
+            {
+                var filters = new BarcodeFilterDto
+                {
+                    Search = search,
+                    StoreId = storeId,
+                    BarcodeType = barcodeType,
+                    ReferenceType = referenceType,
+                    ScanStatus = scanStatus,
+                    DateFrom = dateFrom,
+                    DateTo = dateTo,
+                    CategoryId = categoryId,
+                    Location = location
+                };
+
+                var barcodes = await _barcodeService.GetFilteredBarcodesAsync(filters);
+
+                if (!barcodes.Any())
+                {
+                    TempData["Warning"] = "No barcodes found to print.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Generate printable barcode labels PDF
+                var pdfBytes = await _barcodeService.GenerateBatchBarcodePDF(barcodes.ToList());
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                _logger.LogInformation("Bulk print {Count} barcode labels by user {User}",
+                    barcodes.Count(), currentUser?.FullName ?? User.Identity.Name);
+
+                return File(pdfBytes, "application/pdf", $"Barcode_Labels_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error printing all barcode labels");
+                TempData["Error"] = "An error occurred while generating barcode labels PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(Permission.PrintBarcode)]
+        public async Task<IActionResult> PrintSelectedLabels([FromForm] List<int> selectedIds)
+        {
+            try
+            {
+                if (selectedIds == null || !selectedIds.Any())
+                {
+                    TempData["Warning"] = "No barcodes selected to print.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Get selected barcodes
+                var barcodes = new List<BarcodeDto>();
+                foreach (var id in selectedIds)
+                {
+                    var barcode = await _barcodeService.GetBarcodeByIdAsync(id);
+                    if (barcode != null)
+                    {
+                        barcodes.Add(barcode);
+                    }
+                }
+
+                if (!barcodes.Any())
+                {
+                    TempData["Warning"] = "No valid barcodes found to print.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Generate printable barcode labels PDF
+                var pdfBytes = await _barcodeService.GenerateBatchBarcodePDF(barcodes);
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                _logger.LogInformation("Printed {Count} selected barcode labels by user {User}",
+                    barcodes.Count, currentUser?.FullName ?? User.Identity.Name);
+
+                return File(pdfBytes, "application/pdf", $"Selected_Barcode_Labels_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error printing selected barcode labels");
+                TempData["Error"] = "An error occurred while generating selected barcode labels PDF.";
                 return RedirectToAction(nameof(Index));
             }
         }

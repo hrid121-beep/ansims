@@ -38,7 +38,7 @@ namespace IMS.Web.Controllers
                 {
                     "PURCHASE", "REQUISITION", "ISSUE", "TRANSFER",
                     "WRITEOFF", "STOCK_ADJUSTMENT", "PHYSICAL_INVENTORY",
-                    "ALLOTMENT_LETTER"
+                    "ALLOTMENT_LETTER", "STOCK_ENTRY"
                 };
 
                 // Add any configured types that aren't in the list
@@ -402,7 +402,8 @@ namespace IMS.Web.Controllers
                 "WRITEOFF",
                 "STOCK_ADJUSTMENT",
                 "PHYSICAL_INVENTORY",
-                "ALLOTMENT_LETTER"
+                "ALLOTMENT_LETTER",
+                "STOCK_ENTRY"
             });
 
             ViewBag.Roles = new SelectList(new[]

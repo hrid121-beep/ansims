@@ -33,7 +33,7 @@ namespace IMS.Application.Services
             {
                 var allotment = await _unitOfWork.AllotmentLetters.GetAsync(
                     a => a.Id == id,
-                    includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila", "IssuedToUpazila", "Recipients.Items.Item", "Recipients.Range", "Recipients.Battalion", "Recipients.Zila", "Recipients.Upazila" });
+                    includes: new[] { "Items.Item", "FromStore", "IssuedToBattalion", "IssuedToRange", "IssuedToZila", "IssuedToUpazila", "Recipients.Items.Item", "Recipients.Range", "Recipients.Battalion", "Recipients.Zila", "Recipients.Upazila", "DistributionList" });
 
                 return MapToDto(allotment);
             }
@@ -66,7 +66,7 @@ namespace IMS.Application.Services
             try
             {
                 var allotments = await _unitOfWork.AllotmentLetters.GetAllAsync(
-                    includes: new[] { "FromStore", "IssuedToBattalion", "IssuedToRange", "Items", "Recipients.Items.Item" });
+                    includes: new[] { "FromStore", "IssuedToBattalion", "IssuedToRange", "Items", "Recipients.Items.Item", "DistributionList" });
 
                 return allotments.Select(a => MapToDto(a));
             }
@@ -602,7 +602,36 @@ namespace IMS.Application.Services
                         Unit = ri.Unit,
                         Remarks = ri.Remarks
                     }).ToList() ?? new List<AllotmentLetterRecipientItemDto>()
-                }).ToList() ?? new List<AllotmentLetterRecipientDto>()
+                }).ToList() ?? new List<AllotmentLetterRecipientDto>(),
+
+                // Bengali/Government Format Fields
+                Subject = entity.Subject,
+                SubjectBn = entity.SubjectBn,
+                BodyText = entity.BodyText,
+                BodyTextBn = entity.BodyTextBn,
+                CollectionDeadline = entity.CollectionDeadline,
+                SignatoryName = entity.SignatoryName,
+                SignatoryDesignation = entity.SignatoryDesignation,
+                SignatoryDesignationBn = entity.SignatoryDesignationBn,
+                SignatoryId = entity.SignatoryId,
+                SignatoryPhone = entity.SignatoryPhone,
+                SignatoryEmail = entity.SignatoryEmail,
+                BengaliDate = entity.BengaliDate,
+
+                // Distribution List (অনুলিপি)
+                DistributionList = entity.DistributionList?.Select(d => new AllotmentLetterDistributionDto
+                {
+                    Id = d.Id,
+                    AllotmentLetterId = d.AllotmentLetterId,
+                    SerialNo = d.SerialNo,
+                    RecipientTitle = d.RecipientTitle,
+                    RecipientTitleBn = d.RecipientTitleBn,
+                    Address = d.Address,
+                    AddressBn = d.AddressBn,
+                    Purpose = d.Purpose,
+                    PurposeBn = d.PurposeBn,
+                    DisplayOrder = d.DisplayOrder
+                }).OrderBy(d => d.DisplayOrder).ThenBy(d => d.SerialNo).ToList() ?? new List<AllotmentLetterDistributionDto>()
             };
         }
 
@@ -660,7 +689,36 @@ namespace IMS.Application.Services
                         Unit = ri.Unit,
                         Remarks = ri.Remarks
                     }).ToList() ?? new List<AllotmentLetterRecipientItem>()
-                }).ToList() ?? new List<AllotmentLetterRecipient>()
+                }).ToList() ?? new List<AllotmentLetterRecipient>(),
+
+                // Bengali/Government Format Fields
+                Subject = dto.Subject,
+                SubjectBn = dto.SubjectBn,
+                BodyText = dto.BodyText,
+                BodyTextBn = dto.BodyTextBn,
+                CollectionDeadline = dto.CollectionDeadline,
+                SignatoryName = dto.SignatoryName,
+                SignatoryDesignation = dto.SignatoryDesignation,
+                SignatoryDesignationBn = dto.SignatoryDesignationBn,
+                SignatoryId = dto.SignatoryId,
+                SignatoryPhone = dto.SignatoryPhone,
+                SignatoryEmail = dto.SignatoryEmail,
+                BengaliDate = dto.BengaliDate,
+
+                // Distribution List (অনুলিপি)
+                DistributionList = dto.DistributionList?.Select(d => new AllotmentLetterDistribution
+                {
+                    Id = d.Id,
+                    AllotmentLetterId = d.AllotmentLetterId,
+                    SerialNo = d.SerialNo,
+                    RecipientTitle = d.RecipientTitle,
+                    RecipientTitleBn = d.RecipientTitleBn,
+                    Address = d.Address,
+                    AddressBn = d.AddressBn,
+                    Purpose = d.Purpose,
+                    PurposeBn = d.PurposeBn,
+                    DisplayOrder = d.DisplayOrder
+                }).ToList() ?? new List<AllotmentLetterDistribution>()
             };
         }
 

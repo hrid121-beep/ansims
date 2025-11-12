@@ -270,7 +270,16 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Receipt Date</span>
-                        <span class="info-value">@(Model.ReceivedDate.ToString("dd MMMM yyyy HH:mm") ?? DateTime.Now.ToString("dd MMMM yyyy HH:mm"))</span>
+                        <span class="info-value">
+                            @if (Model.ReceivedDate != null && Model.ReceivedDate.Year > 1)
+                            {
+                                @Model.ReceivedDate.ToString("dd MMMM yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span style="color: #dc3545; font-weight: 600;">Pending Handover</span>
+                            }
+                        </span>
                     </div>
                 </div>
             </div>
@@ -390,26 +399,41 @@
 
                 <div class="signature-box">
                     <h4 style="color: #667eea; margin-bottom: 15px;">Received By</h4>
-                    <div class="signature-image">
-                        @if (!string.IsNullOrEmpty(Model.ReceiverSignature))
-                        {
-                            <img src="@Model.ReceiverSignature" alt="Receiver Signature" />
-                        }
-                        else
-                        {
-                            <span style="font-style: italic; color: #999;">Digitally Signed</span>
-                        }
-                    </div>
-                    <div class="signature-details">
-                        <strong>@(Model.ReceivedBy ?? Model.IssuedToName)</strong><br />
-                        @if (!string.IsNullOrEmpty(Model.ReceiverBadgeId))
-                        {
-                            <span>Badge: @Model.ReceiverBadgeId</span>
-                        
-                            <br />
-                        }
-                        <span>Date: @(Model.ReceivedDate.ToString("dd MMM yyyy") ?? DateTime.Now.ToString("dd MMM yyyy"))</span>
-                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ReceivedBy) && Model.ReceivedDate != null && Model.ReceivedDate.Year > 1)
+                    {
+                        <div class="signature-image">
+                            @if (!string.IsNullOrEmpty(Model.ReceiverSignature))
+                            {
+                                <img src="@Model.ReceiverSignature" alt="Receiver Signature" />
+                            }
+                            else
+                            {
+                                <span style="font-style: italic; color: #999;">Digitally Signed</span>
+                            }
+                        </div>
+                        <div class="signature-details">
+                            <strong>@Model.ReceivedBy</strong><br />
+                            @if (!string.IsNullOrEmpty(Model.ReceiverBadgeId))
+                            {
+                                <span>Badge: @Model.ReceiverBadgeId</span>
+
+                                <br />
+                            }
+                            <span>Date: @Model.ReceivedDate.ToString("dd MMM yyyy")</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="signature-image">
+                            <span style="font-style: italic; color: #dc3545; font-weight: 600;">⏳ Pending Handover</span>
+                        </div>
+                        <div class="signature-details">
+                            <strong style="color: #6c757d;">@Model.IssuedToName</strong><br />
+                            <span style="color: #6c757d; font-size: 13px;">
+                                Awaiting physical handover and signature
+                            </span>
+                        </div>
+                    }
                 </div>
             </div>
 

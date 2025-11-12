@@ -35,7 +35,7 @@
                         <div class="text-center">
                             @if (!string.IsNullOrEmpty(item?.ImagePath))
                             {
-                                <img src="@item.ImagePath" class="img-fluid rounded" alt="@item.Name" style="max-height: 100px;" />
+                                <img src="/@item.ImagePath" class="img-fluid rounded shadow" alt="@item.Name" style="max-height: 100px; object-fit: cover;" />
                             }
                             else
                             {

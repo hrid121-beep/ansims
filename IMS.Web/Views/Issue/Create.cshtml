@@ -490,6 +490,14 @@
                 allowClear: true
             });
 
+            // ✅ FIX: Hide all issue-to dropdowns initially after Select2 initialization
+            $('.issue-to-select').each(function() {
+                $(this).hide();
+                $(this).next('.select2-container').hide(); // Hide Select2 wrapper
+            });
+            $('#issueToSection').hide();
+            $('#individualSection').hide();
+
             const canvas = document.getElementById('signatureCanvas');
             if (canvas && typeof SignaturePad !== 'undefined') {
                 signaturePad = new SignaturePad(canvas, {
@@ -813,7 +821,11 @@
             $('#issueToType').change(function() {
                 const type = $(this).val();
 
-                $('.issue-to-select').hide().prop('required', false).val('').trigger('change');
+                // ✅ FIX: Hide both select element AND Select2 container
+                $('.issue-to-select').each(function() {
+                    $(this).hide().prop('required', false).val('').trigger('change');
+                    $(this).next('.select2-container').hide(); // Hide Select2 wrapper
+                });
                 $('#individualSection').hide();
                 $('#issueToSection').hide();
 
@@ -827,18 +839,22 @@
                     switch(type) {
                         case 'Battalion':
                             $('#battalionSelect').show().prop('required', true);
+                            $('#battalionSelect').next('.select2-container').show(); // Show Select2 wrapper
                             $('#issueToLabel').text('Select Battalion');
                             break;
                         case 'Range':
                             $('#rangeSelect').show().prop('required', true);
+                            $('#rangeSelect').next('.select2-container').show(); // Show Select2 wrapper
                             $('#issueToLabel').text('Select Range');
                             break;
                         case 'Zila':
                             $('#zilaSelect').show().prop('required', true);
+                            $('#zilaSelect').next('.select2-container').show(); // Show Select2 wrapper
                             $('#issueToLabel').text('Select Zila');
                             break;
                         case 'Upazila':
                             $('#upazilaSelect').show().prop('required', true);
+                            $('#upazilaSelect').next('.select2-container').show(); // Show Select2 wrapper
                             $('#issueToLabel').text('Select Upazila');
                             break;
                         case 'Individual':
@@ -1508,6 +1524,9 @@
             }
 
             checkProvisionStoreRequirements();
+
+            // ✅ FIX: Trigger issueToType change to show only the selected dropdown on page load
+            $('#issueToType').trigger('change');
         });
     </script>
 }

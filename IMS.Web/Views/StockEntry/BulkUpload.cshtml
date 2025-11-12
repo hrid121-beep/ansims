@@ -65,16 +65,17 @@
                     <div class="card-body">
                         <h5 style="font-weight: 700;">How to upload stock:</h5>
                         <ol style="font-weight: 500;">
-                            <li>Download the CSV template</li>
+                            <li>Download the CSV template or example file</li>
                             <li>
                                 Fill in the item details:
                                 <ul>
-                                    <li><strong>ItemCode</strong> (required)</li>
-                                    <li><strong>Quantity</strong> (required)</li>
-                                    <li>UnitCost (optional)</li>
-                                    <li>Location (optional)</li>
-                                    <li>BatchNumber (optional)</li>
-                                    <li>ExpiryDate (optional)</li>
+                                    <li><strong>ItemCode</strong> (required) - Must match existing items</li>
+                                    <li><strong>ItemName</strong> (optional) - For reference only</li>
+                                    <li><strong>Quantity</strong> (required) - Number of items</li>
+                                    <li><strong>UnitPrice</strong> (optional) - Cost per unit</li>
+                                    <li><strong>BatchNumber</strong> (optional) - Batch/Lot number</li>
+                                    <li><strong>ExpiryDate</strong> (optional) - Format: YYYY-MM-DD</li>
+                                    <li><strong>Location</strong> (optional) - Storage location</li>
                                 </ul>
                             </li>
                             <li>Select the target store</li>
@@ -84,11 +85,19 @@
 
                         <div class="alert alert-warning" style="font-weight: 600;">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Note:</strong> Item codes must match existing items in the system.
+                            <strong>Important:</strong>
+                            <ul class="mb-0">
+                                <li>Item codes must match existing items in the system</li>
+                                <li>Date format: YYYY-MM-DD (e.g., 2025-12-31)</li>
+                                <li>Use only CSV format (comma-separated values)</li>
+                            </ul>
                         </div>
 
-                        <a asp-action="DownloadTemplate" class="btn btn-success btn-block">
-                            <i class="fas fa-download"></i> Download CSV Template
+                        <a asp-action="DownloadTemplate" class="btn btn-success btn-block mb-2">
+                            <i class="fas fa-file-download"></i> Download Empty Template
+                        </a>
+                        <a asp-action="DownloadExampleCSV" class="btn btn-info btn-block">
+                            <i class="fas fa-file-csv"></i> Download Example CSV
                         </a>
                     </div>
                 </div>

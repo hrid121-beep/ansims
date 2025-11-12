@@ -197,6 +197,9 @@ namespace IMS.Application.Services
                     var item = await _unitOfWork.Items.GetByIdAsync(itemDto.ItemId);
                     if (item == null) continue;
 
+                    // Use user-provided UnitPrice if available, otherwise use item's UnitCost
+                    decimal unitPrice = itemDto.UnitPrice > 0 ? itemDto.UnitPrice : (item.UnitCost ?? 0);
+
                     var requisitionItem = new RequisitionItem
                     {
                         RequisitionId = requisition.Id,
@@ -204,8 +207,8 @@ namespace IMS.Application.Services
                         RequestedQuantity = itemDto.RequestedQuantity,
                         ApprovedQuantity = 0,
                         IssuedQuantity = 0,
-                        UnitPrice = item.UnitCost ?? 0,
-                        TotalPrice = (item.UnitCost ?? 0) * itemDto.RequestedQuantity,
+                        UnitPrice = unitPrice,
+                        TotalPrice = unitPrice * itemDto.RequestedQuantity,
                         Specification = itemDto.Specification,
                         CreatedAt = DateTime.Now,
                         CreatedBy = _userContext.CurrentUserName,
@@ -554,6 +557,36 @@ namespace IMS.Application.Services
             if (requisition == null)
                 return null;
 
+            // Calculate prices for items
+            var items = requisition.RequisitionItems?.Select(i =>
+            {
+                // Fall back to Item.UnitCost if RequisitionItem.UnitPrice is 0
+                var unitPrice = i.UnitPrice > 0 ? i.UnitPrice : (i.Item?.UnitCost ?? 0);
+                var totalPrice = i.TotalPrice > 0 ? i.TotalPrice : (unitPrice * i.RequestedQuantity);
+
+                return new RequisitionItemDto
+                {
+                    Id = i.Id,
+                    RequisitionId = i.RequisitionId,
+                    ItemId = i.ItemId,
+                    ItemName = i.Item?.Name,
+                    ItemCode = i.Item?.ItemCode,
+                    Unit = i.Item?.Unit,
+                    RequestedQuantity = i.RequestedQuantity,
+                    ApprovedQuantity = i.ApprovedQuantity,
+                    IssuedQuantity = i.IssuedQuantity,
+                    EstimatedUnitPrice = unitPrice,
+                    EstimatedTotalPrice = totalPrice,
+                    UnitPrice = unitPrice,
+                    TotalPrice = totalPrice,
+                    Specification = i.Specification,
+                    Status = i.Status
+                };
+            }).ToList();
+
+            // Calculate EstimatedValue from items
+            var estimatedValue = items?.Sum(item => item.TotalPrice) ?? 0;
+
             return new RequisitionDto
             {
                 Id = requisition.Id,
@@ -571,7 +604,7 @@ namespace IMS.Application.Services
                 ToStoreName = requisition.ToStore?.Name,
                 Status = requisition.Status,
                 FulfillmentStatus = requisition.FulfillmentStatus,
-                EstimatedValue = requisition.EstimatedValue,
+                EstimatedValue = estimatedValue,
                 ApprovedValue = requisition.ApprovedValue,
                 AutoConvertToPO = requisition.AutoConvertToPO,
                 PurchaseOrderId = requisition.PurchaseOrderId,
@@ -590,24 +623,7 @@ namespace IMS.Application.Services
                 RejectedBy = requisition.RejectedBy,
                 RejectedDate = requisition.RejectedDate,
                 RejectionReason = requisition.RejectionReason,
-                Items = requisition.RequisitionItems?.Select(i => new RequisitionItemDto
-                {
-                    Id = i.Id,
-                    RequisitionId = i.RequisitionId,
-                    ItemId = i.ItemId,
-                    ItemName = i.Item?.Name,
-                    ItemCode = i.Item?.ItemCode,
-                    Unit = i.Item?.Unit,
-                    RequestedQuantity = i.RequestedQuantity,
-                    ApprovedQuantity = i.ApprovedQuantity,
-                    IssuedQuantity = i.IssuedQuantity,
-                    EstimatedUnitPrice = i.UnitPrice,
-                    EstimatedTotalPrice = i.TotalPrice,
-                    UnitPrice = i.UnitPrice,
-                    TotalPrice = i.TotalPrice,
-                    Specification = i.Specification,
-                    Status = i.Status
-                }).ToList()
+                Items = items
             };
         }
 
@@ -616,38 +632,54 @@ namespace IMS.Application.Services
             var requisitions = await _unitOfWork.Requisitions
                 .GetAllAsync(includes: new[] { "RequestedByUser", "FromStore", "ToStore", "RequisitionItems", "RequisitionItems.Item" });
 
-            return requisitions.Where(r => r.IsActive).Select(r => new RequisitionDto
+            return requisitions.Where(r => r.IsActive).Select(r =>
             {
-                Id = r.Id,
-                RequisitionNumber = r.RequisitionNumber,
-                RequestedBy = r.RequestedBy,
-                RequestedByName = r.RequestedByUser?.FullName,
-                RequestDate = r.RequestDate,
-                RequiredByDate = r.RequiredByDate,
-                Priority = r.Priority ?? "Normal",
-                Department = r.Department,
-                Purpose = r.Purpose,
-                Status = r.Status,
-                FulfillmentStatus = r.FulfillmentStatus,
-                EstimatedValue = r.EstimatedValue,
-                FromStoreName = r.FromStore?.Name,
-                ToStoreName = r.ToStore?.Name,
-                PurchaseOrderId = r.PurchaseOrderId,
-                Items = r.RequisitionItems?.Select(i => new RequisitionItemDto
+                // Calculate prices for items
+                var items = r.RequisitionItems?.Select(i =>
                 {
-                    Id = i.Id,
-                    RequisitionId = i.RequisitionId,
-                    ItemId = i.ItemId,
-                    ItemName = i.Item?.Name,
-                    ItemCode = i.Item?.ItemCode,
-                    Unit = i.Item?.Unit,
-                    RequestedQuantity = i.RequestedQuantity,
-                    ApprovedQuantity = i.ApprovedQuantity,
-                    UnitPrice = i.UnitPrice,
-                    TotalPrice = i.TotalPrice,
-                    Specification = i.Specification,
-                    Status = i.Status
-                }).ToList() ?? new List<RequisitionItemDto>()
+                    // Fall back to Item.UnitCost if RequisitionItem.UnitPrice is 0
+                    var unitPrice = i.UnitPrice > 0 ? i.UnitPrice : (i.Item?.UnitCost ?? 0);
+                    var totalPrice = i.TotalPrice > 0 ? i.TotalPrice : (unitPrice * i.RequestedQuantity);
+
+                    return new RequisitionItemDto
+                    {
+                        Id = i.Id,
+                        RequisitionId = i.RequisitionId,
+                        ItemId = i.ItemId,
+                        ItemName = i.Item?.Name,
+                        ItemCode = i.Item?.ItemCode,
+                        Unit = i.Item?.Unit,
+                        RequestedQuantity = i.RequestedQuantity,
+                        ApprovedQuantity = i.ApprovedQuantity,
+                        UnitPrice = unitPrice,
+                        TotalPrice = totalPrice,
+                        Specification = i.Specification,
+                        Status = i.Status
+                    };
+                }).ToList() ?? new List<RequisitionItemDto>();
+
+                // Calculate EstimatedValue from items
+                var estimatedValue = items.Sum(item => item.TotalPrice);
+
+                return new RequisitionDto
+                {
+                    Id = r.Id,
+                    RequisitionNumber = r.RequisitionNumber,
+                    RequestedBy = r.RequestedBy,
+                    RequestedByName = r.RequestedByUser?.FullName,
+                    RequestDate = r.RequestDate,
+                    RequiredByDate = r.RequiredByDate,
+                    Priority = r.Priority ?? "Normal",
+                    Department = r.Department,
+                    Purpose = r.Purpose,
+                    Status = r.Status,
+                    FulfillmentStatus = r.FulfillmentStatus,
+                    EstimatedValue = estimatedValue,
+                    FromStoreName = r.FromStore?.Name,
+                    ToStoreName = r.ToStore?.Name,
+                    PurchaseOrderId = r.PurchaseOrderId,
+                    Items = items
+                };
             });
         }
 

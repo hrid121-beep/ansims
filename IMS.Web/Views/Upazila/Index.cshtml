@@ -250,7 +250,39 @@
                 "lengthChange": true,
                 "autoWidth": false,
                 "order": [[1, "asc"]],
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(.no-export):not(:last-child)'
+                        }
+                    },
+                    'colvis'
+                ],
                 "pageLength": 25,
                 "searching": true
             });

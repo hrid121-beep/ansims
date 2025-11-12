@@ -127,22 +127,6 @@
                 </div>
             </div>
 
-            <!-- Backup & Restore -->
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>Backup</h3>
-                        <p>Database backup and restore</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <a asp-controller="Settings" asp-action="Backup" class="small-box-footer">
-                        Manage Backups <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-
             <!-- Activity Logs -->
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
@@ -175,18 +159,34 @@
                 </div>
             </div>
 
-            <!-- Data Management -->
+            <!-- Factory Reset -->
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-primary">
                     <div class="inner">
-                        <h3>Data</h3>
-                        <p>Bulk update and manage data</p>
+                        <h3>Factory Reset</h3>
+                        <p>Initialize Default Settings</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-sync-alt"></i>
+                        <i class="fas fa-redo-alt"></i>
                     </div>
                     <a asp-action="DataManagement" class="small-box-footer">
-                        Manage Data <i class="fas fa-arrow-circle-right"></i>
+                        Initialize Settings <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Database Backup -->
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>Backup</h3>
+                        <p>Database Backup & Restore</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <a asp-controller="Settings" asp-action="Backup" class="small-box-footer">
+                        Backup Database <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
             </div>

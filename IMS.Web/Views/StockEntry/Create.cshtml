@@ -658,10 +658,14 @@
                 updateScannerStatus();
             });
 
-            $('#barcodeInput').on('keypress', function(e) {
-                if (e.which === 13) {
+            // Handle both Enter key and Tab key from scanner
+            $('#barcodeInput').on('keydown', function(e) {
+                if (e.which === 13 || e.which === 9) {  // Enter or Tab
                     e.preventDefault();
-                    processBarcodeInput($(this).val());
+                    const barcode = $(this).val().trim();
+                    if (barcode) {
+                        processBarcodeInput(barcode);
+                    }
                 }
             });
 
@@ -673,10 +677,11 @@
                 const scannedItem = $('#barcodeScannerModal').data('scannedItem');
                 if (!scannedItem) return;
 
-                addNewItemRow(scannedItem);
+                addScannedItemToTable(scannedItem);
 
                 $('#barcodeInput').val('');
                 $('#scanResult').html('');
+                $('#addScannedItemBtn').prop('disabled', true);
 
                 if (continuousMode) {
                     $('#barcodeInput').focus();
@@ -772,17 +777,22 @@
                         <input type="date" name="Items[${index}].ExpiryDate"
                                class="form-control form-control-sm expiry-input" />
                     </td>
-                    <td class="text-center">
-                        <input type="checkbox" class="barcode-check"
-                               id="barcode_${index}"
-                               name="Items[${index}].GenerateBarcodes"
-                               value="true" checked>
-                        <input type="number"
-                               name="Items[${index}].BarcodesToGenerate"
-                               class="form-control form-control-sm barcode-count d-inline-block"
-                               style="width: 50px; margin-left: 5px; font-weight: 600;"
-                               value="1" min="0" max="100" />
-                        <input type="hidden" name="Items[${index}].GenerateBarcodes" value="false" />
+                    <td class="text-center barcode-cell">
+                        <div class="barcode-number-display" style="display:none; font-weight:700; color:#007bff; margin-bottom:5px;">
+                            <i class="fas fa-barcode"></i> <span class="barcode-text"></span>
+                        </div>
+                        <div class="barcode-gen-controls">
+                            <input type="checkbox" class="barcode-check"
+                                   id="barcode_${index}"
+                                   name="Items[${index}].GenerateBarcodes"
+                                   value="true" checked>
+                            <input type="number"
+                                   name="Items[${index}].BarcodesToGenerate"
+                                   class="form-control form-control-sm barcode-count d-inline-block"
+                                   style="width: 50px; margin-left: 5px; font-weight: 600;"
+                                   value="1" min="0" max="100" />
+                            <input type="hidden" name="Items[${index}].GenerateBarcodes" value="false" />
+                        </div>
                     </td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-danger remove-item" title="Remove">
@@ -1037,15 +1047,22 @@
         });
 
         function processBarcodeInput(barcode) {
-            if (!barcode) {
+            if (!barcode || !barcode.trim()) {
                 showScanResult('Please enter or scan a barcode', 'warning');
+                $('#barcodeInput').val('').focus();
                 return;
             }
 
-            if (isProcessing) return;
+            barcode = barcode.trim();
+
+            if (isProcessing) {
+                console.log('Already processing a barcode');
+                return;
+            }
             isProcessing = true;
 
-            showScanResult('<i class="fas fa-spinner fa-spin"></i> Searching...', 'info');
+            showScanResult('<i class="fas fa-spinner fa-spin"></i> Searching for barcode...', 'info');
+            $('#addScannedItemBtn').prop('disabled', true);
 
             $.ajax({
                 url: '/StockEntry/GetItemByBarcode',
@@ -1057,18 +1074,23 @@
                 success: function(response) {
                     isProcessing = false;
 
-                    if (response.success) {
+                    if (response.success && response.item) {
                         const item = response.item;
+
+                        // Show success message with item details
                         showScanResult(`
-                            <div class="card">
+                            <div class="card bg-success text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title" style="font-weight: 700;">${item.name}</h5>
+                                    <h5 class="card-title" style="font-weight: 700;">
+                                        <i class="fas fa-check-circle"></i> Item Found!
+                                    </h5>
                                     <p class="card-text" style="font-weight: 600;">
+                                        <strong>Name:</strong> ${item.name}<br>
                                         <strong>Code:</strong> ${item.itemCode}<br>
-                                        <strong>Category:</strong> ${item.categoryName}<br>
+                                        <strong>Category:</strong> ${item.categoryName || 'N/A'}<br>
                                         <strong>Current Stock:</strong>
-                                        <span class="badge badge-info">${item.currentStock} ${item.unit}</span><br>
-                                        <strong>Unit Price:</strong> ${item.unitPrice}
+                                        <span class="badge badge-light text-dark">${item.currentStock.toFixed(2)} ${item.unit}</span><br>
+                                        <strong>Unit Price:</strong> ৳${item.unitPrice.toFixed(2)}
                                     </p>
                                 </div>
                             </div>
@@ -1077,20 +1099,41 @@
                         $('#barcodeScannerModal').data('scannedItem', item);
                         $('#addScannedItemBtn').prop('disabled', false);
 
+                        // Auto-add in continuous mode
                         if (continuousMode) {
                             setTimeout(() => {
-                                $('#addScannedItemBtn').click();
-                            }, 500);
+                                addScannedItemToTable(item);
+                                $('#barcodeInput').val('').focus();
+                                $('#scanResult').html('');
+                            }, 800);
+                        } else {
+                            // Focus on add button for manual confirmation
+                            $('#addScannedItemBtn').focus();
                         }
                     } else {
-                        showScanResult(response.message || 'Item not found', 'danger');
+                        showScanResult(`
+                            <div class="alert alert-danger" style="font-weight: 600;">
+                                <i class="fas fa-times-circle"></i>
+                                <strong>Not Found!</strong><br>
+                                ${response.message || 'Item not found with this barcode or item code'}<br>
+                                <small>Barcode: <code>${barcode}</code></small>
+                            </div>
+                        `, 'danger');
                         $('#addScannedItemBtn').prop('disabled', true);
+                        $('#barcodeInput').val('').focus();
                     }
                 },
                 error: function(xhr) {
                     isProcessing = false;
                     console.error('Barcode lookup error:', xhr);
-                    showScanResult('Error looking up barcode', 'danger');
+                    showScanResult(`
+                        <div class="alert alert-danger" style="font-weight: 600;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Error!</strong><br>
+                            Failed to lookup barcode. Please try again.
+                        </div>
+                    `, 'danger');
+                    $('#barcodeInput').val('').focus();
                 }
             });
         }
@@ -1105,16 +1148,97 @@
             `);
         }
 
-        function populateScannedRow(row, itemData) {
-            row.find('.category-select').val(itemData.categoryId).trigger('change');
+        function addScannedItemToTable(itemData) {
+            // Create new row
+            const rowHtml = createItemRowHtml(itemIndex, itemData);
+            $('#itemsContainer').append(rowHtml);
 
-            setTimeout(() => {
-                row.find('.item-select').val(itemData.id).trigger('change');
-                row.find('.quantity-input').val(1).focus().select();
-                row.find('.price-input').val(itemData.unitPrice.toFixed(2));
-                row.find('.location-input').val(itemData.location || '');
-                row.find('.batch-input').val(itemData.batchNumber || '');
-            }, 500);
+            const newRow = $('#itemsContainer tr:last');
+
+            // Initialize select2 on the new row
+            newRow.find('.category-select, .item-select').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Populate with scanned item data
+            populateScannedRow(newRow, itemData);
+
+            // Animation and updates
+            newRow.addClass('table-row-new');
+            setTimeout(() => newRow.removeClass('table-row-new'), 2000);
+
+            itemIndex++;
+            updateRowNumbers();
+            toggleEmptyState();
+            updateTotalItemCount();
+
+            // Show success toast
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Added: ${itemData.name}`,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+
+        function populateScannedRow(row, itemData) {
+            // First, load the category items
+            if (itemData.categoryId) {
+                row.find('.category-select').val(itemData.categoryId);
+
+                // Load items for this category
+                $.ajax({
+                    url: '/StockEntry/GetItemsByCategory',
+                    type: 'GET',
+                    data: { categoryId: itemData.categoryId },
+                    success: function(response) {
+                        const itemSelect = row.find('.item-select');
+                        itemSelect.empty().append('<option value="">-- Select Item --</option>');
+
+                        if (response.success && response.items && response.items.length > 0) {
+                            response.items.forEach(item => {
+                                itemSelect.append(`
+                                    <option value="${item.id}"
+                                        data-unit-price="${item.unitPrice || 0}"
+                                        data-unit="${item.unit || 'Unit'}">
+                                        ${item.name} (${item.itemCode})
+                                    </option>
+                                `);
+                            });
+
+                            // Now select the specific item
+                            itemSelect.val(itemData.id);
+
+                            // Set other fields
+                            row.find('.current-stock-value').text(itemData.currentStock.toFixed(2));
+                            row.find('.quantity-input').val(1);
+                            row.find('.price-input').val(itemData.unitPrice.toFixed(2));
+                            row.find('.unit-label').text(itemData.unit);
+                            row.find('.location-input').val(itemData.location || '');
+                            row.find('.batch-input').val(itemData.batchNumber || '');
+
+                            // Show barcode number if scanned
+                            if (itemData.barcodeNumber) {
+                                row.find('.barcode-text').text(itemData.barcodeNumber);
+                                row.find('.barcode-number-display').show();
+                            }
+
+                            // Calculate total
+                            calculateRowTotal(row);
+
+                            // Focus on quantity for quick editing
+                            row.find('.quantity-input').focus().select();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading items:', xhr);
+                    }
+                });
+            }
         }
 
         function openBulkAdd() {

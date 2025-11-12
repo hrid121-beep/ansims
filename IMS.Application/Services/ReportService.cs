@@ -5,20 +5,48 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using QuestPDF.Infrastructure;
 using System.Drawing;
 using System.IO;
 
 namespace IMS.Application.Services
 {
-    public class ReportService : IReportService
+    public partial class ReportService : IReportService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ReportService> _logger;
+        private const string BANGLA_FONT_PATH = "wwwroot/fonts/kalpurush.ttf";
 
-        public ReportService(IUnitOfWork unitOfWork,ILogger<ReportService> logger)
+        public ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+
+            // Configure QuestPDF license (Community/Free for non-commercial)
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            // Load and register Bengali font
+            try
+            {
+                string fontPath = Path.Combine(Directory.GetCurrentDirectory(), BANGLA_FONT_PATH);
+                _logger.LogInformation("Attempting to load Bengali font from: {FontPath}", fontPath);
+
+                if (File.Exists(fontPath))
+                {
+                    var fontBytes = File.ReadAllBytes(fontPath);
+                    QuestPDF.Drawing.FontManager.RegisterFontWithCustomName("Kalpurush", new MemoryStream(fontBytes));
+                    _logger.LogInformation("✓ Bengali font 'Kalpurush' registered successfully with {Size} bytes", fontBytes.Length);
+                }
+                else
+                {
+                    _logger.LogWarning("❌ Bengali font not found at {FontPath}. PDF reports may not render Bengali text correctly.", fontPath);
+                    _logger.LogWarning("Please add kalpurush.ttf to wwwroot/fonts/ directory");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to load/register Bengali font");
+            }
         }
 
         // Update the GetStockReportAsync method in ReportService.cs

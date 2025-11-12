@@ -1,326 +1,555 @@
 @model IMS.Application.DTOs.AllotmentLetterDto
 @{
     ViewData["Title"] = "Allotment Letter Details";
+
+    // Bengali month names
+    var bengaliMonths = new[] { "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর" };
+
+    // Convert English digits to Bengali
+    string ToBengaliNumber(decimal number)
+    {
+        var bengaliDigits = new[] { "০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯" };
+        var intNumber = (int)Math.Round(number);
+        return string.Concat(intNumber.ToString().Select(c => bengaliDigits[c - '0']));
+    }
+
+    string FormatBengaliDate(DateTime date)
+    {
+        return $"{ToBengaliNumber(date.Day)} {bengaliMonths[date.Month - 1]} {ToBengaliNumber(date.Year)}";
+    }
 }
 
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1>Allotment Letter Details</h1>
+<style>
+    /* Government Letter Styling */
+    .govt-letter-container {
+        background: white;
+        max-width: 210mm;
+        margin: 20px auto;
+        padding: 20mm;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Kalpurush', 'SolaimanLipi', Arial, sans-serif;
+        line-height: 1.8;
+        position: relative;
+    }
+
+    .govt-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 3px double #000;
+        padding-bottom: 20px;
+    }
+
+    .govt-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
+
+    .govt-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 5px 0;
+        color: #000;
+    }
+
+    .govt-subtitle {
+        font-size: 14px;
+        margin: 3px 0;
+        color: #333;
+    }
+
+    .memo-section {
+        margin: 20px 0;
+        font-size: 14px;
+    }
+
+    .memo-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .subject-line {
+        margin: 20px 0;
+        padding: 10px;
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .body-text {
+        margin: 20px 0;
+        text-align: justify;
+        font-size: 14px;
+        line-height: 2;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 13px;
+    }
+
+    .items-table th,
+    .items-table td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .items-table th {
+        background: #f0f0f0;
+        font-weight: bold;
+    }
+
+    .signature-section {
+        margin-top: 40px;
+        text-align: right;
+    }
+
+    .signature-block {
+        display: inline-block;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .signature-line {
+        margin-top: 60px;
+        border-top: 1px solid #000;
+        width: 200px;
+        text-align: center;
+    }
+
+    .distribution-list {
+        margin-top: 40px;
+        font-size: 13px;
+    }
+
+    .distribution-title {
+        font-weight: bold;
+        text-decoration: underline;
+        margin-bottom: 10px;
+    }
+
+    .distribution-item {
+        margin: 5px 0 5px 20px;
+    }
+
+    .action-buttons {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 1000;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        width: 220px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .action-buttons .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 8px;
+        font-size: 12px;
+        white-space: normal;
+        text-align: left;
+        padding: 8px 12px;
+    }
+
+    .action-buttons h6 {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: bold;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .status-draft { background: #ffc107; color: #000; }
+    .status-active { background: #28a745; color: #fff; }
+    .status-completed { background: #17a2b8; color: #fff; }
+    .status-cancelled { background: #dc3545; color: #fff; }
+    .status-rejected { background: #dc3545; color: #fff; }
+
+    @@media print {
+        .action-buttons,
+        .no-print {
+            display: none !important;
+        }
+
+        .govt-letter-container {
+            box-shadow: none;
+            margin: 0;
+            padding: 15mm;
+        }
+    }
+</style>
+
+<!-- Action Buttons (Fixed Position) -->
+<div class="action-buttons no-print">
+    <h6><i class="fas fa-cog"></i> Actions</h6>
+
+    <!-- Navigation -->
+    <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+
+    <!-- Edit Actions (Draft Only) -->
+    @if (Model.Status == "Draft")
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+
+        <button type="button" class="btn btn-warning btn-sm" onclick="submitForApproval(@Model.Id, '@Model.AllotmentNo')">
+            <i class="fas fa-paper-plane"></i> Submit for Approval
+        </button>
+    }
+
+    <!-- Pending Status Info -->
+    @if (Model.Status == "Pending")
+    {
+        <div class="alert alert-info mb-2 p-2" style="font-size: 11px;">
+            <i class="fas fa-clock"></i> Pending Approval
+        </div>
+    }
+
+    <!-- Issue Action -->
+    @if (Model.CanIssue)
+    {
+        <a asp-controller="Issue" asp-action="Create" asp-route-allotmentId="@Model.Id" class="btn btn-success btn-sm">
+            <i class="fas fa-share-square"></i> Create Issue
+        </a>
+    }
+
+    <hr style="margin: 10px 0;" />
+
+    <!-- Print & Export -->
+    <button onclick="window.print()" class="btn btn-info btn-sm">
+        <i class="fas fa-print"></i> Print This Page
+    </button>
+
+    <a asp-action="Print" asp-route-id="@Model.Id" class="btn btn-outline-info btn-sm" target="_blank">
+        <i class="fas fa-print"></i> Simple Print
+    </a>
+
+    <a asp-action="PrintGovernment" asp-route-id="@Model.Id" class="btn btn-outline-success btn-sm" target="_blank">
+        <i class="fas fa-file-alt"></i> Govt Format
+    </a>
+
+    <a asp-action="ExportPDF" asp-route-id="@Model.Id" class="btn btn-danger btn-sm" target="_blank">
+        <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+
+    <!-- Summary Info -->
+    <hr style="margin: 10px 0;" />
+    <div style="font-size: 11px; color: #666;">
+        <strong>Summary:</strong><br/>
+        Items: @Model.TotalItems<br/>
+        Allotted: @Model.TotalQuantity<br/>
+        Issued: @Model.TotalIssued<br/>
+        Remaining: @Model.TotalRemaining
+        @if (Model.ApprovedBy != null)
+        {
+            <br/><br/>
+            <strong>Approved:</strong><br/>
+            @Model.ApprovedBy<br/>
+            @Model.ApprovedDate?.ToString("dd MMM yyyy")
+        }
+    </div>
+</div>
+
+<!-- Government Format Letter -->
+<div class="govt-letter-container">
+    <!-- Status Badge -->
+    <div class="status-badge status-@Model.Status.ToLower()">
+        @Model.Status
+    </div>
+
+    <!-- Government Header -->
+    <div class="govt-header">
+        <img src="/images/bangladesh-govt-logo.png" alt="Bangladesh Government Logo" class="govt-logo" onerror="this.style.display='none'" />
+        <div class="govt-title">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</div>
+        <div class="govt-subtitle">বাংলাদেশ আনসার ও ভিডিপি</div>
+        <div class="govt-subtitle">আনসার-ভিডিপি মহাপরিচালকের কার্যালয়</div>
+        <div class="govt-subtitle">৫৯-৬১, শহীদ সৈয়দ নজরুল ইসলাম সরণি, পুরানা পল্টন, ঢাকা-১০০০</div>
+        <div class="govt-subtitle">ফোন: ৯৫৫১৪৮৪, ৯৫৬৪০৯৮, ফ্যাক্স: ৮৮-০২-৯৫৬৫৪৯৬</div>
+        <div class="govt-subtitle">ওয়েবসাইট: www.ansarvdp.gov.bd</div>
+    </div>
+
+    <!-- Memo Section -->
+    <div class="memo-section">
+        <div class="memo-row">
+            <div><strong>স্মারক নং:</strong> @(Model.ReferenceNo ?? Model.AllotmentNo)</div>
+            <div><strong>তারিখ:</strong> @FormatBengaliDate(Model.AllotmentDate)</div>
+        </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="subject-line">
+        <strong>বিষয়:</strong> @(Model.SubjectBn ?? Model.Subject ?? "বরাদ্দ পত্র")
+    </div>
+
+    <!-- Body Text -->
+    <div class="body-text">
+        @if (!string.IsNullOrEmpty(Model.BodyTextBn))
+        {
+            @Html.Raw(Model.BodyTextBn.Replace("\n", "<br/>"))
+        }
+        else if (!string.IsNullOrEmpty(Model.BodyText))
+        {
+            @Html.Raw(Model.BodyText.Replace("\n", "<br/>"))
+        }
+        else
+        {
+            <p>
+                উপরোক্ত বিষয়ের প্রেক্ষিতে বিভিন্ন দপ্তর/ইউনিটের চাহিদার আলোকে আয়ুষ্কাল বিবেচনায়
+                ক্রোড়পত্র-"ক" অনুযায়ী @(Model.SubjectBn ?? "উপকরণ") বরাদ্দ প্রদান করা হলো।
+            </p>
+
+            <p>
+                বরাদ্দকৃত উপকরণাদি যথাযথভাবে সংরক্ষণ এবং সঠিক ব্যবহার নিশ্চিত করার জন্য অনুরোধ করা হলো।
+            </p>
+        }
+    </div>
+
+    <!-- Recipients Table (Annexure) -->
+    @if (Model.TotalRecipients > 0 && Model.Recipients != null && Model.Recipients.Any())
+    {
+        <div style="margin-top: 30px;">
+            <h5 style="text-align: center; font-weight: bold; margin-bottom: 15px;">
+                সংযুক্ত-ক্রোড়পত্র-'ক'<br/>
+                @(Model.SubjectBn ?? Model.Subject ?? "উপকরণ বরাদ্দের তালিকা")
+            </h5>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ক্রমিক নং</th>
+                        <th>প্রাপকের নাম ও পদবি</th>
+                        <th>ইউনিট/দপ্তর</th>
+                        <th>উপকরণের বিবরণ</th>
+                        <th style="width: 100px;">বরাদ্দ পরিমাণ</th>
+                        <th style="width: 120px;">মন্তব্য</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var recipient in Model.Recipients.OrderBy(r => r.SerialNo))
+                    {
+                        <tr>
+                            <td>@ToBengaliNumber(recipient.SerialNo)</td>
+                            <td>@(recipient.RecipientNameBn ?? recipient.RecipientName)</td>
+                            <td>@(recipient.RecipientType ?? "-")</td>
+                            <td>
+                                @if (recipient.Items != null && recipient.Items.Any())
+                                {
+                                    <div style="text-align: left;">
+                                        @foreach (var item in recipient.Items)
+                                        {
+                                            <div>@item.ItemName (@item.AllottedQuantity @item.Unit)</div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <text>-</text>
+                                }
+                            </td>
+                            <td>
+                                @if (recipient.Items != null && recipient.Items.Any())
+                                {
+                                    var totalQty = recipient.Items.Sum(i => i.AllottedQuantity);
+                                    @ToBengaliNumber(totalQty)
+                                }
+                                else
+                                {
+                                    <text>-</text>
+                                }
+                            </td>
+                            <td>@(recipient.Remarks ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (Model.Items != null && Model.Items.Any())
+    {
+        <!-- Alternative: Show Items table if no recipients -->
+        <div style="margin-top: 30px;">
+            <h5 style="text-align: center; font-weight: bold; margin-bottom: 15px;">
+                ক্রোড়পত্র-'ক'<br/>
+                বরাদ্দকৃত উপকরণের তালিকা
+            </h5>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ক্রমিক নং</th>
+                        <th>উপকরণের নাম</th>
+                        <th>উপকরণ কোড</th>
+                        <th style="width: 100px;">বরাদ্দ পরিমাণ</th>
+                        <th style="width: 100px;">ইস্যু পরিমাণ</th>
+                        <th style="width: 100px;">অবশিষ্ট</th>
+                        <th style="width: 80px;">একক</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{int serialNo = 1;}
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@ToBengaliNumber(serialNo++)</td>
+                            <td style="text-align: left;">@item.ItemName</td>
+                            <td>@item.ItemCode</td>
+                            <td>@ToBengaliNumber(item.AllottedQuantity)</td>
+                            <td>@ToBengaliNumber(item.IssuedQuantity)</td>
+                            <td>@ToBengaliNumber(item.RemainingQuantity)</td>
+                            <td>@item.Unit</td>
+                        </tr>
+                    }
+                    <tr style="font-weight: bold; background: #f8f9fa;">
+                        <td colspan="3" style="text-align: right;">মোট:</td>
+                        <td>@ToBengaliNumber((decimal)Model.TotalQuantity)</td>
+                        <td>@ToBengaliNumber((decimal)Model.TotalIssued)</td>
+                        <td>@ToBengaliNumber((decimal)Model.TotalRemaining)</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Validity Information -->
+    <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-left: 4px solid #28a745;">
+        <strong>বৈধতা সময়কাল:</strong>
+        @FormatBengaliDate(Model.ValidFrom) হতে @FormatBengaliDate(Model.ValidUntil) পর্যন্ত
+        @if (Model.IsExpired)
+        {
+            <span style="color: #dc3545; font-weight: bold;"> (মেয়াদোত্তীর্ণ)</span>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Purpose))
+    {
+        <div style="margin-top: 15px;">
+            <strong>উদ্দেশ্য:</strong> @Model.Purpose
+        </div>
+    }
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div style="margin-top: 5px;">
+                <strong>@(Model.SignatoryName ?? "উপ-মহাপরিচালক (প্রশাসন)")</strong>
             </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a asp-action="Index">Allotment Letters</a></li>
-                    <li class="breadcrumb-item active">Details</li>
-                </ol>
+            @if (!string.IsNullOrEmpty(Model.SignatoryDesignation))
+            {
+                <div>@Model.SignatoryDesignation</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.SignatoryPhone))
+            {
+                <div>ফোন: @Model.SignatoryPhone</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.SignatoryEmail))
+            {
+                <div>ইমেইল: @Model.SignatoryEmail</div>
+            }
+        </div>
+    </div>
+
+    <!-- Distribution List -->
+    @if (Model.DistributionList != null && Model.DistributionList.Any())
+    {
+        <div class="distribution-list">
+            <div class="distribution-title">অনুলিপি:</div>
+            @{int distSerial = 1;}
+            @foreach (var dist in Model.DistributionList)
+            {
+                <div class="distribution-item">
+                    @ToBengaliNumber(distSerial++). @(dist.RecipientTitleBn ?? dist.RecipientTitle)
+                    @if (!string.IsNullOrEmpty(dist.Address) || !string.IsNullOrEmpty(dist.AddressBn))
+                    {
+                        <text>, @(dist.AddressBn ?? dist.Address)</text>
+                    }
+                    @if (!string.IsNullOrEmpty(dist.Purpose))
+                    {
+                        <text> - @dist.Purpose</text>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Footer Info -->
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">
+        <div style="display: flex; justify-content: space-between;">
+            <div>
+                <strong>বরাদ্দ নং:</strong> @Model.AllotmentNo<br/>
+                <strong>তৈরি করেছেন:</strong> @Model.CreatedBy<br/>
+                <strong>তৈরির তারিখ:</strong> @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")
+            </div>
+            <div style="text-align: right;">
+                <strong>উৎস স্টোর:</strong> @Model.FromStoreName
+                @if (Model.ApprovedBy != null)
+                {
+                    <br/><strong>অনুমোদনকারী:</strong> @Model.ApprovedBy
+                    <br/><strong>অনুমোদনের তারিখ:</strong> @Model.ApprovedDate?.ToString("dd MMM yyyy")
+                }
             </div>
         </div>
     </div>
 </div>
 
-<section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8">
-                <!-- Basic Information -->
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-file-contract"></i> Allotment Letter #@Model.AllotmentNo
-                        </h3>
-                        <div class="card-tools">
-                            @switch (Model.Status)
-                            {
-                                case "Draft":
-                                    <span class="badge badge-warning badge-lg">Draft</span>
-                                    break;
-                                case "Active":
-                                    <span class="badge badge-success badge-lg">Active</span>
-                                    break;
-                                case "Completed":
-                                    <span class="badge badge-info badge-lg">Completed</span>
-                                    break;
-                                case "Cancelled":
-                                    <span class="badge badge-danger badge-lg">Cancelled</span>
-                                    break;
-                                case "Rejected":
-                                    <span class="badge badge-danger badge-lg">Rejected</span>
-                                    break;
-                            }
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <table class="table table-sm table-borderless">
-                                    <tr>
-                                        <th width="40%">Allotment No:</th>
-                                        <td><strong>@Model.AllotmentNo</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Allotment Date:</th>
-                                        <td>@Model.AllotmentDate.ToString("dd MMM yyyy")</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Valid From:</th>
-                                        <td>@Model.ValidFrom.ToString("dd MMM yyyy")</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Valid Until:</th>
-                                        <td>
-                                            @Model.ValidUntil.ToString("dd MMM yyyy")
-                                            @if (Model.IsExpired)
-                                            {
-                                                <span class="badge badge-danger ml-2">Expired</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Reference No:</th>
-                                        <td>@(Model.ReferenceNo ?? "-")</td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="col-md-6">
-                                <table class="table table-sm table-borderless">
-                                    <tr>
-                                        <th width="40%">From Store:</th>
-                                        <td>@Model.FromStoreName</td>
-                                    </tr>
-                                    @if (Model.TotalRecipients > 0)
-                                    {
-                                        <tr>
-                                            <th>Issued To (@Model.TotalRecipients Recipients):</th>
-                                            <td>
-                                                @foreach (var recipient in Model.Recipients.OrderBy(r => r.SerialNo))
-                                                {
-                                                    <span class="badge badge-dark mr-1 mb-1">
-                                                        @recipient.SerialNo. @(recipient.RecipientName ?? recipient.RecipientNameBn)
-                                                    </span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <th>Issued To Type:</th>
-                                            <td>@Model.IssuedToType</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Issued To:</th>
-                                            <td>
-                                                @if (!string.IsNullOrEmpty(Model.IssuedToBattalionName))
-                                                {
-                                                    <span class="badge badge-dark">@Model.IssuedToBattalionName</span>
-                                                }
-                                                else if (!string.IsNullOrEmpty(Model.IssuedToRangeName))
-                                                {
-                                                    <span class="badge badge-primary">@Model.IssuedToRangeName</span>
-                                                }
-                                                else if (!string.IsNullOrEmpty(Model.IssuedToZilaName))
-                                                {
-                                                    <span class="badge badge-success">@Model.IssuedToZilaName</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>@Model.IssuedTo</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                    <tr>
-                                        <th>Created By:</th>
-                                        <td>@Model.CreatedBy</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Created At:</th>
-                                        <td>@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
+@section Scripts {
+    <script>
+        @Html.AntiForgeryToken()
 
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6><strong>Purpose:</strong></h6>
-                                <p class="text-muted">@Model.Purpose</p>
-                            </div>
-                        </div>
+        function submitForApproval(id, allotmentNo) {
+            if (confirm('Are you sure you want to submit Allotment Letter "' + allotmentNo + '" for approval?\n\nOnce submitted, you will not be able to edit it.')) {
+                var btn = event.target.closest('button');
+                var originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                btn.disabled = true;
 
-                        @if (!string.IsNullOrEmpty(Model.DocumentPath))
-                        {
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <h6><strong>Document:</strong></h6>
-                                    <a href="@Model.DocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-file-pdf"></i> View Document
-                                    </a>
-                                </div>
-                            </div>
+                $.ajax({
+                    url: '@Url.Action("SubmitForApproval", "AllotmentLetter")',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Success! Allotment Letter "' + allotmentNo + '" has been submitted for approval.');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (response.message || 'Failed to submit for approval'));
+                            btn.innerHTML = originalHtml;
+                            btn.disabled = false;
                         }
-                    </div>
-                </div>
-
-                <!-- Allotted Items -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">Allotted Items</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Item Code</th>
-                                    <th>Item Name</th>
-                                    <th>Allotted Qty</th>
-                                    <th>Issued Qty</th>
-                                    <th>Remaining</th>
-                                    <th>Unit</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td><strong>@item.ItemCode</strong></td>
-                                        <td>@item.ItemName</td>
-                                        <td class="text-right">@item.AllottedQuantity</td>
-                                        <td class="text-right">@item.IssuedQuantity</td>
-                                        <td class="text-right">
-                                            <strong>@item.RemainingQuantity</strong>
-                                        </td>
-                                        <td>@item.Unit</td>
-                                        <td>
-                                            @if (item.RemainingQuantity == 0)
-                                            {
-                                                <span class="badge badge-success">Fully Issued</span>
-                                            }
-                                            else if (item.IssuedQuantity > 0)
-                                            {
-                                                <span class="badge badge-warning">Partially Issued</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-secondary">Pending</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Summary Card -->
-            <div class="col-md-4">
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">Summary</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="info-box bg-light">
-                            <span class="info-box-icon bg-info"><i class="fas fa-boxes"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Items</span>
-                                <span class="info-box-number">@Model.TotalItems</span>
-                            </div>
-                        </div>
-
-                        <div class="info-box bg-light">
-                            <span class="info-box-icon bg-primary"><i class="fas fa-cubes"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Quantity</span>
-                                <span class="info-box-number">@Model.TotalQuantity</span>
-                            </div>
-                        </div>
-
-                        <div class="info-box bg-light">
-                            <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Issued</span>
-                                <span class="info-box-number">@Model.TotalIssued</span>
-                            </div>
-                        </div>
-
-                        <div class="info-box bg-light">
-                            <span class="info-box-icon bg-warning"><i class="fas fa-hourglass-half"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Remaining</span>
-                                <span class="info-box-number">@Model.TotalRemaining</span>
-                            </div>
-                        </div>
-
-                        @if (Model.ApprovedBy != null)
-                        {
-                            <hr />
-                            <p class="text-sm">
-                                <strong>Approved By:</strong> @Model.ApprovedBy<br />
-                                <strong>Approved Date:</strong> @Model.ApprovedDate?.ToString("dd MMM yyyy")
-                            </p>
-                        }
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Actions</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            @if (Model.Status == "Draft")
-                            {
-                                <form asp-action="SubmitForApproval" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@Model.Id" />
-                                    <button type="submit" class="btn btn-success btn-block mb-2"
-                                            onclick="return confirm('Are you sure you want to submit this allotment letter for approval?')">
-                                        <i class="fas fa-paper-plane"></i> Submit for Approval
-                                    </button>
-                                </form>
-                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-block mb-2">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                            }
-
-                            @if (Model.Status == "Pending")
-                            {
-                                <div class="alert alert-info mb-2">
-                                    <i class="fas fa-clock"></i> Pending approval from DD Provision
-                                </div>
-                            }
-
-                            @if (Model.CanIssue)
-                            {
-                                <a asp-controller="Issue" asp-action="Create" asp-route-allotmentId="@Model.Id"
-                                   class="btn btn-warning btn-block mb-2">
-                                    <i class="fas fa-share-square"></i> Create Issue
-                                </a>
-                            }
-
-                            <a asp-action="Print" asp-route-id="@Model.Id" class="btn btn-info btn-block mb-2" target="_blank">
-                                <i class="fas fa-print"></i> Print (Simple)
-                            </a>
-
-                            <a asp-action="PrintGovernment" asp-route-id="@Model.Id" class="btn btn-success btn-block mb-2" target="_blank">
-                                <i class="fas fa-file-alt"></i> Print (Government Format)
-                            </a>
-
-                            <a asp-action="ExportPDF" asp-route-id="@Model.Id" class="btn btn-warning btn-block mb-2" target="_blank">
-                                <i class="fas fa-file-pdf"></i> Export PDF
-                            </a>
-
-                            <a asp-action="Index" class="btn btn-secondary btn-block">
-                                <i class="fas fa-arrow-left"></i> Back to List
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error: ' + error);
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                });
+            }
+        }
+    </script>
+}

@@ -21,6 +21,7 @@ namespace IMS.Web.Controllers
         private readonly IPurchaseService _purchaseService;
         private readonly IIssueService _issueService;
         private readonly INotificationService _notificationService;
+        private readonly IStockEntryService _stockEntryService;
 
         public ApprovalController(
             IApprovalService approvalService,
@@ -29,7 +30,8 @@ namespace IMS.Web.Controllers
             ILogger<ApprovalController> logger,
             IPurchaseService purchaseService,
             IIssueService issueService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IStockEntryService stockEntryService)
         {
             _approvalService = approvalService;
             _unitOfWork = unitOfWork;
@@ -38,6 +40,7 @@ namespace IMS.Web.Controllers
             _purchaseService = purchaseService;
             _issueService = issueService;
             _notificationService = notificationService;
+            _stockEntryService = stockEntryService;
         }
 
         [HttpGet]
@@ -113,6 +116,44 @@ namespace IMS.Web.Controllers
                 }
             }
 
+            // Add pending Stock Entry approvals
+            var pendingStockEntries = await _unitOfWork.StockEntries
+                .Query()
+                .Include(se => se.Items)
+                .Where(se => se.Status == "Submitted" && se.IsActive)
+                .ToListAsync();
+
+            foreach (var stockEntry in pendingStockEntries)
+            {
+                // Check if user can approve stock entries
+                bool canApprove = User.IsInRole("Admin") ||
+                                 User.IsInRole("StoreManager") ||
+                                 User.IsInRole("Director") ||
+                                 userRoles.Contains("DDStore") ||
+                                 userRoles.Contains("ADStore");
+
+                if (canApprove)
+                {
+                    // Calculate total value from items
+                    decimal totalValue = stockEntry.Items?.Sum(i => i.Quantity * i.UnitCost) ?? 0;
+
+                    pendingApprovals.Add(new ApprovalViewModel
+                    {
+                        Id = stockEntry.Id,
+                        EntityType = "STOCK_ENTRY",
+                        EntityId = stockEntry.Id,
+                        Amount = totalValue,
+                        RequestedBy = stockEntry.SubmittedBy ?? stockEntry.CreatedBy,
+                        RequestedByName = stockEntry.SubmittedBy ?? stockEntry.CreatedBy,
+                        RequestedByRole = "Stock Keeper",
+                        RequestedDate = stockEntry.SubmittedDate ?? stockEntry.CreatedAt,
+                        Priority = totalValue > 100000 ? "High" : "Normal",
+                        Description = stockEntry.EntryNo,
+                        CurrentLevel = 1
+                    });
+                }
+            }
+
             return pendingApprovals.OrderByDescending(a => a.Priority == "Critical" ? 3 : a.Priority == "High" ? 2 : 1)
                                    .ThenBy(a => a.RequestedDate)
                                    .ToList();
@@ -144,12 +185,37 @@ namespace IMS.Web.Controllers
         [HttpPost]
         [HasPermission(Permission.ProcessApproval)]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Process(int id, string action, string remarks)
+        public async Task<IActionResult> Process(int id, string action, string remarks, string entityType = null)
         {
             try
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
+                // Handle Stock Entry approvals differently (they don't use ApprovalRequest table)
+                if (entityType == "STOCK_ENTRY")
+                {
+                    bool stockEntryResult = false;
+                    string stockEntryMessage = "";
+
+                    if (action.ToLower() == "approve")
+                    {
+                        stockEntryResult = await _stockEntryService.ApproveStockEntryAsync(id, remarks);
+                        stockEntryMessage = stockEntryResult ? "Stock entry approved successfully" : "Failed to approve stock entry";
+                    }
+                    else if (action.ToLower() == "reject")
+                    {
+                        if (string.IsNullOrWhiteSpace(remarks))
+                        {
+                            return Json(new { success = false, message = "Rejection reason is required" });
+                        }
+                        stockEntryResult = await _stockEntryService.RejectStockEntryAsync(id, remarks);
+                        stockEntryMessage = stockEntryResult ? "Stock entry rejected" : "Failed to reject stock entry";
+                    }
+
+                    return Json(new { success = stockEntryResult, message = stockEntryMessage });
+                }
+
+                // Handle standard ApprovalRequest-based approvals
                 var approvalRequest = await _unitOfWork.ApprovalRequests.GetByIdAsync(id);
                 if (approvalRequest == null)
                 {
@@ -435,23 +501,39 @@ namespace IMS.Web.Controllers
 
         private async Task HandleStockAdjustmentFullyApproved(int adjustmentId)
         {
-            var adjustment = await _unitOfWork.StockAdjustments.GetByIdAsync(adjustmentId);
-            if (adjustment != null)
+            try
             {
-                // ✅ Update adjustment status
-                adjustment.Status = AdjustmentStatus.Approved.ToString();
-                adjustment.ApprovedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                adjustment.ApprovedDate = DateTime.Now;
-                _unitOfWork.StockAdjustments.Update(adjustment);
+                var adjustment = await _unitOfWork.StockAdjustments.GetByIdAsync(adjustmentId);
+                if (adjustment == null)
+                {
+                    _logger.LogWarning($"Stock Adjustment {adjustmentId} not found");
+                    return;
+                }
+
+                // ✅ Validate required fields
+                if (!adjustment.StoreId.HasValue || adjustment.StoreId.Value == 0)
+                {
+                    _logger.LogWarning($"Stock Adjustment {adjustmentId} has no StoreId, skipping stock update");
+                    return;
+                }
+
+                if (!adjustment.NewQuantity.HasValue)
+                {
+                    _logger.LogWarning($"Stock Adjustment {adjustmentId} has no NewQuantity, skipping stock update");
+                    return;
+                }
+
+                // ✅ NOTE: Status already updated in ApprovalService, no need to update again
+                // Just update the stock levels
 
                 // ✅ UPDATE STOCK - Apply the adjustment
                 var storeItem = await _unitOfWork.StoreItems
-                    .FirstOrDefaultAsync(si => si.ItemId == adjustment.ItemId && si.StoreId == adjustment.StoreId);
+                    .FirstOrDefaultAsync(si => si.ItemId == adjustment.ItemId && si.StoreId == adjustment.StoreId.Value);
 
                 if (storeItem != null)
                 {
                     // Update the stock quantity
-                    storeItem.Quantity = adjustment.NewQuantity;
+                    storeItem.Quantity = adjustment.NewQuantity.Value;
                     storeItem.UpdatedAt = DateTime.Now;
                     storeItem.UpdatedBy = adjustment.ApprovedBy;
                     _unitOfWork.StoreItems.Update(storeItem);
@@ -462,8 +544,8 @@ namespace IMS.Web.Controllers
                     storeItem = new StoreItem
                     {
                         ItemId = adjustment.ItemId,
-                        StoreId = adjustment.StoreId,
-                        Quantity = adjustment.NewQuantity,
+                        StoreId = adjustment.StoreId.Value,
+                        Quantity = adjustment.NewQuantity.Value,
                         Status = ItemStatus.Available,
                         CreatedAt = DateTime.Now,
                         CreatedBy = adjustment.ApprovedBy
@@ -473,13 +555,27 @@ namespace IMS.Web.Controllers
 
                 await _unitOfWork.CompleteAsync();
 
-                await _notificationService.SendNotificationAsync(new NotificationDto
+                // ✅ Send notification - don't fail if this errors
+                try
                 {
-                    UserId = adjustment.CreatedBy,
-                    Title = "Stock Adjustment Approved ✅",
-                    Message = $"Stock Adjustment #{adjustment.AdjustmentNo} has been fully approved and stock updated.",
-                    Type = "Success"
-                });
+                    await _notificationService.SendNotificationAsync(new NotificationDto
+                    {
+                        UserId = adjustment.CreatedBy,
+                        Title = "Stock Adjustment Approved ✅",
+                        Message = $"Stock Adjustment #{adjustment.AdjustmentNo} has been fully approved and stock updated.",
+                        Type = "Success"
+                    });
+                }
+                catch (Exception notifEx)
+                {
+                    _logger.LogError(notifEx, $"Failed to send notification for Stock Adjustment {adjustmentId}");
+                    // Don't throw - notification failure shouldn't break approval
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in HandleStockAdjustmentFullyApproved for adjustment {adjustmentId}");
+                // ✅ DON'T THROW - approval already succeeded, just log the error
             }
         }
 

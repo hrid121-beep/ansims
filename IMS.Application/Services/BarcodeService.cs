@@ -2,6 +2,7 @@
 using IMS.Application.Helpers;
 using IMS.Application.Interfaces;
 using IMS.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
@@ -37,6 +38,7 @@ namespace IMS.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContext _userContext;
         private readonly IActivityLogService _activityLogService;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<BarcodeService> _logger;
         private readonly BarcodeLib.Barcode _code128Generator;
         private readonly string _barcodePrefix;
@@ -45,11 +47,13 @@ namespace IMS.Application.Services
             IUnitOfWork unitOfWork,
             IUserContext userContext,
             IActivityLogService activityLogService,
+            UserManager<User> userManager,
             ILogger<BarcodeService> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _activityLogService = activityLogService ?? throw new ArgumentNullException(nameof(activityLogService));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _code128Generator = new BarcodeLib.Barcode();
             _barcodePrefix = "AVDP"; // From config
@@ -83,6 +87,18 @@ namespace IMS.Application.Services
                 var stores = await _unitOfWork.Stores.FindAsync(s => storeIds.Contains(s.Id));
                 var storeDict = stores.ToDictionary(s => s.Id);
 
+                // Load user names for GeneratedBy field
+                var userIds = barcodes.Where(b => !string.IsNullOrEmpty(b.GeneratedBy)).Select(b => b.GeneratedBy).Distinct().ToList();
+                var userNameDict = new Dictionary<string, string>();
+                foreach (var userId in userIds)
+                {
+                    var user = await _userManager.FindByIdAsync(userId);
+                    if (user != null)
+                    {
+                        userNameDict[userId] = user.FullName ?? user.UserName;
+                    }
+                }
+
                 foreach (var barcode in barcodes)
                 {
                     var dto = MapToDto(barcode, itemDict, subCategoryDict, categoryDict);
@@ -91,6 +107,12 @@ namespace IMS.Application.Services
                     if (barcode.StoreId.HasValue && storeDict.ContainsKey(barcode.StoreId.Value))
                     {
                         dto.StoreName = storeDict[barcode.StoreId.Value].Name;
+                    }
+
+                    // Add user name if available
+                    if (!string.IsNullOrEmpty(barcode.GeneratedBy) && userNameDict.ContainsKey(barcode.GeneratedBy))
+                    {
+                        dto.GeneratedByName = userNameDict[barcode.GeneratedBy];
                     }
 
                     barcodeDtos.Add(dto);

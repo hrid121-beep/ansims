@@ -26,6 +26,9 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        @* ✅ FIX: Add antiforgery token for AJAX calls *@
+        @Html.AntiForgeryToken()
+
         <!-- Quick Stats -->
         <div class="row mb-3">
             <div class="col-lg-3 col-6">
@@ -74,6 +77,30 @@
             </div>
         </div>
 
+        <!-- Status Guide -->
+        <div class="alert alert-info alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-info-circle"></i> Issue Status Guide</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="mb-0 small">
+                        <li><span class="badge badge-secondary">Draft</span> - Issue created but not submitted yet</li>
+                        <li><span class="badge badge-warning">Pending</span> - Submitted and waiting for approval</li>
+                        <li><span class="badge badge-success">Approved</span> - Approved and ready to be processed</li>
+                        <li><span class="badge badge-danger">Rejected</span> - Not approved, needs revision</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="mb-0 small">
+                        <li><span class="badge badge-info">Issued</span> - Items have been issued to recipient</li>
+                        <li><span class="badge badge-primary">Completed</span> - Issue fully processed and closed</li>
+                        <li><span class="badge badge-dark">Cancelled</span> - Issue was cancelled</li>
+                        <li><span class="badge" style="background-color: purple; color: white;">Partial</span> - Partially issued (some items pending)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Card -->
         <div class="card">
             <div class="card-header">
@@ -96,9 +123,19 @@
                                 }
                             </a>
                         }
-                        <button type="button" class="btn btn-default btn-sm" id="exportBtn">
-                            <i class="fas fa-download"></i> Export
-                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                    <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                </a>
+                                <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                    <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -380,14 +417,62 @@
                 confirmButtonText: 'Yes, submit it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post('@Url.Action("SubmitForApproval", "Issue")',
-                        { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
-                        function() {
-                            Swal.fire('Submitted!', 'Issue has been submitted for approval.', 'success')
-                                .then(() => location.reload());
-                        }).fail(function() {
-                            Swal.fire('Error!', 'Failed to submit issue.', 'error');
-                        });
+                    // ✅ FIX: Use $.ajax() with proper headers
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    if (!token) {
+                        Swal.fire('Error!', 'Security token not found. Please refresh the page.', 'error');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '@Url.Action("SubmitForApproval", "Issue")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            __RequestVerificationToken: token
+                        },
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        beforeSend: function() {
+                            Swal.fire({
+                                title: 'Submitting...',
+                                text: 'Please wait',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Submitted!', 'Issue has been submitted for approval.', 'success')
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire('Error!', response.message || 'Failed to submit issue.', 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Submit error:', xhr.status, xhr.responseText);
+                            var errorMessage = 'Failed to submit issue.';
+
+                            if (xhr.status === 403) {
+                                errorMessage = 'Access denied. You do not have permission.';
+                            } else if (xhr.status === 500) {
+                                errorMessage = 'Server error. Please contact administrator.';
+                            }
+
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response.message) {
+                                    errorMessage = response.message;
+                                }
+                            } catch(e) {}
+
+                            Swal.fire('Error!', errorMessage, 'error');
+                        }
+                    });
                 }
             });
         }
@@ -487,6 +572,59 @@
                 if (e.which === 13) { // Enter key
                     applyFilters();
                 }
+            });
+
+            // ✅ Export handlers
+            function exportData(format) {
+                // Get current filter values
+                var searchTerm = $('#searchBox').val();
+                var status = $('#statusFilter').val();
+                var fromDate = $('#startDate').val();
+                var toDate = $('#endDate').val();
+
+                // Build export URL based on format
+                var exportUrl = format === 'csv'
+                    ? '@Url.Action("ExportToCsv", "Issue")'
+                    : '@Url.Action("ExportToPdf", "Issue")';
+
+                var params = [];
+                if (searchTerm) params.push('searchTerm=' + encodeURIComponent(searchTerm));
+                if (status) params.push('status=' + encodeURIComponent(status));
+                if (fromDate) params.push('fromDate=' + encodeURIComponent(fromDate));
+                if (toDate) params.push('toDate=' + encodeURIComponent(toDate));
+
+                if (params.length > 0) {
+                    exportUrl += '?' + params.join('&');
+                }
+
+                // Show loading
+                var fileType = format.toUpperCase();
+                Swal.fire({
+                    title: 'Exporting to ' + fileType + '...',
+                    text: 'Please wait while we generate your file',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Download file
+                window.location.href = exportUrl;
+
+                // Close loading after a delay
+                setTimeout(function() {
+                    Swal.close();
+                }, 2000);
+            }
+
+            $('#exportCsvBtn').click(function(e) {
+                e.preventDefault();
+                exportData('csv');
+            });
+
+            $('#exportPdfBtn').click(function(e) {
+                e.preventDefault();
+                exportData('pdf');
             });
         });
     </script>
