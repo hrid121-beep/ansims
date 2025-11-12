@@ -126,7 +126,8 @@
                         </a>
                     }
 
-                    @if (Model.Status == "Draft")
+                    @* Admin can delete non-completed receives *@
+                    @if (Model.Status != "Completed" && (User.IsInRole("Admin") || Model.Status == "Draft"))
                     {
                         <button type="button" class="btn btn-danger btn-sm" id="deleteBtn">
                             <i class="fas fa-trash"></i> Delete
