@@ -26,41 +26,154 @@
     <div class="container-fluid">
         <!-- Filter Card -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
                 <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <form asp-action="IssueReport" method="get">
+                <form asp-action="IssueReport" method="get" id="filterForm">
                     <div class="row">
+                        <!-- From Date -->
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>From Date:</label>
+                                <label><i class="fas fa-calendar-alt"></i> From Date:</label>
                                 <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
                             </div>
                         </div>
+
+                        <!-- To Date -->
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>To Date:</label>
+                                <label><i class="fas fa-calendar-check"></i> To Date:</label>
                                 <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
                             </div>
                         </div>
+
+                        <!-- Store Filter -->
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Store:</label>
-                                <select id="storeId" name="storeId" class="form-control" asp-items="ViewBag.Stores">
+                                <label><i class="fas fa-warehouse"></i> Store:</label>
+                                <select id="storeId" name="storeId" class="form-control select2" asp-items="ViewBag.Stores">
                                 </select>
                             </div>
                         </div>
+
+                        <!-- Status Filter -->
                         <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-info-circle"></i> Status:</label>
+                                <select id="statusFilter" name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Draft">Draft</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Issued">Issued</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Category Filter -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-tags"></i> Category:</label>
+                                <select id="categoryFilter" name="category" class="form-control">
+                                    <option value="">All Categories</option>
+                                    <option value="Stationery">Stationery</option>
+                                    <option value="IT Supplies">IT Supplies</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Department Filter -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-building"></i> Department:</label>
+                                <select id="departmentFilter" name="department" class="form-control">
+                                    <option value="">All Departments</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="IT">IT</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Facilities">Facilities</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search (Issue#/Item/Issued To):</label>
+                                <input type="text" id="searchTerm" name="searchTerm" class="form-control"
+                                       placeholder="Enter issue number, item name, or recipient..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Min Quantity -->
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Min. Qty:</label>
+                                <input type="number" id="minQty" name="minQty" class="form-control"
+                                       placeholder="Min" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Max Quantity -->
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Max. Qty:</label>
+                                <input type="number" id="maxQty" name="maxQty" class="form-control"
+                                       placeholder="Max" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Min Value -->
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-dollar-sign"></i> Min. Value:</label>
+                                <input type="number" id="minValue" name="minValue" class="form-control"
+                                       placeholder="Min ৳" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Max Value -->
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-dollar-sign"></i> Max. Value:</label>
+                                <input type="number" id="maxValue" name="maxValue" class="form-control"
+                                       placeholder="Max ৳" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Apply Button -->
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search"></i> Generate Report
+                                    <i class="fas fa-filter"></i> Apply
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Reset Button -->
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset
                                 </button>
                             </div>
                         </div>
@@ -147,16 +260,16 @@
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped" id="issueTable">
+                <table class="table table-bordered table-striped table-hover" id="issueTable">
                     <thead>
                         <tr>
                             <th>Issue #</th>
                             <th>Date</th>
                             <th>Item Name</th>
                             <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Total Value</th>
+                            <th data-type="num">Quantity</th>
+                            <th data-type="num-fmt">Unit Price</th>
+                            <th data-type="num-fmt">Total Value</th>
                             <th>Issued To</th>
                             <th>Department</th>
                             <th>Status</th>
@@ -254,50 +367,26 @@
     </div>
 </section>
 
+@section Styles {
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" />
+}
+
 @section Scripts {
     <!-- Chart.js -->
     <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <!-- DataTables -->
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 
     <script>
         $(function () {
-            // Initialize DataTable
-            $('#issueTable').DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "buttons": [
-                    {
-                        extend: 'copy',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    }
-                ]
-            }).buttons().container().appendTo('#issueTable_wrapper .col-md-6:eq(0)');
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
 
             // Department Chart - Check if canvas exists
             var departmentCanvas = document.getElementById('departmentChart');
@@ -353,6 +442,103 @@
                 });
             }
         });
+
+        // Initialize DataTable with advanced filtering
+        var table = $('#issueTable').DataTable({
+            "responsive": true,
+            "lengthChange": true,
+            "autoWidth": false,
+            "pageLength": 25,
+            "order": [[1, "desc"]], // Sort by Date descending (latest first)
+            "language": {
+                "search": "Quick Search:",
+                "lengthMenu": "Show _MENU_ issues per page",
+                "info": "Showing _START_ to _END_ of _TOTAL_ issues",
+                "infoEmpty": "No issues available",
+                "infoFiltered": "(filtered from _MAX_ total issues)"
+            }
+        });
+
+        // Apply advanced filters when form inputs change
+        $('#statusFilter, #categoryFilter, #departmentFilter').on('change', function() {
+            applyAdvancedFilters();
+        });
+
+        $('#searchTerm, #minQty, #maxQty, #minValue, #maxValue').on('keyup change', function() {
+            applyAdvancedFilters();
+        });
+
+        function applyAdvancedFilters() {
+            var searchTerm = $('#searchTerm').val().toLowerCase();
+            var status = $('#statusFilter').val();
+            var category = $('#categoryFilter').val();
+            var department = $('#departmentFilter').val();
+            var minQty = parseFloat($('#minQty').val()) || -Infinity;
+            var maxQty = parseFloat($('#maxQty').val()) || Infinity;
+            var minValue = parseFloat($('#minValue').val()) || -Infinity;
+            var maxValue = parseFloat($('#maxValue').val()) || Infinity;
+
+            // Custom filter function
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'issueTable') {
+                        return true;
+                    }
+
+                    // Extract values from table row
+                    var issueNo = data[0].toLowerCase();
+                    var itemName = data[2].toLowerCase();
+                    var itemCategory = data[3];
+                    var quantity = parseFloat(data[4].replace(/[^0-9.]/g, '')) || 0;
+                    var totalValue = parseFloat(data[6].replace(/[$,]/g, '')) || 0;
+                    var issuedTo = data[7].toLowerCase();
+                    var dept = data[8];
+                    var statusBadge = data[9];
+
+                    // Search term filter (Issue #, Item Name, Issued To)
+                    if (searchTerm && !(issueNo.includes(searchTerm) || itemName.includes(searchTerm) || issuedTo.includes(searchTerm))) {
+                        return false;
+                    }
+
+                    // Status filter
+                    if (status && !statusBadge.includes(status)) {
+                        return false;
+                    }
+
+                    // Category filter
+                    if (category && itemCategory !== category) {
+                        return false;
+                    }
+
+                    // Department filter
+                    if (department && dept !== department) {
+                        return false;
+                    }
+
+                    // Quantity range filter
+                    if (quantity < minQty || quantity > maxQty) {
+                        return false;
+                    }
+
+                    // Value range filter
+                    if (totalValue < minValue || totalValue > maxValue) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            );
+
+            table.draw();
+            $.fn.dataTable.ext.search.pop(); // Remove custom filter after drawing
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            window.location.href = '@Url.Action("IssueReport", "Report")';
+        }
 
         // Export to Excel
         function exportToExcel() {

@@ -27,36 +27,127 @@
     <div class="container-fluid">
         <!-- Filter Card -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
                 <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <form asp-action="StockReport" method="get">
+                <form asp-action="StockReport" method="get" id="filterForm">
                     <div class="row">
-                        <div class="col-md-4">
+                        <!-- Store Filter -->
+                        <div class="col-md-3">
                             <div class="form-group">
-                                <label>Warehouse/Store:</label>
-                                <select id="storeId" name="storeId" asp-items="ViewBag.Stores" class="form-control">
+                                <label><i class="fas fa-warehouse"></i> Store:</label>
+                                <select id="storeId" name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+
+                        <!-- Category Filter -->
+                        <div class="col-md-3">
                             <div class="form-group">
-                                <label>Category:</label>
-                                <select id="categoryId" name="categoryId" asp-items="ViewBag.Categories" class="form-control">
+                                <label><i class="fas fa-tags"></i> Category:</label>
+                                <select id="categoryId" name="categoryId" asp-items="ViewBag.Categories" class="form-control select2">
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+
+                        <!-- Stock Status Filter -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-chart-line"></i> Stock Status:</label>
+                                <select id="stockStatus" name="stockStatus" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="InStock">In Stock</option>
+                                    <option value="LowStock">Low Stock</option>
+                                    <option value="OutOfStock">Out of Stock</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-sort"></i> Sort By:</label>
+                                <select id="sortBy" name="sortBy" class="form-control">
+                                    <option value="Name">Item Name</option>
+                                    <option value="Code">Item Code</option>
+                                    <option value="Value">Total Value (High to Low)</option>
+                                    <option value="Quantity">Current Stock (High to Low)</option>
+                                    <option value="Category">Category</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Search Item -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search Item (Name/Code):</label>
+                                <input type="text" id="searchTerm" name="searchTerm" class="form-control"
+                                       placeholder="Enter item name or code..." />
+                            </div>
+                        </div>
+
+                        <!-- Min Stock Threshold -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Min. Stock ≥:</label>
+                                <input type="number" id="minStock" name="minStock" class="form-control"
+                                       placeholder="Minimum quantity" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Max Stock Threshold -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Max. Stock ≤:</label>
+                                <input type="number" id="maxStock" name="maxStock" class="form-control"
+                                       placeholder="Maximum quantity" step="0.01" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Min Value -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-dollar-sign"></i> Min. Value (৳):</label>
+                                <input type="number" id="minValue" name="minValue" class="form-control"
+                                       placeholder="Minimum value" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Max Value -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-dollar-sign"></i> Max. Value (৳):</label>
+                                <input type="number" id="maxValue" name="maxValue" class="form-control"
+                                       placeholder="Maximum value" step="0.01" />
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search"></i> Generate Report
+                                    <i class="fas fa-filter"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset
                                 </button>
                             </div>
                         </div>
@@ -167,18 +258,18 @@
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped" id="stockTable">
+                <table class="table table-bordered table-striped table-hover" id="stockTable">
                     <thead>
                         <tr>
                             <th>Item Code</th>
                             <th>Item Name</th>
                             <th>Category</th>
                             <th>Store</th>
-                            <th class="text-right">Current Stock</th>
-                            <th class="text-right">Min. Stock</th>
+                            <th class="text-right" data-type="num">Current Stock</th>
+                            <th class="text-right" data-type="num">Min. Stock</th>
                             <th>Unit</th>
-                            <th class="text-right">Unit Price</th>
-                            <th class="text-right">Total Value</th>
+                            <th class="text-right" data-type="num-fmt">Unit Price</th>
+                            <th class="text-right" data-type="num-fmt">Total Value</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -234,13 +325,131 @@
     </div>
 </section>
 
+@section Styles {
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" />
+}
+
 @section Scripts {
     <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {
             // Initialize Select2
             $('.select2').select2({
                 theme: 'bootstrap4'
+            });
+
+            // Initialize DataTable with advanced filtering
+            var table = $('#stockTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[1, "asc"]], // Sort by Item Name by default
+                "language": {
+                    "search": "Quick Search:",
+                    "lengthMenu": "Show _MENU_ items per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ items",
+                    "infoEmpty": "No items available",
+                    "infoFiltered": "(filtered from _MAX_ total items)"
+                }
+            });
+
+            // Apply filter when form inputs change
+            $('#storeId, #categoryId, #stockStatus, #sortBy').on('change', function() {
+                applyAdvancedFilters();
+            });
+
+            $('#searchTerm, #minStock, #maxStock, #minValue, #maxValue').on('keyup change', function() {
+                applyAdvancedFilters();
+            });
+
+            function applyAdvancedFilters() {
+                var searchTerm = $('#searchTerm').val().toLowerCase();
+                var stockStatus = $('#stockStatus').val();
+                var minStock = parseFloat($('#minStock').val()) || -Infinity;
+                var maxStock = parseFloat($('#maxStock').val()) || Infinity;
+                var minValue = parseFloat($('#minValue').val()) || -Infinity;
+                var maxValue = parseFloat($('#maxValue').val()) || Infinity;
+
+                // Custom filter function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'stockTable') {
+                            return true;
+                        }
+
+                        // Extract values from table row
+                        var itemCode = data[0].toLowerCase();
+                        var itemName = data[1].toLowerCase();
+                        var category = data[2];
+                        var store = data[3];
+                        var currentStock = parseFloat(data[4].replace(/,/g, '')) || 0;
+                        var minStockVal = parseFloat(data[5].replace(/,/g, '')) || 0;
+                        var unitPrice = parseFloat(data[7].replace(/[৳,]/g, '')) || 0;
+                        var totalValue = parseFloat(data[8].replace(/[৳,]/g, '')) || 0;
+                        var status = data[9];
+
+                        // Search term filter (Item Code or Name)
+                        if (searchTerm && !(itemCode.includes(searchTerm) || itemName.includes(searchTerm))) {
+                            return false;
+                        }
+
+                        // Stock status filter
+                        if (stockStatus) {
+                            if (stockStatus === 'OutOfStock' && !status.includes('Out of Stock')) {
+                                return false;
+                            }
+                            if (stockStatus === 'LowStock' && !status.includes('Low Stock')) {
+                                return false;
+                            }
+                            if (stockStatus === 'InStock' && !status.includes('In Stock')) {
+                                return false;
+                            }
+                        }
+
+                        // Stock quantity range filter
+                        if (currentStock < minStock || currentStock > maxStock) {
+                            return false;
+                        }
+
+                        // Value range filter
+                        if (totalValue < minValue || totalValue > maxValue) {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                );
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop(); // Remove custom filter after drawing
+            }
+
+            // Sort By functionality
+            $('#sortBy').on('change', function() {
+                var sortValue = $(this).val();
+                switch(sortValue) {
+                    case 'Name':
+                        table.order([[1, 'asc']]).draw();
+                        break;
+                    case 'Code':
+                        table.order([[0, 'asc']]).draw();
+                        break;
+                    case 'Value':
+                        table.order([[8, 'desc']]).draw();
+                        break;
+                    case 'Quantity':
+                        table.order([[4, 'desc']]).draw();
+                        break;
+                    case 'Category':
+                        table.order([[2, 'asc']]).draw();
+                        break;
+                }
             });
 
             // Stock Status Pie Chart
@@ -343,13 +552,6 @@
                 options: topItemsOptions
             });
 
-            // Table Search
-            $('#tableSearch').on('keyup', function() {
-                var value = $(this).val().toLowerCase();
-                $('#stockTable tbody tr').filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
-            });
         });
 
         // Print function
@@ -393,6 +595,13 @@
             }
 
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            window.location.href = '@Url.Action("StockReport", "Report")';
         }
     </script>
 
