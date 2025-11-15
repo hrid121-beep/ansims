@@ -89,6 +89,10 @@ namespace IMS.Web.Controllers
                 // Load filter options
                 ViewBag.Zilas = new SelectList(await _zilaService.GetActiveZilasAsync(), "Id", "Name");
 
+                // Load store types for filter dropdown
+                var storeTypes = await _storeTypeService.GetAllStoreTypesAsync();
+                ViewBag.StoreTypes = storeTypes;
+
                 return View(stores);
             }
             catch (Exception ex)

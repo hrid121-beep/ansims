@@ -158,9 +158,12 @@
                             <label for="filterType">Filter by Type:</label>
                             <select id="filterType" class="form-control select2bs4">
                                 <option value="">All Types</option>
-                                @foreach (var storeType in Model.Where(s => !string.IsNullOrEmpty(s.StoreTypeName)).Select(s => s.StoreTypeName).Distinct())
+                                @if (ViewBag.StoreTypes != null)
                                 {
-                                    <option value="@storeType">@storeType</option>
+                                    foreach (var storeType in ViewBag.StoreTypes)
+                                    {
+                                        <option value="@storeType.Name">@storeType.Name</option>
+                                    }
                                 }
                             </select>
                         </div>
