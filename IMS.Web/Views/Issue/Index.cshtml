@@ -635,54 +635,6 @@
                         }
                         else
                         {
-                            <!-- Summary Statistics -->
-                            <div class="row mb-3">
-                                <div class="col-lg-3 col-6">
-                                    <div class="small-box bg-warning">
-                                        <div class="inner">
-                                            <h3>@handoverIssues.Count</h3>
-                                            <p>Ready for Handover</p>
-                                        </div>
-                                        <div class="icon">
-                                            <i class="fas fa-handshake"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-6">
-                                    <div class="small-box bg-info">
-                                        <div class="inner">
-                                            <h3>@handoverIssues.Sum(i => i.TotalItems)</h3>
-                                            <p>Total Items</p>
-                                        </div>
-                                        <div class="icon">
-                                            <i class="fas fa-boxes"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-6">
-                                    <div class="small-box bg-success">
-                                        <div class="inner">
-                                            <h3>@handoverIssues.Sum(i => i.TotalQuantity)</h3>
-                                            <p>Total Quantity</p>
-                                        </div>
-                                        <div class="icon">
-                                            <i class="fas fa-cubes"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-6">
-                                    <div class="small-box bg-primary">
-                                        <div class="inner">
-                                            <h3>৳@handoverIssues.Sum(i => i.TotalValue ?? 0).ToString("N0")</h3>
-                                            <p>Total Value</p>
-                                        </div>
-                                        <div class="icon">
-                                            <i class="fas fa-dollar-sign"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <table id="handoverTable" class="table table-bordered table-striped table-hover">
                                 <thead>
                                     <tr>
