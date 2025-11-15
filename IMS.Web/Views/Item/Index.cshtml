@@ -114,9 +114,19 @@
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#importModal">
                                     <i class="fas fa-file-import"></i> Import
                                 </button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="exportBtn">
-                                    <i class="fas fa-file-export"></i> Export
-                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                            <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                        </a>
+                                        <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                            <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                        </a>
+                                    </div>
+                                </div>
                                 <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#bulkBarcodeModal">
                                     <i class="fas fa-barcode"></i> Bulk Barcode
                                 </button>
@@ -633,9 +643,44 @@
                 }
             });
 
-            // Export button functionality
-            $('#exportBtn').on('click', function() {
-                table.button('.buttons-excel').trigger();
+            // Export functionality
+            function exportData(format) {
+                var categoryFilter = $('#filterCategory').val();
+                var brandFilter = $('#filterBrand').val();
+                var statusFilter = $('#filterStatus').val();
+
+                var exportUrl = format === 'csv'
+                    ? '@Url.Action("ExportToCsv", "Item")'
+                    : '@Url.Action("ExportToPdf", "Item")';
+
+                var params = [];
+                if (categoryFilter) params.push('category=' + encodeURIComponent(categoryFilter));
+                if (brandFilter) params.push('brand=' + encodeURIComponent(brandFilter));
+                if (statusFilter) params.push('status=' + encodeURIComponent(statusFilter));
+
+                if (params.length > 0) {
+                    exportUrl += '?' + params.join('&');
+                }
+
+                Swal.fire({
+                    title: 'Exporting to ' + format.toUpperCase() + '...',
+                    text: 'Please wait while we generate your file',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                window.location.href = exportUrl;
+                setTimeout(function() { Swal.close(); }, 2000);
+            }
+
+            $('#exportCsvBtn').on('click', function(e) {
+                e.preventDefault();
+                exportData('csv');
+            });
+
+            $('#exportPdfBtn').on('click', function(e) {
+                e.preventDefault();
+                exportData('pdf');
             });
 
             // Initialize Select2
