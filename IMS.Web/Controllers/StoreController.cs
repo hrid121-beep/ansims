@@ -859,6 +859,223 @@ namespace IMS.Web.Controllers
 
         // ==================== EXPORT OPERATIONS ====================
 
+        [HttpGet]
+        [HasPermission(Permission.ViewStore)]
+        public async Task<IActionResult> ExportToCsv(int? battalionId = null, int? rangeId = null, string storeType = null, string status = null)
+        {
+            try
+            {
+                // Get stores based on filters
+                IEnumerable<StoreDto> stores;
+
+                if (battalionId.HasValue)
+                {
+                    stores = await _storeService.GetStoresByBattalionAsync(battalionId.Value);
+                }
+                else if (rangeId.HasValue)
+                {
+                    stores = await _storeService.GetStoresByRangeAsync(rangeId.Value);
+                }
+                else
+                {
+                    stores = await _storeService.GetAllStoresAsync();
+                }
+
+                // Apply additional filters
+                if (!string.IsNullOrEmpty(storeType))
+                {
+                    stores = stores.Where(s => s.StoreTypeName != null && s.StoreTypeName.Contains(storeType));
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stores = stores.Where(s => s.IsActive);
+                    }
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stores = stores.Where(s => !s.IsActive);
+                    }
+                }
+
+                var csv = new System.Text.StringBuilder();
+
+                // Add headers
+                csv.AppendLine("Code,Name,Type,Level,Location,Manager,Contact,Items,Capacity,Assigned Users,Status,Created Date,Created By");
+
+                // Add data
+                foreach (var store in stores)
+                {
+                    var location = !string.IsNullOrEmpty(store.BattalionName) ? store.BattalionName :
+                                  !string.IsNullOrEmpty(store.ZilaName) ? store.ZilaName :
+                                  !string.IsNullOrEmpty(store.RangeName) ? store.RangeName : "HQ";
+
+                    csv.AppendLine($"\"{EscapeCsv(store.Code)}\"," +
+                        $"\"{EscapeCsv(store.Name)}\"," +
+                        $"\"{EscapeCsv(store.StoreTypeName)}\"," +
+                        $"\"{store.Level}\"," +
+                        $"\"{EscapeCsv(location)}\"," +
+                        $"\"{EscapeCsv(store.ManagerName)}\"," +
+                        $"\"{EscapeCsv(store.ContactNumber)}\"," +
+                        $"{store.ItemCount}," +
+                        $"{store.Capacity ?? 0}," +
+                        $"{store.AssignedUserCount}," +
+                        $"\"{(store.IsActive ? "Active" : "Inactive")}\"," +
+                        $"\"{store.CreatedAt:dd-MMM-yyyy}\"," +
+                        $"\"{EscapeCsv(store.CreatedBy)}\"");
+                }
+
+                var fileContent = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+                var fileName = $"Stores_{DateTime.Now:yyyyMMddHHmmss}.csv";
+                return File(fileContent, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting stores to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ViewStore)]
+        public async Task<IActionResult> ExportToPdf(int? battalionId = null, int? rangeId = null, string storeType = null, string status = null)
+        {
+            try
+            {
+                // Get stores based on filters
+                IEnumerable<StoreDto> stores;
+
+                if (battalionId.HasValue)
+                {
+                    stores = await _storeService.GetStoresByBattalionAsync(battalionId.Value);
+                }
+                else if (rangeId.HasValue)
+                {
+                    stores = await _storeService.GetStoresByRangeAsync(rangeId.Value);
+                }
+                else
+                {
+                    stores = await _storeService.GetAllStoresAsync();
+                }
+
+                // Apply additional filters
+                if (!string.IsNullOrEmpty(storeType))
+                {
+                    stores = stores.Where(s => s.StoreTypeName != null && s.StoreTypeName.Contains(storeType));
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stores = stores.Where(s => s.IsActive);
+                    }
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stores = stores.Where(s => !s.IsActive);
+                    }
+                }
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    // Create PDF document (A4 size, landscape for better table display)
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    // Define fonts
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
+                    var normalFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+
+                    // Add title
+                    var titleParagraph = new iTextSharp.text.Paragraph("ANSAR & VDP - Store Report", titleFont);
+                    titleParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    titleParagraph.SpacingAfter = 10f;
+                    document.Add(titleParagraph);
+
+                    // Add report info
+                    var infoParagraph = new iTextSharp.text.Paragraph($"Report Generated: {DateTime.Now:dd-MMM-yyyy HH:mm} | Total Stores: {stores.Count()}", normalFont);
+                    infoParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    infoParagraph.SpacingAfter = 15f;
+                    document.Add(infoParagraph);
+
+                    // Create main table
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(10);
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 10f, 15f, 12f, 10f, 12f, 12f, 8f, 8f, 8f, 10f });
+
+                    // Add table headers
+                    var headerTexts = new[] { "Code", "Name", "Type", "Level", "Location", "Manager", "Items", "Capacity", "Users", "Status" };
+
+                    foreach (var headerText in headerTexts)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(220, 220, 220);
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.VerticalAlignment = iTextSharp.text.Element.ALIGN_MIDDLE;
+                        cell.Padding = 5f;
+                        mainTable.AddCell(cell);
+                    }
+
+                    // Add table data
+                    foreach (var store in stores)
+                    {
+                        var location = !string.IsNullOrEmpty(store.BattalionName) ? store.BattalionName :
+                                      !string.IsNullOrEmpty(store.ZilaName) ? store.ZilaName :
+                                      !string.IsNullOrEmpty(store.RangeName) ? store.RangeName : "HQ";
+
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.Code ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.Name ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.StoreTypeName ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.Level.ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(location, normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.ManagerName ?? "Not Assigned", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.ItemCount.ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.Capacity?.ToString() ?? "N/A", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.AssignedUserCount.ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(store.IsActive ? "Active" : "Inactive", normalFont));
+                    }
+
+                    document.Add(mainTable);
+
+                    // Add footer with timestamp
+                    var footerParagraph = new iTextSharp.text.Paragraph($"\nGenerated by: IMS System | Date: {DateTime.Now:dd-MMM-yyyy HH:mm}",
+                        iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8));
+                    footerParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    footerParagraph.SpacingBefore = 20f;
+                    document.Add(footerParagraph);
+
+                    document.Close();
+
+                    var fileContent = memoryStream.ToArray();
+                    var fileName = $"Stores_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                    return File(fileContent, "application/pdf", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting stores to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // Helper method to escape CSV values
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            // Escape double quotes by doubling them
+            if (value.Contains("\""))
+                value = value.Replace("\"", "\"\"");
+
+            return value;
+        }
+
         [HasPermission(Permission.ViewStock)]
         public async Task<IActionResult> ExportStoreStock(int id)
         {

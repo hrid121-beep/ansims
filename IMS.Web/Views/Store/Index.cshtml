@@ -26,6 +26,19 @@
                     <i class="fas fa-plus"></i> Create New Store
                 </a>
                 <div class="btn-group float-right">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="#" id="exportCsvBtn">
+                            <i class="fas fa-file-csv text-success"></i> Export to CSV
+                        </a>
+                        <a class="dropdown-item" href="#" id="exportPdfBtn">
+                            <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                        </a>
+                    </div>
+                </div>
+                <div class="btn-group float-right mr-2">
                     <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
                         <i class="fas fa-cog"></i> Bulk Actions
                     </button>
@@ -621,5 +634,61 @@
                 }
             });
         }
+
+        // Export handlers
+        function exportData(format) {
+            // Get current filter values
+            var statusFilter = $('#filterStatus').val();
+            var typeFilter = $('#filterType').val();
+            var levelFilter = $('#filterLevel').val();
+
+            // Build export URL based on format
+            var exportUrl = format === 'csv'
+                ? '@Url.Action("ExportToCsv", "Store")'
+                : '@Url.Action("ExportToPdf", "Store")';
+
+            var params = [];
+
+            // Apply filters to export
+            if (statusFilter) {
+                params.push('status=' + encodeURIComponent(statusFilter));
+            }
+            if (typeFilter) {
+                params.push('storeType=' + encodeURIComponent(typeFilter));
+            }
+
+            if (params.length > 0) {
+                exportUrl += '?' + params.join('&');
+            }
+
+            // Show loading
+            var fileType = format.toUpperCase();
+            Swal.fire({
+                title: 'Exporting to ' + fileType + '...',
+                text: 'Please wait while we generate your file',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Download file
+            window.location.href = exportUrl;
+
+            // Close loading after a delay
+            setTimeout(function() {
+                Swal.close();
+            }, 2000);
+        }
+
+        $('#exportCsvBtn').click(function(e) {
+            e.preventDefault();
+            exportData('csv');
+        });
+
+        $('#exportPdfBtn').click(function(e) {
+            e.preventDefault();
+            exportData('pdf');
+        });
     </script>
 }
