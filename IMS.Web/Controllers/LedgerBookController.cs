@@ -193,6 +193,162 @@ namespace IMS.Web.Controllers
             }
         }
 
+        #region Export Methods
+
+        // GET: LedgerBook/ExportToCsv
+        [HttpGet]
+        public async Task<IActionResult> ExportToCsv(int? storeId = null, string bookType = null)
+        {
+            try
+            {
+                var ledgerBooks = await _ledgerBookService.GetActiveLedgerBooksByStoreAndTypeAsync(storeId, bookType);
+
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("Ledger No,Book Name,Type,Store,Total Pages,Current Page,Pages Used,Pages Remaining,Location,Status,Start Date,End Date");
+
+                foreach (var book in ledgerBooks)
+                {
+                    csv.AppendLine($"\"{EscapeCsv(book.LedgerNo)}\"," +
+                        $"\"{EscapeCsv(book.BookName)}\"," +
+                        $"\"{EscapeCsv(book.BookType)}\"," +
+                        $"\"{EscapeCsv(book.StoreName)}\"," +
+                        $"{book.TotalPages}," +
+                        $"{book.CurrentPageNo}," +
+                        $"{book.PagesUsed}," +
+                        $"{book.PagesRemaining}," +
+                        $"\"{EscapeCsv(book.Location)}\"," +
+                        $"\"{EscapeCsv(book.Status)}\"," +
+                        $"\"{book.StartDate:dd-MMM-yyyy}\"," +
+                        $"\"{(book.EndDate.HasValue ? book.EndDate.Value.ToString("dd-MMM-yyyy") : "")}\"");
+                }
+
+                var fileName = $"LedgerBooks_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting ledger books to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // GET: LedgerBook/ExportToPdf
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(int? storeId = null, string bookType = null)
+        {
+            try
+            {
+                var ledgerBooks = await _ledgerBookService.GetActiveLedgerBooksByStoreAndTypeAsync(storeId, bookType);
+
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+
+                    document.Open();
+
+                    // Add header
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 16);
+                    var title = new iTextSharp.text.Paragraph("Bangladesh Ansar & VDP\nLedger Books Report\n\n", titleFont);
+                    title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    document.Add(title);
+
+                    // Add filter info
+                    var filterFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+                    var filterText = $"Generated: {DateTime.Now:dd MMM yyyy HH:mm}";
+                    if (storeId.HasValue)
+                    {
+                        var store = ledgerBooks.FirstOrDefault()?.StoreName;
+                        if (!string.IsNullOrEmpty(store))
+                            filterText += $" | Store: {store}";
+                    }
+                    if (!string.IsNullOrEmpty(bookType))
+                        filterText += $" | Type: {bookType}";
+
+                    var filterPara = new iTextSharp.text.Paragraph(filterText + "\n\n", filterFont);
+                    filterPara.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    document.Add(filterPara);
+
+                    // Create table
+                    var table = new iTextSharp.text.pdf.PdfPTable(11) { WidthPercentage = 100 };
+                    table.SetWidths(new float[] { 10f, 15f, 10f, 12f, 8f, 8f, 8f, 8f, 12f, 10f, 10f });
+
+                    // Table header
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 8);
+                    var cellFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 7);
+
+                    string[] headers = { "Ledger No", "Book Name", "Type", "Store", "Total Pages", "Current", "Used", "Remaining", "Location", "Status", "Start Date" };
+                    foreach (var header in headers)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                        cell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GRAY;
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.Padding = 5;
+                        table.AddCell(cell);
+                    }
+
+                    // Table rows
+                    foreach (var book in ledgerBooks)
+                    {
+                        table.AddCell(new iTextSharp.text.Phrase(book.LedgerNo ?? "", cellFont));
+                        table.AddCell(new iTextSharp.text.Phrase(book.BookName ?? "", cellFont));
+                        table.AddCell(new iTextSharp.text.Phrase(book.BookType ?? "", cellFont));
+                        table.AddCell(new iTextSharp.text.Phrase(book.StoreName ?? "", cellFont));
+
+                        var centerCell1 = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(book.TotalPages.ToString(), cellFont));
+                        centerCell1.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        table.AddCell(centerCell1);
+
+                        var centerCell2 = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(book.CurrentPageNo.ToString(), cellFont));
+                        centerCell2.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        table.AddCell(centerCell2);
+
+                        var centerCell3 = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(book.PagesUsed.ToString(), cellFont));
+                        centerCell3.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        table.AddCell(centerCell3);
+
+                        var centerCell4 = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(book.PagesRemaining.ToString(), cellFont));
+                        centerCell4.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        table.AddCell(centerCell4);
+
+                        table.AddCell(new iTextSharp.text.Phrase(book.Location ?? "", cellFont));
+                        table.AddCell(new iTextSharp.text.Phrase(book.Status ?? "", cellFont));
+                        table.AddCell(new iTextSharp.text.Phrase(book.StartDate.ToString("dd-MMM-yy"), cellFont));
+                    }
+
+                    document.Add(table);
+
+                    // Add footer
+                    document.Add(new iTextSharp.text.Paragraph("\n"));
+                    var footerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_OBLIQUE, 8);
+                    var footer = new iTextSharp.text.Paragraph($"Total Ledger Books: {ledgerBooks.Count()}", footerFont);
+                    footer.Alignment = iTextSharp.text.Element.ALIGN_RIGHT;
+                    document.Add(footer);
+
+                    document.Close();
+
+                    var fileName = $"LedgerBooks_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                    return File(memoryStream.ToArray(), "application/pdf", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting ledger books to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            if (value.Contains("\"")) value = value.Replace("\"", "\"\"");
+            return value;
+        }
+
+        #endregion
+
         #region API Endpoints
 
         // API: GET /LedgerBook/GetActiveLedgerBooks?storeId=1&bookType=Issue
