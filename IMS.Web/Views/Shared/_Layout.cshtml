@@ -821,14 +821,6 @@
                                     </a>
                                 </li>
 
-                                <!-- Issue Vouchers -->
-                                <li class="nav-item">
-                                    <a asp-controller="Issue" asp-action="Vouchers" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Vouchers" ? "active" : "")">
-                                        <i class="fas fa-qrcode nav-icon"></i>
-                                        <p>Issue Vouchers</p>
-                                    </a>
-                                </li>
-
                                 <!-- Physical Handover -->
                                 <li class="nav-item">
                                     <a asp-controller="Issue" asp-action="PhysicalHandover" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PhysicalHandover" ? "active" : "")">
