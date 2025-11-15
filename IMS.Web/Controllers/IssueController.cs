@@ -646,36 +646,6 @@ namespace IMS.Web.Controllers
         }
 
         [HttpGet]
-        [HasPermission(Permission.ViewIssue)]
-        public async Task<IActionResult> Vouchers()
-        {
-            try
-            {
-                // GetAllIssuesAsync returns PagedResult<IssueDto>
-                var pagedResult = await _issueService.GetAllIssuesAsync(1, 1000);
-
-                // Access the Items property to get the list
-                var voucherIssues = pagedResult.Items
-                    .Where(i =>
-                        (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed")
-                        && !string.IsNullOrEmpty(i.VoucherNumber)
-                    )
-                    .OrderByDescending(i => i.IssueDate)
-                    .ToList();
-
-                _logger.LogInformation($"Total issues: {pagedResult.TotalCount}, With vouchers: {voucherIssues.Count}");
-
-                return View(voucherIssues);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading vouchers: {Message}", ex.Message);
-                TempData["Error"] = "Failed to load vouchers";
-                return View(new List<IssueDto>());
-            }
-        }
-
-        [HttpGet]
         public async Task<IActionResult> ProcessHandover(int id)
         {
             try

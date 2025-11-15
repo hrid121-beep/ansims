@@ -101,10 +101,35 @@
             </div>
         </div>
 
-        <!-- Main Card -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">All Issues</h3>
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="issuesTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="all-issues-tab" data-toggle="tab" href="#all-issues" role="tab">
+                    <i class="fas fa-list"></i> All Issues
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="vouchers-tab" data-toggle="tab" href="#vouchers" role="tab">
+                    <i class="fas fa-qrcode"></i> Issue Vouchers
+                    @{
+                        var voucherCount = items.Count(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed"));
+                    }
+                    @if (voucherCount > 0)
+                    {
+                        <span class="badge badge-info">@voucherCount</span>
+                    }
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="issuesTabContent">
+            <!-- All Issues Tab -->
+            <div class="tab-pane fade show active" id="all-issues" role="tabpanel">
+                <!-- Main Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Issues</h3>
                 <div class="card-tools">
                     <div class="btn-group">
                         <a asp-action="Create" class="btn btn-primary btn-sm">
@@ -392,6 +417,150 @@
                 </div>
             </div>
         </div>
+            </div>
+            <!-- End All Issues Tab -->
+
+            <!-- Vouchers Tab -->
+            <div class="tab-pane fade" id="vouchers" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-qrcode"></i> Issue Vouchers</h3>
+                        <div class="card-tools">
+                            <span class="text-muted">Approved issues with generated vouchers</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var voucherIssues = items.Where(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed")).OrderByDescending(i => i.IssueDate).ToList();
+                        }
+                        @if (!voucherIssues.Any())
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <h5>No Vouchers Found</h5>
+                                <p>There are no approved issue vouchers yet. Vouchers are automatically generated when issues are approved.</p>
+                                <a href="#all-issues" data-toggle="tab" class="btn btn-primary mt-2">
+                                    <i class="fas fa-arrow-left"></i> View All Issues
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <table id="vouchersTable" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Voucher No</th>
+                                        <th>Issue No</th>
+                                        <th>Issue Date</th>
+                                        <th>From Store</th>
+                                        <th>Issued To</th>
+                                        <th>Items</th>
+                                        <th>Status</th>
+                                        <th>QR Code</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in voucherIssues)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge badge-info badge-lg">
+                                                    <i class="fas fa-hashtag"></i> @item.VoucherNumber
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="text-primary">
+                                                    <strong>@item.IssueNo</strong>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <i class="far fa-calendar-alt"></i>
+                                                @item.IssueDate.ToString("dd-MMM-yyyy")
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-warehouse"></i>
+                                                @(item.FromStoreName ?? item.StoreName ?? "N/A")
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-user"></i>
+                                                @(item.IssuedToName ?? "N/A")
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-secondary">
+                                                    @item.TotalItems item(s)
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var voucherStatusClass = item.Status switch
+                                                    {
+                                                        "Approved" => "badge-success",
+                                                        "Issued" => "badge-warning",
+                                                        "Completed" => "badge-primary",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @voucherStatusClass">
+                                                    @if (item.Status == "Approved")
+                                                    {
+                                                        <i class="fas fa-check-circle"></i>
+                                                    }
+                                                    else if (item.Status == "Issued")
+                                                    {
+                                                        <i class="fas fa-truck"></i>
+                                                    }
+                                                    else if (item.Status == "Completed")
+                                                    {
+                                                        <i class="fas fa-flag-checkered"></i>
+                                                    }
+                                                    @item.Status
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (!string.IsNullOrEmpty(item.QRCode))
+                                                {
+                                                    <img src="@item.QRCode" alt="QR Code" class="img-thumbnail" style="width:50px;height:50px;"
+                                                         data-toggle="tooltip" title="Voucher QR Code" />
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="GenerateVoucher" asp-route-id="@item.Id"
+                                                       class="btn btn-xs btn-warning" data-toggle="tooltip" title="Generate QR Code">
+                                                        <i class="fas fa-qrcode"></i>
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.Id"
+                                                       class="btn btn-info" data-toggle="tooltip" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="PrintVoucher" asp-route-id="@item.Id"
+                                                       target="_blank" class="btn btn-primary" data-toggle="tooltip" title="Print Voucher">
+                                                        <i class="fas fa-print"></i>
+                                                    </a>
+                                                    @if (item.Status == "Approved")
+                                                    {
+                                                        <a asp-action="ProcessHandover" asp-route-id="@item.Id"
+                                                           class="btn btn-success" data-toggle="tooltip" title="Process Handover">
+                                                            <i class="fas fa-handshake"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+            <!-- End Vouchers Tab -->
+        </div>
+        <!-- End Tab Content -->
     </div>
 </section>
 
@@ -404,6 +573,24 @@
             // Initialize Select2
             $('.select2').select2({
                 theme: 'bootstrap4'
+            });
+
+            // Initialize Vouchers DataTable
+            $('#vouchersTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by Issue Date descending (latest first)
+                "language": {
+                    "search": "Search Vouchers:",
+                    "lengthMenu": "Show _MENU_ vouchers per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ vouchers",
+                    "infoEmpty": "No vouchers available",
+                    "infoFiltered": "(filtered from _MAX_ total vouchers)",
+                    "zeroRecords": "No matching vouchers found",
+                    "emptyTable": "No vouchers available"
+                }
             });
         });
 

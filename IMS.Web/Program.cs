@@ -383,17 +383,36 @@ static async Task SeedStoreTypes(ApplicationDbContext context, ILogger logger)
     {
         if (context.StoreTypes.Any())
         {
-            logger.LogInformation("StoreTypes already exist. Updating RequiresMandatoryDocuments flag...");
+            logger.LogInformation("StoreTypes already exist. Updating icons and flags...");
 
-            // Update existing records
+            // Update existing records with proper Font Awesome icons
+            var central = await context.StoreTypes.FirstOrDefaultAsync(st => st.Code == "CENTRAL");
+            if (central != null && (string.IsNullOrEmpty(central.Icon) || central.Icon == "fa-warehouse"))
+            {
+                central.Icon = "fas fa-warehouse";
+                context.StoreTypes.Update(central);
+            }
+
             var provision = await context.StoreTypes.FirstOrDefaultAsync(st => st.Code == "PROVISION");
             if (provision != null)
             {
                 provision.RequiresMandatoryDocuments = true;
+                if (string.IsNullOrEmpty(provision.Icon) || provision.Icon == "fa-dolly")
+                {
+                    provision.Icon = "fas fa-dolly";
+                }
                 context.StoreTypes.Update(provision);
-                await context.SaveChangesAsync();
-                logger.LogInformation("Updated PROVISION store type with mandatory documents flag");
             }
+
+            var other = await context.StoreTypes.FirstOrDefaultAsync(st => st.Code == "OTHER");
+            if (other != null && (string.IsNullOrEmpty(other.Icon) || other.Icon == "fa-store"))
+            {
+                other.Icon = "fas fa-store";
+                context.StoreTypes.Update(other);
+            }
+
+            await context.SaveChangesAsync();
+            logger.LogInformation("Updated StoreType icons with proper Font Awesome classes");
 
             return;
         }
@@ -417,7 +436,7 @@ static async Task SeedStoreTypes(ApplicationDbContext context, ILogger logger)
                 RequiresTemperatureControl = false,
                 RequiresSecurityClearance = false,
                 IsActive = true,
-                Icon = "fa-warehouse",
+                Icon = "fas fa-warehouse",
                 Color = "#3498db",
                 DefaultManagerRole = "StoreKeeper",
                 CreatedAt = DateTime.Now,
@@ -438,7 +457,7 @@ static async Task SeedStoreTypes(ApplicationDbContext context, ILogger logger)
                 RequiresTemperatureControl = false,
                 RequiresSecurityClearance = false,
                 IsActive = true,
-                Icon = "fa-dolly",
+                Icon = "fas fa-dolly",
                 Color = "#2ecc71",
                 DefaultManagerRole = "StoreKeeper",
                 CreatedAt = DateTime.Now,
@@ -459,7 +478,7 @@ static async Task SeedStoreTypes(ApplicationDbContext context, ILogger logger)
                 RequiresTemperatureControl = false,
                 RequiresSecurityClearance = false,
                 IsActive = true,
-                Icon = "fa-store",
+                Icon = "fas fa-store",
                 Color = "#95a5a6",
                 DefaultManagerRole = "StoreKeeper",
                 CreatedAt = DateTime.Now,

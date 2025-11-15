@@ -30,6 +30,19 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-filter"></i> Filter Ledger Books</h3>
                 <div class="card-tools">
+                    <div class="btn-group mr-2">
+                        <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                <i class="fas fa-file-csv text-success"></i> Export to CSV
+                            </a>
+                            <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                            </a>
+                        </div>
+                    </div>
                     <a asp-action="Create" class="btn btn-success btn-sm">
                         <i class="fas fa-plus"></i> Create New Ledger Book
                     </a>
@@ -186,6 +199,53 @@
 
 @section Scripts {
     <script>
+        // Export handlers
+        $('#exportCsvBtn').on('click', function(e) {
+            e.preventDefault();
+            var storeFilter = $('select[name="storeId"]').val();
+            var typeFilter = $('select[name="bookType"]').val();
+            var exportUrl = '@Url.Action("ExportToCsv", "LedgerBook")';
+            var params = [];
+            if (storeFilter) params.push('storeId=' + encodeURIComponent(storeFilter));
+            if (typeFilter) params.push('bookType=' + encodeURIComponent(typeFilter));
+            if (params.length > 0) exportUrl += '?' + params.join('&');
+
+            Swal.fire({
+                title: 'Exporting to CSV...',
+                text: 'Please wait while we generate your file.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            window.location.href = exportUrl;
+            setTimeout(() => Swal.close(), 2000);
+        });
+
+        $('#exportPdfBtn').on('click', function(e) {
+            e.preventDefault();
+            var storeFilter = $('select[name="storeId"]').val();
+            var typeFilter = $('select[name="bookType"]').val();
+            var exportUrl = '@Url.Action("ExportToPdf", "LedgerBook")';
+            var params = [];
+            if (storeFilter) params.push('storeId=' + encodeURIComponent(storeFilter));
+            if (typeFilter) params.push('bookType=' + encodeURIComponent(typeFilter));
+            if (params.length > 0) exportUrl += '?' + params.join('&');
+
+            Swal.fire({
+                title: 'Exporting to PDF...',
+                text: 'Please wait while we generate your file.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            window.location.href = exportUrl;
+            setTimeout(() => Swal.close(), 2000);
+        });
+
         function deleteLedgerBook(id, ledgerNo) {
             Swal.fire({
                 title: 'Are you sure?',
