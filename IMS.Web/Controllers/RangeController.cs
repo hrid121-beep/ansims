@@ -585,6 +585,132 @@ namespace IMS.Web.Controllers
             return $"R{DateTime.Now:MMdd}-R";
         }
 
+        // ==================== EXPORT OPERATIONS ====================
+
+        [HttpGet]
+        [HasPermission(Permission.ViewRange)]
+        public async Task<IActionResult> ExportToCsv(string status = null)
+        {
+            try
+            {
+                var ranges = await _rangeService.GetAllRangesAsync();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                        ranges = ranges.Where(r => r.IsActive);
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                        ranges = ranges.Where(r => !r.IsActive);
+                }
+
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("Code,Name,Commander,Contact,Location,Status");
+
+                foreach (var range in ranges)
+                {
+                    csv.AppendLine($"\"{EscapeCsv(range.Code)}\"," +
+                        $"\"{EscapeCsv(range.Name)}\"," +
+                        $"\"{EscapeCsv(range.CommanderName)}\"," +
+                        $"\"{EscapeCsv(range.ContactNumber)}\"," +
+                        $"\"{EscapeCsv(range.Location)}\"," +
+                        $"\"{(range.IsActive ? "Active" : "Inactive")}\"");
+                }
+
+                return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"Ranges_{DateTime.Now:yyyyMMddHHmmss}.csv");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting ranges to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ViewRange)]
+        public async Task<IActionResult> ExportToPdf(string status = null)
+        {
+            try
+            {
+                var ranges = await _rangeService.GetAllRangesAsync();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                        ranges = ranges.Where(r => r.IsActive);
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                        ranges = ranges.Where(r => !r.IsActive);
+                }
+
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 25, 25, 30, 30);
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
+                    var normalFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+
+                    var titleParagraph = new iTextSharp.text.Paragraph("ANSAR & VDP - Ranges Report", titleFont);
+                    titleParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    titleParagraph.SpacingAfter = 10f;
+                    document.Add(titleParagraph);
+
+                    var infoParagraph = new iTextSharp.text.Paragraph($"Report Generated: {DateTime.Now:dd-MMM-yyyy HH:mm} | Total: {ranges.Count()}", normalFont);
+                    infoParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    infoParagraph.SpacingAfter = 15f;
+                    document.Add(infoParagraph);
+
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(5);
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 15f, 30f, 25f, 20f, 10f });
+
+                    var headerTexts = new[] { "Code", "Name", "Commander", "Contact", "Status" };
+                    foreach (var headerText in headerTexts)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(220, 220, 220);
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.Padding = 5f;
+                        mainTable.AddCell(cell);
+                    }
+
+                    foreach (var range in ranges)
+                    {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(range.Code ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(range.Name ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(range.CommanderName ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(range.ContactNumber ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(range.IsActive ? "Active" : "Inactive", normalFont));
+                    }
+
+                    document.Add(mainTable);
+
+                    var footerParagraph = new iTextSharp.text.Paragraph($"\nGenerated by: IMS System | Date: {DateTime.Now:dd-MMM-yyyy HH:mm}",
+                        iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8));
+                    footerParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    footerParagraph.SpacingBefore = 20f;
+                    document.Add(footerParagraph);
+
+                    document.Close();
+                    return File(memoryStream.ToArray(), "application/pdf", $"Ranges_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting ranges to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            if (value.Contains("\"")) value = value.Replace("\"", "\"\"");
+            return value;
+        }
 
     }
 }

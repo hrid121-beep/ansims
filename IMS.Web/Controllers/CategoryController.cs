@@ -198,5 +198,132 @@ namespace IMS.Web.Controllers
                 return Json(new { success = false, message = "Failed to perform bulk action: " + ex.Message });
             }
         }
+
+        // ==================== EXPORT OPERATIONS ====================
+
+        [HttpGet]
+        [HasPermission(Permission.ViewCategory)]
+        public async Task<IActionResult> ExportToCsv(string status = null)
+        {
+            try
+            {
+                var categories = await _categoryService.GetAllCategoriesAsync();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                        categories = categories.Where(c => c.IsActive);
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                        categories = categories.Where(c => !c.IsActive);
+                }
+
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("Code,Name,Description,Item Count,Status,Created Date");
+
+                foreach (var category in categories)
+                {
+                    csv.AppendLine($"\"{EscapeCsv(category.Code)}\"," +
+                        $"\"{EscapeCsv(category.Name)}\"," +
+                        $"\"{EscapeCsv(category.Description)}\"," +
+                        $"{category.ItemCount ?? 0}," +
+                        $"\"{(category.IsActive ? "Active" : "Inactive")}\"," +
+                        $"\"{category.CreatedAt:dd-MMM-yyyy}\"");
+                }
+
+                return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"Categories_{DateTime.Now:yyyyMMddHHmmss}.csv");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting categories to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ViewCategory)]
+        public async Task<IActionResult> ExportToPdf(string status = null)
+        {
+            try
+            {
+                var categories = await _categoryService.GetAllCategoriesAsync();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                        categories = categories.Where(c => c.IsActive);
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                        categories = categories.Where(c => !c.IsActive);
+                }
+
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 25, 25, 30, 30);
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
+                    var normalFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+
+                    var titleParagraph = new iTextSharp.text.Paragraph("ANSAR & VDP - Categories Report", titleFont);
+                    titleParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    titleParagraph.SpacingAfter = 10f;
+                    document.Add(titleParagraph);
+
+                    var infoParagraph = new iTextSharp.text.Paragraph($"Report Generated: {DateTime.Now:dd-MMM-yyyy HH:mm} | Total: {categories.Count()}", normalFont);
+                    infoParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    infoParagraph.SpacingAfter = 15f;
+                    document.Add(infoParagraph);
+
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(5);
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 15f, 25f, 35f, 12f, 13f });
+
+                    var headerTexts = new[] { "Code", "Name", "Description", "Items", "Status" };
+                    foreach (var headerText in headerTexts)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(220, 220, 220);
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.Padding = 5f;
+                        mainTable.AddCell(cell);
+                    }
+
+                    foreach (var category in categories)
+                    {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(category.Code ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(category.Name ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(category.Description ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase((category.ItemCount ?? 0).ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(category.IsActive ? "Active" : "Inactive", normalFont));
+                    }
+
+                    document.Add(mainTable);
+
+                    var footerParagraph = new iTextSharp.text.Paragraph($"\nGenerated by: IMS System | Date: {DateTime.Now:dd-MMM-yyyy HH:mm}",
+                        iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8));
+                    footerParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    footerParagraph.SpacingBefore = 20f;
+                    document.Add(footerParagraph);
+
+                    document.Close();
+                    return File(memoryStream.ToArray(), "application/pdf", $"Categories_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting categories to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            if (value.Contains("\"")) value = value.Replace("\"", "\"\"");
+            return value;
+        }
     }
 }

@@ -856,5 +856,193 @@ namespace IMS.Web.Controllers
                 return Json(new List<object>());
             }
         }
+
+        // ==================== EXPORT OPERATIONS ====================
+
+        [HttpGet]
+        [HasPermission(Permission.ViewItem)]
+        public async Task<IActionResult> ExportToCsv(string category = null, string brand = null, string status = null)
+        {
+            try
+            {
+                var items = await _itemService.GetAllItemsAsync();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(category))
+                {
+                    items = items.Where(i => i.CategoryName != null && i.CategoryName.Equals(category, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!string.IsNullOrEmpty(brand))
+                {
+                    items = items.Where(i => i.BrandName != null && i.BrandName.Equals(brand, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        items = items.Where(i => i.IsActive);
+                    }
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                    {
+                        items = items.Where(i => !i.IsActive);
+                    }
+                }
+
+                var csv = new System.Text.StringBuilder();
+
+                // Add headers
+                csv.AppendLine("Item Code,Name,Category,Sub Category,Brand,Model,Unit,Unit Price,Min Stock,Max Stock,Reorder Level,Is Perishable,Shelf Life (Days),Status");
+
+                // Add data
+                foreach (var item in items)
+                {
+                    csv.AppendLine($"\"{EscapeCsv(item.ItemCode ?? item.Code)}\"," +
+                        $"\"{EscapeCsv(item.Name)}\"," +
+                        $"\"{EscapeCsv(item.CategoryName)}\"," +
+                        $"\"{EscapeCsv(item.SubCategoryName)}\"," +
+                        $"\"{EscapeCsv(item.BrandName)}\"," +
+                        $"\"{EscapeCsv(item.ModelName)}\"," +
+                        $"\"{EscapeCsv(item.Unit)}\"," +
+                        $"{item.UnitPrice ?? 0}," +
+                        $"{item.MinimumStock ?? 0}," +
+                        $"{item.MaximumStock ?? 0}," +
+                        $"{item.ReorderLevel ?? 0}," +
+                        $"\"{(item.IsPerishable ? "Yes" : "No")}\"," +
+                        $"{item.ShelfLifeDays ?? 0}," +
+                        $"\"{(item.IsActive ? "Active" : "Inactive")}\"");
+                }
+
+                var fileContent = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+                var fileName = $"Items_{DateTime.Now:yyyyMMddHHmmss}.csv";
+                return File(fileContent, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting items to CSV");
+                TempData["Error"] = "Error exporting data to CSV.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        [HasPermission(Permission.ViewItem)]
+        public async Task<IActionResult> ExportToPdf(string category = null, string brand = null, string status = null)
+        {
+            try
+            {
+                var items = await _itemService.GetAllItemsAsync();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(category))
+                {
+                    items = items.Where(i => i.CategoryName != null && i.CategoryName.Equals(category, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!string.IsNullOrEmpty(brand))
+                {
+                    items = items.Where(i => i.BrandName != null && i.BrandName.Equals(brand, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        items = items.Where(i => i.IsActive);
+                    }
+                    else if (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                    {
+                        items = items.Where(i => !i.IsActive);
+                    }
+                }
+
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                    var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    // Define fonts
+                    var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+                    var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
+                    var normalFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+
+                    // Add title
+                    var titleParagraph = new iTextSharp.text.Paragraph("ANSAR & VDP - Items Report", titleFont);
+                    titleParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    titleParagraph.SpacingAfter = 10f;
+                    document.Add(titleParagraph);
+
+                    // Add report info
+                    var infoParagraph = new iTextSharp.text.Paragraph($"Report Generated: {DateTime.Now:dd-MMM-yyyy HH:mm} | Total Items: {items.Count()}", normalFont);
+                    infoParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    infoParagraph.SpacingAfter = 15f;
+                    document.Add(infoParagraph);
+
+                    // Create table
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(9);
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 10f, 15f, 12f, 12f, 10f, 8f, 8f, 8f, 8f });
+
+                    // Add headers
+                    var headerTexts = new[] { "Code", "Name", "Category", "Brand", "Model", "Unit", "Price", "Min Stock", "Status" };
+                    foreach (var headerText in headerTexts)
+                    {
+                        var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(220, 220, 220);
+                        cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                        cell.Padding = 5f;
+                        mainTable.AddCell(cell);
+                    }
+
+                    // Add data
+                    foreach (var item in items)
+                    {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.ItemCode ?? item.Code ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.Name ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.CategoryName ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.BrandName ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.ModelName ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.Unit ?? "", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase($"৳{item.UnitPrice ?? 0:N2}", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase((item.MinimumStock ?? 0).ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(item.IsActive ? "Active" : "Inactive", normalFont));
+                    }
+
+                    document.Add(mainTable);
+
+                    // Footer
+                    var footerParagraph = new iTextSharp.text.Paragraph($"\nGenerated by: IMS System | Date: {DateTime.Now:dd-MMM-yyyy HH:mm}",
+                        iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8));
+                    footerParagraph.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    footerParagraph.SpacingBefore = 20f;
+                    document.Add(footerParagraph);
+
+                    document.Close();
+
+                    var fileContent = memoryStream.ToArray();
+                    var fileName = $"Items_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                    return File(fileContent, "application/pdf", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting items to PDF");
+                TempData["Error"] = "Error exporting data to PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            if (value.Contains("\""))
+                value = value.Replace("\"", "\"\"");
+
+            return value;
+        }
     }
 }
