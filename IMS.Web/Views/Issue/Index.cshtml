@@ -101,35 +101,87 @@
             </div>
         </div>
 
+        <!-- Workflow Guide Alert -->
+        <div class="alert alert-light border">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <h6 class="mb-2"><i class="fas fa-route text-primary"></i> <strong>Issue Management Workflow</strong></h6>
+                    <div class="d-flex align-items-center justify-content-start flex-wrap">
+                        <div class="mr-4 mb-2">
+                            <span class="badge badge-primary" style="font-size: 0.9rem;">
+                                <i class="fas fa-list"></i> Step 1: All Issues
+                            </span>
+                            <small class="d-block text-muted mt-1">Create, manage & track all issues</small>
+                        </div>
+                        <i class="fas fa-arrow-right text-muted mr-4 mb-2"></i>
+                        <div class="mr-4 mb-2">
+                            <span class="badge badge-info" style="font-size: 0.9rem;">
+                                <i class="fas fa-qrcode"></i> Step 2: Vouchers
+                            </span>
+                            <small class="d-block text-muted mt-1">Print vouchers with QR codes</small>
+                        </div>
+                        <i class="fas fa-arrow-right text-muted mr-4 mb-2"></i>
+                        <div class="mb-2">
+                            <span class="badge badge-warning" style="font-size: 0.9rem;">
+                                <i class="fas fa-handshake"></i> Step 3: Handover
+                            </span>
+                            <small class="d-block text-muted mt-1">Complete physical delivery</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs" id="issuesTabs" role="tablist">
+        <ul class="nav nav-tabs nav-tabs-custom" id="issuesTabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="all-issues-tab" data-toggle="tab" href="#all-issues" role="tab">
-                    <i class="fas fa-list"></i> All Issues
+                <a class="nav-link active" id="all-issues-tab" data-toggle="tab" href="#all-issues" role="tab"
+                   data-toggle-second="tooltip" title="Manage all issues - Create, edit, submit for approval, and track status">
+                    <div class="d-flex align-items-center">
+                        <span class="badge badge-primary mr-2">1</span>
+                        <div>
+                            <i class="fas fa-list"></i> <strong>All Issues</strong>
+                            <small class="d-block text-muted" style="font-size: 0.75rem;">Complete Management</small>
+                        </div>
+                    </div>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="vouchers-tab" data-toggle="tab" href="#vouchers" role="tab">
-                    <i class="fas fa-qrcode"></i> Issue Vouchers
-                    @{
-                        var voucherCount = items.Count(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed"));
-                    }
-                    @if (voucherCount > 0)
-                    {
-                        <span class="badge badge-info">@voucherCount</span>
-                    }
+                <a class="nav-link" id="vouchers-tab" data-toggle="tab" href="#vouchers" role="tab"
+                   data-toggle-second="tooltip" title="View and print approved issue vouchers with QR codes">
+                    <div class="d-flex align-items-center">
+                        <span class="badge badge-info mr-2">2</span>
+                        <div>
+                            <i class="fas fa-qrcode"></i> <strong>Issue Vouchers</strong>
+                            <small class="d-block text-muted" style="font-size: 0.75rem;">Print & Download</small>
+                            @{
+                                var voucherCount = items.Count(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed"));
+                            }
+                            @if (voucherCount > 0)
+                            {
+                                <span class="badge badge-info badge-pill ml-2">@voucherCount</span>
+                            }
+                        </div>
+                    </div>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="handover-tab" data-toggle="tab" href="#handover" role="tab">
-                    <i class="fas fa-handshake"></i> Physical Handover
-                    @{
-                        var handoverCount = items.Count(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath));
-                    }
-                    @if (handoverCount > 0)
-                    {
-                        <span class="badge badge-warning">@handoverCount</span>
-                    }
+                <a class="nav-link" id="handover-tab" data-toggle="tab" href="#handover" role="tab"
+                   data-toggle-second="tooltip" title="Process physical handover with signature collection">
+                    <div class="d-flex align-items-center">
+                        <span class="badge badge-warning mr-2">3</span>
+                        <div>
+                            <i class="fas fa-handshake"></i> <strong>Physical Handover</strong>
+                            <small class="d-block text-muted" style="font-size: 0.75rem;">Signature Collection</small>
+                            @{
+                                var handoverCount = items.Count(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath));
+                            }
+                            @if (handoverCount > 0)
+                            {
+                                <span class="badge badge-warning badge-pill ml-2">@handoverCount pending</span>
+                            }
+                        </div>
+                    </div>
                 </a>
             </li>
         </ul>
@@ -732,10 +784,57 @@
 </section>
 
 @section Scripts {
+    <style>
+        /* Custom Tab Styling */
+        .nav-tabs-custom .nav-link {
+            border: 2px solid transparent;
+            border-radius: 8px 8px 0 0;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            margin-right: 5px;
+        }
+
+        .nav-tabs-custom .nav-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            background: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+            border-bottom-width: 3px;
+        }
+
+        .nav-tabs-custom .nav-link .badge {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+            font-weight: bold;
+        }
+
+        /* Workflow Guide Styling */
+        .alert-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #007bff;
+        }
+
+        /* Tab content smooth transition */
+        .tab-pane {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
     <script>
         $(function () {
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
+            $('[data-toggle-second="tooltip"]').tooltip();
 
             // Initialize Select2
             $('.select2').select2({
