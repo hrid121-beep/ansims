@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [ansvdp_ims]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Database [ansvdp_ims]    Script Date: 11/12/2025 10:09:14 AM ******/
 CREATE DATABASE [ansvdp_ims]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -80,7 +80,7 @@ ALTER DATABASE [ansvdp_ims] SET QUERY_STORE = OFF
 GO
 USE [ansvdp_ims]
 GO
-/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -94,7 +94,7 @@ CREATE TABLE [dbo].[__EFMigrationsHistory](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ActivityLogs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ActivityLogs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -129,7 +129,35 @@ CREATE TABLE [dbo].[ActivityLogs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AllotmentLetterItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AllotmentLetterDistributions]    Script Date: 11/12/2025 10:09:14 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AllotmentLetterDistributions](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AllotmentLetterId] [int] NOT NULL,
+	[SerialNo] [int] NOT NULL,
+	[RecipientTitle] [nvarchar](500) NOT NULL,
+	[RecipientTitleBn] [nvarchar](500) NULL,
+	[Address] [nvarchar](1000) NULL,
+	[AddressBn] [nvarchar](1000) NULL,
+	[Purpose] [nvarchar](500) NULL,
+	[PurposeBn] [nvarchar](500) NULL,
+	[DisplayOrder] [int] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [nvarchar](4000) NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[UpdatedBy] [nvarchar](4000) NULL,
+	[IsActive] [bit] NOT NULL,
+	[AllotmentLetterId1] [int] NULL,
+ CONSTRAINT [PK_AllotmentLetterDistributions] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[AllotmentLetterItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -156,7 +184,7 @@ CREATE TABLE [dbo].[AllotmentLetterItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AllotmentLetterRecipientItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AllotmentLetterRecipientItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -165,8 +193,8 @@ CREATE TABLE [dbo].[AllotmentLetterRecipientItems](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[AllotmentLetterRecipientId] [int] NOT NULL,
 	[ItemId] [int] NOT NULL,
-	[AllottedQuantity] [decimal](18, 2) NOT NULL,
-	[IssuedQuantity] [decimal](18, 2) NOT NULL,
+	[AllottedQuantity] [decimal](18, 3) NOT NULL,
+	[IssuedQuantity] [decimal](18, 3) NOT NULL,
 	[Unit] [nvarchar](4000) NULL,
 	[UnitBn] [nvarchar](4000) NULL,
 	[ItemNameBn] [nvarchar](4000) NULL,
@@ -176,13 +204,14 @@ CREATE TABLE [dbo].[AllotmentLetterRecipientItems](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[AllotmentLetterRecipientId1] [int] NULL,
  CONSTRAINT [PK_AllotmentLetterRecipientItems] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AllotmentLetterRecipients]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AllotmentLetterRecipients]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -190,13 +219,13 @@ GO
 CREATE TABLE [dbo].[AllotmentLetterRecipients](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[AllotmentLetterId] [int] NOT NULL,
-	[RecipientType] [nvarchar](4000) NULL,
+	[RecipientType] [nvarchar](50) NOT NULL,
 	[RangeId] [int] NULL,
 	[BattalionId] [int] NULL,
 	[ZilaId] [int] NULL,
 	[UpazilaId] [int] NULL,
 	[UnionId] [int] NULL,
-	[RecipientName] [nvarchar](4000) NULL,
+	[RecipientName] [nvarchar](200) NOT NULL,
 	[RecipientNameBn] [nvarchar](4000) NULL,
 	[StaffStrength] [nvarchar](4000) NULL,
 	[Remarks] [nvarchar](4000) NULL,
@@ -206,13 +235,19 @@ CREATE TABLE [dbo].[AllotmentLetterRecipients](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[AllotmentLetterId1] [int] NULL,
+	[BattalionId1] [int] NULL,
+	[RangeId1] [int] NULL,
+	[UnionId1] [int] NULL,
+	[UpazilaId1] [int] NULL,
+	[ZilaId1] [int] NULL,
  CONSTRAINT [PK_AllotmentLetterRecipients] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AllotmentLetters]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AllotmentLetters]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -263,7 +298,7 @@ CREATE TABLE [dbo].[AllotmentLetters](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalDelegations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalDelegations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -287,7 +322,7 @@ CREATE TABLE [dbo].[ApprovalDelegations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalHistories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalHistories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -319,7 +354,7 @@ CREATE TABLE [dbo].[ApprovalHistories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalLevels]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalLevels]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -342,7 +377,7 @@ CREATE TABLE [dbo].[ApprovalLevels](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalRequests]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalRequests]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -394,7 +429,7 @@ CREATE TABLE [dbo].[ApprovalRequests](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalSteps]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalSteps]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -426,7 +461,7 @@ CREATE TABLE [dbo].[ApprovalSteps](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalThresholds]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalThresholds]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -450,7 +485,7 @@ CREATE TABLE [dbo].[ApprovalThresholds](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalWorkflowLevels]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalWorkflowLevels]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -475,7 +510,7 @@ CREATE TABLE [dbo].[ApprovalWorkflowLevels](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ApprovalWorkflows]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ApprovalWorkflows]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -506,7 +541,7 @@ CREATE TABLE [dbo].[ApprovalWorkflows](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -522,7 +557,7 @@ CREATE TABLE [dbo].[AspNetRoleClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -538,7 +573,7 @@ CREATE TABLE [dbo].[AspNetRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -554,7 +589,7 @@ CREATE TABLE [dbo].[AspNetUserClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -571,7 +606,7 @@ CREATE TABLE [dbo].[AspNetUserLogins](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -587,7 +622,7 @@ CREATE TABLE [dbo].[AspNetUserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -625,7 +660,7 @@ CREATE TABLE [dbo].[AspNetUsers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -643,7 +678,7 @@ CREATE TABLE [dbo].[AspNetUserTokens](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AuditLogs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AuditLogs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -672,7 +707,7 @@ CREATE TABLE [dbo].[AuditLogs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AuditReports]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[AuditReports]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -712,7 +747,7 @@ CREATE TABLE [dbo].[AuditReports](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Audits]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Audits]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -738,7 +773,28 @@ CREATE TABLE [dbo].[Audits](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Barcodes]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BackupLog]    Script Date: 11/12/2025 10:09:14 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[BackupLog](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[BackupType] [nvarchar](10) NOT NULL,
+	[BackupFileName] [nvarchar](255) NOT NULL,
+	[BackupPath] [nvarchar](1000) NOT NULL,
+	[BackupSize] [bigint] NULL,
+	[Success] [bit] NOT NULL,
+	[ErrorMessage] [nvarchar](4000) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[CreatedBy] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Barcodes]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -776,7 +832,7 @@ CREATE TABLE [dbo].[Barcodes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[BatchMovements]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BatchMovements]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -808,7 +864,7 @@ CREATE TABLE [dbo].[BatchMovements](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[BatchSignatureItem]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BatchSignatureItem]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -832,7 +888,7 @@ CREATE TABLE [dbo].[BatchSignatureItem](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[BatchSignatures]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BatchSignatures]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -860,7 +916,7 @@ CREATE TABLE [dbo].[BatchSignatures](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[BatchTrackings]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BatchTrackings]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -915,7 +971,7 @@ CREATE TABLE [dbo].[BatchTrackings](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Battalions]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Battalions]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -949,7 +1005,7 @@ CREATE TABLE [dbo].[Battalions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[BattalionStores]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[BattalionStores]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -972,7 +1028,7 @@ CREATE TABLE [dbo].[BattalionStores](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Brands]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Brands]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -993,7 +1049,7 @@ CREATE TABLE [dbo].[Brands](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Categories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Categories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1015,7 +1071,7 @@ CREATE TABLE [dbo].[Categories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ConditionCheckItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ConditionCheckItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1042,7 +1098,7 @@ CREATE TABLE [dbo].[ConditionCheckItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ConditionChecks]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ConditionChecks]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1067,7 +1123,7 @@ CREATE TABLE [dbo].[ConditionChecks](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CycleCountSchedules]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[CycleCountSchedules]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1101,7 +1157,7 @@ CREATE TABLE [dbo].[CycleCountSchedules](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[DamageRecords]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[DamageRecords]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1132,7 +1188,7 @@ CREATE TABLE [dbo].[DamageRecords](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[DamageReportItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[DamageReportItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1161,7 +1217,7 @@ CREATE TABLE [dbo].[DamageReportItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[DamageReports]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[DamageReports]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1190,7 +1246,7 @@ CREATE TABLE [dbo].[DamageReports](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Damages]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Damages]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1222,7 +1278,7 @@ CREATE TABLE [dbo].[Damages](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[DigitalSignatures]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[DigitalSignatures]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1262,7 +1318,7 @@ CREATE TABLE [dbo].[DigitalSignatures](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[DisposalRecords]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[DisposalRecords]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1294,7 +1350,7 @@ CREATE TABLE [dbo].[DisposalRecords](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Documents]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Documents]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1325,7 +1381,7 @@ CREATE TABLE [dbo].[Documents](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ExpiredRecords]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ExpiredRecords]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1353,7 +1409,7 @@ CREATE TABLE [dbo].[ExpiredRecords](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ExpiryTrackings]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ExpiryTrackings]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1384,7 +1440,7 @@ CREATE TABLE [dbo].[ExpiryTrackings](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[GoodsReceiveItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[GoodsReceiveItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1411,7 +1467,7 @@ CREATE TABLE [dbo].[GoodsReceiveItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[GoodsReceives]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[GoodsReceives]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1435,7 +1491,7 @@ CREATE TABLE [dbo].[GoodsReceives](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[InventoryCycleCountItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[InventoryCycleCountItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1470,7 +1526,7 @@ CREATE TABLE [dbo].[InventoryCycleCountItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[InventoryCycleCounts]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[InventoryCycleCounts]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1506,7 +1562,7 @@ CREATE TABLE [dbo].[InventoryCycleCounts](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[InventoryValuations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[InventoryValuations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1537,7 +1593,7 @@ CREATE TABLE [dbo].[InventoryValuations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[IssueItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[IssueItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1566,13 +1622,14 @@ CREATE TABLE [dbo].[IssueItems](
 	[PartiallyUsableQuantity] [decimal](18, 2) NULL,
 	[UnusableQuantity] [decimal](18, 2) NULL,
 	[UsableQuantity] [decimal](18, 2) NULL,
+	[LedgerBookId] [int] NULL,
  CONSTRAINT [PK_IssueItems] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Issues]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Issues]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1655,7 +1712,7 @@ CREATE TABLE [dbo].[Issues](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[IssueVouchers]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[IssueVouchers]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1684,7 +1741,7 @@ CREATE TABLE [dbo].[IssueVouchers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ItemModels]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ItemModels]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1705,7 +1762,7 @@ CREATE TABLE [dbo].[ItemModels](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Items]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Items]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1724,9 +1781,9 @@ CREATE TABLE [dbo].[Items](
 	[CategoryId] [int] NOT NULL,
 	[ItemModelId] [int] NULL,
 	[BrandId] [int] NULL,
-	[MinimumStock] [decimal](18, 3) NULL,
-	[MaximumStock] [decimal](18, 3) NULL,
-	[ReorderLevel] [decimal](18, 3) NOT NULL,
+	[MinimumStock] [decimal](18, 2) NULL,
+	[MaximumStock] [decimal](18, 2) NULL,
+	[ReorderLevel] [decimal](18, 2) NOT NULL,
 	[UnitPrice] [decimal](18, 2) NULL,
 	[UnitCost] [decimal](18, 2) NULL,
 	[Manufacturer] [nvarchar](4000) NULL,
@@ -1769,13 +1826,18 @@ CREATE TABLE [dbo].[Items](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[CatalogueEntryDate] [datetime2](7) NULL,
+	[CatalogueLedgerNo] [nvarchar](4000) NULL,
+	[CataloguePageNo] [nvarchar](4000) NULL,
+	[CatalogueRemarks] [nvarchar](4000) NULL,
+	[FirstReceivedDate] [datetime2](7) NULL,
  CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ItemSpecifications]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ItemSpecifications]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1800,7 +1862,7 @@ CREATE TABLE [dbo].[ItemSpecifications](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LedgerBooks]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[LedgerBooks]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1830,7 +1892,7 @@ CREATE TABLE [dbo].[LedgerBooks](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Locations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Locations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1858,7 +1920,7 @@ CREATE TABLE [dbo].[Locations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LoginLogs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[LoginLogs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1880,7 +1942,7 @@ CREATE TABLE [dbo].[LoginLogs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Notifications]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Notifications]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1918,7 +1980,7 @@ CREATE TABLE [dbo].[Notifications](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PersonnelItemIssues]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PersonnelItemIssues]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1961,13 +2023,15 @@ CREATE TABLE [dbo].[PersonnelItemIssues](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[OriginalIssueId1] [int] NULL,
+	[ReceiveId1] [int] NULL,
  CONSTRAINT [PK_PersonnelItemIssues] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PhysicalInventories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PhysicalInventories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2045,7 +2109,7 @@ CREATE TABLE [dbo].[PhysicalInventories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PhysicalInventoryDetails]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PhysicalInventoryDetails]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2102,7 +2166,7 @@ CREATE TABLE [dbo].[PhysicalInventoryDetails](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PhysicalInventoryItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PhysicalInventoryItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2137,7 +2201,7 @@ CREATE TABLE [dbo].[PhysicalInventoryItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PurchaseItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PurchaseItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2168,7 +2232,7 @@ CREATE TABLE [dbo].[PurchaseItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PurchaseOrderItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PurchaseOrderItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2192,7 +2256,7 @@ CREATE TABLE [dbo].[PurchaseOrderItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PurchaseOrders]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[PurchaseOrders]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2222,7 +2286,7 @@ CREATE TABLE [dbo].[PurchaseOrders](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Purchases]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Purchases]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2261,7 +2325,7 @@ CREATE TABLE [dbo].[Purchases](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QualityCheckItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[QualityCheckItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2287,7 +2351,7 @@ CREATE TABLE [dbo].[QualityCheckItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QualityChecks]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[QualityChecks]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2324,7 +2388,7 @@ CREATE TABLE [dbo].[QualityChecks](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Ranges]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Ranges]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2352,7 +2416,7 @@ CREATE TABLE [dbo].[Ranges](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ReceiveItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ReceiveItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2383,13 +2447,14 @@ CREATE TABLE [dbo].[ReceiveItems](
 	[PartiallyUsableQuantity] [decimal](18, 2) NULL,
 	[UnusableQuantity] [decimal](18, 2) NULL,
 	[UsableQuantity] [decimal](18, 2) NULL,
+	[LedgerBookId] [int] NULL,
  CONSTRAINT [PK_ReceiveItems] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Receives]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Receives]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2418,7 +2483,7 @@ CREATE TABLE [dbo].[Receives](
 	[OriginalIssueNo] [nvarchar](4000) NULL,
 	[OriginalVoucherNo] [nvarchar](4000) NULL,
 	[ReceiveType] [nvarchar](4000) NULL,
-	[ReceiverSignature] [nvarchar](4000) NULL,
+	[ReceiverSignature] [nvarchar](max) NULL,
 	[ReceiverName] [nvarchar](4000) NULL,
 	[ReceiverBadgeNo] [nvarchar](4000) NULL,
 	[ReceiverDesignation] [nvarchar](4000) NULL,
@@ -2443,9 +2508,9 @@ CREATE TABLE [dbo].[Receives](
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RequisitionItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[RequisitionItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2475,7 +2540,7 @@ CREATE TABLE [dbo].[RequisitionItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Requisitions]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Requisitions]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2527,7 +2592,7 @@ CREATE TABLE [dbo].[Requisitions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ReturnItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ReturnItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2560,7 +2625,7 @@ CREATE TABLE [dbo].[ReturnItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Returns]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Returns]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2610,7 +2675,7 @@ CREATE TABLE [dbo].[Returns](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RolePermissions]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[RolePermissions]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2634,7 +2699,7 @@ CREATE TABLE [dbo].[RolePermissions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Settings]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Settings]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2658,7 +2723,7 @@ CREATE TABLE [dbo].[Settings](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ShipmentTrackings]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[ShipmentTrackings]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2686,7 +2751,7 @@ CREATE TABLE [dbo].[ShipmentTrackings](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SignatoryPresets]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[SignatoryPresets]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2715,7 +2780,7 @@ CREATE TABLE [dbo].[SignatoryPresets](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SignatureOTPs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[SignatureOTPs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2741,7 +2806,7 @@ CREATE TABLE [dbo].[SignatureOTPs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Signatures]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Signatures]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2770,7 +2835,7 @@ CREATE TABLE [dbo].[Signatures](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockAdjustmentItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockAdjustmentItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2798,7 +2863,7 @@ CREATE TABLE [dbo].[StockAdjustmentItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockAdjustments]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockAdjustments]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2847,7 +2912,7 @@ CREATE TABLE [dbo].[StockAdjustments](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockAlerts]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockAlerts]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2878,7 +2943,7 @@ CREATE TABLE [dbo].[StockAlerts](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockEntries]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockEntries]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2896,13 +2961,20 @@ CREATE TABLE [dbo].[StockEntries](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](450) NULL,
 	[IsActive] [bit] NOT NULL,
+	[ApprovedBy] [nvarchar](4000) NULL,
+	[ApprovedDate] [datetime2](7) NULL,
+	[RejectedBy] [nvarchar](4000) NULL,
+	[RejectedDate] [datetime2](7) NULL,
+	[RejectionReason] [nvarchar](4000) NULL,
+	[SubmittedBy] [nvarchar](4000) NULL,
+	[SubmittedDate] [datetime2](7) NULL,
  CONSTRAINT [PK_StockEntries] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockEntryItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockEntryItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2928,7 +3000,7 @@ CREATE TABLE [dbo].[StockEntryItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockMovements]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockMovements]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2960,13 +3032,17 @@ CREATE TABLE [dbo].[StockMovements](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[DestinationStoreId1] [int] NULL,
+	[ItemId1] [int] NULL,
+	[SourceStoreId1] [int] NULL,
+	[StoreId1] [int] NULL,
  CONSTRAINT [PK_StockMovements] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockOperations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockOperations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2994,7 +3070,7 @@ CREATE TABLE [dbo].[StockOperations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StockReturns]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StockReturns]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3021,7 +3097,7 @@ CREATE TABLE [dbo].[StockReturns](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StoreConfigurations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StoreConfigurations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3043,7 +3119,7 @@ CREATE TABLE [dbo].[StoreConfigurations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StoreItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StoreItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3074,13 +3150,14 @@ CREATE TABLE [dbo].[StoreItems](
 	[UpdatedAt] [datetime2](7) NULL,
 	[UpdatedBy] [nvarchar](4000) NULL,
 	[IsActive] [bit] NOT NULL,
+	[RowVersion] [timestamp] NULL,
  CONSTRAINT [PK_StoreItems] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Stores]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Stores]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3141,7 +3218,7 @@ CREATE TABLE [dbo].[Stores](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StoreStocks]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StoreStocks]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3171,7 +3248,7 @@ CREATE TABLE [dbo].[StoreStocks](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StoreTypeCategories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StoreTypeCategories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3194,7 +3271,7 @@ CREATE TABLE [dbo].[StoreTypeCategories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[StoreTypes]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[StoreTypes]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3227,7 +3304,7 @@ CREATE TABLE [dbo].[StoreTypes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SubCategories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[SubCategories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3250,7 +3327,7 @@ CREATE TABLE [dbo].[SubCategories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SupplierEvaluations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[SupplierEvaluations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3283,7 +3360,7 @@ CREATE TABLE [dbo].[SupplierEvaluations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SystemConfigurations]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[SystemConfigurations]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3313,7 +3390,7 @@ CREATE TABLE [dbo].[SystemConfigurations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TemperatureLogs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TemperatureLogs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3343,7 +3420,7 @@ CREATE TABLE [dbo].[TemperatureLogs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TrackingHistories]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TrackingHistories]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3368,7 +3445,7 @@ CREATE TABLE [dbo].[TrackingHistories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TransferDiscrepancies]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TransferDiscrepancies]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3400,7 +3477,7 @@ CREATE TABLE [dbo].[TransferDiscrepancies](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TransferItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TransferItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3435,7 +3512,7 @@ CREATE TABLE [dbo].[TransferItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Transfers]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Transfers]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3490,7 +3567,7 @@ CREATE TABLE [dbo].[Transfers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TransferShipmentItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TransferShipmentItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3517,7 +3594,7 @@ CREATE TABLE [dbo].[TransferShipmentItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TransferShipments]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[TransferShipments]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3556,7 +3633,7 @@ CREATE TABLE [dbo].[TransferShipments](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Unions]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Unions]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3602,7 +3679,7 @@ CREATE TABLE [dbo].[Unions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Units]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Units]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3629,7 +3706,7 @@ CREATE TABLE [dbo].[Units](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Upazilas]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Upazilas]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3666,7 +3743,7 @@ CREATE TABLE [dbo].[Upazilas](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UsageStatistics]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[UsageStatistics]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3693,7 +3770,7 @@ CREATE TABLE [dbo].[UsageStatistics](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserNotificationPreferences]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[UserNotificationPreferences]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3719,7 +3796,7 @@ CREATE TABLE [dbo].[UserNotificationPreferences](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserStores]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[UserStores]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3746,7 +3823,7 @@ CREATE TABLE [dbo].[UserStores](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Vendors]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Vendors]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3773,7 +3850,7 @@ CREATE TABLE [dbo].[Vendors](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Warranties]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Warranties]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3803,7 +3880,7 @@ CREATE TABLE [dbo].[Warranties](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[WriteOffItems]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[WriteOffItems]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3832,7 +3909,7 @@ CREATE TABLE [dbo].[WriteOffItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[WriteOffRequests]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[WriteOffRequests]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3871,7 +3948,7 @@ CREATE TABLE [dbo].[WriteOffRequests](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[WriteOffs]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[WriteOffs]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3907,7 +3984,7 @@ CREATE TABLE [dbo].[WriteOffs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Zilas]    Script Date: 11/6/2025 1:16:42 PM ******/
+/****** Object:  Table [dbo].[Zilas]    Script Date: 11/12/2025 10:09:14 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3946,19 +4023,385 @@ INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N
 GO
 INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251105172929_UpdateLedgerBookAndPendingChanges', N'9.0.7')
 GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251106073248_AddLedgerBookIdToIssueAndReceiveItems', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251108174133_FixItemDecimalPrecision', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251109043036_AddCatalogueFieldsToItem', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251110042732_AddStockEntryApprovalFields', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251110080602_AddBackupStoredProcedures', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251110112624_AddAllotmentLetterDistribution', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251111084124_FixCriticalStockIssues', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251111085936_AddMissingForeignKeyConstraints', N'9.0.7')
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20251112022344_FixReceiverSignatureColumnSize', N'9.0.7')
+GO
+SET IDENTITY_INSERT [dbo].[ActivityLogs] ON 
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Create', CAST(N'2025-11-06T16:12:53.4387038' AS DateTime2), CAST(N'2025-11-06T16:12:53.4389179' AS DateTime2), NULL, N'Issue ISS-202511-0001 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 6, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:12:53.4390875' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Submit', CAST(N'2025-11-06T16:59:39.3697000' AS DateTime2), CAST(N'2025-11-06T16:59:39.3698036' AS DateTime2), NULL, N'Submitted issue ISS-202511-0001 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 6, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:59:39.3699238' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'Create', CAST(N'2025-11-07T00:00:21.9369749' AS DateTime2), CAST(N'2025-11-07T00:00:21.9370376' AS DateTime2), NULL, N'Issue ISS-202511-0002 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 7, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:21.9370908' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Submit', CAST(N'2025-11-07T00:00:22.8557823' AS DateTime2), CAST(N'2025-11-07T00:00:22.8557832' AS DateTime2), NULL, N'Submitted issue ISS-202511-0002 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 7, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:22.8557834' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Create', CAST(N'2025-11-07T01:21:08.6291592' AS DateTime2), CAST(N'2025-11-07T01:21:08.6293542' AS DateTime2), NULL, N'Issue ISS-202511-0003 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 8, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:08.6295518' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Submit', CAST(N'2025-11-07T01:21:10.8041689' AS DateTime2), CAST(N'2025-11-07T01:21:10.8041703' AS DateTime2), NULL, N'Submitted issue ISS-202511-0003 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 8, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:10.8041708' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Create', CAST(N'2025-11-07T02:00:32.3193633' AS DateTime2), CAST(N'2025-11-07T02:00:32.3194123' AS DateTime2), NULL, N'Issue ISS-202511-0004 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 9, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.3194574' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Submit', CAST(N'2025-11-07T02:00:32.7528416' AS DateTime2), CAST(N'2025-11-07T02:00:32.7528428' AS DateTime2), NULL, N'Submitted issue ISS-202511-0004 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 9, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.7528428' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'Update', CAST(N'2025-11-09T23:09:37.8160059' AS DateTime2), CAST(N'2025-11-09T23:09:37.8160347' AS DateTime2), NULL, N'Updated range: Barisal Range (BAR-01)', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Range', N'Range', NULL, 6, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-09T23:09:37.8160868' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (23, N'Update', CAST(N'2025-11-09T23:10:48.9595146' AS DateTime2), CAST(N'2025-11-09T23:10:48.9595161' AS DateTime2), NULL, N'Updated battalion: asfasdasfasf (BN-M-01)', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Battalion', N'Battalion', NULL, 12, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-09T23:10:48.9595163' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (26, N'Update', CAST(N'2025-11-09T23:19:13.2235917' AS DateTime2), CAST(N'2025-11-09T23:19:13.2235933' AS DateTime2), NULL, N'Updated zila: rrrrrr (ZILA-XD)', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Zila', N'Zila', NULL, 72, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-09T23:19:13.2235935' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (29, N'Update', CAST(N'2025-11-09T23:40:31.7515576' AS DateTime2), CAST(N'2025-11-09T23:40:31.7515588' AS DateTime2), NULL, N'Updated upazila: esrewr (UPZ-BGN-BB)', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Upazila', N'Upazila', NULL, 151, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-09T23:40:31.7515590' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (31, N'Update', CAST(N'2025-11-09T23:41:13.3693170' AS DateTime2), CAST(N'2025-11-09T23:41:13.3693180' AS DateTime2), NULL, N'Updated upazila: Aditmari (LAL-ADI)', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Upazila', N'Upazila', NULL, 110, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-09T23:41:13.3693182' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (60, N'Create', CAST(N'2025-11-11T18:01:04.3878220' AS DateTime2), CAST(N'2025-11-11T18:01:04.3878886' AS DateTime2), NULL, N'Issue ISS-202511-0005 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 10, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:01:04.3879664' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (61, N'Create', CAST(N'2025-11-11T18:08:33.8539123' AS DateTime2), CAST(N'2025-11-11T18:08:33.8539758' AS DateTime2), NULL, N'Issue ISS-202511-0006 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 11, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:08:33.8540478' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (62, N'Submit', CAST(N'2025-11-11T18:14:03.3762958' AS DateTime2), CAST(N'2025-11-11T18:14:03.3763499' AS DateTime2), NULL, N'Submitted issue ISS-202511-0006 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 11, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:03.3764051' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (63, N'Submit', CAST(N'2025-11-11T18:14:42.3357120' AS DateTime2), CAST(N'2025-11-11T18:14:42.3357132' AS DateTime2), NULL, N'Submitted issue ISS-202511-0005 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 10, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:42.3357133' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (64, N'Create', CAST(N'2025-11-11T18:16:30.6338956' AS DateTime2), CAST(N'2025-11-11T18:16:30.6338969' AS DateTime2), NULL, N'Issue ISS-202511-0007 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 12, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.6338971' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (65, N'Submit', CAST(N'2025-11-11T18:16:30.8363721' AS DateTime2), CAST(N'2025-11-11T18:16:30.8363726' AS DateTime2), NULL, N'Submitted issue ISS-202511-0007 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 12, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.8363727' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (68, N'Create', CAST(N'2025-11-11T23:07:34.9712735' AS DateTime2), CAST(N'2025-11-11T23:07:34.9715461' AS DateTime2), NULL, N'Issue ISS-202511-0008 created', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 13, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:34.9719485' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (69, N'Submit', CAST(N'2025-11-11T23:07:41.5851818' AS DateTime2), CAST(N'2025-11-11T23:07:41.5851838' AS DateTime2), NULL, N'Submitted issue ISS-202511-0008 for approval', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Issue', N'Issue', NULL, 13, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:41.5851840' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (72, N'Barcode Created', CAST(N'2025-11-12T07:44:52.3548887' AS DateTime2), CAST(N'2025-11-12T07:44:52.3548899' AS DateTime2), NULL, N'System', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Barcode', N'Barcode', NULL, 22, NULL, NULL, NULL, NULL, N'Barcode CA202511120001 created for item Desktop Computer Core i5', CAST(N'2025-11-12T07:44:52.3548900' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ActivityLogs] ([Id], [Action], [ActionDate], [Timestamp], [Description], [Details], [UserId], [UserName], [IPAddress], [EntityType], [Entity], [EntityName], [EntityId], [Module], [OldValue], [NewValue], [OldValues], [NewValues], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (73, N'Barcode Created', CAST(N'2025-11-12T07:45:14.9333871' AS DateTime2), CAST(N'2025-11-12T07:45:14.9333882' AS DateTime2), NULL, N'System', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, N'Barcode', N'Barcode', NULL, 23, NULL, NULL, NULL, NULL, N'Barcode CA202511120002 created for item Desktop Computer Core i5 in store 2', CAST(N'2025-11-12T07:45:14.9333883' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ActivityLogs] OFF
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterDistributions] ON 
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (2, 4, 1, N'gfhgfhfghjfg', N'fdgdghgfh', N'hfghj', N'ghjhgj', N'ghjh', N'hghj', 0, CAST(N'2025-11-10T12:31:01.9426568' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (3, 5, 1, N'ghghdg', N'bdgh', N'hgdhgf', N'dghdghdg', N'dghdf', N'hdghdgh', 0, CAST(N'2025-11-10T12:47:47.3541717' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (8, 11, 1, N'Director General, Ansar & VDP', N'মহাপরিচালক, আনসার ও ভিডিপি', N'Headquarters, Dhaka', N'সদর দপ্তর, ঢাকা', N'For kind information', N'সদয় অবগতির জন্য', 1, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (9, 11, 2, N'Deputy Director General (Store)', N'উপ-মহাপরিচালক (স্টোর)', N'Headquarters, Dhaka', N'সদর দপ্তর, ঢাকা', N'For necessary action', N'প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য', 2, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (10, 11, 3, N'Director (Finance)', N'পরিচালক (অর্থ)', N'Headquarters, Dhaka', N'সদর দপ্তর, ঢাকা', N'For information', N'অবগতির জন্য', 3, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (11, 11, 4, N'Office Copy', N'অফিস কপি', N'', N'', N'For record', N'নথিভুক্তির জন্য', 4, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (12, 12, 1, N'Director General, Ansar & VDP', N'মহাপরিচালক, আনসার ও ভিডিপি', N'Headquarters, Dhaka', N'সদর দপ্তর, ঢাকা', N'For kind information', N'সদয় অবগতির জন্য', 1, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (13, 12, 2, N'Deputy Director General (Admin)', N'উপ-মহাপরিচালক (প্রশাসন)', N'Headquarters, Dhaka', N'সদর দপ্তর, ঢাকা', N'For information', N'অবগতির জন্য', 2, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterDistributions] ([Id], [AllotmentLetterId], [SerialNo], [RecipientTitle], [RecipientTitleBn], [Address], [AddressBn], [Purpose], [PurposeBn], [DisplayOrder], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1]) VALUES (14, 12, 3, N'Office Copy', N'অফিস কপি', N'', N'', N'For record', N'নথিভুক্তির জন্য', 3, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterDistributions] OFF
+GO
 SET IDENTITY_INSERT [dbo].[AllotmentLetterItems] ON 
 GO
 INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, 2, 5, CAST(5.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(5.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-10-25T03:33:45.4833333' AS DateTime2), NULL, NULL, NULL, 1)
 GO
 INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 2, 6, CAST(10.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-10-25T03:33:45.4833333' AS DateTime2), NULL, NULL, NULL, 1)
 GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 4, 15, CAST(100.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(100.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T12:31:01.9375284' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 4, 15, CAST(100.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T12:41:37.5726219' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 5, 14, CAST(10.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T12:47:47.3530683' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, 6, 14, CAST(20.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(20.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T13:55:00.4309821' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, 6, 9, CAST(20.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(20.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T13:55:00.4313812' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, 6, 5, CAST(40.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(40.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T13:55:00.4313819' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, 6, 17, CAST(10.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T13:55:00.4313821' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetterItems] ([Id], [AllotmentLetterId], [ItemId], [AllottedQuantity], [IssuedQuantity], [RemainingQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, 6, 18, CAST(30.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(30.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, NULL, CAST(N'2025-11-10T13:55:00.4313822' AS DateTime2), NULL, NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[AllotmentLetterItems] OFF
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterRecipientItems] ON 
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (2, 3, 15, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'cxvxcv', CAST(N'2025-11-10T12:31:01.9402893' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (3, 4, 15, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'cxvxcv', CAST(N'2025-11-10T12:41:37.5769983' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (4, 5, 14, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'zdvsgdf', CAST(N'2025-11-10T12:47:47.3533912' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (5, 6, 14, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'dfssa', CAST(N'2025-11-10T13:55:00.4325573' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (6, 6, 9, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'sdaf', CAST(N'2025-11-10T13:55:00.4328803' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (7, 6, 5, CAST(40.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'fds', CAST(N'2025-11-10T13:55:00.4328811' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (8, 6, 17, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'd', CAST(N'2025-11-10T13:55:00.4328813' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (9, 6, 18, CAST(30.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, N'fasf', CAST(N'2025-11-10T13:55:00.4328815' AS DateTime2), NULL, NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (14, 11, 5, CAST(150.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ডেস্কটপ কম্পিউটার কোর আই৫', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (15, 11, 6, CAST(150.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'লেজার প্রিন্টার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (16, 11, 7, CAST(150.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'এ৪ কাগজ ৮০ জিএসএম (রিম)', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (17, 12, 5, CAST(120.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ডেস্কটপ কম্পিউটার কোর আই৫', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (18, 12, 6, CAST(120.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'লেজার প্রিন্টার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (19, 12, 7, CAST(120.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'এ৪ কাগজ ৮০ জিএসএম (রিম)', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (20, 13, 5, CAST(80.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ডেস্কটপ কম্পিউটার কোর আই৫', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (21, 13, 6, CAST(80.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'লেজার প্রিন্টার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (22, 14, 5, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ডেস্কটপ কম্পিউটার কোর আই৫', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (23, 14, 6, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'লেজার প্রিন্টার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (24, 14, 7, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'এ৪ কাগজ ৮০ জিএসএম (রিম)', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (25, 14, 8, CAST(50.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'বলপয়েন্ট কলম নীল', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (26, 15, 5, CAST(75.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ডেস্কটপ কম্পিউটার কোর আই৫', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (27, 15, 6, CAST(75.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'লেজার প্রিন্টার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (28, 16, 9, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'বলপয়েন্ট কলম কালো', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (29, 16, 10, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'পেন্সিল এইচবি', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (30, 17, 9, CAST(15.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'বলপয়েন্ট কলম কালো', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (31, 17, 10, CAST(15.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'পেন্সিল এইচবি', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (32, 18, 9, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'বলপয়েন্ট কলম কালো', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (33, 18, 10, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'পেন্সিল এইচবি', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (34, 16, 11, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Rim', N'রিম', N'স্টিকি নোট প্যাড', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (35, 17, 11, CAST(80.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Rim', N'রিম', N'স্টিকি নোট প্যাড', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (36, 18, 11, CAST(60.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Rim', N'রিম', N'স্টিকি নোট প্যাড', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (37, 16, 12, CAST(50.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ফাইল ফোল্ডার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (38, 17, 12, CAST(40.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ফাইল ফোল্ডার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipientItems] ([Id], [AllotmentLetterRecipientId], [ItemId], [AllottedQuantity], [IssuedQuantity], [Unit], [UnitBn], [ItemNameBn], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterRecipientId1]) VALUES (39, 18, 12, CAST(30.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Pcs', N'টি', N'ফাইল ফোল্ডার এ৪', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterRecipientItems] OFF
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterRecipients] ON 
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (3, 4, N'Battalion', NULL, 10, NULL, NULL, NULL, N'1st Barisal Ansar Battalion', NULL, NULL, NULL, 1, CAST(N'2025-11-10T12:31:01.9391358' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (4, 4, N'Battalion', NULL, 10, NULL, NULL, NULL, N'1st Barisal Ansar Battalion', NULL, NULL, NULL, 1, CAST(N'2025-11-10T12:41:37.5748280' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (5, 5, N'Zila', NULL, NULL, NULL, 142, NULL, N'Godagari', NULL, NULL, NULL, 1, CAST(N'2025-11-10T12:47:47.3532750' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (6, 6, N'Battalion', NULL, 10, NULL, NULL, NULL, N'1st Barisal Ansar Battalion', NULL, NULL, NULL, 1, CAST(N'2025-11-10T13:55:00.4317453' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (11, 11, N'Battalion', NULL, NULL, NULL, NULL, NULL, N'1st Battalion, Dhaka', N'১ম ব্যাটালিয়ন, ঢাকা', N'১৫০ জন', N'প্রথম কিস্তি', 1, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (12, 11, N'Battalion', NULL, NULL, NULL, NULL, NULL, N'2nd Battalion, Chittagong', N'২য় ব্যাটালিয়ন, চট্টগ্রাম', N'১২০ জন', N'', 2, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (13, 11, N'Range', NULL, NULL, NULL, NULL, NULL, N'Dhaka Range', N'ঢাকা রেঞ্জ', N'৮০ জন', N'', 3, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (14, 11, N'Battalion', NULL, NULL, NULL, NULL, NULL, N'5th Battalion, Sylhet', N'৫ম ব্যাটালিয়ন, সিলেট', N'১০০ জন', N'', 4, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (15, 11, N'Range', NULL, NULL, NULL, NULL, NULL, N'Chittagong Range', N'চট্টগ্রাম রেঞ্জ', N'৭৫ জন', N'', 5, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (16, 12, N'Zila', NULL, NULL, NULL, NULL, NULL, N'Dhaka Zila Office', N'ঢাকা জেলা কার্যালয়', N'৫০ জন', N'', 1, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (17, 12, N'Zila', NULL, NULL, NULL, NULL, NULL, N'Chittagong Zila Office', N'চট্টগ্রাম জেলা কার্যালয়', N'৪৫ জন', N'', 2, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[AllotmentLetterRecipients] ([Id], [AllotmentLetterId], [RecipientType], [RangeId], [BattalionId], [ZilaId], [UpazilaId], [UnionId], [RecipientName], [RecipientNameBn], [StaffStrength], [Remarks], [SerialNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [AllotmentLetterId1], [BattalionId1], [RangeId1], [UnionId1], [UpazilaId1], [ZilaId1]) VALUES (18, 12, N'Zila', NULL, NULL, NULL, NULL, NULL, N'Sylhet Zila Office', N'সিলেট জেলা কার্যালয়', N'৩৫ জন', N'', 3, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[AllotmentLetterRecipients] OFF
 GO
 SET IDENTITY_INSERT [dbo].[AllotmentLetters] ON 
 GO
 INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'AL-2024-001', CAST(N'2025-10-25T03:33:22.0933333' AS DateTime2), CAST(N'2025-10-25T03:33:22.0933333' AS DateTime2), CAST(N'2025-11-24T03:33:22.0933333' AS DateTime2), N'1st Ansar Battalion', N'Battalion', 1, NULL, NULL, NULL, 2, N'IT Equipment allotment for battalion office', N'Approved', NULL, NULL, NULL, NULL, NULL, NULL, N'HQ/Store/2024/001', NULL, N'Allotment of IT Equipment', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T03:33:22.0933333' AS DateTime2), NULL, NULL, NULL, 1)
 GO
+INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'AL25110001', CAST(N'2025-11-10T18:31:02.0188270' AS DateTime2), CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2026-02-10T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, 2, N'dsfdsf', N'Active', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-10T18:44:18.6489263' AS DateTime2), NULL, NULL, NULL, NULL, N'৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪', NULL, N'sdfsdfds', N'dsfds', N'fdsf', N'dsf', CAST(N'2025-11-14T00:00:00.0000000' AS DateTime2), N'A.B.M. Forhad', N'Deputy Director (Store)', N'উপ-পরিচালক (ভাণ্ডার)', N'ANS-DD-001', N'+880-2-9898989', N'dd.store@ansar-vdp.gov.bd', N'545454', CAST(N'2025-11-10T12:31:01.9335448' AS DateTime2), N'admin', CAST(N'2025-11-10T18:41:50.2873335' AS DateTime2), N'admin', 1)
+GO
+INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'AL25110002', CAST(N'2025-11-10T18:47:47.3770053' AS DateTime2), CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2026-02-10T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, 2, N'উপর্যুক্ত ম্পবষক্সয়র ডপ্রম্পক্ষক্সত ম্পবম্পভন্ন েপ্তর/ইউম্পনডটর চাম্পিোর আক্সলাক্সক আয় যষ্কাল ম্পবক্সবচনায় ডরাড়পত্র-
+‘ক’ অনুর্ায়ী
+ডেেটপ কম্পিউটার ডসট ও কম্পিউটার এক্সেসম্পরজ বরাদ্দ প্রোন করা িক্সলা।
+২।
+উপমিাপম্পরচালক/পম্পরচালক ডরঞ্জ কতত ুক গম্পিত কম্পমম্পটক্সক ক্ষমতাপত্র ম্পেক্সয় আগামী ০৪/০৯/২০২৫
+তাম্পরক্সখর মক্সযে অবশ্যই ভাউচার গ্রিণ পূবুক একাক্সেম্পমস্থ ডকন্দ্রীয় আনসার/ম্পভম্পেম্পপ ভান্ডার িক্সত বরাদ্দকত ত
+উপকরণ গ্রিণ করক্সবন।গ্রিণকারী ম্পনজ নামীয় সীল সক্সে আনক্সবন।
+৩। বরাদ্দকত ত ডেেটপ কম্পিউটার ডসট ও কম্পিউটার এক্সেসম্পরজ এর ওয়াক্সরম্পি থাকা সাক্সপক্সক্ষ
+সরবরািকারী প্রম্পতষ্ঠান উক্ত সমক্সয় ম্পি সাম্পভুম্পসং প্রোন করক্সবন ম্পবযায় বরাদ্দকত ত উপকরক্সণ ডকান সমস্যা ডেখা ম্পেক্সল
+ওয়াক্সরম্পি কােুসি সের েপ্তর প্রম্পভশন শাখায় ডর্াগাক্সর্াগ করার জন্য অনুক্সরায করা িক্সলা।
+৪। ভাউচাক্সর বরাদ্দকত ত উপকরক্সণর মক্সেল নম্বর ও ম্পসম্পরয়াল নম্বর উক্সেখ থাকক্সব।উক্ত উপকরণ গ্রিক্সণর সময়
+ম্পসম্পরয়াল নম্বর ম্পমম্পলক্সয় ডনয়ার জন্য অনুক্সরায করা িক্সলা।ভম্পবষ্যক্সত উপকরণ ডেরত/িস্তান্তর/অক্সকক্সজাকরণ করা
+িক্সল উক্ত ম্পসম্পরয়াল ও মক্সেল নম্বর উক্সেখ থাকক্সত িক্সব।
+৫।
+উক্সেখে,
+পযরাতন
+ডেেটপ
+কম্পিউটার
+ডসট
+ও
+কম্পিউটার
+এক্সেসম্পরজ বেবিার
+অনুপক্সর্াগী/অক্সকক্সজাকরক্সণর উপক্সর্াগী িক্সল ডসগুক্সলার মক্সেল নম্বর ও ম্পসম্পরয়াল নম্বর উক্সেখ পূবুক ডকন্দ্রীয় ভান্ডার,
+আনসার-ম্পভম্পেম্পপ একাক্সেমীক্সত জমা করার ম্পনক্সেুশনাা প্রোন করা িক্সলা।
+কতত ুপক্সক্ষর অনুক্সমােনরক্সম এ পত্র ডপ্ররণ করা িক্সলা।', N'Draft', NULL, NULL, NULL, NULL, NULL, NULL, N'৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪', NULL, N'dvsdgdfg', N'dfgfd', N'gfdg', N'dfgfdg', CAST(N'2025-11-07T00:00:00.0000000' AS DateTime2), N'A.B.M. Forhad', N'Deputy Director (Store)', N'উপ-পরিচালক (ভাণ্ডার)', N'ANS-DD-001', N'+880-2-9898989', N'dd.store@ansar-vdp.gov.bd', N'\454554', CAST(N'2025-11-10T12:47:47.3526712' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'AL25110003', CAST(N'2025-11-10T19:55:00.4687335' AS DateTime2), CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2026-02-10T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, 2, N'vbxcbxcvb', N'Draft', NULL, NULL, NULL, NULL, NULL, N'/uploads/allotments/e182991a-7002-4f7b-b0df-dea1d9d7bc26_509439258_746554528031448_5107785149182594675_n.jpg', N'৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪', NULL, N'cvbbncn', N'vbn', N'cvbnbv', N'ncbncbnbn', CAST(N'2025-11-13T00:00:00.0000000' AS DateTime2), N'A.B.M. Forhad', N'Deputy Director (Store)', N'উপ-পরিচালক (ভাণ্ডার)', N'ANS-DD-001', N'+880-2-9898989', N'dd.store@ansar-vdp.gov.bd', N'cCCZCxz', CAST(N'2025-11-10T13:55:00.4296265' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'AL-202511-001', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2026-05-10T00:00:00.0000000' AS DateTime2), N'Multiple Recipients', N'Multiple', NULL, NULL, NULL, NULL, 2, N'বিভিন্ন ব্যাটালিয়ন ও রেঞ্জে পোশাক ও সরঞ্জাম বরাদ্দ প্রদান', N'Active', N'DDGAdmin', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, N'৪৪.০৩.০০০০.০১৮.১৩.০০১.২৪-১৫০', NULL, N'Allocation of uniforms and equipment to various battalions and ranges', N'বিভিন্ন ব্যাটালিয়ন ও রেঞ্জে পোশাক ও সরঞ্জাম বরাদ্দ প্রদান প্রসঙ্গে', N'Reference to the above subject, allocation of uniforms and equipment is being made to various battalions and ranges based on their requirements and staff strength.', N'উপরোক্ত বিষয়ের প্রেক্ষিতে বিভিন্ন ব্যাটালিয়ন ও রেঞ্জের চাহিদা এবং কর্মরত জনবলের আলোকে ক্রোড়পত্র-"ক" অনুযায়ী পোশাক ও সরঞ্জাম বরাদ্দ প্রদান করা হলো।
+
+উল্লেখ্য যে, বরাদ্দকৃত উপকরণাদি সংরক্ষণ রেজিস্টারে লিপিবদ্ধ করে যথাযথভাবে সংরক্ষণ এবং সঠিক ব্যবহার নিশ্চিত করতে হবে। বরাদ্দপত্রের মেয়াদ উত্তীর্ণ হওয়ার পূর্বে উপকরণাদি সংগ্রহ করতে হবে।
+
+অনুগ্রহপূর্বক প্রাপ্তি স্বীকারপত্র প্রেরণ করবেন।', NULL, N'মোঃ আব্দুল হামিদ', N'Deputy Director General (Admin)', N'উপ-মহাপরিচালক (প্রশাসন)', NULL, N'02-9551484', N'ddg.admin@ansarvdp.gov.bd', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[AllotmentLetters] ([Id], [AllotmentNo], [AllotmentDate], [ValidFrom], [ValidUntil], [IssuedTo], [IssuedToType], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [FromStoreId], [Purpose], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [DocumentPath], [ReferenceNo], [Remarks], [Subject], [SubjectBn], [BodyText], [BodyTextBn], [CollectionDeadline], [SignatoryName], [SignatoryDesignation], [SignatoryDesignationBn], [SignatoryId], [SignatoryPhone], [SignatoryEmail], [BengaliDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'AL-202511-002', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2026-02-10T00:00:00.0000000' AS DateTime2), N'Multiple Recipients', N'Multiple', NULL, NULL, NULL, NULL, 2, N'অফিস সরঞ্জাম ও স্টেশনারি বরাদ্দ প্রদান', N'Active', N'DDGAdmin', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, N'৪৪.০৩.০০০০.০১৮.১৩.০০২.২৪-১৫১', NULL, N'Allocation of office equipment and stationery', N'বিভিন্ন জেলা কার্যালয়ে অফিস সরঞ্জাম ও স্টেশনারি বরাদ্দ প্রসঙ্গে', N'Allocation of office equipment.', N'উপরোক্ত বিষয়ের প্রেক্ষিতে বিভিন্ন জেলা কার্যালয়ের চাহিদার আলোকে ক্রোড়পত্র-"ক" অনুযায়ী অফিস সরঞ্জাম ও স্টেশনারি বরাদ্দ প্রদান করা হলো।
+
+বরাদ্দকৃত উপকরণাদি সংরক্ষণ রেজিস্টারে লিপিবদ্ধ করে যথাযথভাবে সংরক্ষণ এবং সঠিক ব্যবহার নিশ্চিত করতে হবে।
+
+প্রাপ্তি স্বীকারপত্র প্রেরণের জন্য অনুরোধ করা হলো।', NULL, N'মোঃ রফিকুল ইসলাম', N'Deputy Director (Store)', N'উপ-পরিচালক (স্টোর)', NULL, N'02-9564098', N'dd.store@ansarvdp.gov.bd', NULL, CAST(N'2025-11-10T20:54:31.2200000' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[AllotmentLetters] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalHistories] ON 
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'ISSUE', 6, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T16:59:59.2731069' AS DateTime2), N'Approved', N'Pending', 1, 1, CAST(N'2025-11-06T16:59:59.3324380' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'ISSUE', 7, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T01:21:40.6362161' AS DateTime2), N'Approved', N'Pending', 2, 1, CAST(N'2025-11-07T01:21:40.7147549' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'ISSUE', 8, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T02:15:11.4762818' AS DateTime2), N'Approved', N'Pending', 3, 1, CAST(N'2025-11-07T02:15:11.5031776' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'ISSUE', 9, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T02:15:18.0414728' AS DateTime2), N'Approved', N'Pending', 4, 1, CAST(N'2025-11-07T02:15:18.0686143' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'ALLOTMENT_LETTER', 4, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-10T18:44:18.3539829' AS DateTime2), N'Approved', N'Pending', 6, 1, CAST(N'2025-11-10T18:44:18.4025241' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'STOCK_ADJUSTMENT', 5, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:28:16.5716737' AS DateTime2), N'Approved', N'Pending', 7, 1, CAST(N'2025-11-11T23:28:16.6428806' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'ISSUE', 11, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:28:55.0320347' AS DateTime2), N'Approved', N'Pending', 11, 1, CAST(N'2025-11-11T23:28:55.0773338' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'STOCK_ADJUSTMENT', 6, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:29:03.5867488' AS DateTime2), N'Approved', N'Pending', 8, 1, CAST(N'2025-11-11T23:29:03.6051840' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'STOCK_ADJUSTMENT', 7, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T00:23:33.5102819' AS DateTime2), N'Approved', N'Pending', 9, 1, CAST(N'2025-11-12T00:23:33.5691334' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'REQUISITION', 6, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:46.1300421' AS DateTime2), N'Approved', N'Pending', 5, 1, CAST(N'2025-11-12T07:35:46.1921258' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'STOCK_ADJUSTMENT', 8, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:52.5559242' AS DateTime2), N'Approved', N'Pending', 10, 1, CAST(N'2025-11-12T07:35:52.5979122' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'ISSUE', 10, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:58.8103716' AS DateTime2), N'Approved', N'Pending', 12, 1, CAST(N'2025-11-12T07:35:58.8804733' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'ISSUE', 12, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:36:03.6873031' AS DateTime2), N'Approved', N'Pending', 13, 1, CAST(N'2025-11-12T07:36:03.6988529' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalHistories] ([Id], [EntityType], [EntityId], [ApprovedBy], [ApprovedDate], [Comments], [Action], [ApprovalLevel], [ApproverRole], [ActionBy], [ActionDate], [NewStatus], [PreviousStatus], [ApprovalRequestId], [Level], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'ISSUE', 13, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'Approved', 0, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:36:07.8940911' AS DateTime2), N'Approved', N'Pending', 14, 1, CAST(N'2025-11-12T07:36:07.9055484' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalHistories] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalRequests] ON 
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, NULL, NULL, 6, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T16:59:37.9909989' AS DateTime2), CAST(N'2025-11-06T16:59:37.9909989' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T16:59:59.2731069' AS DateTime2), NULL, NULL, NULL, NULL, CAST(350.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-09T16:59:38.0938118' AS DateTime2), 0, NULL, CAST(N'2025-11-06T16:59:59.3300252' AS DateTime2), N'Normal', N'Issue ISS-202511-0001 - Regular Supply', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:59:38.0939913' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, NULL, NULL, 7, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T00:00:22.1513986' AS DateTime2), CAST(N'2025-11-07T00:00:22.1513986' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T01:21:40.6362161' AS DateTime2), NULL, NULL, NULL, NULL, CAST(250.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-10T00:00:22.1912602' AS DateTime2), 0, NULL, CAST(N'2025-11-07T01:21:40.7117613' AS DateTime2), N'Normal', N'Issue ISS-202511-0002 - Regular Supply', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:22.1913492' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, NULL, NULL, 8, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T01:21:09.8942744' AS DateTime2), CAST(N'2025-11-07T01:21:09.8942744' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T02:15:11.4762818' AS DateTime2), NULL, NULL, NULL, NULL, CAST(900.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-10T01:21:10.0057738' AS DateTime2), 0, NULL, CAST(N'2025-11-07T02:15:11.5016922' AS DateTime2), N'Normal', N'Issue ISS-202511-0003 - Regular Supply', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:10.0062810' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, NULL, NULL, 9, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T02:00:32.4560062' AS DateTime2), CAST(N'2025-11-07T02:00:32.4560062' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-07T02:15:18.0414728' AS DateTime2), NULL, NULL, NULL, NULL, CAST(45000.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-10T02:00:32.4925862' AS DateTime2), 0, NULL, CAST(N'2025-11-07T02:15:18.0685341' AS DateTime2), N'Normal', N'Issue ISS-202511-0004 - Emergency', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.4926885' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, NULL, NULL, 6, N'REQUISITION', N'admin', CAST(N'2025-11-10T07:54:26.8980087' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:46.1300421' AS DateTime2), NULL, NULL, NULL, NULL, CAST(0.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, NULL, 0, NULL, CAST(N'2025-11-12T07:35:46.1911075' AS DateTime2), N'Normal', N'Requisition REQ25110001 - dfdsf', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T07:54:26.8989177' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, NULL, NULL, 4, N'ALLOTMENT_LETTER', N'admin', CAST(N'2025-11-10T18:41:50.1983776' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-10T18:44:18.3539829' AS DateTime2), NULL, NULL, NULL, NULL, CAST(0.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, NULL, 0, NULL, CAST(N'2025-11-10T18:44:18.4001114' AS DateTime2), N'Normal', N'Allotment Letter AL25110001 - 200.00 items to ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T18:41:50.1990202' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, NULL, NULL, 5, N'STOCK_ADJUSTMENT', N'admin', CAST(N'2025-11-11T15:28:42.0872143' AS DateTime2), CAST(N'2025-11-11T15:28:42.0872143' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:28:16.5716737' AS DateTime2), NULL, NULL, NULL, NULL, CAST(1080000.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T15:28:42.1315709' AS DateTime2), 0, NULL, CAST(N'2025-11-11T23:28:16.6412403' AS DateTime2), N'Normal', N'Stock Adjustment ADJ000001 - Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T15:28:42.1317384' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, NULL, NULL, 6, N'STOCK_ADJUSTMENT', N'admin', CAST(N'2025-11-11T16:12:39.5229582' AS DateTime2), CAST(N'2025-11-11T16:12:39.5229582' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:29:03.5867488' AS DateTime2), NULL, NULL, NULL, NULL, CAST(90000.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T16:12:39.5646501' AS DateTime2), 0, NULL, CAST(N'2025-11-11T23:29:03.6051151' AS DateTime2), N'Normal', N'Stock Adjustment ADJ000002 - Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:12:39.5647507' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, NULL, NULL, 7, N'STOCK_ADJUSTMENT', N'admin', CAST(N'2025-11-11T16:13:30.5264312' AS DateTime2), CAST(N'2025-11-11T16:13:30.5264312' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T00:23:33.5102819' AS DateTime2), NULL, NULL, NULL, NULL, CAST(90000.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T16:13:30.5336484' AS DateTime2), 0, NULL, CAST(N'2025-11-12T00:23:33.5672807' AS DateTime2), N'Normal', N'Stock Adjustment ADJ000003 - Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:13:30.5336513' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, NULL, NULL, 8, N'STOCK_ADJUSTMENT', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T16:37:07.6588702' AS DateTime2), CAST(N'2025-11-11T16:37:07.6588702' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:52.5559242' AS DateTime2), NULL, NULL, NULL, NULL, CAST(90000.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T16:37:07.7211282' AS DateTime2), 0, NULL, CAST(N'2025-11-12T07:35:52.5978601' AS DateTime2), N'Normal', N'Stock Adjustment ADJ000004 - Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:37:07.7212886' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, NULL, NULL, 11, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T18:14:02.9350006' AS DateTime2), CAST(N'2025-11-11T18:14:02.9350006' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:28:55.0320347' AS DateTime2), NULL, NULL, NULL, NULL, CAST(3500.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T18:14:02.9703206' AS DateTime2), 0, NULL, CAST(N'2025-11-11T23:28:55.0771852' AS DateTime2), N'Normal', N'Issue ISS-202511-0006 - Emergency', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:02.9703891' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, NULL, NULL, 10, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T18:14:42.2521108' AS DateTime2), CAST(N'2025-11-11T18:14:42.2521108' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:58.8103716' AS DateTime2), NULL, NULL, NULL, NULL, CAST(3500.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T18:14:42.2628648' AS DateTime2), 0, NULL, CAST(N'2025-11-12T07:35:58.8803612' AS DateTime2), N'Normal', N'Issue ISS-202511-0005 - Regular Supply', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:42.2628675' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, NULL, NULL, 12, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T18:16:30.7537685' AS DateTime2), CAST(N'2025-11-11T18:16:30.7537685' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:36:03.6873031' AS DateTime2), NULL, NULL, NULL, NULL, CAST(1750.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T18:16:30.7597402' AS DateTime2), 0, NULL, CAST(N'2025-11-12T07:36:03.6988105' AS DateTime2), N'Normal', N'Issue ISS-202511-0007 - Regular Supply', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.7597432' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalRequests] ([Id], [RequestType], [ApprovalType], [EntityId], [EntityType], [RequestedBy], [RequestedDate], [RequestDate], [Status], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [ApprovalValue], [Amount], [ApproverRole], [ApprovalLevel], [Level], [CurrentLevel], [MaxLevel], [WorkflowId], [ExpiryDate], [IsEscalated], [EscalatedDate], [CompletedDate], [Priority], [Description], [Comments], [Remarks], [EntityData], [Role], [RequiredRole], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, NULL, NULL, 13, N'ISSUE', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:07:40.9609718' AS DateTime2), CAST(N'2025-11-11T23:07:40.9609718' AS DateTime2), N'Approved', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:36:07.8940911' AS DateTime2), NULL, NULL, NULL, NULL, CAST(2500.00 AS Decimal(18, 2)), NULL, 0, 0, 1, 1, 0, CAST(N'2025-11-14T23:07:41.0316513' AS DateTime2), 0, NULL, CAST(N'2025-11-12T07:36:07.9054067' AS DateTime2), N'Normal', N'Issue ISS-202511-0008 - Emergency', NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:41.0318425' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalRequests] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalSteps] ON 
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, 1, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-06T16:59:38.7396467' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, 2, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-07T00:00:22.3094036' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 3, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-07T01:21:10.1092789' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, 4, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-07T02:00:32.5277277' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, 5, 1, N'StoreManager', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-10T07:54:27.0454635' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, 6, 1, N'DD Provision', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-10T18:41:50.2593074' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 7, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T15:28:42.1797295' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 8, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T16:12:39.6147443' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 9, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T16:13:30.5441933' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, 10, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T16:37:07.7958695' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, 11, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T18:14:03.1511983' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, 12, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T18:14:42.2728321' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, 13, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T18:16:30.7656746' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalSteps] ([Id], [ApprovalRequestId], [StepLevel], [ApproverRole], [AssignedTo], [Status], [ApprovedBy], [ApprovedDate], [Comments], [IsEscalated], [EscalatedAt], [SpecificApproverId], [EscalatedBy], [EscalatedDate], [EscalationReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, 14, 1, N'Officer', NULL, 2, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, CAST(N'2025-11-11T23:07:41.2040836' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalSteps] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalThresholds] ON 
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'PURCHASE', CAST(0.00 AS Decimal(18, 2)), CAST(9999.99 AS Decimal(18, 2)), 1, N'DDGAdmin', N'Purchase orders under 10,000 require DDGAdmin approval', CAST(N'2025-11-11T15:01:21.8166667' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'PURCHASE', CAST(10000.00 AS Decimal(18, 2)), CAST(49999.99 AS Decimal(18, 2)), 1, N'DDGAdmin', N'Purchase orders 10K-50K require DDGAdmin approval', CAST(N'2025-11-11T15:01:21.8166667' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'PURCHASE', CAST(50000.00 AS Decimal(18, 2)), CAST(199999.99 AS Decimal(18, 2)), 1, N'DDGAdmin', N'Purchase orders 50K-200K require DDGAdmin approval', CAST(N'2025-11-11T15:01:21.8166667' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'PURCHASE', CAST(200000.00 AS Decimal(18, 2)), NULL, 2, N'Director', N'Purchase orders above 200K require Director approval', CAST(N'2025-11-11T15:01:21.8166667' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'ISSUE', CAST(0.00 AS Decimal(18, 2)), CAST(49999.99 AS Decimal(18, 2)), 1, N'DDProvision', N'Issues under 50K require DD Provision approval', CAST(N'2025-11-11T15:01:21.8200000' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'ISSUE', CAST(50000.00 AS Decimal(18, 2)), NULL, 2, N'Director', N'Issues above 50K require Director approval', CAST(N'2025-11-11T15:01:21.8200000' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'STOCK_ENTRY', CAST(0.00 AS Decimal(18, 2)), CAST(24999.99 AS Decimal(18, 2)), 1, N'DDStore', N'Stock entries under 25K require DD Store approval', CAST(N'2025-11-11T15:01:21.8233333' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'STOCK_ENTRY', CAST(25000.00 AS Decimal(18, 2)), NULL, 1, N'DDGAdmin', N'Stock entries above 25K require DDGAdmin approval', CAST(N'2025-11-11T15:01:21.8233333' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[ApprovalThresholds] ([Id], [EntityType], [MinAmount], [MaxAmount], [ApprovalLevel], [RequiredRole], [Description], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'TRANSFER', CAST(0.00 AS Decimal(18, 2)), NULL, 1, N'DDStore', N'All transfers require DD Store approval', CAST(N'2025-11-11T15:01:21.8233333' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ApprovalThresholds] OFF
 GO
 INSERT [dbo].[AspNetRoles] ([Id], [Name], [NormalizedName], [ConcurrencyStamp]) VALUES (N'0b090190-3eca-411d-af25-bcfe48aa4189', N'FinanceManager', N'FINANCEMANAGER', NULL)
 GO
@@ -4094,43 +4537,47 @@ SET IDENTITY_INSERT [dbo].[Audits] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Barcodes] ON 
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'AVDP00005002', N'EAN13', N'AVDP-IT-DESK-001', N'StoreItem', 2, 5, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'AVDP00005002', N'EAN13', N'AVDP-IT-DESK-001', N'StoreItem', 2, 5, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.9082719' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'AVDP00006002', N'EAN13', N'AVDP-IT-PRNT-001', N'StoreItem', 3, 6, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'AVDP00006002', N'EAN13', N'AVDP-IT-PRNT-001', N'StoreItem', 3, 6, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.9134270' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'AVDP00007002', N'EAN13', N'AVDP-ST-PAPR-001', N'StoreItem', 4, 7, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'AVDP00007002', N'EAN13', N'AVDP-ST-PAPR-001', N'StoreItem', 4, 7, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.9175035' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'AVDP00008002', N'EAN13', N'AVDP-ST-PEN-001', N'StoreItem', 5, 8, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'AVDP00008002', N'EAN13', N'AVDP-ST-PEN-001', N'StoreItem', 5, 8, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8840437' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'AVDP00009002', N'EAN13', N'AVDP-ST-PEN-002', N'StoreItem', 6, 9, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'AVDP00009002', N'EAN13', N'AVDP-ST-PEN-002', N'StoreItem', 6, 9, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8882943' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'AVDP00010002', N'EAN13', N'AVDP-ST-PENC-001', N'StoreItem', 7, 10, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'AVDP00010002', N'EAN13', N'AVDP-ST-PENC-001', N'StoreItem', 7, 10, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8924161' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'AVDP00011002', N'EAN13', N'AVDP-ST-NOTE-001', N'StoreItem', 8, 11, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'AVDP00011002', N'EAN13', N'AVDP-ST-NOTE-001', N'StoreItem', 8, 11, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8968023' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'AVDP00012002', N'EAN13', N'AVDP-ST-FILE-001', N'StoreItem', 9, 12, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'AVDP00012002', N'EAN13', N'AVDP-ST-FILE-001', N'StoreItem', 9, 12, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.9029544' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'AVDP00013002', N'EAN13', N'AVDP-UC-SHIRT-001', N'StoreItem', 10, 13, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'AVDP00013002', N'EAN13', N'AVDP-UC-SHIRT-001', N'StoreItem', 10, 13, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8549461' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'AVDP00014002', N'EAN13', N'AVDP-UC-PANT-001', N'StoreItem', 11, 14, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'AVDP00014002', N'EAN13', N'AVDP-UC-PANT-001', N'StoreItem', 11, 14, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8598344' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'AVDP00015002', N'EAN13', N'AVDP-UC-SHIRT-002', N'StoreItem', 12, 15, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'AVDP00015002', N'EAN13', N'AVDP-UC-SHIRT-002', N'StoreItem', 12, 15, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8647641' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'AVDP00016002', N'EAN13', N'AVDP-UC-PANT-002', N'StoreItem', 13, 16, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'AVDP00016002', N'EAN13', N'AVDP-UC-PANT-002', N'StoreItem', 13, 16, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8702219' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'AVDP00017002', N'EAN13', N'AVDP-UC-BELT-001', N'StoreItem', 14, 17, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'AVDP00017002', N'EAN13', N'AVDP-UC-BELT-001', N'StoreItem', 14, 17, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8751654' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'AVDP00018002', N'EAN13', N'AVDP-UC-CAP-001', N'StoreItem', 15, 18, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'AVDP00018002', N'EAN13', N'AVDP-UC-CAP-001', N'StoreItem', 15, 18, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8798597' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'AVDP00019002', N'EAN13', N'AVDP-IT-HDD-001', N'StoreItem', 16, 19, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'AVDP00019002', N'EAN13', N'AVDP-IT-HDD-001', N'StoreItem', 16, 19, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.6146055' AS DateTime2), 3, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'AVDP00020002', N'EAN13', N'AVDP-IT-USB-001', N'StoreItem', 17, 20, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'AVDP00020002', N'EAN13', N'AVDP-IT-USB-001', N'StoreItem', 17, 20, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8253908' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'AVDP00021002', N'EAN13', N'AVDP-IT-CABL-001', N'StoreItem', 18, 21, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'AVDP00021002', N'EAN13', N'AVDP-IT-CABL-001', N'StoreItem', 18, 21, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8347058' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'AVDP00022002', N'EAN13', N'AVDP-IT-CABL-002', N'StoreItem', 19, 22, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'AVDP00022002', N'EAN13', N'AVDP-IT-CABL-002', N'StoreItem', 19, 22, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8394529' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, N'AVDP00023002', N'EAN13', N'AVDP-IT-WCAM-001', N'StoreItem', 20, 23, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, N'AVDP00023002', N'EAN13', N'AVDP-IT-WCAM-001', N'StoreItem', 20, 23, 2, NULL, NULL, NULL, NULL, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', N'admin', CAST(N'2025-11-10T21:18:03.8474030' AS DateTime2), 1, NULL, NULL, NULL, 0, CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, N'CA202511120001', NULL, NULL, NULL, NULL, 5, NULL, NULL, N'SN-20251112074119-6402', NULL, NULL, CAST(N'2025-11-12T07:44:52.3219941' AS DateTime2), N'System Administrator', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-11-12T07:44:52.3225499' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Barcodes] ([Id], [BarcodeNumber], [BarcodeType], [BarcodeData], [ReferenceType], [ReferenceId], [ItemId], [StoreId], [BatchNumber], [SerialNumber], [Location], [Notes], [GeneratedDate], [GeneratedBy], [PrintedBy], [PrintedDate], [PrintCount], [LastScannedDate], [LastScannedBy], [LastScannedLocation], [ScanCount], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (23, N'CA202511120002', NULL, NULL, NULL, NULL, 5, 2, NULL, N'SN-20251112074456-2828', NULL, NULL, CAST(N'2025-11-12T07:45:14.9231214' AS DateTime2), N'System Administrator', NULL, NULL, 0, NULL, NULL, NULL, 0, CAST(N'2025-11-12T07:45:14.9231251' AS DateTime2), N'admin', NULL, NULL, 1)
 GO
 SET IDENTITY_INSERT [dbo].[Barcodes] OFF
 GO
@@ -4222,6 +4669,12 @@ INSERT [dbo].[DamageReports] ([Id], [ReportNo], [StoreId], [ReportDate], [Report
 GO
 SET IDENTITY_INSERT [dbo].[DamageReports] OFF
 GO
+SET IDENTITY_INSERT [dbo].[DigitalSignatures] ON 
+GO
+INSERT [dbo].[DigitalSignatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignedBy], [SignedAt], [SignatureData], [DeviceInfo], [IPAddress], [LocationInfo], [IsVerified], [VerifiedBy], [VerificationDate], [EntityType], [EntityId], [SignedDate], [SignatureHash], [DeviceId], [Location], [VerifiedDate], [VerificationCode], [VerificationMethod], [VerificationFailReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, NULL, 0, N'Receiver', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAACWCAYAAACvgFEsAAASMklEQVR4Xu2dd8wuRRXGQbBe7IoGQa6CBRsWLKioiEaRP2yoRGIEUSOWRIOaWGLEEntQkURjyVURC5oYCxqwoKIxYqLYIIJ6RVGxImDBfh54J85dtu/s7pTfJid8vHdn5pznnH32TNmZnXfiAgEQAIFCEdi5ULsxGwRAAAR2ggAJAhAAgWIRgACLdT2GgwAIQIDEAAiAQLEIQIDFuh7DQQAEIEBiAARAoFgEIMBiXY/hIAACECAxAAIgUCwCEGCxrsdwEAABCJAYAAEQKBYBCLBY12M4CIAABEgMgAAIFIsABFis6zEcBEAAAiQGQAAEikUAAizW9RgOAiAAARIDIAACxSIAARbregwHARCAAIkBEACBYhGAAIt1PYaDAAhAgMQACIBAsQhAgMW6HsNBAAQgQGIABECgWAQgwGJdj+EgAAIQIDEAAiBQLAIQYLGux3AQAAEIkBgAARAoFgEIsFjXYzgIgAAESAyAAAgUiwAEWKzrMRwEQAACJAZAAASKRQACLNb1GA4CIAABEgMgAALFIgABFut6DAcBEIAAiQEQAIFiEYAAi3U9hoMACECAxAAIgECxCECAxboew0EABCBAYgAEQKBYBCDAYl2P4SAAAhAgMQACIFAsAhBgsa7HcBAAAQiQGAABECgWAQiwWNdjOAiAAARIDIAACBSLAARYrOuzNfx4s2x/k1ub3NjkBibXNtnVZBcTxXw17puegxDPx38rSPv//2/7t3+aXGryK5NvmjwnW89EaFgIB0doFioljIDIYEsDUSVsVjDVhc8Ng9VWeEUQYOEBsJL5kNx04JVJvsTkDdOrKrcGCLBc389t+eXWwHUTz+T+bPrfaG6gaup/uf12qIm68cr2rmWiLvw1NnhWi/zDflA3n2sgAhDgQMC4fQcE/mL/d52ZSM6Nlem//zH5u8n1J+B/kZXdvUIifeP/b1buehPaDl1UhHfNmkqF1UkmzwvdYK719Q2AXO3Hrm4EQpCcHsy6WPtXAGLrtqD/Hcq01D13EybVkiJhZbWxXG/bkF0dtjzbPbwESD1AyvwWZVW/MZmayYnkJMpOXmpywga3umwllS7bn8yGui7wFRu8YgqNKs482z28A0g9QBpwi0jkTpuHRmM3WoIh2c1EM5sSZRDqTuleicZunKhb48Z7lIXo/7V0w2Uk+lvjQL64ZR36rc81ZayoieTq2v2o/fjEyj+oKysbUruaiDA2Iv+DAXuTDbg82z2irGSQPmX43N9Eb/gUH8oe7l3kFjdG57qzGi+7ZU3Ln7TfHruIRvM10kSEWsunF9fa1+9MgZtBgP3dUAIBaqnA0SZ7RxKk/b1zVZfSXf6kQPVvl5npXmV4Q/yq7pzIS+Jfyk7bZh6H2FF3ryNOLQaWDhpf0/ibshgtCt5u8n0TLQ7+0dTGApePlQh/a3befGPrkBgIDE861eUEkrqWnzO5h4m6nH27hHoAFdB6yJS96EHUA6m//7oRTQRoWYdED6mWR0hU7gcru/sd1v6xHfY6slF2cEkAfQ+xOu5lcgeTPU3uZ6Ku/lKXutLuKwr567KNXb+2/243Oc/k2yZfn1mhP1r9+tqkeq2VEf7eFLnpRpmcnu3Z3JgiSNL5RBN1p/S2q1sOUAeYSEDEdr6JBuk/Mxuq81b8UKv+dJOubrtI4tUmr5xXnSuJqPqy+Zj99qSadu9jv93bROOkyshvtSEQvbD0AnNjnn1fXkNNk//PNTnN5GVDC7fc30SEyqr7xmcIdSDAgSjGToCPMHteZ3JHEzdL2cdEl9V91W5+fJ8Ckd+jjMJ9x9qkqgj+LJMHLWTLJ6ydx1XammtSYF9r50CTu5ncxkRZp7JZzWCLONXtdxNEQ2JaLwmRl7L4j5i8ayJ2axMhY4ADHTgkWAZWPfj2T1sJdaXUpejKblzlbtmFsjqN9aWa1VXBUldbM8Vt/pHt6oK7Ls9gwCcW8McnY57dFUnf3UTd9btsCLRtLZ9eNhebqPusnsaYbrSGGeq+1537eZPeWuyta+62JoZPHMXXBkndoW/1hMJldd+w+x/ds0wqt51jit61B+EJgyW7VE34ifBc7MyV9c3tO3XDX2yijFld8bZZXI0zXmjyBRN9e6u/+1x1RDjnMwcB9vGKd8+czuijit62mmn0r1yzOt/Gd9v/PM2ka6xLhLeXiQb3Y7l8n8Wc+Y3B6wgrdKTJASYaX27qiShGNfHyExMt73lVR2PVOL+d3X/BGAU7yvgvprWf7RnMC1/lmiBpDZ7rXqz10Xl4RNtr1MyyxjKbLgXw+0yesbRiPdv7it3njzGuGT89VZ582yusBvU4NA6pMccmm/Wy0iSEsvkPmpxcablKgrewf9eylVDXh6yiJ28qW3ryJZQNi9ezZgBr2cl+nsWxfXAe0hkiPS2pqeKtTEKzkncO2diMdfnjfve0dr4zY1uxVq3Za3WdH2ai3VraXmgiPW3CoBf9m03ONvF7PCFJ0PfNms91rH6r1WttoD5rWj2qopmyoB+aaMYvh0tLL6rjS++x32LN8powz2Hcb654eqBVrB1YHmAiUqsO67S1qwkaZY1Trh9bYXWrdWkm2E2ETKmziLJrE6ADuW4s0P2b3mz6MkBLH1K6NOP4PRMf41THzHIe95srpp5vFWsGWpMtWtnQNt77Fvv315uoCz3mIvsbg1rl4RxZRbBih1tN7zXp80WBxgyfaaIFtzFedVmfJj6kc2qXZjw1EeOuWF6aqeEofV9roq+KHmlyUI0B+spIX7BoTaLipc/ljytrgfdhfQpxz1UIxBrM0uvhJhpI1oLXLj21TEHbL+kLjzUvjQvpK40csj6Ho59dvMB+fOuaAGfWdlvPR6Zq9l+L+UWGX2yw3f8uvGtVQWbwTTeni1imtxCuBs3CKQiUjXTprVkwDTw/JFzznTXVZX36suBZnSXjvYFxv/l9UyXBM6xJLdquxrlmmTVm7q+B9f2jGeAPz69uXi10EUnM1mqlvXYKub1J15tPb8ntJredwSDVqfVg/pXqWJ9vg14ibh1cDvbM4PpgVVZJUL0e7YrzBJOnmOgzQP2mtYduiMj3j+K76xkIpmxOFaVMgHV+ECFqEWvXp3QKGH236fZOG+vTui7MNqvs6LEVRlLOn1WUSrnFSSQw76BGNZZ8zBWnmt39sonWYVbjG/+M9GjuwKkL+lSTPrsga3D6hSbv7ImlPzamIjllSf726rnHSE93L3JbGwnW7bojpbTztr5g4RqBQGnBfbxh9CKTPgfbKBi1QUN1Nxmt4TumgnWK6/rawgUCHPEwBSpSJUG9WOu6tx/YvNwDNVtmNaURYNXLj7Ef3m/SZ+mNyirry2mGtynqIcB1+aBtdhjiC+ib0gmwCqW2oNpu0mfpTZ0bRJD+XoRa25jiBQGu5zV/csPXAuKbwScQYDeov7RbdMiPuiEh8BJBarxRm3Dq06kYLz8DCWFzjDbGplMT8Tk98cMMHgPUYaBWtxt6oxXXALS+/9Q+fSHwVBaphd0/M9GkjM45WfqCAJdDvIn4NDSj7+TdIUc5TbIth25HSyEe2GiMWUCRoavutaX/m0z2MdHESwi8pYMISoeZn2KinbBDXxBgaESvXl8b8R3l3e6/dLXhgg7B4gqEQIgHMpAq0VfzcdPQzQhrDWGIrei1nZLe9P5JdlN94o9Dnml163Ci6pKdLrAhwC6Exv97E/Ftsyrr1o8+234/adMcC57H415bcurDFlidqKvTd5nuwO8lcdM6r4NN3FkpIdruGodkEmR8KB5nRbXVmXYvcll/m8/0+ZrbyLSpVX8NoLa9rzt4frzGBZcM8TCVBJ/LpGLac02n5ukB0kMRahzS9+ke9j8xbcm/VrwpU9cGHcr83bksU56fPsTn28qWVzN4fooDZ1An+ipdEKY2IK19CfXNctdJc6Ed0NT19sdS9bfwdIedK9uRaHMJZaLucHodMKShB2VAmpn/qUmI7dC+ZvVoR25td9919OgUfJyd0rkr46trxx+W0N9thzhN0bOoshDgMHfn+hbWN6YhxyGHoZru3S4eRNTazPTzJk+f0Zxc429GyNqrhgCHQe+PxejvIVufD2tp3burY4A6cEcz2sogtR7SrYlU/LgYqoulVOPLZWvKPrUc6TUmp67rkitb1yFKLIsJ6IhUAzQgBIOq0oHlWyol9LCoG/XgQTXFfbMWaovsdKUSI8q8tppozFIkoe3S1K2Vv3RwkbqMTkRsOl9an0KmdnH0ZUCPpRLcAU2eXFXbiv2cskLX3eKIxckhE7SC51ptJ25qZFnMRGghwPEAam3WsQ0ZUg5Z4dBF3+ORpORQBPyhGB1NqiNKuUYgAAGOAK2miD5da9pzMNWskK5WmNiYqxYmRAIgCwEGALFShU8c/j+llhVqnMztm0ichI+TqTX6QzH4ZySaADcSuB7FdHRn0z6DqWSFjAP2cPRKt/C5YgDgIcAAIHZUofV1Ouu1blff2LNCxgHnj4+xLUCAY5HzykGAAUAcUIW+XthqUod7jFkh44ADnLvwrRBgAMAhwAAgjqyi6ZCbmLJCxgFHOneBYhBgAJAhwAAgTqziTCuvow7rfCEy1GD3mt99Mg440cEzFWfHngDAQoABQAxYRde26G6vP7cbScCmG6tiHHAJlIe3AQEOx+xqJSDAACDOUIU2wXy7Sdc5JI4QNa540Qx6qErGAWcCdmK1dIEnAqjiEGAAEBeo4khrQ/vR9SFEEdaBJmcH0otxwEBABq4GAgwAKAQYAMQVqhhKiEeZjidP0JNxwAngzVQUAgwALAQYAMRIqtD4YVeG6Lq02vhzyMU44BC0lrmXMcAAOEOAAUCMtIohhLjNbDimxQ5/yQ4xE4fDGZsN4AeCOQCIiVQxhBBPN5sO9ey61P7W3nq62IIpDoenejxDHOhttIAAo3LHosoMIcRzTLP9N13ssd3oRY3LvDGyv0AOhgADAZlBNX0J0ZnKRqnrOH1fa/b8TdOpHc61DmItrUKA0bkkCoW0t6G2xe8zqaKu2C9M9o5C8/yVIPsL6GMIMCCYmVfVN0MUIWqJRtMGsZnDNJt5p1jNR5i4Z5bsLwDUEGAAEAusQousDxhgtz9gLyLVIUVc/RBo+jySZ7cffq13AWIAEAutonoMgFsqMzamIMn/B9KF9ueeXrbnh1hMuwUlH/pjgzV5wzEgCAJ+dlJdHuO6zGooVJzlTJLa4EIvlbqNc4Uhk05BQnbHSkIF5gyqUWUiCPiLpPuOS93XbDvDxB20PhdJ6msJndyn76hjva4wxZq2OxPhH2dyQqzKp64XBJi6B+PQ3z+hLGSmogXYS5CkOwS+D5rftZv22ui1q5fdumep7pka+pwpE3QHUvXRiXtGIjDUMSOboVgBCPgkqKxmqYmOuUhyaZf1zZ6X1ivr9iDArN27qHFfstYO9lo8y/4+aFENmhtbmyT9l4PT0v12sf2wRyQ4FacGBFicy2c1+HKrfYvXgo4FvWzWFsNVfolVtdumOpGTW8+o403PNTkkXFPUFAsCEGAsnshHD3+fOln1c5Ot+ZiHJTkhAAHm5M14bKmeeBfjkZ/xoIUmqyEAAa4GffYNV0mQbbSyd3l6BkKA6fksJY21oUJ1icl59tt+KRmBrvkiAAHm69tYLNvHFLmgokzItYKx2IkeCSIAASbotERVrn7UT5c4UUfmpDYEmJM347dFS0q0NMa/6BLH77dsNYQAs3Vt1IZVFwbTJY7aXfkqBwHm69vYLauuF6RLHLvHMtQPAszQqQmZVNclZiOAhByYuqoQYOoezEP/um9lTzPTDsvDPKyIFQEIMFbPlKeX9u7TpqD+JWLcxaSOIMtDCIuDIwABBoeUCiciUP2CRNXxKd1EUClejwAESGTEiMDhptSpNYoRrzF6K2GdCKiEnVeA6torb3fPTuK1AKcvaSIBtSTatDUWAe0wrW7wkK3rx7ZFuYIQgAALcjamggAI7IgABEhEgAAIFIsABFis6zEcBEAAAiQGQAAEikUAAizW9RgOAiAAARIDIAACxSIAARbregwHARCAAIkBEACBYhGAAIt1PYaDAAhAgMQACIBAsQhAgMW6HsNBAAQgQGIABECgWAQgwGJdj+EgAAIQIDEAAiBQLAIQYLGux3AQAAEIkBgAARAoFgEIsFjXYzgIgAAESAyAAAgUiwAEWKzrMRwEQAACJAZAAASKRQACLNb1GA4CIAABEgMgAALFIvA/pkeVtTdXlX8AAAAASUVORK5CYII=', NULL, NULL, NULL, 0, NULL, NULL, N'Issue', 7, CAST(N'2025-11-10T22:02:22.4612571' AS DateTime2), N'IdKOyYEub5yLATwhaZi060jMV6nUFNLr0u2EXIikK5g=', NULL, NULL, NULL, N'910115', NULL, NULL, CAST(N'2025-11-10T22:02:22.4653723' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[DigitalSignatures] OFF
+GO
 SET IDENTITY_INSERT [dbo].[DisposalRecords] ON 
 GO
 INSERT [dbo].[DisposalRecords] ([Id], [WriteOffId], [ItemId], [Quantity], [DisposalMethod], [DisposalDate], [DisposalLocation], [DisposalCompany], [DisposalCertificateNo], [DisposedBy], [WitnessedBy], [PhotoUrls], [Remarks], [DisposalNo], [AuthorizedBy], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 2, 5, CAST(1.00 AS Decimal(18, 2)), N'Auction', CAST(N'2025-10-27T07:03:54.2633333' AS DateTime2), N'Central Store Yard', N'Bangladesh Disposal Services Ltd.', N'DISP-CERT-2024-001', N'Md. Altaf Hossain', N'Abdul Karim, Md. Shahin', NULL, N'Damaged desktop computer disposed through authorized auction', N'DISP-2024-001', N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-10-27T07:03:54.2633333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
@@ -4300,15 +4753,47 @@ SET IDENTITY_INSERT [dbo].[InventoryCycleCounts] OFF
 GO
 SET IDENTITY_INSERT [dbo].[IssueItems] ON 
 GO
-INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity]) VALUES (1, 5, 5, 2, CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, NULL, NULL, CAST(N'2025-10-30T03:35:15.1133333' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (1, 5, 5, 2, CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, NULL, NULL, CAST(N'2025-10-30T03:35:15.1133333' AS DateTime2), NULL, NULL, NULL, 1, N'ISS-2025-001', N'1', NULL, NULL, NULL, 1)
 GO
-INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity]) VALUES (2, 5, 6, 2, CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, NULL, NULL, CAST(N'2025-10-30T03:35:15.1133333' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (2, 5, 6, 2, CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), N'Piece', NULL, NULL, NULL, NULL, CAST(N'2025-10-30T03:35:15.1133333' AS DateTime2), NULL, NULL, NULL, 1, N'ISS-2025-001', N'2', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (3, 6, 21, 2, CAST(1.000 AS Decimal(18, 3)), CAST(1.000 AS Decimal(18, 3)), CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, N'dgdfdfdf', CAST(N'2025-11-06T16:12:53.2734640' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-003', N'1', CAST(5.00 AS Decimal(18, 2)), CAST(2.00 AS Decimal(18, 2)), CAST(8.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (4, 7, 12, 2, CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, N'ghjfgj', CAST(N'2025-11-07T00:00:21.9033205' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-003', N'1', CAST(2.00 AS Decimal(18, 2)), CAST(1.00 AS Decimal(18, 2)), CAST(7.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (5, 8, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, N'dfsfdsfsd', CAST(N'2025-11-07T01:21:08.4725384' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-003', N'1', CAST(1.00 AS Decimal(18, 2)), CAST(1.00 AS Decimal(18, 2)), CAST(18.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (6, 9, 5, 2, CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, NULL, CAST(N'2025-11-07T02:00:32.2824012' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-003', N'1', CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), CAST(1.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (7, 10, 21, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, NULL, CAST(N'2025-11-11T18:01:04.3440461' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-001', N'3', NULL, NULL, CAST(10.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (8, 11, 21, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, NULL, CAST(N'2025-11-11T18:08:33.8120348' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-001', N'3', NULL, NULL, CAST(10.00 AS Decimal(18, 2)), NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (9, 12, 21, 2, CAST(5.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, NULL, CAST(N'2025-11-11T18:16:30.5972703' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-001', N'3', NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[IssueItems] ([Id], [IssueId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [RequestedQuantity], [ApprovedQuantity], [Unit], [BatchNumber], [Condition], [Remarks], [HandoverRemarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (10, 13, 22, 2, CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), N'Piece', NULL, N'Good', NULL, N'fgd', CAST(N'2025-11-11T23:07:34.9032209' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1, N'ISS-2025-001', N'3', NULL, NULL, CAST(10.00 AS Decimal(18, 2)), NULL)
 GO
 SET IDENTITY_INSERT [dbo].[IssueItems] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Issues] ON 
 GO
 INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-10-30T03:34:51.9066667' AS DateTime2), N'ISS-2024-001', NULL, CAST(N'2025-10-30T03:34:51.9066667' AS DateTime2), N'Completed', N'1st Ansar Battalion', N'Battalion', N'IT Equipment issue', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-10-31T03:34:51.9066667' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, CAST(N'2025-11-04T03:34:51.9066667' AS DateTime2), NULL, NULL, NULL, 0, NULL, NULL, NULL, 2, NULL, CAST(N'2025-10-30T03:34:51.9066667' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, 1, NULL, 5, N'1st Barisal Ansar Battalion', N'DD546', NULL, CAST(N'2025-11-10T23:18:03.7453657' AS DateTime2), N'ISS-202511-0001', NULL, CAST(N'2025-11-06T00:00:00.0000000' AS DateTime2), N'Issued', NULL, N'Battalion', N'Regular Supply', N'TEST RMKS 13', NULL, NULL, N'admin', CAST(N'2025-11-06T17:00:01.5132036' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, N'data:image/png;base64,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', CAST(N'2025-11-06T16:12:52.9182970' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'1st Barisal Ansar Battalion', NULL, N'01895623654', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'TEST LOC 2323', N'ISS-202511-0001', N'IV-ISS-202511-0001', CAST(N'2025-11-06T20:06:35.1789648' AS DateTime2), CAST(N'2025-11-06T20:06:35.1790824' AS DateTime2), NULL, NULL, N'admin', CAST(N'2025-11-10T23:18:03.0734499' AS DateTime2), 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'vouchers\Issue_Voucher_ISS-202511-0001_20251110231834.pdf', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:12:52.2017371' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T10:59:37.5790751' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 2, NULL, 4, N'Chattogram Range', N'DD546', NULL, CAST(N'2025-11-10T22:02:22.9097946' AS DateTime2), N'ISS-202511-0002', NULL, CAST(N'2025-11-06T00:00:00.0000000' AS DateTime2), N'Issued', NULL, N'Range', N'Regular Supply', N'RMKS test', NULL, NULL, N'admin', CAST(N'2025-11-07T01:21:43.1364196' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, N'data:image/png;base64,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', CAST(N'2025-11-07T00:00:21.8427782' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Chattogram Range', NULL, N'01895623654', NULL, 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'TEST LOC 23', N'ISS-202511-0002', N'IV-ISS-202511-0002', CAST(N'2025-11-07T01:21:58.9736710' AS DateTime2), CAST(N'2025-11-07T01:21:58.9738630' AS DateTime2), NULL, NULL, N'admin', CAST(N'2025-11-10T22:02:22.4601451' AS DateTime2), 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'vouchers\Issue_Voucher_ISS-202511-0002_20251107015246.pdf', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:21.7049199' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T18:00:22.0507153' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 3, NULL, 9, N'Chattogram', N'DD54654', NULL, CAST(N'2025-11-11T21:35:37.9542763' AS DateTime2), N'ISS-202511-0003', NULL, CAST(N'2025-11-07T00:00:00.0000000' AS DateTime2), N'Issued', NULL, N'Zila', N'Regular Supply', N'RMK78', NULL, NULL, N'admin', CAST(N'2025-11-07T02:15:13.1210802' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, N'data:image/png;base64,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', CAST(N'2025-11-07T01:21:08.2002089' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Chattogram', NULL, N'01789653254', NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'LOCATION778', N'ISS-202511-0003', N'IV-ISS-202511-0003', CAST(N'2025-11-07T02:15:28.9737120' AS DateTime2), CAST(N'2025-11-07T02:15:28.9738394' AS DateTime2), NULL, NULL, N'admin', CAST(N'2025-11-11T21:35:37.3499560' AS DateTime2), 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'vouchers\Issue_Voucher_ISS-202511-0003_20251111213604.pdf', N'MEMONO889', CAST(N'2025-11-07T00:00:00.0000000' AS DateTime2), 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:07.5710422' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T19:21:09.4217436' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 4, NULL, NULL, N'Habib', N'Lt col', NULL, NULL, N'ISS-202511-0004', NULL, CAST(N'2025-11-07T00:00:00.0000000' AS DateTime2), N'Approved', N'Dhaka Range', N'Range', N'Emergency', N'sfas', NULL, NULL, N'admin', CAST(N'2025-11-07T02:15:18.1866061' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.2279326' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'asf', N'ISS-202511-0004', N'IV-ISS-202511-0004', CAST(N'2025-11-08T23:03:14.6074202' AS DateTime2), CAST(N'2025-11-08T23:03:14.6075320' AS DateTime2), NULL, NULL, N'System Administrator', NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'vouchers\Issue_Voucher_ISS-202511-0004_20251109203401.pdf', N'dff', NULL, 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.0387517' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-06T20:00:32.4035702' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, 6, NULL, NULL, NULL, NULL, NULL, NULL, N'ISS-202511-0005', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Approved', N'Bandarban', N'Zila', N'Regular Supply', N'ASFASFADSF', NULL, NULL, N'admin', CAST(N'2025-11-12T07:36:00.3982654' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:01:04.2347477' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, 43, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'SDadsA', NULL, N'IV-ISS-202511-0005', NULL, CAST(N'2025-11-12T07:36:00.3982705' AS DateTime2), NULL, NULL, N'System Administrator', NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'sadasdfasf', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:01:03.9288457' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T12:14:42.1761737' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, 7, NULL, NULL, NULL, NULL, NULL, NULL, N'ISS-202511-0006', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Approved', N'Chattogram Range', N'Range', N'Emergency', N'bfdgfd', NULL, NULL, N'admin', CAST(N'2025-11-11T23:28:56.7170761' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:08:33.7352228' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'gfdgdgd', NULL, N'IV-ISS-202511-0006', NULL, CAST(N'2025-11-11T23:28:56.7170807' AS DateTime2), NULL, NULL, N'System Administrator', NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'dgd555', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:08:33.4690303' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T12:14:02.7961386' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, 8, NULL, NULL, NULL, NULL, NULL, NULL, N'ISS-202511-0007', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Approved', N'Barisal Range', N'Range', N'Regular Supply', NULL, NULL, NULL, N'admin', CAST(N'2025-11-12T07:36:03.7743912' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.4932436' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, NULL, NULL, NULL, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'cxhhdxdnhh', NULL, N'IV-ISS-202511-0007', NULL, CAST(N'2025-11-12T07:36:03.7743944' AS DateTime2), NULL, NULL, N'System Administrator', NULL, 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, N'hhh', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.4016516' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T12:16:30.7321211' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
+GO
+INSERT [dbo].[Issues] ([Id], [IssuerSignatureId], [ApproverSignatureId], [ReceiverSignatureId], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IssueNo], [IssueNumber], [IssueDate], [Status], [IssuedTo], [IssuedToType], [Purpose], [Remarks], [RequestedBy], [RequestedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [ApprovalReferenceNo], [ApprovalComments], [RejectionReason], [ApprovedByName], [ApprovedByBadgeNo], [SignaturePath], [SignatureDate], [ReceivedDate], [ReceivedBy], [ReceiverDesignation], [ReceiverContact], [IssuedToBattalionId], [IssuedToRangeId], [IssuedToZilaId], [IssuedToUpazilaId], [IssuedToUnionId], [IssuedToIndividualName], [IssuedToIndividualBadgeNo], [IssuedToIndividualMobile], [ToEntityType], [ToEntityId], [FromStoreId], [DeliveryLocation], [VoucherNo], [VoucherNumber], [VoucherDate], [VoucherGeneratedDate], [VoucherQRCode], [QRCode], [IssuedBy], [IssuedDate], [IsPartialIssue], [ParentIssueId], [CreatedByUserId], [RejectedBy], [RejectedDate], [VoucherDocumentPath], [MemoNo], [MemoDate], [IsDeleted], [DeletedBy], [DeletedAt], [DeletionReason], [AllotmentLetterId], [AllotmentLetterNo], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, 10, NULL, 11, N'1st Barisal Ansar Battalion', N'DD54654', NULL, CAST(N'2025-11-12T09:37:31.0537143' AS DateTime2), N'ISS-202511-0008', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Issued', N'1st Barisal Ansar Battalion', N'Battalion', N'Emergency', N'rmks dddgkdsl', NULL, NULL, N'admin', CAST(N'2025-11-12T07:36:07.9737178' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, N'data:image/png;base64,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', CAST(N'2025-11-11T23:07:34.7754968' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'1st Barisal Ansar Battalion', NULL, N'01789653254', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 2, N'barisal 23', N'ISS-202511-0005', N'IV-ISS-202511-0008', CAST(N'2025-11-12T09:36:56.8671065' AS DateTime2), CAST(N'2025-11-12T09:36:56.8672065' AS DateTime2), NULL, NULL, N'admin', CAST(N'2025-11-12T09:37:30.8259484' AS DateTime2), 0, NULL, NULL, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'vouchers\Issue_Voucher_ISS-202511-0005_20251112093657.pdf', N'DBN777', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), 0, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:33.7527982' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T17:07:40.8994986' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
 GO
 SET IDENTITY_INSERT [dbo].[Issues] OFF
 GO
@@ -4344,43 +4829,47 @@ SET IDENTITY_INSERT [dbo].[ItemModels] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Items] ON 
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Desktop Computer Core i5', N'ডেস্কটপ কম্পিউটার কোর আই৫', N'IT-DESK-001', NULL, NULL, N'Piece', 1, 0, 1, 1, 2, 1, CAST(5.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:13.5800000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (5, N'Desktop Computer Core i5', N'ডেস্কটপ কম্পিউটার কোর আই৫', N'IT-DESK-001', NULL, NULL, N'Piece', 1, 0, 1, 1, 2, 1, CAST(5.00 AS Decimal(18, 2)), CAST(50.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:13.5800000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Laser Printer A4', N'লেজার প্রিন্টার এ৪', N'IT-PRNT-001', NULL, NULL, N'Piece', 1, 0, 2, 1, 3, 2, CAST(3.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:23.7466667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (6, N'Laser Printer A4', N'লেজার প্রিন্টার এ৪', N'IT-PRNT-001', NULL, NULL, N'Piece', 1, 0, 2, 1, 3, 2, CAST(3.00 AS Decimal(18, 2)), CAST(30.00 AS Decimal(18, 2)), CAST(5.00 AS Decimal(18, 2)), CAST(18000.00 AS Decimal(18, 2)), CAST(25000.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:23.7466667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'A4 Paper 80GSM (Ream)', N'এ৪ কাগজ ৮০ জিএসএম (রিম)', N'ST-PAPR-001', NULL, NULL, N'Ream', 0, 0, 3, 2, 13, 11, CAST(200.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(450.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:23.7500000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (7, N'A4 Paper 80GSM (Ream)', N'এ৪ কাগজ ৮০ জিএসএম (রিম)', N'ST-PAPR-001', NULL, NULL, N'Ream', 0, 0, 3, 2, 13, 11, CAST(200.00 AS Decimal(18, 2)), CAST(2000.00 AS Decimal(18, 2)), CAST(300.00 AS Decimal(18, 2)), CAST(450.00 AS Decimal(18, 2)), CAST(350.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T03:14:23.7500000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Ballpoint Pen Blue', N'বলপয়েন্ট কলম নীল', N'ST-PEN-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(500.000 AS Decimal(18, 3)), CAST(5000.000 AS Decimal(18, 3)), CAST(750.000 AS Decimal(18, 3)), CAST(5.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (8, N'Ballpoint Pen Blue', N'বলপয়েন্ট কলম নীল', N'ST-PEN-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(500.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), CAST(750.00 AS Decimal(18, 2)), CAST(5.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Ballpoint Pen Black', N'বলপয়েন্ট কলম কালো', N'ST-PEN-002', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(500.000 AS Decimal(18, 3)), CAST(5000.000 AS Decimal(18, 3)), CAST(750.000 AS Decimal(18, 3)), CAST(5.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (9, N'Ballpoint Pen Black', N'বলপয়েন্ট কলম কালো', N'ST-PEN-002', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(500.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), CAST(750.00 AS Decimal(18, 2)), CAST(5.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'Pencil HB', N'পেন্সিল এইচবি', N'ST-PENC-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(300.000 AS Decimal(18, 3)), CAST(3000.000 AS Decimal(18, 3)), CAST(500.000 AS Decimal(18, 3)), CAST(3.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (10, N'Pencil HB', N'পেন্সিল এইচবি', N'ST-PENC-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(300.00 AS Decimal(18, 2)), CAST(3000.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), CAST(3.00 AS Decimal(18, 2)), CAST(5.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'Notebook 100 Pages', N'স্টিকি নোট প্যাড', N'ST-NOTE-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(200.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(45.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (11, N'Notebook 100 Pages', N'স্টিকি নোট প্যাড', N'ST-NOTE-001', NULL, NULL, N'Piece', 1, 1, 4, 2, 13, 11, CAST(200.00 AS Decimal(18, 2)), CAST(2000.00 AS Decimal(18, 2)), CAST(300.00 AS Decimal(18, 2)), CAST(45.00 AS Decimal(18, 2)), CAST(45.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, N'uploads/items/b6bde385-25d5-4e20-80d0-60a3988c1277_Screenshot_4.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, CAST(N'2025-11-08T17:54:41.9029879' AS DateTime2), N'admin', 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'File Folder', N'ফাইল ফোল্ডার এ৪', N'ST-FILE-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(25.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (12, N'File Folder', N'ফাইল ফোল্ডার এ৪', N'ST-FILE-001', NULL, NULL, N'Piece', 0, 0, 4, 2, 13, 11, CAST(100.00 AS Decimal(18, 2)), CAST(1000.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(25.00 AS Decimal(18, 2)), CAST(15.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:04:48.9100000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'Ansar Uniform Shirt', N'আনসার শার্ট', N'UC-SHIRT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(850.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (13, N'Ansar Uniform Shirt', N'আনসার শার্ট', N'UC-SHIRT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.00 AS Decimal(18, 2)), CAST(1000.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(850.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'Ansar Uniform Pant', N'আনসার প্যান্ট', N'UC-PANT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(950.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (14, N'Ansar Uniform Pant', N'আনসার প্যান্ট', N'UC-PANT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.00 AS Decimal(18, 2)), CAST(1000.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(950.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'VDP Uniform Shirt', N'ভিডিপি ইউনিফর্ম শার্ট', N'UC-SHIRT-002', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(750.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (15, N'VDP Uniform Shirt', N'ভিডিপি ইউনিফর্ম শার্ট', N'UC-SHIRT-002', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.00 AS Decimal(18, 2)), CAST(1000.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(750.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'VDP Uniform Pant', N'ভিডিপি ইউনিফর্ম প্যান্ট', N'UC-PANT-002', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(850.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (16, N'VDP Uniform Pant', N'ভিডিপি ইউনিফর্ম প্যান্ট', N'UC-PANT-002', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(100.00 AS Decimal(18, 2)), CAST(1000.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(850.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'Belt Black', N'আনসার বেল্ট', N'UC-BELT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(50.000 AS Decimal(18, 3)), CAST(500.000 AS Decimal(18, 3)), CAST(75.000 AS Decimal(18, 3)), CAST(350.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (17, N'Belt Black', N'আনসার বেল্ট', N'UC-BELT-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(50.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), CAST(75.00 AS Decimal(18, 2)), CAST(350.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'Cap Ansar', N'আনসার টুপি', N'UC-CAP-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(50.000 AS Decimal(18, 3)), CAST(500.000 AS Decimal(18, 3)), CAST(75.000 AS Decimal(18, 3)), CAST(250.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (18, N'Cap Ansar', N'আনসার টুপি', N'UC-CAP-001', NULL, NULL, N'Piece', 1, 0, 5, 3, 13, 11, CAST(50.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), CAST(75.00 AS Decimal(18, 2)), CAST(250.00 AS Decimal(18, 2)), CAST(500.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:01.3600000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'External Hard Drive 1TB', N'এক্সটার্নাল হার্ড ড্রাইভ ১টিবি', N'IT-HDD-001', NULL, NULL, N'Piece', 1, 0, 6, 1, 11, 10, CAST(10.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(4500.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (19, N'External Hard Drive 1TB', N'এক্সটার্নাল হার্ড ড্রাইভ ১টিবি', N'IT-HDD-001', NULL, NULL, N'Piece', 1, 0, 6, 1, 11, 10, CAST(10.00 AS Decimal(18, 2)), CAST(100.00 AS Decimal(18, 2)), CAST(15.00 AS Decimal(18, 2)), CAST(4500.00 AS Decimal(18, 2)), CAST(150000.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'USB Flash Drive 32GB', N'ইউএসবি ফ্ল্যাশ ড্রাইভ ৩২জিবি', N'IT-USB-001', NULL, NULL, N'Piece', 0, 0, 6, 1, 10, 9, CAST(20.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(650.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (20, N'USB Flash Drive 32GB', N'ইউএসবি ফ্ল্যাশ ড্রাইভ ৩২জিবি', N'IT-USB-001', NULL, NULL, N'Piece', 0, 0, 6, 1, 10, 9, CAST(20.00 AS Decimal(18, 2)), CAST(200.00 AS Decimal(18, 2)), CAST(30.00 AS Decimal(18, 2)), CAST(650.00 AS Decimal(18, 2)), CAST(800.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, N'HDMI Cable 2m', N'এইচডিএমআই ক্যাবল ২মি', N'IT-CABL-001', NULL, NULL, N'Piece', 1, 0, 6, 1, NULL, NULL, CAST(15.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(350.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (21, N'HDMI Cable 2m', N'এইচডিএমআই ক্যাবল ২মি', N'IT-CABL-001', NULL, NULL, N'Piece', 1, 0, 6, 1, NULL, NULL, CAST(15.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), CAST(25.00 AS Decimal(18, 2)), CAST(350.00 AS Decimal(18, 2)), CAST(150.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, N'Network Cable Cat6 5m', N'নেটওয়ার্ক ক্যাবল ক্যাট৬ ৫মি', N'IT-CABL-002', NULL, NULL, N'Piece', 1, 0, 6, 1, NULL, NULL, CAST(30.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(250.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (22, N'Network Cable Cat6 5m', N'নেটওয়ার্ক ক্যাবল ক্যাট৬ ৫মি', N'IT-CABL-002', NULL, NULL, N'Piece', 1, 0, 6, 1, NULL, NULL, CAST(30.00 AS Decimal(18, 2)), CAST(300.00 AS Decimal(18, 2)), CAST(50.00 AS Decimal(18, 2)), CAST(250.00 AS Decimal(18, 2)), CAST(50.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (23, N'Webcam HD', N'ওয়েবক্যাম এইচডি', N'IT-WCAM-001', NULL, NULL, N'Piece', 1, 0, 6, 1, 12, 8, CAST(5.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(2500.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (23, N'Webcam HD', N'ওয়েবক্যাম এইচডি', N'IT-WCAM-001', NULL, NULL, N'Piece', 1, 0, 6, 1, 12, 8, CAST(5.00 AS Decimal(18, 2)), CAST(50.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), CAST(2500.00 AS Decimal(18, 2)), CAST(35000.00 AS Decimal(18, 2)), NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, 0, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-04T04:05:14.1166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (24, N'fgdfgs', NULL, N'OFPA-2025-0002', NULL, N'dfgsdfg', N'Liter', 2, 1, 3, 0, 3, NULL, CAST(100.00 AS Decimal(18, 2)), NULL, CAST(0.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 30, 30, NULL, 30, 1, 1, 0, NULL, NULL, 24, 0, NULL, CAST(N'2025-11-08T10:09:20.6798058' AS DateTime2), N'System', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Items] ([Id], [Name], [NameBn], [ItemCode], [Code], [Description], [Unit], [Type], [Status], [SubCategoryId], [CategoryId], [ItemModelId], [BrandId], [MinimumStock], [MaximumStock], [ReorderLevel], [UnitPrice], [UnitCost], [Manufacturer], [ManufactureDate], [ExpiryDate], [HasExpiry], [ShelfLife], [StorageRequirements], [RequiresSpecialHandling], [SafetyInstructions], [Weight], [WeightUnit], [Dimensions], [Color], [Material], [IsHazardous], [HazardClass], [ItemImage], [ImagePath], [Barcode], [BarcodePath], [QRCodeData], [ItemControlType], [AnsarLifeSpanMonths], [VDPLifeSpanMonths], [AnsarAlertBeforeDays], [VDPAlertBeforeDays], [LifeSpanMonths], [AlertBeforeDays], [IsAnsarAuthorized], [IsVDPAuthorized], [RequiresPersonalIssue], [AnsarEntitlementQuantity], [VDPEntitlementQuantity], [EntitlementPeriodMonths], [RequiresHigherApproval], [ControlItemCategory], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [CatalogueEntryDate], [CatalogueLedgerNo], [CataloguePageNo], [CatalogueRemarks], [FirstReceivedDate]) VALUES (25, N'hjfgfghj', NULL, N'ITCO-2025-0002', NULL, N'hjghjgfhjfg', N'Box', 1, 1, 1, 0, 4, NULL, CAST(10.00 AS Decimal(18, 2)), NULL, CAST(0.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 30, 30, NULL, 30, 1, 1, 0, NULL, NULL, 24, 0, NULL, CAST(N'2025-11-12T07:48:30.1829625' AS DateTime2), N'System', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL)
 GO
 SET IDENTITY_INSERT [dbo].[Items] OFF
 GO
@@ -4412,6 +4901,28 @@ INSERT [dbo].[ItemSpecifications] ([Id], [ItemId], [SpecificationName], [Specifi
 GO
 SET IDENTITY_INSERT [dbo].[ItemSpecifications] OFF
 GO
+SET IDENTITY_INSERT [dbo].[LedgerBooks] ON 
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'ISS-2025-001', N'Issue Register 2025 - Central Store', N'Issue', N'Main issue register for central store', 2, 500, 3, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Central Store - Shelf A1', NULL, CAST(N'2025-11-06T14:26:04.2466667' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'ISS-2025-002', N'Issue Register 2025 - Provision Store', N'Issue', N'Main issue register for provision store', 3, 500, 1, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Provision Store - Shelf B2', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'ISS-2025-003', N'Issue Register 2025 - Store 1', N'Issue', N'Issue register for general store operations', 2, 500, 1, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Store Room 1 - Cabinet C', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'RCV-2025-001', N'Receive Register 2025 - Central Store', N'Receive', N'Main receive register for central store', 2, 500, 2, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Central Store - Shelf A2', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'RCV-2025-002', N'Receive Register 2025 - Provision Store', N'Receive', N'Main receive register for provision store', 3, 500, 1, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Provision Store - Shelf B3', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'RCV-2025-003', N'Receive Register 2025 - Store 1', N'Receive', N'Receive register for general store operations', 2, 500, 1, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Store Room 1 - Cabinet D', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'TRF-2025-001', N'Transfer Register 2025 - Central Store', N'Transfer', N'Transfer register for central store', 2, 500, 1, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Central Store - Shelf A3', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'GEN-2025-001', N'General Register 2025', N'General', N'General purpose ledger for miscellaneous transactions', 2, 500, 50, CAST(N'2025-01-01T00:00:00.0000000' AS DateTime2), NULL, 0, N'Store Room 1 - Cabinet E', NULL, CAST(N'2025-11-06T14:26:04.2500000' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[LedgerBooks] ([Id], [LedgerNo], [BookName], [BookType], [Description], [StoreId], [TotalPages], [CurrentPageNo], [StartDate], [EndDate], [IsClosed], [Location], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'fd543', N'dsdgfds', N'Issue', N'fsdgsdfgsdfg', 2, 500, 1, CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), NULL, 0, N'fgsdfg', N'fdsgsfdg', CAST(N'2025-11-10T05:19:37.4581710' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[LedgerBooks] OFF
+GO
 SET IDENTITY_INSERT [dbo].[Locations] ON 
 GO
 INSERT [dbo].[Locations] ([Id], [Name], [Code], [Description], [ParentLocationId], [LocationType], [Address], [Latitude], [Longitude], [ContactPerson], [ContactPhone], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'Central Store Main Warehouse', N'LOC-CS-MAIN', N'Main storage area for Central Store', NULL, N'Warehouse', N'Ansar & VDP HQ, Building A, Dhaka-1000', NULL, NULL, N'Abdul Karim', N'01700-501001', CAST(N'2025-11-04T05:42:54.7333333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
@@ -4424,13 +4935,123 @@ INSERT [dbo].[Locations] ([Id], [Name], [Code], [Description], [ParentLocationId
 GO
 SET IDENTITY_INSERT [dbo].[Locations] OFF
 GO
+SET IDENTITY_INSERT [dbo].[Notifications] ON 
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'Approval Required', N'ISSUE Issue ISS-202511-0001 - Regular Supply requires your approval. Amount: 350.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-06T16:59:39.2801839' AS DateTime2), 1, CAST(N'2025-11-06T16:59:39.2793149' AS DateTime2), NULL, N'/Approval/Pending?id=1', NULL, NULL, N'ISSUE', N'6', NULL, CAST(N'2025-11-06T16:59:39.0170988' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Issue Approval Required', N'Issue ISS-202511-0001 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-06T16:59:39.3523346' AS DateTime2), 1, CAST(N'2025-11-06T16:59:39.3523012' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:59:39.3207808' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Issue Approval Required', N'Issue ISS-202511-0001 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-06T16:59:39.8397465' AS DateTime2), 1, CAST(N'2025-11-06T16:59:39.8397146' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T16:59:39.6240301' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-06T16:59:59.6779204' AS DateTime2), 1, CAST(N'2025-11-06T16:59:59.6778751' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'6', NULL, CAST(N'2025-11-06T16:59:59.6602975' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Issue Approved ✅', N'Issue #ISS-202511-0001 has been approved. Voucher: IV-ISS-202511-0001', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-06T17:00:01.5463609' AS DateTime2), 1, CAST(N'2025-11-06T17:00:01.5463343' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-06T17:00:01.5300941' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Approval Required', N'ISSUE Issue ISS-202511-0002 - Regular Supply requires your approval. Amount: 250.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-07T00:00:22.5482950' AS DateTime2), 1, CAST(N'2025-11-07T00:00:22.5476496' AS DateTime2), NULL, N'/Approval/Pending?id=2', NULL, NULL, N'ISSUE', N'7', NULL, CAST(N'2025-11-07T00:00:22.4436283' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Issue Approval Required', N'Issue ISS-202511-0002 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T00:00:22.8099710' AS DateTime2), 1, CAST(N'2025-11-07T00:00:22.8099510' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:22.6229603' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Issue Approval Required', N'Issue ISS-202511-0002 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T00:00:22.9336516' AS DateTime2), 1, CAST(N'2025-11-07T00:00:22.9336356' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T00:00:22.8692331' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Approval Required', N'ISSUE Issue ISS-202511-0003 - Regular Supply requires your approval. Amount: 900.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-07T01:21:10.7091584' AS DateTime2), 1, CAST(N'2025-11-07T01:21:10.7081580' AS DateTime2), NULL, N'/Approval/Pending?id=3', NULL, NULL, N'ISSUE', N'8', NULL, CAST(N'2025-11-07T01:21:10.4121217' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'Issue Approval Required', N'Issue ISS-202511-0003 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T01:21:10.7900044' AS DateTime2), 1, CAST(N'2025-11-07T01:21:10.7899612' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:10.7581684' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'Issue Approval Required', N'Issue ISS-202511-0003 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T01:21:10.8443558' AS DateTime2), 1, CAST(N'2025-11-07T01:21:10.8443254' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:10.8225877' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T01:21:41.0605702' AS DateTime2), 1, CAST(N'2025-11-07T01:21:41.0605364' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'7', NULL, CAST(N'2025-11-07T01:21:41.0250092' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'Issue Approved ✅', N'Issue #ISS-202511-0002 has been approved. Voucher: IV-ISS-202511-0002', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T01:21:43.2872171' AS DateTime2), 1, CAST(N'2025-11-07T01:21:43.2871857' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T01:21:43.2584357' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'Approval Required', N'ISSUE Issue ISS-202511-0004 - Emergency requires your approval. Amount: 45,000.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-07T02:00:32.6940976' AS DateTime2), 1, CAST(N'2025-11-07T02:00:32.6937833' AS DateTime2), NULL, N'/Approval/Pending?id=4', NULL, NULL, N'ISSUE', N'9', NULL, CAST(N'2025-11-07T02:00:32.6108564' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'Issue Approval Required', N'Issue ISS-202511-0004 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T02:00:32.7479566' AS DateTime2), 1, CAST(N'2025-11-07T02:00:32.7479361' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.7044001' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'Issue Approval Required', N'Issue ISS-202511-0004 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-07T02:00:32.7633098' AS DateTime2), 1, CAST(N'2025-11-07T02:00:32.7633021' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:00:32.7585050' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T02:15:11.9862460' AS DateTime2), 1, CAST(N'2025-11-07T02:15:11.9859021' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'8', NULL, CAST(N'2025-11-07T02:15:11.8894164' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'Issue Approved ✅', N'Issue #ISS-202511-0003 has been approved. Voucher: IV-ISS-202511-0003', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T02:15:13.3154449' AS DateTime2), 1, CAST(N'2025-11-07T02:15:13.3154250' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:15:13.3054193' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T02:15:18.1342017' AS DateTime2), 1, CAST(N'2025-11-07T02:15:18.1341386' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'9', NULL, CAST(N'2025-11-07T02:15:18.1274204' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'Issue Approved ✅', N'Issue #ISS-202511-0004 has been approved. Voucher: IV-ISS-202511-0004', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-07T02:15:18.2255191' AS DateTime2), 1, CAST(N'2025-11-07T02:15:18.2255070' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-07T02:15:18.2149648' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (31, N'Physical Handover Completed', N'Issue ISS-202511-0002 has been physically handed over. Receipt: IR-20251110-0007. Received by: Chattogram Range', N'Receipt', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-10T22:02:23.3672087' AS DateTime2), 1, CAST(N'2025-11-10T22:02:23.3665902' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T22:02:23.1819241' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (32, N'Physical Handover Completed', N'Issue ISS-202511-0001 has been physically handed over. Receipt: IR-20251110-0006. Received by: 1st Barisal Ansar Battalion', N'Receipt', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-10T23:18:04.2882916' AS DateTime2), 1, CAST(N'2025-11-10T23:18:04.2874876' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T23:18:04.0738668' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (33, N'Approval Required', N'STOCK_ADJUSTMENT Stock Adjustment ADJ000001 - Physical Count Mismatch requires your approval. Amount: 1,080,000.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T15:28:42.4398409' AS DateTime2), 1, CAST(N'2025-11-11T15:28:42.4394825' AS DateTime2), NULL, N'/Approval/Pending?id=7', NULL, NULL, N'STOCK_ADJUSTMENT', N'5', NULL, CAST(N'2025-11-11T15:28:42.3311203' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (35, N'Approval Required', N'STOCK_ADJUSTMENT Stock Adjustment ADJ000002 - Physical Count Mismatch requires your approval. Amount: 90,000.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T16:12:39.9337825' AS DateTime2), 1, CAST(N'2025-11-11T16:12:39.9326509' AS DateTime2), NULL, N'/Approval/Pending?id=8', NULL, NULL, N'STOCK_ADJUSTMENT', N'6', NULL, CAST(N'2025-11-11T16:12:39.7263296' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (37, N'Approval Required', N'STOCK_ADJUSTMENT Stock Adjustment ADJ000003 - Physical Count Mismatch requires your approval. Amount: 90,000.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T16:13:30.5786716' AS DateTime2), 1, CAST(N'2025-11-11T16:13:30.5786455' AS DateTime2), NULL, N'/Approval/Pending?id=9', NULL, NULL, N'STOCK_ADJUSTMENT', N'7', NULL, CAST(N'2025-11-11T16:13:30.5633964' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (39, N'Approval Required', N'STOCK_ADJUSTMENT Stock Adjustment ADJ000004 - Physical Count Mismatch requires your approval. Amount: 90,000.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T16:37:08.0525609' AS DateTime2), 1, CAST(N'2025-11-11T16:37:08.0520639' AS DateTime2), NULL, N'/Approval/Pending?id=10', NULL, NULL, N'STOCK_ADJUSTMENT', N'8', NULL, CAST(N'2025-11-11T16:37:07.9462194' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (40, N'Stock Adjustment Created', N'Adjustment #ADJ000004 for 5.000 units has been created.', N'info', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-11T16:37:08.0887238' AS DateTime2), 1, CAST(N'2025-11-11T16:37:08.0885205' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:37:08.0751492' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (41, N'Approval Required', N'ISSUE Issue ISS-202511-0006 - Emergency requires your approval. Amount: 3,500.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:03.3483501' AS DateTime2), 1, CAST(N'2025-11-11T18:14:03.3480724' AS DateTime2), NULL, N'/Approval/Pending?id=11', NULL, NULL, N'ISSUE', N'11', NULL, CAST(N'2025-11-11T18:14:03.2470334' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (42, N'Issue Approval Required', N'Issue ISS-202511-0006 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:03.3702426' AS DateTime2), 1, CAST(N'2025-11-11T18:14:03.3702275' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:03.3595162' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (43, N'Issue Approval Required', N'Issue ISS-202511-0006 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:03.4780533' AS DateTime2), 1, CAST(N'2025-11-11T18:14:03.4780384' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:03.4181432' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (44, N'Approval Required', N'ISSUE Issue ISS-202511-0005 - Regular Supply requires your approval. Amount: 3,500.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:42.3057890' AS DateTime2), 1, CAST(N'2025-11-11T18:14:42.3057685' AS DateTime2), NULL, N'/Approval/Pending?id=12', NULL, NULL, N'ISSUE', N'10', NULL, CAST(N'2025-11-11T18:14:42.2926272' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (45, N'Issue Approval Required', N'Issue ISS-202511-0005 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:42.3294309' AS DateTime2), 1, CAST(N'2025-11-11T18:14:42.3294054' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:42.3153764' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (46, N'Issue Approval Required', N'Issue ISS-202511-0005 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:14:42.4961978' AS DateTime2), 1, CAST(N'2025-11-11T18:14:42.4961787' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:14:42.4418404' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (47, N'Approval Required', N'ISSUE Issue ISS-202511-0007 - Regular Supply requires your approval. Amount: 1,750.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T18:16:30.8185088' AS DateTime2), 1, CAST(N'2025-11-11T18:16:30.8184845' AS DateTime2), NULL, N'/Approval/Pending?id=13', NULL, NULL, N'ISSUE', N'12', NULL, CAST(N'2025-11-11T18:16:30.7792024' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (48, N'Issue Approval Required', N'Issue ISS-202511-0007 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:16:30.8335572' AS DateTime2), 1, CAST(N'2025-11-11T18:16:30.8335456' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.8270822' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (49, N'Issue Approval Required', N'Issue ISS-202511-0007 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T18:16:30.8465229' AS DateTime2), 1, CAST(N'2025-11-11T18:16:30.8464990' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.8407405' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (50, N'Physical Handover Completed', N'Issue ISS-202511-0003 has been physically handed over. Receipt: IR-20251111-0008. Received by: Chattogram', N'Receipt', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-11T21:35:38.5457130' AS DateTime2), 1, CAST(N'2025-11-11T21:35:38.5454486' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T21:35:38.4080804' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (51, N'Approval Required', N'ISSUE Issue ISS-202511-0008 - Emergency requires your approval. Amount: 2,500.00', N'Approval', N'Normal', N'Workflow', N'a27a83b4-740f-42b5-b06e-8e438e209f17', NULL, 0, NULL, 1, CAST(N'2025-11-11T23:07:41.5517487' AS DateTime2), 1, CAST(N'2025-11-11T23:07:41.5513122' AS DateTime2), NULL, N'/Approval/Pending?id=14', NULL, NULL, N'ISSUE', N'13', NULL, CAST(N'2025-11-11T23:07:41.3994592' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (52, N'Issue Approval Required', N'Issue ISS-202511-0008 requires approval', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T23:07:41.5795089' AS DateTime2), 1, CAST(N'2025-11-11T23:07:41.5794846' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:41.5660728' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (53, N'Issue Approval Required', N'Issue ISS-202511-0008 requires your approval.', N'Approval', N'High', NULL, NULL, NULL, 0, NULL, 1, CAST(N'2025-11-11T23:07:41.6466233' AS DateTime2), 1, CAST(N'2025-11-11T23:07:41.6466072' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:07:41.6176886' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (55, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-11T23:28:55.3159740' AS DateTime2), 1, CAST(N'2025-11-11T23:28:55.3153398' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'11', NULL, CAST(N'2025-11-11T23:28:55.2713071' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (56, N'Issue Approved ✅', N'Issue #ISS-202511-0006 has been approved. Voucher: IV-ISS-202511-0006', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-11T23:28:57.0296269' AS DateTime2), 1, CAST(N'2025-11-11T23:28:57.0296004' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T23:28:57.0134722' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (60, N'Request Approved', N'Your STOCK_ADJUSTMENT request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:35:52.8472968' AS DateTime2), 1, CAST(N'2025-11-12T07:35:52.8410164' AS DateTime2), NULL, NULL, NULL, NULL, N'STOCK_ADJUSTMENT', N'8', NULL, CAST(N'2025-11-12T07:35:52.7673850' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (61, N'Stock Adjustment Approved ✅', N'Stock Adjustment #ADJ000004 has been fully approved and stock updated.', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:35:53.0642371' AS DateTime2), 1, CAST(N'2025-11-12T07:35:53.0642104' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T07:35:53.0311658' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (62, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:35:59.3670862' AS DateTime2), 1, CAST(N'2025-11-12T07:35:59.3670659' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'10', NULL, CAST(N'2025-11-12T07:35:59.3183797' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (63, N'Issue Approved ✅', N'Issue #ISS-202511-0005 has been approved. Voucher: IV-ISS-202511-0005', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:36:00.6827150' AS DateTime2), 1, CAST(N'2025-11-12T07:36:00.6826924' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T07:36:00.6711549' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (64, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:36:03.7266086' AS DateTime2), 1, CAST(N'2025-11-12T07:36:03.7265951' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'12', NULL, CAST(N'2025-11-12T07:36:03.7194983' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (65, N'Issue Approved ✅', N'Issue #ISS-202511-0007 has been approved. Voucher: IV-ISS-202511-0007', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:36:03.7964552' AS DateTime2), 1, CAST(N'2025-11-12T07:36:03.7964439' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T07:36:03.7898428' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (66, N'Request Approved', N'Your ISSUE request has been approved', N'Approval', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:36:07.9374667' AS DateTime2), 1, CAST(N'2025-11-12T07:36:07.9373726' AS DateTime2), NULL, NULL, NULL, NULL, N'ISSUE', N'13', NULL, CAST(N'2025-11-12T07:36:07.9286714' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (67, N'Issue Approved ✅', N'Issue #ISS-202511-0008 has been approved. Voucher: IV-ISS-202511-0008', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T07:36:08.0059510' AS DateTime2), 1, CAST(N'2025-11-12T07:36:08.0059283' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T07:36:07.9974332' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (68, N'Receive Completed', N'Receive RCV-202511-0014 has been completed successfully', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T09:16:53.4561179' AS DateTime2), 1, CAST(N'2025-11-12T09:16:53.4558062' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T09:16:53.3807337' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (69, N'Physical Handover Completed', N'Issue ISS-202511-0008 has been physically handed over. Receipt: IR-20251112-0013. Received by: 1st Barisal Ansar Battalion', N'Receipt', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T09:37:31.4920882' AS DateTime2), 1, CAST(N'2025-11-12T09:37:31.4915473' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T09:37:31.3407395' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Notifications] ([Id], [Title], [Message], [Type], [Priority], [Category], [UserId], [TargetRole], [IsRead], [ReadAt], [IsSent], [SentAt], [PushSent], [PushSentAt], [Url], [ActionUrl], [RelatedEntity], [RelatedEntityId], [ReferenceType], [ReferenceId], [Metadata], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (70, N'Receive Completed', N'Receive RCV-202511-0015 has been completed successfully', N'Success', N'Normal', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, 0, NULL, 1, CAST(N'2025-11-12T09:38:19.1161620' AS DateTime2), 1, CAST(N'2025-11-12T09:38:19.1161382' AS DateTime2), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-12T09:38:19.1035230' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[Notifications] OFF
+GO
 SET IDENTITY_INSERT [dbo].[PersonnelItemIssues] ON 
 GO
-INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'PIE-2024-001', N'1001', N'0', N'Md. Rafiqul Islam', N'ANSAR-1001', N'1st Ansar Battalion', N'Ansar Member', N'01711-111001', 13, CAST(2.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-05-08T04:54:03.5166667' AS DateTime2), NULL, CAST(N'2027-05-03T04:54:03.5166667' AS DateTime2), CAST(N'2027-04-03T04:54:03.5166667' AS DateTime2), 515, N'0', NULL, NULL, NULL, 1, 2, NULL, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-05-08T04:54:03.5166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [OriginalIssueId1], [ReceiveId1]) VALUES (2, N'PIE-2024-001', N'1001', N'0', N'Md. Rafiqul Islam', N'ANSAR-1001', N'1st Ansar Battalion', N'Ansar Member', N'01711-111001', 13, CAST(2.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-05-08T04:54:03.5166667' AS DateTime2), NULL, CAST(N'2027-05-03T04:54:03.5166667' AS DateTime2), CAST(N'2027-04-03T04:54:03.5166667' AS DateTime2), 515, N'0', NULL, NULL, NULL, 1, 2, NULL, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-05-08T04:54:03.5166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL)
 GO
-INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'PIE-2024-002', N'1002', N'0', N'Abdul Hakim Khan', N'ANSAR-1002', N'1st Ansar Battalion', N'Lance Corporal', N'01722-222002', 14, CAST(2.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-05-28T04:54:13.1633333' AS DateTime2), NULL, CAST(N'2027-05-23T04:54:13.1633333' AS DateTime2), CAST(N'2027-04-23T04:54:13.1633333' AS DateTime2), 535, N'0', NULL, NULL, NULL, 1, 2, NULL, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-05-28T04:54:13.1633333' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [OriginalIssueId1], [ReceiveId1]) VALUES (3, N'PIE-2024-002', N'1002', N'0', N'Abdul Hakim Khan', N'ANSAR-1002', N'1st Ansar Battalion', N'Lance Corporal', N'01722-222002', 14, CAST(2.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-05-28T04:54:13.1633333' AS DateTime2), NULL, CAST(N'2027-05-23T04:54:13.1633333' AS DateTime2), CAST(N'2027-04-23T04:54:13.1633333' AS DateTime2), 535, N'0', NULL, NULL, NULL, 1, 2, NULL, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-05-28T04:54:13.1633333' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL)
 GO
-INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'PIE-2024-003', N'2001', N'1', N'Sharmin Akter', N'VDP-2001', N'Dhaka Zila VDP', N'VDP Member', N'01733-333003', 18, CAST(1.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-08-06T04:54:23.4200000' AS DateTime2), NULL, CAST(N'2026-08-06T04:54:23.4200000' AS DateTime2), CAST(N'2026-07-07T04:54:23.4200000' AS DateTime2), 245, N'0', NULL, NULL, NULL, NULL, 2, 1, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-08-06T04:54:23.4200000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[PersonnelItemIssues] ([Id], [IssueNo], [PersonnelId], [PersonnelType], [PersonnelName], [PersonnelBadgeNo], [PersonnelUnit], [PersonnelDesignation], [PersonnelMobile], [ItemId], [Quantity], [Unit], [OriginalIssueId], [ReceiveId], [IssueDate], [ReceivedDate], [LifeExpiryDate], [AlertDate], [RemainingDays], [Status], [ReplacedDate], [ReplacementReason], [ReplacementIssueId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [StoreId], [IsAlertSent], [LastAlertDate], [AlertCount], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [OriginalIssueId1], [ReceiveId1]) VALUES (4, N'PIE-2024-003', N'2001', N'1', N'Sharmin Akter', N'VDP-2001', N'Dhaka Zila VDP', N'VDP Member', N'01733-333003', 18, CAST(1.00 AS Decimal(18, 2)), N'Piece', NULL, NULL, CAST(N'2025-08-06T04:54:23.4200000' AS DateTime2), NULL, CAST(N'2026-08-06T04:54:23.4200000' AS DateTime2), CAST(N'2026-07-07T04:54:23.4200000' AS DateTime2), 245, N'0', NULL, NULL, NULL, NULL, 2, 1, NULL, NULL, 0, NULL, 0, NULL, CAST(N'2025-08-06T04:54:23.4200000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL)
 GO
 SET IDENTITY_INSERT [dbo].[PersonnelItemIssues] OFF
 GO
@@ -4504,6 +5125,18 @@ INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity
 GO
 INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, 5, 23, NULL, CAST(8.000 AS Decimal(18, 3)), CAST(2500.00 AS Decimal(18, 2)), CAST(20000.00 AS Decimal(18, 2)), CAST(8.00 AS Decimal(18, 2)), CAST(8.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, CAST(N'2025-10-23T04:06:54.1333333' AS DateTime2), NULL, NULL, NULL, 1)
 GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, 6, 7, 2, CAST(100.000 AS Decimal(18, 3)), CAST(200.00 AS Decimal(18, 2)), CAST(20000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T09:38:16.3842549' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, 6, 9, 2, CAST(200.000 AS Decimal(18, 3)), CAST(150.00 AS Decimal(18, 2)), CAST(30000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T09:38:16.4005651' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (23, 7, 8, 2, CAST(1000.000 AS Decimal(18, 3)), CAST(5.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T09:39:39.5362008' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (24, 7, 7, 2, CAST(100.000 AS Decimal(18, 3)), CAST(450.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T09:39:39.5370648' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (25, 8, 5, 2, CAST(5.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(225000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T12:41:26.4868633' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[PurchaseItems] ([Id], [PurchaseId], [ItemId], [StoreId], [Quantity], [UnitPrice], [TotalPrice], [ReceivedQuantity], [AcceptedQuantity], [RejectedQuantity], [BatchNo], [ExpiryDate], [ReceiveRemarks], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (26, 8, 6, 2, CAST(2.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-10T12:41:26.4929204' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[PurchaseItems] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Purchases] ON 
@@ -4515,6 +5148,18 @@ GO
 INSERT [dbo].[Purchases] ([Id], [PurchaseOrderNo], [PurchaseDate], [ExpectedDeliveryDate], [DeliveryDate], [ReceivedDate], [VendorId], [StoreId], [TotalAmount], [Discount], [PurchaseType], [Status], [Remarks], [ApprovedBy], [ApprovedDate], [RejectionReason], [IsMarketplacePurchase], [MarketplaceUrl], [ProcurementType], [ProcurementSource], [BudgetCode], [CreatedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'PO-2024-003', CAST(N'2025-10-20T04:06:17.2400000' AS DateTime2), CAST(N'2025-10-30T04:06:17.2400000' AS DateTime2), NULL, NULL, 3, 2, CAST(550000.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'Direct', N'Received', N'Ansar & VDP Uniform purchase', NULL, NULL, NULL, 0, NULL, 1, NULL, NULL, NULL, CAST(N'2025-10-20T04:06:17.2400000' AS DateTime2), NULL, NULL, NULL, 1)
 GO
 INSERT [dbo].[Purchases] ([Id], [PurchaseOrderNo], [PurchaseDate], [ExpectedDeliveryDate], [DeliveryDate], [ReceivedDate], [VendorId], [StoreId], [TotalAmount], [Discount], [PurchaseType], [Status], [Remarks], [ApprovedBy], [ApprovedDate], [RejectionReason], [IsMarketplacePurchase], [MarketplaceUrl], [ProcurementType], [ProcurementSource], [BudgetCode], [CreatedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'PO-2024-004', CAST(N'2025-10-23T04:06:42.7766667' AS DateTime2), CAST(N'2025-11-01T04:06:42.7766667' AS DateTime2), NULL, NULL, 1, 2, CAST(125000.00 AS Decimal(18, 2)), CAST(2000.00 AS Decimal(18, 2)), N'Direct', N'Received', N'IT Accessories purchase', NULL, NULL, NULL, 0, NULL, 1, NULL, NULL, NULL, CAST(N'2025-10-23T04:06:42.7766667' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Purchases] ([Id], [PurchaseOrderNo], [PurchaseDate], [ExpectedDeliveryDate], [DeliveryDate], [ReceivedDate], [VendorId], [StoreId], [TotalAmount], [Discount], [PurchaseType], [Status], [Remarks], [ApprovedBy], [ApprovedDate], [RejectionReason], [IsMarketplacePurchase], [MarketplaceUrl], [ProcurementType], [ProcurementSource], [BudgetCode], [CreatedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'PO-000001', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), CAST(N'2025-11-17T00:00:00.0000000' AS DateTime2), NULL, NULL, 2, NULL, CAST(50000.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'Vendor', N'Draft', N'ddcdv', NULL, NULL, NULL, 0, NULL, 1, NULL, NULL, NULL, CAST(N'2025-11-10T09:38:15.9793165' AS DateTime2), N'admin', CAST(N'2025-11-10T12:42:42.1970233' AS DateTime2), NULL, 0)
+GO
+INSERT [dbo].[Purchases] ([Id], [PurchaseOrderNo], [PurchaseDate], [ExpectedDeliveryDate], [DeliveryDate], [ReceivedDate], [VendorId], [StoreId], [TotalAmount], [Discount], [PurchaseType], [Status], [Remarks], [ApprovedBy], [ApprovedDate], [RejectionReason], [IsMarketplacePurchase], [MarketplaceUrl], [ProcurementType], [ProcurementSource], [BudgetCode], [CreatedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'PO-000002', CAST(N'2025-11-10T09:39:39.4768167' AS DateTime2), CAST(N'2025-10-30T04:25:19.1766667' AS DateTime2), NULL, NULL, NULL, NULL, CAST(50000.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'Vendor', N'Draft', N'Created from Requisition #REQ-2024-002
+Department: 
+Purpose: Office Stationary Requirement
+Priority: Medium', NULL, NULL, NULL, 0, NULL, 1, NULL, NULL, NULL, CAST(N'2025-11-10T09:39:39.4878755' AS DateTime2), N'admin', CAST(N'2025-11-10T12:42:35.1524740' AS DateTime2), NULL, 0)
+GO
+INSERT [dbo].[Purchases] ([Id], [PurchaseOrderNo], [PurchaseDate], [ExpectedDeliveryDate], [DeliveryDate], [ReceivedDate], [VendorId], [StoreId], [TotalAmount], [Discount], [PurchaseType], [Status], [Remarks], [ApprovedBy], [ApprovedDate], [RejectionReason], [IsMarketplacePurchase], [MarketplaceUrl], [ProcurementType], [ProcurementSource], [BudgetCode], [CreatedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'PO-000003', CAST(N'2025-11-10T12:41:26.0676267' AS DateTime2), CAST(N'2025-10-25T04:25:19.1766667' AS DateTime2), NULL, NULL, NULL, NULL, CAST(261000.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'Vendor', N'Approved', N'Created from Requisition #REQ-2024-001
+Department: 
+Purpose: IT Equipment for Battalion Office
+Priority: High', N'System', CAST(N'2025-11-10T12:43:11.6113427' AS DateTime2), NULL, 0, NULL, 1, NULL, NULL, NULL, CAST(N'2025-11-10T12:41:26.0785788' AS DateTime2), N'admin', CAST(N'2025-11-10T12:43:11.6114412' AS DateTime2), N'admin', 1)
 GO
 SET IDENTITY_INSERT [dbo].[Purchases] OFF
 GO
@@ -4552,7 +5197,7 @@ INSERT [dbo].[Ranges] ([Id], [Name], [Code], [HeadquarterLocation], [CommanderNa
 GO
 INSERT [dbo].[Ranges] ([Id], [Name], [Code], [HeadquarterLocation], [CommanderName], [CommanderRank], [ContactNumber], [Email], [CoverageArea], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Khulna Range', N'KHL-01', N'Khulna Cantonment', N'Colonel Md. Azizur Rahman', N'Colonel', N'01700-444444', N'khulna.range@ansar.gov.bd', N'Khulna Division', NULL, N'খুলনা রেঞ্জ', CAST(N'2025-11-04T06:35:24.3533333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Ranges] ([Id], [Name], [Code], [HeadquarterLocation], [CommanderName], [CommanderRank], [ContactNumber], [Email], [CoverageArea], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Barisal Range', N'BAR-01', N'Barisal Cantonment', N'Colonel Md. Hafizur Rahman', N'Colonel', N'01700-555555', N'barisal.range@ansar.gov.bd', N'Barisal Division', NULL, N'বরিশাল রেঞ্জ', CAST(N'2025-11-04T06:35:24.3533333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Ranges] ([Id], [Name], [Code], [HeadquarterLocation], [CommanderName], [CommanderRank], [ContactNumber], [Email], [CoverageArea], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Barisal Range', N'BAR-01', N'Barisal Cantonment', N'Colonel Md. Hafizur Rahman', N'Lieutenant Colonel', N'01700-555555', N'barisal.range@ansar.gov.bd', N'Barisal Division', NULL, N'বরিশাল রেঞ্জ', CAST(N'2025-11-04T06:35:24.3533333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-09T17:09:37.7443825' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
 GO
 INSERT [dbo].[Ranges] ([Id], [Name], [Code], [HeadquarterLocation], [CommanderName], [CommanderRank], [ContactNumber], [Email], [CoverageArea], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Sylhet Range', N'SYL-01', N'Sylhet Cantonment', N'Colonel Md. Nuruzzaman', N'Colonel', N'01700-666666', N'sylhet.range@ansar.gov.bd', N'Sylhet Division', NULL, N'সিলেট রেঞ্জ', CAST(N'2025-11-04T06:35:24.3533333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
@@ -4564,7 +5209,35 @@ SET IDENTITY_INSERT [dbo].[Ranges] OFF
 GO
 SET IDENTITY_INSERT [dbo].[ReceiveItems] ON 
 GO
-INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity]) VALUES (1, 3, 13, NULL, CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), NULL, N'Good', N'Uniform in good condition', NULL, NULL, NULL, 0, NULL, CAST(N'2025-10-30T04:55:56.2966667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (1, 3, 13, NULL, CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), NULL, N'Good', N'Uniform in good condition', NULL, NULL, NULL, 0, NULL, CAST(N'2025-10-30T04:55:56.2966667' AS DateTime2), NULL, NULL, NULL, 1, N'RCV-2025-001', N'1', NULL, NULL, NULL, 4)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (2, 4, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-06T21:21:16.2532172' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (3, 5, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-06T21:38:09.2182313' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (4, 6, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-06T21:54:42.8197854' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (5, 7, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-07T06:09:29.7326174' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (6, 8, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-08T04:24:04.1993572' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (7, 9, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-08T19:33:58.3957731' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (8, 10, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-08T19:58:20.7573732' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (9, 11, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-08T20:01:40.0526798' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (10, 12, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-08T20:22:26.8230379' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (11, 13, 21, 2, CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-11T15:15:11.1106569' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (12, 14, 11, 2, CAST(20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-11T15:37:05.1932799' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (13, 19, 7, NULL, CAST(100.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-12T02:46:12.8762209' AS DateTime2), N'admin', NULL, NULL, 1, N'RCV-2025-002', N'1', NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (14, 20, 5, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-12T03:02:10.0077944' AS DateTime2), N'admin', NULL, NULL, 1, N'RCV-2025-003', N'1', NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[ReceiveItems] ([Id], [ReceiveId], [ItemId], [StoreId], [Quantity], [IssuedQuantity], [ReceivedQuantity], [BatchNumber], [Condition], [Remarks], [DamageNotes], [DamageDescription], [DamagePhotoPath], [IsScanned], [ItemId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [LedgerNo], [PageNo], [PartiallyUsableQuantity], [UnusableQuantity], [UsableQuantity], [LedgerBookId]) VALUES (15, 21, 22, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Good', NULL, NULL, NULL, NULL, 0, NULL, CAST(N'2025-11-12T03:38:13.2079250' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
 SET IDENTITY_INSERT [dbo].[ReceiveItems] OFF
 GO
@@ -4572,27 +5245,71 @@ SET IDENTITY_INSERT [dbo].[Receives] ON
 GO
 INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (3, N'RCV-2024-001', N'RCV-NO-001', CAST(N'2025-10-30T04:55:42.9533333' AS DateTime2), CAST(N'2025-10-30T04:55:42.9533333' AS DateTime2), N'2', N'1st Ansar Battalion', N'Battalion', N'Store Keeper - Abdul Karim', N'Return', N'Items returned after personnel retirement', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Return', NULL, N'Abdul Karim', NULL, N'Store Keeper', 1, 1, N'Good', NULL, N'Abdul Karim', CAST(N'2025-10-30T04:55:42.9533333' AS DateTime2), CAST(N'2025-10-30T04:55:42.9533333' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (4, N'RCV-202511-0001', NULL, CAST(N'2025-11-07T03:21:15.8356121' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-06T21:21:15.8537757' AS DateTime2), CAST(N'2025-11-06T21:21:15.8539877' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (5, N'RCV-202511-0002', NULL, CAST(N'2025-11-07T03:38:08.7951018' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-06T21:38:08.8034545' AS DateTime2), CAST(N'2025-11-06T21:38:08.8036522' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (6, N'RCV-202511-0003', NULL, CAST(N'2025-11-07T03:54:42.4343905' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-06T21:54:42.4529912' AS DateTime2), CAST(N'2025-11-06T21:54:42.4535449' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (7, N'RCV-202511-0004', NULL, CAST(N'2025-11-07T12:09:29.1373042' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-07T06:09:29.1502171' AS DateTime2), CAST(N'2025-11-07T06:09:29.1505849' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (8, N'RCV-202511-0005', NULL, CAST(N'2025-11-08T10:24:03.8391684' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-08T04:24:03.8480786' AS DateTime2), CAST(N'2025-11-08T04:24:03.8483580' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (9, N'RCV-202511-0006', NULL, CAST(N'2025-11-09T01:33:58.1776817' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-08T19:33:58.1852928' AS DateTime2), CAST(N'2025-11-08T19:33:58.1854914' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (10, N'RCV-202511-0007', NULL, CAST(N'2025-11-09T01:58:20.2384673' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-08T19:58:20.2524371' AS DateTime2), CAST(N'2025-11-08T19:58:20.2526538' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (11, N'RCV-202511-0008', NULL, CAST(N'2025-11-09T02:01:39.6911448' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-08T20:01:39.7124774' AS DateTime2), CAST(N'2025-11-08T20:01:39.7129067' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (12, N'RCV-202511-0009', NULL, CAST(N'2025-11-09T02:22:26.5022659' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Zila', NULL, NULL, NULL, NULL, 0, 0, N'Good', NULL, N'admin', CAST(N'2025-11-08T20:22:26.5115718' AS DateTime2), CAST(N'2025-11-08T20:22:26.5117375' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (13, N'RCV-202511-0010', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Issue', NULL, NULL, NULL, NULL, 0, 0, N'Good', N'Condition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment NotesCondition Assessment Notes', N'admin', CAST(N'2025-11-11T15:15:10.7706113' AS DateTime2), CAST(N'2025-11-11T15:15:10.7707746' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (14, N'RCV-202511-0011', NULL, CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'Issue', NULL, NULL, NULL, NULL, 0, 0, N'Good', N'sdsdsad', N'admin', CAST(N'2025-11-11T15:37:05.1463878' AS DateTime2), CAST(N'2025-11-11T15:37:05.1467350' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (18, N'RCV-202511-0012', NULL, CAST(N'2025-11-12T00:00:00.0000000' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'System Administrator', NULL, N'xdvcxv', NULL, 5, NULL, NULL, NULL, NULL, NULL, 3, NULL, NULL, NULL, N'Range', N'data:image/png;base64,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SpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdAMvJIkSSo0A68kSZIKzcArSZKkQjPwSpIkqdD+DwEz9SAhSLM+AAAAAElFTkSuQmCC', N'admin', N'B576586', N'LT COL', 0, 0, N'Good', NULL, N'System Administrator', CAST(N'2025-11-12T02:28:04.5661887' AS DateTime2), CAST(N'2025-11-12T02:28:04.5665152' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (19, N'RCV-202511-0013', NULL, CAST(N'2025-11-12T00:00:00.0000000' AS DateTime2), CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Draft', NULL, NULL, N'System Administrator', NULL, N'bxbx', 3, NULL, NULL, NULL, NULL, NULL, NULL, 3, NULL, NULL, NULL, N'Battalion', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAMrUlEQVR4Xu3daYjVVRjA4TNl+55ttm+W2W57GRURJRUVZRn1QTAKIgrpQ5lEuyhFBi0ErdCHaKGMFiqiTdssI03LFivTQqNo3xfjPXj/XKexGWfuvTOeeR4Y5i7jbUbBfr73/M9pW7JkyZIEAACFahO8AACUTPACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACAFA0wQsAQNEELwAARRO8AAAUTfACQBctWrQoLVy4sPo8c+bMfHv27Nnpr7/+Sttvv3367LPP0j///JPGjRuXzjnnnDRgwIDq1wO9Q/AC0O99/PHHOWAjVuPjm2++ySE7Z86ctHjx4rTKKquk7777Lkftihg+fHiaPHly2n///avHgNYTvAAU7+uvv84hG5PYCNsI2dpkdnkhu+GGG6aBAwemtra2PLmt/5r4tR988EGK/4VusMEGadCgQfn1f/vtt+pramLCO2rUqHTzzTfn1wRaT/AC0CumTZuWZs2alc4///zqsZ6qRexbb72V5s+fn9555500d+7cHLX11l133bT11lunLbbYIu28885pq622yvcjbGuPrbnmmtXXdyReM6J3v/32y1EbQTxlypR05513pqlTp6Zffvml+towZMiQ9MILL+TXB1pL8ALQchGhQ4cOzRPS0aNHp3vuuad6rjMxoY2PefPmpQULFuSwjcitTWtrImojXONj9913z8EZQVuL2maK72/s2LHp4Ycfrh4Le+21V5o+fXpaY401qseA5hO8ALRcvL1/4YUX5tuDBw9OH3744dJnUp6U1tbSRhjXgjYiMu63X36wySabpH322SeHbITtHnvskeM2Jra97bnnnktnnnlmXlJRc9BBB6XXXnstL5UAWkPwAtByDzzwQF7XGg4//PB02GGH5QvH4iPitn3UxtrXCNmYzMYSgrgdH/F4X18XGz/PsGHD0p9//lk9NmLEiHT//ffn9b9A8wleAJoulhq8/vrrOf5mzJiRXn755fTll19Wz9fEtDamsxGze++9d57axvS22UsQmu2OO+7Ia5XrQz5+rhdffFH0QgsIXgAa6qeffsoXpEXcvvLKK/lzTG7rxTZfsVdt2HfffdOECRNy5PaFZQjN8sgjj6SRI0dWP3c44ogj0tNPP93pBXJAzwheALot4jaCNnZDeOONN/IUN9bZthf70EbQxvrVmGzed9996bbbbsvPxRT3008/XfqVZYvp9rHHHpv3+a058sgj8+4NQPMIXgC6LII2tvyKcIvPHV1EFmEbURtLEg4++OAcu+0nmHGhWv3U96OPPsq7KfQH8Xt34IEHLjPpjSn3XXfdlT8DjSd4AVhG7ZCG2kENEbZx+4svvvjPfrYxnY2gjcltfI7Q7ewisrh4a/XVV6/uh0suuSRNnDixul+6u+++O40ZM6a6H+L37ZlnnskxDDSW4AXohyJcazsixOEJseVXLEuIz+2jtibiNia2MYmtLU3ozprbH3744T8Xal155ZXpiiuuqO73B1dffXWaNGnSMgdUxD69M2fOrO4DjSF4AQoXx93GlDaWI8Q62wjb9heRdSR2Roj1pXFh1THHHJN22mmn6rme6GjCe+2116bx48dX9/uLmJzHhWzx51Pz5ptv5mk50DiCF6AwsaY24jYOPYi3yCOm2q+z7UicTBYT3OOPPz4dd9xxeXuwZongrd+X9uKLL0433HBDdb8/iS3Lzj333Or+lltumZePAI0jeAEKELslxPZWjz32WHriiSeWuyyhvbjA7NRTT82T3Ijd9heXNcumm266zOljsUftrbfemncviFPY4vuPyfSvv/6a3/L//fff8+34iMfjsQjmOKJ3wIABaaONNsrLLDbffPO0zTbbpBNPPHGlOb43/mESE/R68bPFzwU0huAFWEktWrQoTZkyJUduHGAQIdiZuDDqhBNOSEcffXSO3FiX2xtiN4JYWlGz2Wab5e8/1vc2SkRwrIkNEdhx7HBPrbPOOumAAw6o7rcXER+HZ4T4vY51zp2J6faNN95Y3d91113T7bffXt0P6623Xj5hDugewQuwEok1nxG5cTRvLFvoirjILJYonHHGGXmK25uTwz/++CNPX1999dU8labr3n///aYuM4GSCV6APi4mobFM4cknn1yhyB01alRertCVKWOrnHLKKTnYS7X+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', N'admin', N'B576586', N'LT COL', 0, 0, N'Good', NULL, N'System Administrator', CAST(N'2025-11-12T02:46:12.6627265' AS DateTime2), CAST(N'2025-11-12T02:46:12.6630205' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (20, N'RCV-202511-0014', NULL, CAST(N'2025-11-12T00:00:00.0000000' AS DateTime2), CAST(N'2025-11-12T09:16:53.0956472' AS DateTime2), N'Completed', NULL, NULL, N'System Administrator', NULL, N'zsdsdsa', 2, NULL, NULL, NULL, NULL, NULL, NULL, 2, NULL, NULL, NULL, N'Battalion', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAgAElEQVR4Xu2dB5RcZRmGLwgiIB1EQSF0CAREpDcjAiY0IUCktyDSEggQOoRgKAk90ov0qlSpoYqh9y5oEFAQqQEFQSzn+dn/npvJ7OyUO5uZO89zzpypO+Xe2d33fv/7vd80//vf//6XiEiuPPLII8n777+fPPTQQ8knn3wSrv/tb39L/vCHP6SPKRrLLLNMMuussyZf+cpXkg022CD597//nUwzzTTJUkstlXzrW99KZphhhmTuuedOFlhggfRnREREeoNpFLwitYOYmzBhQjJ+/Phk+umnT1599dXktddeS1555ZXkzTffTB9XLWuvvXYyyyyzJCussEJ62xxzzJEst9xy6fVyPPDAA8nnn3+e/Oc//0m+/e1vJ++99174mZlnnjl9DCL0e9/7Xnq9Hp588slk0qRJ4fIXX3yR/P73vw+X+fPxu9/9LpzD66+/HrZFd8w444xBEPN+1llnneQHP/hBstZaa6X3i4iINAMFr0gPIOgee+yx5I9//GPywgsvBGH75z//Ob2/Guacc86kX79+yXe+851kkUUWSZZffvlkttlmS1ZaaaVkpplmSh9XNNh2//3vf8PlF198MXnnnXeSiRMnhsp3ttq9xBJLJEsuuWTyzW9+M1l55ZWTbbbZJvnqV7+a3t9u3H///cnAgQOTvn37Jrvvvnuy/fbbJ9NOO216v4iI9C4KXpEyUMEcO3ZscuONN6a39QRC7Wtf+1qyyiqrhPNVV101LONTtaV6K5Pz0UcfBUFMpfzBBx8MJ6rVkWWXXTYZOnRosssuu6S3tQv9+/dPq+BUxDmoWXTRRZMPP/wwHPR84xvfCEJ43XXX7foJERFpJgpekQzjxo1LzjzzzFCNrATiZfPNNw+idsMNN7R6lxNPPfVUEIr33ntvcu211warBBaIU089NRk8eHDwALc65557bvKzn/0snG+99dbJlVdemdx5553hc73xxhvp4+Dyyy9Pttpqq/S6iIg0BwWvSJKEJfbDDjssueuuu9LbSsF3it902223ncxrK82BauiFF16YHHHEEcnHH38cfMk777xzsv/++7ds4xtWF5r3+H7ceuutU9hV/vWvf4XvGp7o4cOHhwOle+65J1cfM68x3XTTBT83Kwy8J6rMNE1y37vvvhu2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', N'admin', N'B576586', N'LT COL', 0, 0, N'Good', NULL, N'System Administrator', CAST(N'2025-11-12T03:02:09.8611301' AS DateTime2), CAST(N'2025-11-12T03:02:09.8613254' AS DateTime2), N'admin', CAST(N'2025-11-12T03:16:53.0957373' AS DateTime2), NULL, 1, CAST(N'2025-11-12T09:17:16.3133804' AS DateTime2), N'vouchers\Receive_Voucher_RCV-202511-0001_20251112095837.pdf', CAST(N'2025-11-12T09:17:16.3135135' AS DateTime2), N'RCV-202511-0001', NULL, NULL)
+GO
+INSERT [dbo].[Receives] ([Id], [ReceiveNo], [ReceiveNumber], [ReceiveDate], [ReceivedDate], [Status], [ReceivedFrom], [ReceivedFromType], [ReceivedBy], [Source], [Remarks], [ReceivedFromBattalionId], [ReceivedFromRangeId], [ReceivedFromZilaId], [ReceivedFromUpazilaId], [ReceivedFromUnionId], [ReceivedFromIndividualName], [ReceivedFromIndividualBadgeNo], [StoreId], [OriginalIssueId], [OriginalIssueNo], [OriginalVoucherNo], [ReceiveType], [ReceiverSignature], [ReceiverName], [ReceiverBadgeNo], [ReceiverDesignation], [IsReceiverSignature], [VerifierSignature], [OverallCondition], [AssessmentNotes], [AssessedBy], [AssessmentDate], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [VoucherDate], [VoucherDocumentPath], [VoucherGeneratedDate], [VoucherNo], [VoucherNumber], [VoucherQRCode]) VALUES (21, N'RCV-202511-0015', NULL, CAST(N'2025-11-12T00:00:00.0000000' AS DateTime2), CAST(N'2025-11-12T09:38:19.0463553' AS DateTime2), N'Completed', NULL, NULL, N'admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 13, N'ISS-202511-0008', N'IV-ISS-202511-0008', N'Issue', N'sfsdf', N'dsdfds', N'sdfsdf', N'LT COL', 0, 0, N'Good', N'zsfdsf', N'admin', CAST(N'2025-11-12T03:38:13.0681074' AS DateTime2), CAST(N'2025-11-12T03:38:13.0682624' AS DateTime2), N'admin', CAST(N'2025-11-12T03:38:19.0465227' AS DateTime2), NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
 SET IDENTITY_INSERT [dbo].[Receives] OFF
 GO
 SET IDENTITY_INSERT [dbo].[RequisitionItems] ON 
 GO
-INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 3, 5, CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(225000.00 AS Decimal(18, 2)), NULL, NULL, NULL, CAST(45000.00 AS Decimal(18, 2)), CAST(225000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:58.5066667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 3, 5, CAST(5.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(225000.00 AS Decimal(18, 2)), NULL, N'PO Created', NULL, CAST(45000.00 AS Decimal(18, 2)), CAST(225000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:58.5066667' AS DateTime2), NULL, CAST(N'2025-11-10T12:41:26.6347141' AS DateTime2), N'admin', 1)
 GO
-INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, 3, 6, CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), NULL, NULL, NULL, CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:58.5066667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, 3, 6, CAST(2.000 AS Decimal(18, 3)), CAST(2.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), NULL, N'PO Created', NULL, CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:58.5066667' AS DateTime2), NULL, CAST(N'2025-11-10T12:41:26.6351573' AS DateTime2), N'admin', 1)
 GO
-INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, 4, 8, CAST(1000.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(5.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), NULL, NULL, NULL, CAST(5.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:58.5200000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, 4, 8, CAST(1000.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(5.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), NULL, N'PO Created', NULL, CAST(5.00 AS Decimal(18, 2)), CAST(5000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:58.5200000' AS DateTime2), NULL, CAST(N'2025-11-10T09:39:39.6426311' AS DateTime2), N'admin', 1)
 GO
-INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, 4, 7, CAST(100.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(450.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, NULL, NULL, CAST(450.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:58.5200000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, 4, 7, CAST(100.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(450.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, N'PO Created', NULL, CAST(450.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:58.5200000' AS DateTime2), NULL, CAST(N'2025-11-10T09:39:39.6440240' AS DateTime2), N'admin', 1)
+GO
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 6, 5, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, N'Pending', CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'fvdsgdsgd', CAST(N'2025-11-10T07:54:12.2419731' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 6, 8, CAST(12.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, N'Pending', CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'dsfdsf', CAST(N'2025-11-10T07:54:12.2591728' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 6, 22, CAST(50.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, N'Pending', CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), N'dsfdsf', CAST(N'2025-11-10T07:54:12.2664532' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, 7, 5, CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, N'Pending', CAST(0.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(45000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-11-10T09:24:43.4470549' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[RequisitionItems] ([Id], [RequisitionId], [ItemId], [RequestedQuantity], [ApprovedQuantity], [EstimatedUnitPrice], [EstimatedTotalPrice], [Justification], [Status], [IssuedQuantity], [UnitPrice], [TotalPrice], [Specification], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, 7, 9, CAST(1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, N'Pending', CAST(0.000 AS Decimal(18, 3)), CAST(10.00 AS Decimal(18, 2)), CAST(10.00 AS Decimal(18, 2)), NULL, CAST(N'2025-11-10T09:24:43.4669637' AS DateTime2), N'admin', NULL, NULL, 1)
 GO
 SET IDENTITY_INSERT [dbo].[RequisitionItems] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Requisitions] ON 
 GO
-INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'REQ-2024-001', CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), N'Battalion Commander - 1st Battalion', N'Approved', NULL, NULL, NULL, NULL, NULL, CAST(250000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-04T04:25:19.1766667' AS DateTime2), N'High', NULL, N'IT Equipment for Battalion Office', CAST(N'2025-10-25T04:25:19.1766667' AS DateTime2), 2, NULL, NULL, 0, NULL, CAST(250000.00 AS Decimal(18, 2)), CAST(250000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'REQ-2024-001', CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), N'Battalion Commander - 1st Battalion', N'Approved', NULL, NULL, NULL, NULL, NULL, CAST(250000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-04T04:25:19.1766667' AS DateTime2), N'High', NULL, N'IT Equipment for Battalion Office', CAST(N'2025-10-25T04:25:19.1766667' AS DateTime2), 2, NULL, N'PO Created', 0, 8, CAST(250000.00 AS Decimal(18, 2)), CAST(250000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, CAST(N'2025-10-10T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-10T12:41:26.6339006' AS DateTime2), N'admin', 1)
 GO
-INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'REQ-2024-002', CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), N'Range Commander - Dhaka Range', N'Approved', NULL, NULL, NULL, NULL, NULL, CAST(75000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-04T04:25:19.1766667' AS DateTime2), N'Medium', NULL, N'Office Stationary Requirement', CAST(N'2025-10-30T04:25:19.1766667' AS DateTime2), 2, NULL, NULL, 0, NULL, CAST(75000.00 AS Decimal(18, 2)), CAST(75000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'REQ-2024-002', CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), N'Range Commander - Dhaka Range', N'Approved', NULL, NULL, NULL, NULL, NULL, CAST(75000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-04T04:25:19.1766667' AS DateTime2), N'Medium', NULL, N'Office Stationary Requirement', CAST(N'2025-10-30T04:25:19.1766667' AS DateTime2), 2, NULL, N'PO Created', 0, 7, CAST(75000.00 AS Decimal(18, 2)), CAST(75000.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, CAST(N'2025-10-17T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-10T09:39:39.6418240' AS DateTime2), N'admin', 1)
 GO
 INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'REQ-2024-003', CAST(N'2025-10-27T04:25:19.1766667' AS DateTime2), N'Zila Commander - Dhaka Zila', N'Pending', NULL, NULL, NULL, NULL, NULL, CAST(120000.00 AS Decimal(18, 2)), NULL, CAST(N'2025-10-27T04:25:19.1766667' AS DateTime2), NULL, CAST(N'2025-11-04T04:25:19.1766667' AS DateTime2), N'High', NULL, N'Uniform and Equipment', CAST(N'2025-11-09T04:25:19.1766667' AS DateTime2), 2, NULL, NULL, 0, NULL, CAST(120000.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, CAST(N'2025-10-27T04:25:19.1766667' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'REQ25110001', CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'admin', N'Approved', NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T07:35:46.3636736' AS DateTime2), NULL, NULL, CAST(0.00 AS Decimal(18, 2)), N'dsfdsfds', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Normal', N'Operations', N'dfdsf', CAST(N'2025-11-17T00:00:00.0000000' AS DateTime2), 2, 3, N'Pending', 0, NULL, CAST(0.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, CAST(N'2025-11-10T07:54:11.9847958' AS DateTime2), N'admin', CAST(N'2025-11-10T07:54:26.8823256' AS DateTime2), N'admin', 1)
+GO
+INSERT [dbo].[Requisitions] ([Id], [RequisitionNumber], [RequisitionDate], [RequestedBy], [Status], [RequiredDate], [ApprovedBy], [ApprovedDate], [RejectionReason], [RejectedBy], [TotalEstimatedCost], [Notes], [RequestDate], [ApprovalComments], [RejectedDate], [Priority], [Department], [Purpose], [RequiredByDate], [FromStoreId], [ToStoreId], [FulfillmentStatus], [AutoConvertToPO], [PurchaseOrderId], [EstimatedValue], [ApprovedValue], [Level1ApprovedBy], [Level1ApprovedDate], [Level2ApprovedBy], [Level2ApprovedDate], [FinalApprovedBy], [FinalApprovedDate], [CurrentApprovalLevel], [RequestedByUserId], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'REQ25110002', CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'admin', N'Draft', NULL, NULL, NULL, NULL, NULL, CAST(0.00 AS Decimal(18, 2)), N'bcvbcv', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), N'Normal', N'Store Management', N'cb', CAST(N'2025-11-17T00:00:00.0000000' AS DateTime2), 2, 3, N'Pending', 0, NULL, CAST(45010.00 AS Decimal(18, 2)), CAST(0.00 AS Decimal(18, 2)), NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, CAST(N'2025-11-10T09:24:43.0309657' AS DateTime2), N'admin', NULL, NULL, 1)
 GO
 SET IDENTITY_INSERT [dbo].[Requisitions] OFF
 GO
@@ -5136,6 +5853,32 @@ INSERT [dbo].[SignatoryPresets] ([Id], [PresetName], [PresetNameBn], [SignatoryN
 GO
 SET IDENTITY_INSERT [dbo].[SignatoryPresets] OFF
 GO
+SET IDENTITY_INSERT [dbo].[Signatures] ON 
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'Issue', 6, N'Issuer', N'data:image/png;base64,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HDnSHn744VwfK79Yubt16tSxHTt2uN91797d5QeXKVPG5Q7XqFGjqNPgegQQQAABnwUIeH1+AAyPQFgFtCuqIDHSVIrs448/9mW5v/jFL2zEiBF27ty56PiquqAUi0jtXf1CL701b97cdODE8ePH3bWqG6xKD2pKefjd737nyxoYFAEEEEAgfgEC3vjtuBMBBAoQUMBYuXLl6BU5d039gFu/fr3brd29e3d0eB1soZfRrrnmGveZdqCVznD+/Hk7duyYVapUyX3eokULW7NmjStNFilV5scaGBMBBBBAID4BAt743LgLAQQKEchbkkynq2m31M924sQJt4MbSVfQXKpVq2Zbt251wblSICpWrOhOd8uZb7x48WJLT093U8/MzLTf/OY3fi6DsRFAAAEEiihAwFtEMC5HAIHYBObPn2+33XZb9GJVZ1AKgd9NgbiqLehQi0i78847bdq0ae6P9evXty1bttiCBQtMZcoiTfeockPZsmVdrV7tBNMQQAABBJJDgIA3OZ4Ts0Qg6QRyHimsyetlsMmTJwdiHSpZNmzYsFxziQS4GRkZ9uKLL9qYMWPswQcfjF7z+uuvR8uZ6d6srKxArIVJIIAAAggULkDAW7gRVyCAQBwC2tGdNWtW9M4gBYnK0a1evXqu44pr1aplmzdvdgdjqJRZfi+oqX6vAl8dQaw0iEjubxw83IIAAgggUIICBLwliM1QCKSSQN26dV0Zr0jTYRAFnXJW0jbabb777rtzDatSZarkMHToUOvcubPb6c3ZXn75ZZfmoGsUGOvkOBoCCCCAQPAFCHiD/4yYIQJJJ/DJJ59YhQoVcs1bVQ6aNWsWmLXoBbVvfvObtmrVquic0tLS3Altffr0sUaNGtm77757wXxvvfVWW7hwoSu5tmnTJrv22msDsyYmggACCCCQvwABL98MBBBIuMCePXtMKQI524oVK6x169YJH6s4HSrlIu9Rx9r1nTRpklWtWtUOHz58Qffr1q1zlR6UFqEda+1c0xBAAAEEgi1AwBvs58PsEEhKgSNHjriAMWfTP/8rDSBI7fTp01auXLlcB1KoLNlHH33kppmzFm/OeSvg1SEVavPmzctVjSJI62MuCCCAAAL/L0DAyzcBAQQ8EahXr557sSvSglCHN7+F9u7d25599tlcvypVqpTbwVUJs+uvv/6C2w4ePGgNGzZ0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Y2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBXgIDXX39GRwABBBBAAAEEEPBYgIDXY2C6RwABBBBAAAEEEPBX4P8AyvUS1evix8wAAAAASUVORK5CYII=', N'Aak', N'BG6466', NULL, CAST(N'2025-11-06T16:12:52.9182970' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-06T16:12:52.9229795' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Issue', 7, N'Issuer', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAgAElEQVR4Xu2dCbhNZfv/b5UMFZonRCoRSvKaKqkkU8oUlaSXIkSlokE0GoqMTYRSEhqVFELyIiIalBSKkub3l0Tp9/s8/+tZ/3Xmfc5e+7TP2d/7us5ln73XetbzfNbGd9/7fr53kb//L0whAiIgAiIgAiIgAiIgAoWUQBEJ3kJ6Z7UsERABERABERABERABR0CCV28EEUhxAv/zP/9jP//8c4afP//8MyCz3377WdmyZd1PhQoVjN8VIiACIiACIlBQCEjwFpQ7pXmKQC4IvPTSS7Zo0SJDtO7atcv9eGHL47DA5ffcRPHixe2MM86wunXrWpMmTdzjMmXK5GYIHSsCIiACIiAC+UpAgjdfcetiIpB4At9++60dc8wxll/l+WR7zzzzTGvVqpVdeOGFdvLJJyd+kbqCCIiACIiACOSCgARvLmDpUBEoCASeeeYZu+KKK9xUDzzwQPdDVhZhGv79sMMOM3547YADDnCPed2XL/i1fv/99y4jvHHjRtu0aZMtWbLEvv766yxRIHgvvfRSu/jii+20004rCMg0RxEQAREQgUJOQIK3kN9gLS+1CCBOa9eu7YQpAvarr75ygjbqIIs8e/ZsVzYxc+ZMVzKRWVDv27ZtWyeAEb+q/Y36Tmg8ERABERCBWAhI8MZCSceIQAEggMht166drVy50s125MiR1rdv34TPnNrgefPmGZllRHBW4veoo45y4rdz586u7lchAiIgAiIgAvlFQII3v0jrOiKQQALLli2zpk2butIDgnKCGTNm5HtGleuzYQ7xu3DhQrdpLrMoUaKEy0RPnz7dEMIKERABERABEUgkAQneRNLV2CKQTwSqVKli69evd1cjqzt8+PB8F7vpl0qd7+TJk23KlCn2+eefZ0qiQ4cONm3atHyipMuIgAiIgAikKgEJ3lS981p3oSFAJrVRo0ZuPflVxhCG99FHHzlnhn333TdLpmSgJ06c6LK/1BmHY8yYMdarV69Ccz+0EBEQAREQgeQjIMGbfPdEMxKBXBEYMmSIDRgwwDks/PTTT/mW2aV8oWrVqvbNN9+4+VKfS3nC3XffbQcffHCma6C+d9SoUXbbbbfZ3r17g2PISPfr1y9X69bBIiACIiACIhArAQneWEnpOBFIUgI33HCDPfzww1atWjVbt25dvs2ye/fu9thjj2W4XrFixeyOO+6w/v37Zym+EegI9XA88sgjxpgKERABERABEYiagARv1EQ1ngjkM4EePXrYo48+6pwP3nvvvXy5OtlYShF2796d5fV69+5to0ePzvL1Tp062dSpU4PXKYv45JNP8mX+uogIiIAIiEBqEZDgTa37rdUWQgLdunWzCRMm5Jvgfeihh9KUH1C7SynD1q1bM9BdvXp1ts0nEMVjx44NzkOwy7KsEL5JtSQREAER+IcJSPD+wzdAlxeBeAn4kgYaOyAwExk0sqCZhK+/pVb3tddes3r16tmWLVtcScKcOXOCKZx44onOF7hUqVKZTosNbIcffnjw2quvvmotWrRI5BI0tgiIgAiIQAoSkOBNwZuuJRcuAn7TGkL0yy+/TOjiqLO97rrr3DXq169vb775pmtL7APf3Zo1a9qHH34YPNelSxd78skns5xX0aJFA79exPKFF16Y0DVocBEQAREQgdQjIMGbevdcKy5kBLzgLVOmjO3YsSOhLg1kX8noEliMtWrVKgPNp59+2q688so0z2Od1rBhwwzHIpBpQuEbVKikoZC9ObUcERABEUgSAhK8SXIjNA0RyCuBOnXq2IoVKwx3BNr87rfffnkdKtvzKGcoX768OwaRSjlCyZIlMz2HOtxVq1YFryGUKVdIHzt37nR2an///bd7CYszdV5LyO3ToCIgAiKQ0gQkeFP69mvxBZ3AmjVrXAkBkcimE2RgEbEffPCBuxati1988cUs8S1evDhNRhcRjmBOL2bff/99q1Wrlhtnn332sb/++qug3xLNXwREQAREIAkJSPAm4U3RlEQgVgIdO3a05557zsqWLevqdxOV3Z00aZJdffXVwbRef/11a9q0abbTZBOdF8gciBtDz54905xDrW/16tXdc0WKFLE9e/Zk27EtVi46TgREQAREQATCBCR49X4QgQJK4Ntvv7Vy5cq5+tcHHnjANXpIRGzevNmJ0v/+979OlM6aNcsuueSSHC+FB2+fPn2C4ypXrmzr169Pc97XX3/t1uBj+/btdsQRR+Q4tg4QAREQAREQgdwQkODNDS0dKwJJRODBBx+0m2++2YoXL+6yu4mqfSWzS4aXyCxLmxUSBPLRRx9tv/32W3DI0qVLnYWZDzK61B77Gl5KNE499dQkoqypiIAIiIAIFAYCEryF4S5qDSlJgNpdBGJO9bTxwFm2bJmdeeaZrra2efPmNnv27FwN16tXLxs3blxwzrXXXuu6woUDUUy2mmB8rqMQAREQAREQgSgJSPBGSVNjiUA+EaA0oEqVKu5q06ZNsw4dOkR+ZRwfGjRoYGvXrnVjU9rgXRpivRhNJ2rXrh0cvv/++9t3331npUuXDp47//zzbf78+e73YcOGuay1QgREQAREQASiJCDBGyVNjSUC+USA0gLa8lLOgJUXHrxRBxvMxo8f74bNTSlD+nlUrVrVPvnkk+Bp6nrvvfdeZ0dG9O3b10aNGuUe06mN5hYKERABERABEYiSgARvlDQ1lgjkE4GzzjrLlixZ4rqShVv5RnV5NsLRuW3r1q1uExmWYmRn8xKDBw+2QYMGpTm1UqVKdsEFF9jll19uH3/8sV1zzTXu9SZNmtgbb7yRl8voHBEQAREQARHIkoAEr94cIlDACFBqcPDBBzt3hieeeMK6du0a+QrmzZtnjRs3duPGYkGW2QSYZ+fOne2FF17Idn533nmn3XPPPe4YPHkpg1CIgAiIgAiIQJQEJHijpKmxRCAfCEydOtU6derkPHcza+YQxRTOOeccW7RokWtqQXOI3Ab+u5QnsOktp8BDGHsyCd6cSOl1ERABERCBvBKQ4M0rOZ0nAv8QATxwX3rpJUOUvv3225HPItwMYvLkyS5LG2vs3r3bbr/9dsMyLRytW7dOk+nFz9dbkYWPw+/Xb5KL9Zo6TgREQAREQARyIiDBmxMhvS4CSUTg+++/d962lDOwuYssatRx3XXXubGp3d20aZOVKFEipkvgtHDrrbfaqlWrguNxY6AFcaNGjVxntnB9bmail7Vt27YtpuvpIBEQAREQARGIlYAEb6ykdJwIJAEBsqf333+/c2fYsWNH4HQQ1dR27dplRx55pP3666/uOgMGDIhp6IcffthuvPHGNFlbGlYMHTrUDjvsMDfGzJkzrV27dsF4+Puy8S4clDdQpqEQAREQAREQgSgJSPBGSVNjiUCCCRx//PGuq1r9+vXt3XffjfxqEyZMsG7dulmpUqVsw4YNObb5pZsaGWHqin2QuX3ooYfshhtuSDO/33//3XWDQ0wTlGZQkvHzzz+nOY7fwz69kS9SA4qACIiACKQcAQnelLvlWnBBJnDQQQcZ7gcISjKqUQdWYW+99Zar26V+N7ugBhcnB980gmPJ2uKx27Bhw0xPvfLKK+3pp592r5100knG73fccUeaYxcsWOBKIBQiIAIiIAIiEBUBCd6oSGocEUgwAdrvUuNK4L2LB2+UQYkEGdi9e/fmOD41xK1atXKWZT7at2/vRHJ2Nb/U87KBjdh3332deD/xxBMDlwaev+WWW1wphEIEREAEREAEoiIgwRsVSY0jAgkmwIYvNn4RdC47+eSTI73io48+aj169HA1t4hrBGlWQX3upEmTgpdj7ZD2008/OdH+xx9/uHPXrFljuEJcccUVwVinnHKKe04hAiIgAiIgAlERkOCNiqTGEYEEExgyZIjbREYbYYRj1NG8eXOXsb322msN8ZtZbNmyxTguLEgRq75MIZY5tWnTJrAoe/nll52IP+6441yLZKJo0aIu85vXzm6xzEHHiIAIiIAIpBYBCd7Uut9abQEm0LFjR3vuuecS4r+Lfy7d23bu3GmI0IsuuigDKbx/27Zta3/99Vfw2nnnneesxmiCEWuMHDkyqD8ePXq09e7d25UxDB8+PBgC94YGDRrEOqSOEwEREAEREIFsCUjw6g0iAgWEQLly5Vyta9++fQ3RGGWwUY0NayVLlrQffvjB2Z6FY9y4cdarV680z1F7S0kC5+Qm1q1bZzVq1HCn4OQwYsQI++ijj6xatWrBMKyPdSpEQAREQAREIAoCErxRUNQYIpBgAjScOPzww91VZsyY4TKtUQbjzZo1y5UrzJ49O83QOEL069cveA6niFGjRjmHhezqfLOaHxveDjnkEMPS7PLLL3eWZmyUo4TBZ4/JZj/77LNRLlFjiYAIiIAIpDABCd4UvvlaesEhQDkBvrUEbgq+mUMUKwhvJOvTp4/RRMIHZQaUG/ioXLmyayARzsbmZQ44TMydO9dOO+00W716tRvimGOOCep4uc769evzMrTOEQEREAEREIEMBCR49aYQgQJAgM1qbFqrUKGCazwRZUycONG6du3q6nDZOObFNPXCZFp9IE7ffPPNINMczxzY6PbMM8+k2YCHO8PHH3/shmXjGnXFChEQAREQARGIgoAEbxQUU2iMPXv2BB2++AoakbR48WIngtjoxMYnRfQEyO76TWOUNEQZXmiyScy3+sV1gY5r3j7swAMPdEI7qszywoULg+YSW7duddndnj172vjx44Olbdu2LfAdjnK9GksEREAERCD1CEjwpt49z9OKn3rqKbeJKCc7rCOPPNKqV69uZ5xxhvu6mo1WtMFVxEeADWKff/6560p2zz33xDdY6GzKBihPoHb28ccfdyJ32LBhzv6MulqCml3aGHNfowquhx8v5RlYoGGFRilFuB3xsmXLrE6dOlFdUuOIgAiIgAikMAEJ3hS++blZepMmTdzX2XkNdv2zwYlM4QEHHOC6cdHVi1a06aNYsWJWr14993T4cV6vXRjO4yt+NnuReQ03aYh3bTfddJNzSSA2btzo7tEJJ5zgrkXgwECtbWb3Kd5r+41yzZo1s9dee839tGjRIhiWkofLLrss3svofBEQAREQAREwCV69CWIigEvA4MGDDUspxBD2WHzd/eOPP+ZLrWWpUqWsZs2aTiTTYQxBTPa4atWqMc2/IB8Ea9ZKvPPOO5GJz127drkShd9++81q1aplK1eudO2CX3nlFXetIkWK2AcffBBpZjd8HxDvOD3wAYj30fLly+3ss88ODvEODgX53mnuIiACIiACyUFAgjc57kOBnsWnn35qq1atcl26EGc8plNWfgVftWNzRRayUqVKVrFiRdecobAEdbVnnXWWWw51tGxciyLCm9IGDhzoPjx06NAhGBpbsPCmtSiuGR5j+/btrnaX0om3337bZf9r164dHNK5c2ebPHly1JfVeCIgAiIgAilIQII3BW96fix506ZNRg0mNaIIYL4u/+STTyK5NMJon332sV9//TXb8cgcUktMFpM6VVrysvmLNrYFKebNm2eNGzd2U47SkoxNhq+++qobd+3atfbvf//b3nvvPfd7IppbZMac+8P7g5rhli1bpqn3btSokS1YsKAg3SrNVQREQAREIEkJSPAm6Y0pzNPia3kywWSGsZ7iq2w2MfEcwjgvgbglW8jX9F999VW2Q/zrX/9yX9PjORvlRqy8zDuWc9jU1aNHD9eYwbsmxHJedscwDo4av//+ux1xxBEuw4pbA8Hv3Bs+ICQ6yCyzCQ/h+8ADDwTCnuuWL1/eNm/enOgpaHwREAEREIEUICDBmwI3uSAu8dtvvw0aD+ANiwAjELOI4p9//tnVl8YSZHQR1pRZ0N0rHDgQUP5w3nnnuda6VapUiWXIfD2me/fu9thjj7l2vwjUKAKBe+6557qh2rdvb3Xr1rUbb7zR/X711Vcb3rz5EXz48XW7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IiACyUBAgjcZ7oLmIAIiIAIiIAIiIAIikDACErwJQ6uBRUAEREAEREAEREAEkoGABG8y3AXNQQREQAREQAREQAREIGEEJHgThlYDi4AIiIAIiIAIiIAIJAMBCd5kuAuagwiIgAiIgAiIgAiIQMIISPAmDK0GFgEREAEREAEREAERSAYCErzJcBc0BxEQAREQAREQAREQgYQRkOBNGFoNLAIiIAIiIAIiIAIikAwEJHiT4S5oDiIgAiIgAiIgAiIgAgkjIMGbMLQaWAREQAREQAREQAREIBkISPAmw13QHERABERABERABERABBJGQII3YWg1sAiIgAiIgAiIgAiIQDIQkOBNhrugOYiACIiACIiACIiACCSMgARvwtBqYBEQAREQAREQAREQgWQgIMGbDHdBcxABERABERABERABEUgYAQnehKHVwCIgAiIgAiIgAiIgAslAQII3Ge6C5iACIiACIiACIiACIpAwAhK8CUOrgUVABERABERABERABJKBgARvMtwFzUEEREAEREAEREAERCBhBCR4E4ZWA4uACIiACIiACIiACCQDAQneZLgLmoMIiIAIiIAIiIAIiEDCCEjwJgytBhYBERABERABERABEUgGAhK8yXAXNAcREAEREAEREAEREIGEEZDgTRhaDSwCIiACIiACIiACIpAMBCR4k+EuaA4iIAIiIAIiIAIiIAIJIyDBmzC0GlgEREAEREAEREAERCAZCPwvQ/OjXAvhB3cAAAAASUVORK5CYII=', N'Jabir', N'BG7788', NULL, CAST(N'2025-11-07T00:00:21.8427782' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-07T00:00:21.8443028' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Issue', 8, N'Issuer', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAgAElEQVR4Xu3de7xNdf7H8Y9LxjVEQoRKzcOD3AflmqhERCOZjMzItcajkRo9zKXIlBAepZKZ5FIxrjUuxQiHcSmV3IrKLblEbhk04fd7f5u92+c4x9mXtfde+5zX5/HocU7nrPVd3/Vc54+P7/6szzfP+f8PIxBAAAEEEEAAAQQQyKECeUh4c+iT5bYQQAABBBBAAAEEnAAJL38ICCCAAAIIIIAAAjlagIQ3Rz9ebg4BBAICO3bssGnTplmxYsXswIEDtn37dluyZIkdPXrUHdK4cWMrU6aMtWrVym6//XarVKkSeAgggAACOUSAhDeHPEhuAwEEfhI4ffq0TZgwwfbv328ff/yxLVu2zE6dOhUR0d13322dO3e29u3bW4ECBSI6l4MRQAABBPwlQMLrr+fBbBBAIAaBLVu22KhRo2z69Ol28uTJGEb66dRatWrZq6++avpKIIAAAgikpgAJb2o+N2aNAAIhAgsWLLDnnnvO0tLS7MyZM3Gx6d27t7300ktxGZtBEUAAAQTiK0DCG19fRkcAgTgJqERh8eLFNnHiRHv77bcvepVChQpZ/fr1rWbNmla4cGH3X8eOHa169eruvM8//9yWLl1qc+bMsd27d5tWijOLW265xSZPnmzlypWL010xLAIIIIBAPARIeOOhypgIIBBXga1bt1qHDh1s27ZtmV4nf/781rZtW/df+fLl3Uto4cbZs2dt5syZ7gW3zBLpypUr29ixY+3OO+8Md0iOQwABBBBIsgAJb5IfAJdHAIHIBMaMGWN/+ctf7NixYxecqJfLHnnkEXv44YetdOnSkQ2cydFKqt966y3LbH+eFStWWJMmTWK+BgMggAACCMRfgIQ3/sZcAQEEPBJQDW3fvn3TjZYnTx5r0KCBdenSxbp3724lSpTw6Go/DqP64E6dOpk6P4RG8eLFTSvNlDd4ys1gCCCAQFwESHjjwsqgCCDgtcCgQYNs5MiR6YZVLe68efNMtbXxDNX1qkXZ2rVr012mZMmS9t5777naYAIBBBBAwL8CJLz+fTbMDAEE/ifQvHlzW758eTqPunXr2vz58+2KK65IiNP3339vw4cPt6FDh9q5c+eC11TpxKxZs6xp06YJmQcXQQABBBCIXICEN3IzzkAAgQQKqHtCy5Yt013xpptuskWLFlnRokUTOJMfL7V69Wq3K1to0luwYEFbuHChKTEnEEAAAQT8J0DC679nwowQQOB/Atr29/rrr7eDBw8GTerUqWPvv/++5c2bN2lOH374oSujOHLkSHAOKq/QzzVfAgEEEEDAXwIkvP56HswGAQRCBPr06WMvv/xy8CdVqlSxjRs3WpEiRZLutGHDBrv11lvtwIEDwbmo3++qVausdu3aSZ8fE0AAAQQQ+EmAhJe/BgQQ8KXA/v37rVKlSqbaWYVqdZVMXnPNNb6Zr7o0qHb30KFD6ZJe9e/NWIbhm0kzEQQQQCAXCpDw5sKHzi0jkAoC6rerfrqB0EYQmzdvdi+Oqd9u2bJl3Upv165dXXlBw4YNk3JbO3fudEl4aE2vyi30kp1qfQkEEEAAgeQLkPAm/xkwAwQQyERA5QLvvvuu+41KGS655JIsd1bTMSoj6Natm0uAE9W5ITBtbU6hax8/fjx4J5deeqnt2bPH9JVAAAEEEEiuAAlvcv25OgIIZCLwww8/uA4MZ86cidjnsssusyeeeMIefPDBiM+N5QQlt9rCWKvQgdAK9ejRo2MZlnMRQAABBDwQIOH1AJEhEEDAW4ElS5ZYq1atYhpUtbUaRyvDiYrt27dbo0aN7PDhw+6S+fLlszVr1li9evUSNQWugwACCCCQiQAJL38WCCDgO4E//vGPNmzYsEzn1bNnTytVqpRNnTrVdUjQanBWoRfHHn/8cbv55psTdo/aDU67wgVCK86BBDhhk+BCCCCAAALpBEh4+YNAAAHfCWh1Ni0t7YJ5aXvf6dOnB3+uRFIvh6krgo7/4osvMr2X1q1buxKHdu3axf1e9fKaao61HXEgvvnmG9OObAQCCCCAQHIESHiT485VEUAgC4GTJ09aiRIlLli51cYO27ZtsyuvvDJLO+2+NnDgQNuyZUumx+jFNq343n333XH1nzFjht1zzz3Ba8yZM8c6dOgQ12syOAIIIIBA1gIkvPx1IICArwTmzp1rd9111wVz0qrpl19+GdZc33nnHXvggQdcl4TMQvXBzz77rNWsWTOs8SI9SCvPoSu63bt3t0mTJkU6DMcjgAACCHgkQMLrESTDIICANwKh9bvaeGLXrl1uYPW2/c9//mM/+9nPwrqQansnTpxob7zxhq1YseKCc/LkyeNKHHr06OG+6gUzL6NJkya2cuVKN2TlypVtx44dXg7PWAgggAACEQiQ8EaAxaEIIBB/gebNm7u6XEX16tVt06ZN7vuCBQvaqVOnIp7A6dOnbeHChfb888/b0qVLszy/Vq1abqOLX//61xFfI7MTHn30UbeKHEjWz54968m4DIIAAgggELkACW/kZpyBAAJxFChTpozpJS+FVka1k5liwIABpt3XYomvvvrKveD20EMP2cUSUNXbtm3b1vSyW8WKFaO6ZKdOnWz27NnBc8+fPx/VOJyEAAIIIBC7AAlv7IaMgAACHgl8++23ruWYIn/+/KYkUYmpyhkOHTpkJUuW9ORK+/fvd6UOCxYscL16swu9KNexY0eXKFetWjW7w93vW7RoYcuWLXPfa/5aaU5kT+CwJslBCCCAQC4RIOHNJQ+a20QgFQQ++OADq1+/vpuqksy9e/e679VH91//+ldcbkGdH5555hm3jbFWgLOLIkWKWJcuXeyvf/2rXX755VkervphvTgXiPXr11udOnWyG57fI4AAAgjEQYCENw6oDIkAAtEJhLbzUs2uVkUVkydPtm7dukU3aJhnaTV51apVptZmr732mn399demnrpZhTaU0JxU85tZIrtx40a74YYbgqdPmzbNunbtGuZsOAwBBBBAwEsBEl4vNRkLAQRiEhg9erTroxsa6spw7NixsLszxDSBDCdrW+D58+fbzJkz7dNPP81yaCW8qjFu3769FS9e3B2nOaufcCCefPJJUwcKAgEEEEAg8QIkvIk354oIIJCFgDaEmDVrVrrfqnxA9bbJjBMnTtjixYttyJAhtn379iy3M1Zy3qBBA/fCm3rvqiwjsPWxSjXWrVuXzNvg2ggggECuFSDhzbWPnhtHwH8CN954o61evTrdxD766CNTyzC/xIYNG6xPnz6m1d+Lhfr6qkwiUBZRrFgxO378uF9ug3kggAACuUqAhDdXPW5uFgF/CzRt2tTS0tKCk7z++usvWkqQzLvRy26jRo2yqVOnug0xsgut/gZqkrM7lt8jgAACCHgrQMLrrSejIYBADALVqlWzrVu3Bkd47LHH7Omnn45hxPifql3c9PLa7t27s72Y2pQ1a9Ys2+M4AAEEEEDAWwESXm89GQ0BBGIQqFKlSnCjCQ2TSgnisGHDXP3x4cOHbc+ePZkqqLewujq88sorrjcvgQACCCCQGAES3sQ4cxUE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', N'BABU', N'BG788', NULL, CAST(N'2025-11-07T01:21:08.2002089' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-07T01:21:08.2047924' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'Issue', 9, N'Issuer', N'data:image/png;base64,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', N'Habib', N'Lt col', NULL, CAST(N'2025-11-07T02:00:32.2279326' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-07T02:00:32.2302000' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Issue', 6, N'Receiver', N'data:image/png;base64,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', N'1st Barisal Ansar Battalion', N'DD546', NULL, CAST(N'2025-11-10T23:18:03.0765401' AS DateTime2), N'', N'', NULL, CAST(N'2025-11-10T23:18:03.0770442' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Issue', 10, N'Issuer', N'data:image/png;base64,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5tB0LREQARHIkYAEr24QERABEQgjgMsAPrFz584N/YXX8lOmTAl0R7m8LjRtoqnH3bx5s1m5cqVZv3692bdvn4FLTnHxxRfbz59xxhl5vZQ+JwIiIAJJISDBmxTMuogIiEDQCNARjEzl8OHDzfHjx0PDx1t27Nixplq1akGbUrbj/fnnn207ZWzEPvjgg6jmdeaZZ5qePXvaBwRldaNCpw+LgAgkkYAEbxJh61IiIALBIzB+/HgzcuRIw8YsJwoUKGAoe+jUqVPwJvS/ESNwEfIrVqwwbNTbtGlTVPMgg9u4cWPTvn1706ZNG1OwYMGojteHRUAERCDZBCR4k01c1xMBEQgcAV7td+jQwQpEd+BM0Lt3b0PTiiDExo0brZMCIn7r1q25DrlYsWLmmmuuMTVq1DCHDh0yDRo0MFWqVDFly5bN9Vh9QAREQAT8RECC10+robGIgAj4mgCv7p966qmTxkiZQ5MmTazwvfLKK301h3feecfMmjXLOk18/fXXOY6tVq1apn79+qZevXqGzWdypvDVUmowIiACHghI8HqAp0NFQAQyj8Crr75qSxmy28B1ySWXWN9eHB1Kly5tv5MhjRRkXLds2WJ2795tN4Xt2bPHYOlFZvXss8+2X2yW4/d8huYYhQoVMiVLljRFihSx4jpSOQFtkak/njp1qs3MRgqu06JFC2vBRu1t5cqVM28xNWMREIGMISDBmzFLrYmKgAjEi8Dy5ctNx44drYtBNEHt6znnnGOKFi1q1qxZE82h2X6WLCxile5muCnkFvgKt2vXzrb/RVgrREAERCATCEjwZsIqa44iIAJxJ4B113PPPWcee+wxs23btrifP54npOSibt26pm3btubCCy+M56l1LhEQAREIBAEJ3kAskwYpAiLgVwKUGeDX++abb1pbLxwQ/BBkbx966CHTpUsXtfb1w4JoDCIgAiklIMGbUvy6uAiIQLoRoFTh6aefNvnz57elCwRtd1etWhXq3EYZAnWz1atXz7H1Lp3e8uXLFzrOzYq6XmLdunX2O/W8lExw3tNPPz3dsGo+IiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TkCC1+8rpPGJgAiIgAiIgAiIgAh4IiDB6wmfDhYBERABERABERABEfA7AQlev6+QxicCIiACIiACIiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TkCC1+8rpPGJgAiIgAiIgAiIgAh4IiDB6wmfDhYBERABERABERABEfA7AQlev6+QxicCIiACIiACIiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TkCC1+8rpPGJgAiIgAiIgAiIgAh4IiDB6wmfDhYBERABERABERABEfA7AQlev6+QxicCIiACIiACIiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TkCC1+8rpPGJgAiIgAiIgAiIgAh4IiDB6wmfDhYBERABERABERABEfA7AQlev6+QxicCIiACIiACIiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TkCC1+8rpPGJgAiIgAiIgAiIgAh4IiDB6wmfDhYBERABERABERABEfA7AQlev6+QxicCIiACIiACIiACIuCJgASvJ3w6WAREQAREQAREQAREwO8EJHj9vkIanwiIgAiIgAiIgAiIgCcCErye8OlgERABERABERABERABvxOQ4PX7Cml8IiACIiACIiACIiACnghI8HrCp4NFQAREQAREQAREQAT8TuD/AE3LU00ZWOHaAAAAAElFTkSuQmCC', NULL, NULL, NULL, CAST(N'2025-11-11T18:01:04.2347477' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-11T18:01:04.2365567' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Issue', 11, N'Issuer', N'data:image/png;base64,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', NULL, NULL, NULL, CAST(N'2025-11-11T18:08:33.7352228' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-11T18:08:33.7369358' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Issue', 12, N'Issuer', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAgAElEQVR4Xu2dCbxN5f7/H0kZKpEhqcg8D2mgjBkyJSlKQm4lTbeb20AydKM0vOKqREWFpEEqIqSMSWQeQigyHGOGQql+//fzf6199znOcfY+Z+2919rr83299usce6/1rOd5P/u8fNZ3fYccf/8/MzIREAEREAEREAEREAERSFICOSR4k3RntSwREAEREAEREAEREAFLQIJXXwQREAEREAFfEti6dav5/PPPTbly5ez8+XeTJk3MBRdc4Mv1aNIiIAKxIyDBGzu2GlkEREAERMBFAr/88ouZNWuWef/998306dPN8ePHzbFjx1JdoVChQuaFF14wXbt2dfHKGkoERMDvBCR4/b6Dmr8IiIAIJCmBn3/+2axfv94sXrzYLFq0yCxcuNCkpKTY1ebMmdN07NjRFClSxHzwwQdm27ZtqShcddVVZtSoUaZChQpJSkfLEgERiIaABG80tHSsCIiACIhATAiQPz1jxgwze/ZsK15XrFhhVq9eHbpW6dKlTe3atU3NmjUNYrZGjRomT548oc+HDBliXn31VbNx48bQe/ny5TNz5swxtWrVismcNagIiIB/CEjw+mevNFMR8C2Br7/+2rRu3drGViJK6tWr59u1aOLuECA8YcGCBTY8Yf78+Wbz5s124NNPP93UqVPHxuUibqtWrWoFLu9nZojmsWPHmoceesjs37/fHl6wYEEzd+5cU7ly5cxO1+ciIAJJTECCN4k3V0sTAa8QQLyEe96YFx66yy67zPTq1cvgvZMlN4GffvrJCtxvvvnGvP322+bQoUM2HKF69epW0F599dWmbNmypmTJktkGQSgE4Q4IaaxMmTLW06tktmyj1QAi4FsCEry+3TpNXAT8Q6BTp05m/Pjx6U74tNNOM1OmTDEtWrTwz4I001MS2Llzp9myZYuNvZ03b57ZtGmTWb58uRWzl19+uRW3DRs2tGI3Vvbpp5+a66+/PjR88eLFbRUHvm8yERCB4BGQ4A3enmvFIpAQAgMHDrTJRStXrjzp+jly5DAPP/ywefbZZw2/y/xDgP3cvXu3TSj77rvvzLfffmsQvOedd54NRyB+Fg9/tWrVbAxuvIzwBq6/Zs2a0CWnTZtmmjdvHq8p6DoiIAIeIiDB66HN0FREIAgEnn/+efPo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uW7dOjNp0iQb++u8z4f58+fPsALB0aNHbRIY3ldCCy688EIrsBGguXLlsi8aKyBsCa8g7CBaI9yAMRi7TJkypnTp0uaiiy6y4tavnutoGeh4ERABERABEYg3AQneeBPX9bJMYOTIkea+++6LyFua5YtEcGLevHkN4phOYvny5bNnhNel5T1CDxxDlBOSIBMBERABERABEUgMAQnexHDXVbNIAK/qyy+/bP766y/rfaWZgtPqljACRCge2caNG9twAD6niUK0ljt3bnUNixaajhcBERABERABjxKQ4PXoxmhaIiACIiACIiACIiAC7hCQ4HWHo0YRAREQAREQAREQARHwKAEJXo9ujKYlAiIgAiIgAiIgAiLgDgEJXnc4ahQREAEREAEREAEREAGPEpDg9ejGaFoiIAIiIAIiIAIiIALuEJDgdYejRhEBERABERABERABEfAoAQlej26MpiUCIiACIiACIiACIuAOAQledzhqFBEQAREQAREQAREQAY8SkOD16MZoWiIgAiIgAiIgAiIgAu4QkOB1h6NGEQEREAEREAEREAER8CgBCV6PboymJQIiIAIiIAIiIAIi4A4BCV53OGoUERABERABERABERABjxKQ4PXoxmhaIiACIiACIiACIiAC7hCQ4HWHo0YRAREQAREQAREQARHwKAEJXo9ujKYlAiIgAiIgAiIgAiLgDgEJXnc4ahQREAEREAEREAEREAGPEpDg9ejGaFoiIAIiIAIiIAIiIALuEJDgdYejRhEBERABERABERABEfAoAQlej26MpiUCIiACIiACIiACIuAOAQledzhqFBEQAREQAREQAREQAY8SkOD16MZoWiIgAiIgAiIgAiIgAu4QkOB1h6NGEQEREAEREAEREAER8CgBCV6PboymJQIiIAIiIAIiIAIi4A4BCV53OGoUERABERABERABERABjxKQ4PXoxmhaIiACIiACIiACIiAC7hCQ4HWHo0YRAREQAREQAREQARHwKAEJXo9ujKYlAiIgAiIgAiIgAiLgDgEJXnc4ahQREAEREAEREAEREAGPEpDg9ejGaFoiIAIiIAIiIAIiIALuEJDgdYejRhEBERABERABERABEfAogf8Ds3G1XCcjLvYAAAAASUVORK5CYII=', NULL, NULL, NULL, CAST(N'2025-11-11T18:16:30.4932436' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0', NULL, CAST(N'2025-11-11T18:16:30.4947443' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Issue', 8, N'Receiver', N'data:image/png;base64,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', N'Chattogram', N'DD54654', NULL, CAST(N'2025-11-11T21:35:37.3548858' AS DateTime2), N'', N'', NULL, CAST(N'2025-11-11T21:35:37.3551864' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'Issue', 13, N'Issuer', N'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArwAAACWCAYAAAA8Els6AAAc+UlEQVR4Xu3dDbwN9B3H8T/lqTyFsqlFD9KMVDM9K5WWkrRaJDGNJElJzy2mpGW0ipIoRchWaaY89aBkROWhLckaLWsj6UnGetjr+9/9/1//e5x77znXveee8z+f9+vl5fzPubj36qXv/d3f//er9N13331nAAAAgEhVIvACAAAgZgReAAAARI3ACwAAgKgReAEAABA1Ai8AAACiRuAFAABA1Ai8AAAAiBqBFwAAAFEj8AIAACBqBF4AAABEjcALAACAqBF4AQAAEDUCLwAAAKJG4AUAAEDUCLwAAACIGoEXAAAAUSPwAgAAIGoEXgAAAESNwAsAAICoEXgBAAAQNQIvAAAAokbgBQAAQNQIvAAAAIgagRcAAABRI/ACKNb69ev94z333NNUr17dNGjQwHz44Yf2/K9//cu+9uWXX5qvv/7afPrpp/aHfPzxx+Y///mPfX7jxo3250T6PfRDv2edOnXsz9/73vdMzZo1zQEHHGAf688EAKC0CLwAClFYnT59unnqqafMkiVLbJBNVLlyZfPtt9/6c3lzIfirr74y9evXN3vttZd/LVGLFi3s24cUnA899FD7uHbt2uboo48ueAUAkA8IvACsdevWmVGjRplJkybZqmy+OPzww03Dhg3N1q1bzWmnnWYDsYTBWK//8Ic/tI8BALmHwAvkuQULFpixY8eamTNn+udKojD4gx/8wIfAunXr+nYH/ahWrZr9Wc+7n/VDwhaF8PG0adNMt27d7GP93suWLbO/jyrOaoVQpXnDhg227SGR3mbFihX+HFKQV/uF6J+7RYsWlbo6vccee5gTTzzRfixHHnmkad68uWnWrJlp1aqVfxsAQPYh8AJ5asqUKebyyy8327Zt888latKkiQ14CnQKeKqGql3AhdSytGrVqkLBsWfPnrbaXF5c+P3mm2/sefHixWbnzp328aZNm8xf//pX+1ghO+xjLorCr1onDjvsMDNw4EDfQgEAqHgEXiDPqF3hmmuuMePGjfPPhVSp7dixow1tp5xyin++vE2ePNn06NHDn+Xmm282w4cP9+eKpP7h119/3Xz00Ufm3Xfftf3Nb7/9tr2Ml0y9evVMu3btzJlnnmmOPfZY21sMAKgYBF4gj+jb/hdddJFZs2aNf85R1bZ3794VVp0cP3686du3r30cXopTMHfPZ6P33nvPtkz8+c9/Ns8884xZu3at+fzzz/3rjtog2rZta4455hjToUMHc9RRR/nXAADli8AL5Inly5fbimPi1AX1paq14Y477vB9thVh/vz55owzzrCP9T65VoOqVauaN9980/zoRz+y51yg6q+mXDz//PPmL3/5i38+pBYRhd8uXbqYSpUq+efVNqLeZgBA2SHwAnlAl7patmzpL285rVu3Nr///e9tr25Fe//9980hhxziz506dTJ//OMf7ePjjjvOLFy40FSpUqXg1dyhVgi97y+//LKtAKsiXJJbb73VDBs2rFAQBgCUHoEXyAM33XSTueuuu/xZBg8ebEaMGGF7drOF5utu377dPm7atKkN6U8//bQ9T5w40Vx66aX2ca5S1VqV7AceeMDMmjXLP5+Men9/8Ytf2AowAGD3EHiByKm6qzFfYSvD7bffbquI2UZ9rW68mEaSrVy50l720lgyVX/V2uDm5Oa6t956y/Yna7KDKtiaDDFv3jzz2GOP+beR/fbbz45Wq1Wrln8OAJAeAi8QOVV2VeF1VDlUb2k2Ul+rQq5o2YPWFqsKrWkNcvXVV5t77rnHPo7Vs88+a6u6O3bs8M9pIcigQYP8GQCQHgIvEDGNINt///3NJ5984p/TQgf17mYjVTvdmC8ttdAsXE1rUAVUI8Fq1Khhq7y62BUz/b117tzZzJ0715411kxTIAAApUPgBSI2evRoc+211/qzpiC4EJWN9t57b3vJS8KQ99prr9kFGNK+fXv7rf/Y6fOgKrdrRdHM31yaVAEA2YTAC0RMLQD33nuvP2dr767oQld4gU6zap977jl/1tQGd9HrwQcftKPUYqdLa66nV8tC9AUMACB9BF4gYloyMX36dPtYs201lixbZ7x+8cUXhS6knX/++eYPf/iDP2uerdtWdvDBB9ttZ9k0YaI8KPCfffbZ9vE+++xj//40yQIAkB4CLxAxTWdws3e1Jvill14qeCX7aDtZnTp1/LlXr17mkUce8Wdp1aqVWbVqlX2saqeqnjHTP8+a0vDxxx/b84svvmiXhwAA0kPgBSJ20EEHmfXr19vHF1xwgV0yka0U6vbdd19/7tevn51XG5o2bZrp1q2bfVyzZk17kU2X22J23nnnmZkzZ9rHv/nNb8z1119f8EpmaC7yRx99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', N'Abdur rahman', N'BAGE125', NULL, CAST(N'2025-11-11T23:07:34.7754968' AS DateTime2), N'127.0.0.1', N'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0', NULL, CAST(N'2025-11-11T23:07:34.7798495' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[Signatures] ([Id], [ReferenceType], [ReferenceId], [SignatureType], [SignatureData], [SignerName], [SignerBadgeId], [SignerDesignation], [SignedDate], [IPAddress], [DeviceInfo], [IssueId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'Issue', 13, N'Receiver', N'data:image/png;base64,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', N'1st Barisal Ansar Battalion', N'DD54654', NULL, CAST(N'2025-11-12T09:37:30.8270186' AS DateTime2), N'', N'', NULL, CAST(N'2025-11-12T09:37:30.8273166' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[Signatures] OFF
+GO
 SET IDENTITY_INSERT [dbo].[StockAdjustmentItems] ON 
 GO
 INSERT [dbo].[StockAdjustmentItems] ([Id], [StockAdjustmentId], [ItemId], [SystemQuantity], [ActualQuantity], [PhysicalQuantity], [AdjustmentQuantity], [AdjustmentValue], [BatchNo], [Reason], [Remarks], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, 4, 5, CAST(0.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(-10.000 AS Decimal(18, 3)), CAST(-450000.00 AS Decimal(18, 2)), NULL, N'Physical count mismatch', N'Adjusted after physical inventory count', CAST(N'2025-11-04T05:41:29.7766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
@@ -5146,19 +5889,31 @@ SET IDENTITY_INSERT [dbo].[StockAdjustments] ON
 GO
 INSERT [dbo].[StockAdjustments] ([Id], [AdjustmentNo], [AdjustmentDate], [AdjustmentType], [Status], [ItemId], [StoreId], [PhysicalInventoryId], [Quantity], [OldQuantity], [NewQuantity], [AdjustmentQuantity], [TotalValue], [Reason], [Remarks], [ReferenceNumber], [ReferenceDocument], [ApprovalReference], [FiscalYear], [AdjustedBy], [AdjustedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [IsApproved], [RejectedBy], [RejectedDate], [RejectionReason], [AuditTrailJson], [StoreId1], [ItemId1], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'SA-2024-001', CAST(N'2025-10-23T04:50:17.6700000' AS DateTime2), N'Increase', N'Approved', 7, 2, NULL, CAST(10.000 AS Decimal(18, 3)), CAST(800.000 AS Decimal(18, 3)), CAST(810.000 AS Decimal(18, 3)), NULL, CAST(4500.00 AS Decimal(18, 2)), N'Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-10-23T04:50:17.6700000' AS DateTime2), NULL, NULL, NULL, 1)
 GO
+INSERT [dbo].[StockAdjustments] ([Id], [AdjustmentNo], [AdjustmentDate], [AdjustmentType], [Status], [ItemId], [StoreId], [PhysicalInventoryId], [Quantity], [OldQuantity], [NewQuantity], [AdjustmentQuantity], [TotalValue], [Reason], [Remarks], [ReferenceNumber], [ReferenceDocument], [ApprovalReference], [FiscalYear], [AdjustedBy], [AdjustedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [IsApproved], [RejectedBy], [RejectedDate], [RejectionReason], [AuditTrailJson], [StoreId1], [ItemId1], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'ADJ000001', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Increase', N'Approved', 5, 2, NULL, CAST(0.000 AS Decimal(18, 3)), CAST(26.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(24.000 AS Decimal(18, 3)), NULL, N'Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:28:17.1356051' AS DateTime2), NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T15:28:41.8441847' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[StockAdjustments] ([Id], [AdjustmentNo], [AdjustmentDate], [AdjustmentType], [Status], [ItemId], [StoreId], [PhysicalInventoryId], [Quantity], [OldQuantity], [NewQuantity], [AdjustmentQuantity], [TotalValue], [Reason], [Remarks], [ReferenceNumber], [ReferenceDocument], [ApprovalReference], [FiscalYear], [AdjustedBy], [AdjustedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [IsApproved], [RejectedBy], [RejectedDate], [RejectionReason], [AuditTrailJson], [StoreId1], [ItemId1], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'ADJ000002', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Increase', N'Approved', 6, 2, NULL, CAST(5.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), NULL, N'Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-11T23:29:03.6783726' AS DateTime2), NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:12:39.1668649' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[StockAdjustments] ([Id], [AdjustmentNo], [AdjustmentDate], [AdjustmentType], [Status], [ItemId], [StoreId], [PhysicalInventoryId], [Quantity], [OldQuantity], [NewQuantity], [AdjustmentQuantity], [TotalValue], [Reason], [Remarks], [ReferenceNumber], [ReferenceDocument], [ApprovalReference], [FiscalYear], [AdjustedBy], [AdjustedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [IsApproved], [RejectedBy], [RejectedDate], [RejectionReason], [AuditTrailJson], [StoreId1], [ItemId1], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'ADJ000003', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Increase', N'Approved', 6, 2, NULL, CAST(5.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), NULL, N'Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-12T00:23:34.0282740' AS DateTime2), NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:13:30.5148285' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[StockAdjustments] ([Id], [AdjustmentNo], [AdjustmentDate], [AdjustmentType], [Status], [ItemId], [StoreId], [PhysicalInventoryId], [Quantity], [OldQuantity], [NewQuantity], [AdjustmentQuantity], [TotalValue], [Reason], [Remarks], [ReferenceNumber], [ReferenceDocument], [ApprovalReference], [FiscalYear], [AdjustedBy], [AdjustedDate], [ApprovedBy], [ApprovedDate], [ApprovalRemarks], [IsApproved], [RejectedBy], [RejectedDate], [RejectionReason], [AuditTrailJson], [StoreId1], [ItemId1], [ApprovedByUserId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'ADJ000004', CAST(N'2025-11-11T00:00:00.0000000' AS DateTime2), N'Increase', N'Approved', 6, 2, NULL, CAST(5.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), NULL, N'Physical Count Mismatch', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'admin', CAST(N'2025-11-12T07:35:52.6149659' AS DateTime2), NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, CAST(N'2025-11-11T16:37:07.3318943' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[StockAdjustments] OFF
 GO
 SET IDENTITY_INSERT [dbo].[StockEntries] ON 
 GO
-INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'SE-2024-001', CAST(N'2025-10-07T03:32:22.6700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-001', 2, CAST(N'2025-10-07T03:32:22.6700000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (1, N'SE-2024-001', CAST(N'2025-10-07T03:32:22.6700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-001', 2, CAST(N'2025-10-07T03:32:22.6700000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'SE-2024-002', CAST(N'2025-10-17T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-002', 2, CAST(N'2025-10-17T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (2, N'SE-2024-002', CAST(N'2025-10-17T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-002', 2, CAST(N'2025-10-17T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'SE-2024-003', CAST(N'2025-10-22T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-003', 2, CAST(N'2025-10-22T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (3, N'SE-2024-003', CAST(N'2025-10-22T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-003', 2, CAST(N'2025-10-22T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'SE-2024-004', CAST(N'2025-10-25T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-004', 2, CAST(N'2025-10-25T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (4, N'SE-2024-004', CAST(N'2025-10-25T04:07:13.2700000' AS DateTime2), N'Purchase', N'Completed', N'Stock entry from Purchase PO-2024-004', 2, CAST(N'2025-10-25T04:07:13.2700000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'SE202511050001', CAST(N'2025-11-05T00:00:00.0000000' AS DateTime2), N'Direct', N'Draft', NULL, 2, CAST(N'2025-11-05T00:39:04.5040238' AS DateTime2), N'admin', NULL, NULL, 1)
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (5, N'SE202511050001', CAST(N'2025-11-05T00:00:00.0000000' AS DateTime2), N'Direct', N'Completed', NULL, 2, CAST(N'2025-11-05T00:39:04.5040238' AS DateTime2), N'admin', CAST(N'2025-11-10T21:27:15.4236001' AS DateTime2), N'admin', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (6, N'SE202511100001', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), N'Direct', N'Completed', N'hvbnbvb', 2, CAST(N'2025-11-10T09:42:49.6503234' AS DateTime2), N'admin', CAST(N'2025-11-10T10:20:40.5452471' AS DateTime2), N'admin', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockEntries] ([Id], [EntryNo], [EntryDate], [EntryType], [Status], [Remarks], [StoreId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [ApprovedBy], [ApprovedDate], [RejectedBy], [RejectedDate], [RejectionReason], [SubmittedBy], [SubmittedDate]) VALUES (7, N'SE202511100002', CAST(N'2025-11-10T00:00:00.0000000' AS DateTime2), N'Initial', N'Approved', N'xdfgdfgdfgd', 2, CAST(N'2025-11-10T10:58:09.2687932' AS DateTime2), N'admin', CAST(N'2025-11-12T07:35:18.3509861' AS DateTime2), N'admin', 1, N'admin', CAST(N'2025-11-12T07:35:18.3508559' AS DateTime2), NULL, NULL, NULL, N'admin', CAST(N'2025-11-10T10:58:14.2498977' AS DateTime2))
 GO
 SET IDENTITY_INSERT [dbo].[StockEntries] OFF
 GO
@@ -5204,15 +5959,33 @@ INSERT [dbo].[StockEntryItems] ([Id], [StockEntryId], [ItemId], [Quantity], [Uni
 GO
 INSERT [dbo].[StockEntryItems] ([Id], [StockEntryId], [ItemId], [Quantity], [UnitCost], [Location], [BatchNumber], [ExpiryDate], [BarcodesGenerated], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, 5, 5, CAST(100.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), NULL, N'BN202511053453', NULL, 0, CAST(N'2025-11-05T00:39:04.7389583' AS DateTime2), N'admin', NULL, NULL, 1)
 GO
+INSERT [dbo].[StockEntryItems] ([Id], [StockEntryId], [ItemId], [Quantity], [UnitCost], [Location], [BatchNumber], [ExpiryDate], [BarcodesGenerated], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, 6, 5, CAST(1.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), N'AB', N'GH123', CAST(N'2025-11-12T00:00:00.0000000' AS DateTime2), 0, CAST(N'2025-11-10T09:42:49.6813815' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
+INSERT [dbo].[StockEntryItems] ([Id], [StockEntryId], [ItemId], [Quantity], [UnitCost], [Location], [BatchNumber], [ExpiryDate], [BarcodesGenerated], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, 7, 6, CAST(10.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), N'LL', N'456', CAST(N'2025-11-13T00:00:00.0000000' AS DateTime2), 0, CAST(N'2025-11-10T10:58:09.4769916' AS DateTime2), N'admin', NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[StockEntryItems] OFF
 GO
 SET IDENTITY_INSERT [dbo].[StockMovements] ON 
 GO
-INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'0', CAST(N'2025-10-05T04:57:22.5166667' AS DateTime2), N'Stock Entry from Purchase', NULL, NULL, 5, 2, 2, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(450000.00 AS Decimal(18, 2)), N'StockEntry', N'SE-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-05T04:57:22.5166667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (1, N'0', CAST(N'2025-10-05T04:57:22.5166667' AS DateTime2), N'Stock Entry from Purchase', NULL, NULL, 5, 2, 2, 2, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), CAST(45000.00 AS Decimal(18, 2)), CAST(450000.00 AS Decimal(18, 2)), N'StockEntry', N'SE-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-05T04:57:22.5166667' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'2', CAST(N'2025-10-25T04:57:34.1000000' AS DateTime2), N'Transfer to Provision Store', NULL, NULL, 6, 2, 2, 3, CAST(5.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(90000.00 AS Decimal(18, 2)), N'Transfer', N'TRF-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-25T04:57:34.1000000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (2, N'2', CAST(N'2025-10-25T04:57:34.1000000' AS DateTime2), N'Transfer to Provision Store', NULL, NULL, 6, 2, 2, 3, CAST(5.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(90000.00 AS Decimal(18, 2)), N'Transfer', N'TRF-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-25T04:57:34.1000000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL)
 GO
-INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'1', CAST(N'2025-10-23T04:57:34.1000000' AS DateTime2), N'Issued to Battalion', NULL, NULL, 6, 3, 3, 3, CAST(2.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(3.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), N'Issue', N'ISS-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-23T04:57:34.1000000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (3, N'1', CAST(N'2025-10-23T04:57:34.1000000' AS DateTime2), N'Issued to Battalion', NULL, NULL, 6, 3, 3, 3, CAST(2.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(3.000 AS Decimal(18, 3)), CAST(18000.00 AS Decimal(18, 2)), CAST(36000.00 AS Decimal(18, 2)), N'Issue', N'ISS-2024-001', NULL, N'Abdul Karim', NULL, NULL, CAST(N'2025-10-23T04:57:34.1000000' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (4, N'Issue', CAST(N'2025-11-10T22:02:22.9105722' AS DateTime2), NULL, NULL, N'Issued to ', 12, 2, NULL, NULL, CAST(-10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Issue', N'ISS-202511-0002', NULL, NULL, NULL, NULL, CAST(N'2025-11-10T16:02:22.9102112' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (8, N'Issue', CAST(N'2025-11-10T23:18:03.7471981' AS DateTime2), NULL, NULL, N'Issued to ', 21, 2, NULL, NULL, CAST(-1.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Issue', N'ISS-202511-0001', NULL, NULL, NULL, NULL, CAST(N'2025-11-10T17:18:03.7461702' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (9, N'Issue', CAST(N'2025-11-11T21:35:37.9554378' AS DateTime2), NULL, NULL, N'Issued to ', 11, 2, NULL, NULL, CAST(-20.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Issue', N'ISS-202511-0003', NULL, NULL, NULL, NULL, CAST(N'2025-11-11T15:35:37.9546539' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (10, N'StockEntry', CAST(N'2025-11-12T07:35:18.2571335' AS DateTime2), NULL, NULL, N'Stock entry approved: SE202511100002', 6, 2, NULL, NULL, CAST(10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'StockEntry', N'SE202511100002', 7, N'admin', NULL, NULL, CAST(N'2025-11-12T07:35:18.2575173' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (11, N'Receive', CAST(N'2025-11-12T09:16:53.0128616' AS DateTime2), NULL, NULL, N'Received from ', 5, 2, NULL, 2, CAST(10.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(60.000 AS Decimal(18, 3)), NULL, NULL, N'Receive', N'RCV-202511-0014', 20, NULL, NULL, NULL, CAST(N'2025-11-12T03:16:53.0135538' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (12, N'Issue', CAST(N'2025-11-12T09:37:31.0545194' AS DateTime2), NULL, NULL, N'Issued to ', 22, 2, NULL, NULL, CAST(-10.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), CAST(0.000 AS Decimal(18, 3)), NULL, NULL, N'Issue', N'ISS-202511-0008', NULL, NULL, NULL, NULL, CAST(N'2025-11-12T03:37:31.0540667' AS DateTime2), N'admin', NULL, NULL, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[StockMovements] ([Id], [MovementType], [MovementDate], [Reason], [Notes], [Remarks], [ItemId], [StoreId], [SourceStoreId], [DestinationStoreId], [Quantity], [OldBalance], [NewBalance], [UnitPrice], [TotalValue], [ReferenceType], [ReferenceNo], [ReferenceId], [MovedBy], [MovedByUserId], [StoreItemId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive], [DestinationStoreId1], [ItemId1], [SourceStoreId1], [StoreId1]) VALUES (13, N'Receive', CAST(N'2025-11-12T09:38:19.0430063' AS DateTime2), NULL, NULL, N'Received from ', 22, 2, NULL, 2, CAST(10.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(210.000 AS Decimal(18, 3)), NULL, NULL, N'Receive', N'RCV-202511-0015', 21, NULL, NULL, NULL, CAST(N'2025-11-12T03:38:19.0435604' AS DateTime2), NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL)
 GO
 SET IDENTITY_INSERT [dbo].[StockMovements] OFF
 GO
@@ -5238,9 +6011,9 @@ SET IDENTITY_INSERT [dbo].[StoreConfigurations] OFF
 GO
 SET IDENTITY_INSERT [dbo].[StoreItems] ON 
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, 5, 2, CAST(25.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(10.000 AS Decimal(18, 3)), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), N'admin', 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, 5, 2, CAST(60.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), NULL, 0, N'AB', 0, CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(10.000 AS Decimal(18, 3)), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), NULL, CAST(N'2025-11-12T03:16:53.0122001' AS DateTime2), NULL, 1)
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 6, 2, CAST(15.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(3.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(20.000 AS Decimal(18, 3)), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, 6, 2, CAST(30.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(3.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), NULL, 0, N'LL', 0, CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(20.000 AS Decimal(18, 3)), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), NULL, CAST(N'2025-11-12T07:35:52.9686511' AS DateTime2), N'admin', 1)
 GO
 INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, 7, 2, CAST(500.000 AS Decimal(18, 3)), CAST(500.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(N'2025-11-04T03:33:01.0966667' AS DateTime2), CAST(800.000 AS Decimal(18, 3)), CAST(N'2025-10-07T03:33:01.0966667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
 GO
@@ -5250,9 +6023,9 @@ INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock]
 GO
 INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 10, 2, CAST(2000.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(3000.000 AS Decimal(18, 3)), CAST(500.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(1000.000 AS Decimal(18, 3)), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 11, 2, CAST(800.000 AS Decimal(18, 3)), CAST(800.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(500.000 AS Decimal(18, 3)), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, 11, 2, CAST(800.000 AS Decimal(18, 3)), CAST(780.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(2000.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-11T21:35:37.3489888' AS DateTime2), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(500.000 AS Decimal(18, 3)), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), NULL, CAST(N'2025-11-11T21:35:37.3490752' AS DateTime2), NULL, 1)
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 12, 2, CAST(400.000 AS Decimal(18, 3)), CAST(400.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(300.000 AS Decimal(18, 3)), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, 12, 2, CAST(400.000 AS Decimal(18, 3)), CAST(390.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-10T22:02:22.4594342' AS DateTime2), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(N'2025-11-04T04:08:13.6066667' AS DateTime2), CAST(300.000 AS Decimal(18, 3)), CAST(N'2025-10-17T04:08:13.6066667' AS DateTime2), NULL, CAST(N'2025-11-10T22:02:22.4595056' AS DateTime2), NULL, 1)
 GO
 INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, 13, 2, CAST(300.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(100.000 AS Decimal(18, 3)), CAST(1000.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:25.0700000' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:25.0700000' AS DateTime2), CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), CAST(N'2025-11-04T04:08:25.0700000' AS DateTime2), CAST(N'2025-11-04T04:08:25.0700000' AS DateTime2), CAST(N'2025-11-04T04:08:25.0700000' AS DateTime2), CAST(200.000 AS Decimal(18, 3)), CAST(N'2025-10-22T04:08:25.0700000' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
 GO
@@ -5270,9 +6043,9 @@ INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock]
 GO
 INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, 20, 2, CAST(150.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(50.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, 21, 2, CAST(200.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(25.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, 21, 2, CAST(200.000 AS Decimal(18, 3)), CAST(199.000 AS Decimal(18, 3)), CAST(15.000 AS Decimal(18, 3)), CAST(150.000 AS Decimal(18, 3)), CAST(25.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-10T23:18:03.0718859' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(25.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-10T23:18:03.0720104' AS DateTime2), NULL, 1)
 GO
-INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, 22, 2, CAST(200.000 AS Decimal(18, 3)), CAST(200.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(40.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
+INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, 22, 2, CAST(210.000 AS Decimal(18, 3)), CAST(190.000 AS Decimal(18, 3)), CAST(30.000 AS Decimal(18, 3)), CAST(300.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-12T09:37:30.8253626' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(40.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-12T03:38:19.0428654' AS DateTime2), NULL, 1)
 GO
 INSERT [dbo].[StoreItems] ([Id], [ItemId], [StoreId], [Quantity], [CurrentStock], [MinimumStock], [MaximumStock], [ReorderLevel], [ReservedStock], [ReservedQuantity], [Location], [Status], [LastUpdated], [LastStockUpdate], [LastCountDate], [LastIssueDate], [LastReceiveDate], [LastTransferDate], [LastAdjustmentDate], [LastCountQuantity], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, 23, 2, CAST(20.000 AS Decimal(18, 3)), CAST(20.000 AS Decimal(18, 3)), CAST(5.000 AS Decimal(18, 3)), CAST(50.000 AS Decimal(18, 3)), CAST(10.000 AS Decimal(18, 3)), NULL, 0, NULL, 0, CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(N'2025-11-04T04:08:34.4666667' AS DateTime2), CAST(8.000 AS Decimal(18, 3)), CAST(N'2025-10-25T04:08:34.4666667' AS DateTime2), NULL, CAST(N'2025-11-05T02:06:02.9766667' AS DateTime2), NULL, 1)
 GO
@@ -5280,7 +6053,7 @@ SET IDENTITY_INSERT [dbo].[StoreItems] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Stores] ON 
 GO
-INSERT [dbo].[Stores] ([Id], [Name], [NameBn], [Code], [Type], [Status], [Location], [Address], [Description], [Remarks], [InCharge], [ContactNumber], [Email], [Phone], [ManagerName], [ManagerId], [StoreKeeperName], [StoreKeeperId], [StoreKeeperContact], [StoreKeeperAssignedDate], [OperatingHours], [Capacity], [TotalCapacity], [UsedCapacity], [AvailableCapacity], [Level], [StoreTypeId], [LocationId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [UnionId], [RequiresTemperatureControl], [Temperature], [Humidity], [MinTemperature], [MaxTemperature], [SecurityLevel], [AccessRequirements], [IsStockFrozen], [StockFrozenAt], [StockUnfrozenAt], [StockFrozenReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Central Store - Headquarters', N'কেন্দ্রীয় ভাণ্ডার - সদর দপ্তর', N'CS-HQ-01', NULL, N'Active', N'Headquarters', N'Ansar & VDP HQ, Dhaka-1000', N'Main Central Store', NULL, N'Md. Altaf Hossain', N'01700-501001', N'central.hq@ansar.gov.bd', NULL, NULL, NULL, N'Abdul Karim', N'SK001', NULL, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, NULL, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Stores] ([Id], [Name], [NameBn], [Code], [Type], [Status], [Location], [Address], [Description], [Remarks], [InCharge], [ContactNumber], [Email], [Phone], [ManagerName], [ManagerId], [StoreKeeperName], [StoreKeeperId], [StoreKeeperContact], [StoreKeeperAssignedDate], [OperatingHours], [Capacity], [TotalCapacity], [UsedCapacity], [AvailableCapacity], [Level], [StoreTypeId], [LocationId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [UnionId], [RequiresTemperatureControl], [Temperature], [Humidity], [MinTemperature], [MaxTemperature], [SecurityLevel], [AccessRequirements], [IsStockFrozen], [StockFrozenAt], [StockUnfrozenAt], [StockFrozenReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Central Store - Headquarters', N'কেন্দ্রীয় ভাণ্ডার - সদর দপ্তর', N'CS-HQ-01', NULL, N'Active', N'Headquarters', N'Ansar & VDP HQ, Dhaka-1000', N'Main Central Store', NULL, N'Md. Altaf Hossain', N'01700-501001', N'central.hq@ansar.gov.bd', NULL, NULL, NULL, N'Abdul Karim', N'SK001', NULL, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, NULL, CAST(N'2025-11-04T03:13:26.2300000' AS DateTime2), NULL, CAST(N'2025-11-11T09:29:59.8839168' AS DateTime2), N'admin', 1)
 GO
 INSERT [dbo].[Stores] ([Id], [Name], [NameBn], [Code], [Type], [Status], [Location], [Address], [Description], [Remarks], [InCharge], [ContactNumber], [Email], [Phone], [ManagerName], [ManagerId], [StoreKeeperName], [StoreKeeperId], [StoreKeeperContact], [StoreKeeperAssignedDate], [OperatingHours], [Capacity], [TotalCapacity], [UsedCapacity], [AvailableCapacity], [Level], [StoreTypeId], [LocationId], [BattalionId], [RangeId], [ZilaId], [UpazilaId], [UnionId], [RequiresTemperatureControl], [Temperature], [Humidity], [MinTemperature], [MaxTemperature], [SecurityLevel], [AccessRequirements], [IsStockFrozen], [StockFrozenAt], [StockUnfrozenAt], [StockFrozenReason], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Provision Store - Dhaka', N'বিধান ভাণ্ডার - ঢাকা', N'PS-DH-01', NULL, N'Active', N'Dhaka Range', N'Dhaka Range Office, Mirpur-12', N'Provision Store for Dhaka Range', NULL, N'Md. Shahjahan Ali', N'01700-502001', N'provision.dhaka@ansar.gov.bd', NULL, NULL, NULL, N'Fazlul Haque', N'SK002', NULL, CAST(N'2025-11-04T03:35:43.2800000' AS DateTime2), NULL, NULL, NULL, NULL, NULL, 2, 2, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, CAST(N'2025-11-04T03:35:43.2800000' AS DateTime2), NULL, NULL, CAST(N'2025-11-04T03:35:43.2800000' AS DateTime2), NULL, NULL, NULL, 1)
 GO
@@ -5342,6 +6115,8 @@ INSERT [dbo].[StoreTypeCategories] ([Id], [StoreTypeId], [CategoryId], [IsPrimar
 GO
 INSERT [dbo].[StoreTypeCategories] ([Id], [StoreTypeId], [CategoryId], [IsPrimary], [IsAllowed], [StoreTypeId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, 2, 3, 1, 1, NULL, CAST(N'2025-11-04T05:05:26.4200000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
+INSERT [dbo].[StoreTypeCategories] ([Id], [StoreTypeId], [CategoryId], [IsPrimary], [IsAllowed], [StoreTypeId1], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, 4, 2, 0, 0, NULL, CAST(N'2025-11-10T11:20:45.2897294' AS DateTime2), N'System', NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[StoreTypeCategories] OFF
 GO
 SET IDENTITY_INSERT [dbo].[StoreTypes] ON 
@@ -5351,6 +6126,8 @@ GO
 INSERT [dbo].[StoreTypes] ([Id], [Name], [NameBn], [Code], [Description], [Icon], [Color], [DefaultManagerRole], [DisplayOrder], [MaxCapacity], [RequiresTemperatureControl], [RequiresSecurityClearance], [IsMainStore], [AllowDirectIssue], [AllowTransfer], [RequiresMandatoryDocuments], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Provision Store', N'প্রভিশন স্টোর', N'PROVISION', N'Items issued from here after inspection - Requires mandatory documents', N'fa-dolly', N'#2ecc71', N'StoreKeeper', 2, 0, 0, 0, 0, 1, 1, 1, CAST(N'2025-11-04T02:45:38.9695302' AS DateTime2), N'System', NULL, NULL, 1)
 GO
 INSERT [dbo].[StoreTypes] ([Id], [Name], [NameBn], [Code], [Description], [Icon], [Color], [DefaultManagerRole], [DisplayOrder], [MaxCapacity], [RequiresTemperatureControl], [RequiresSecurityClearance], [IsMainStore], [AllowDirectIssue], [AllowTransfer], [RequiresMandatoryDocuments], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Other Store', N'অন্যান্য স্টোর', N'OTHER', N'General purpose stores (Battalion/Range/Zila stores)', N'fa-store', N'#95a5a6', N'StoreKeeper', 3, 0, 0, 0, 0, 1, 1, 0, CAST(N'2025-11-04T02:45:38.9695320' AS DateTime2), N'System', NULL, NULL, 1)
+GO
+INSERT [dbo].[StoreTypes] ([Id], [Name], [NameBn], [Code], [Description], [Icon], [Color], [DefaultManagerRole], [DisplayOrder], [MaxCapacity], [RequiresTemperatureControl], [RequiresSecurityClearance], [IsMainStore], [AllowDirectIssue], [AllowTransfer], [RequiresMandatoryDocuments], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'eeeeeeeeeeeeee', NULL, N'dfgsdfg', N'gsdf', NULL, N'#007bff', NULL, 0, 0, 0, 0, 0, 0, 0, 0, CAST(N'2025-11-10T11:20:45.2684447' AS DateTime2), N'admin', CAST(N'2025-11-10T11:21:33.1628934' AS DateTime2), N'System', 0)
 GO
 SET IDENTITY_INSERT [dbo].[StoreTypes] OFF
 GO
@@ -5630,7 +6407,7 @@ INSERT [dbo].[Upazilas] ([Id], [Name], [Code], [NameBangla], [ZilaId], [UpazilaO
 GO
 INSERT [dbo].[Upazilas] ([Id], [Name], [Code], [NameBangla], [ZilaId], [UpazilaOfficerName], [OfficerDesignation], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [NumberOfUnions], [NumberOfVillages], [HasVDPUnit], [VDPMemberCount], [Remarks], [UpazilaChairmanName], [VDPOfficerName], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (109, N'Lalmonirhat Sadar', N'LAL-SAD', N'লালমনিরহাট সদর', 63, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, N'লালমনিরহাট সদর', CAST(N'2025-11-04T07:30:50.5700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Upazilas] ([Id], [Name], [Code], [NameBangla], [ZilaId], [UpazilaOfficerName], [OfficerDesignation], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [NumberOfUnions], [NumberOfVillages], [HasVDPUnit], [VDPMemberCount], [Remarks], [UpazilaChairmanName], [VDPOfficerName], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (110, N'Aditmari', N'LAL-ADI', N'আদিতমারী', 63, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, N'আদিতমারী', CAST(N'2025-11-04T07:30:50.5700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Upazilas] ([Id], [Name], [Code], [NameBangla], [ZilaId], [UpazilaOfficerName], [OfficerDesignation], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [NumberOfUnions], [NumberOfVillages], [HasVDPUnit], [VDPMemberCount], [Remarks], [UpazilaChairmanName], [VDPOfficerName], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (110, N'Aditmari', N'LAL-ADI', N'আদিতমারী', 63, N'abul kalam azad', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, N'আদিতমারী', CAST(N'2025-11-04T07:30:50.5700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', CAST(N'2025-11-09T17:41:13.3557427' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', 1)
 GO
 INSERT [dbo].[Upazilas] ([Id], [Name], [Code], [NameBangla], [ZilaId], [UpazilaOfficerName], [OfficerDesignation], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [NumberOfUnions], [NumberOfVillages], [HasVDPUnit], [VDPMemberCount], [Remarks], [UpazilaChairmanName], [VDPOfficerName], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (111, N'Nilphamari Sadar', N'NIL-SAD', N'নীলফামারী সদর', 64, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, N'নীলফামারী সদর', CAST(N'2025-11-04T07:30:50.5700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
@@ -5724,6 +6501,8 @@ INSERT [dbo].[UserStores] ([Id], [UserId], [StoreId], [AssignedDate], [AssignedB
 GO
 INSERT [dbo].[UserStores] ([Id], [UserId], [StoreId], [AssignedDate], [AssignedBy], [IsPrimary], [UnassignedDate], [AssignedAt], [RemovedDate], [Role], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'a27a83b4-740f-42b5-b06e-8e438e209f17', 3, CAST(N'2025-09-15T05:03:43.3366667' AS DateTime2), NULL, 0, NULL, CAST(N'2025-09-15T05:03:43.3366667' AS DateTime2), NULL, N'StoreManager', CAST(N'2025-09-15T05:03:43.3366667' AS DateTime2), NULL, NULL, NULL, 1)
 GO
+INSERT [dbo].[UserStores] ([Id], [UserId], [StoreId], [AssignedDate], [AssignedBy], [IsPrimary], [UnassignedDate], [AssignedAt], [RemovedDate], [Role], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'6335c2e8-2381-4ad4-a299-709b4fc97763', 2, CAST(N'2025-11-10T05:20:30.2622724' AS DateTime2), N'System', 0, NULL, CAST(N'0001-01-01T00:00:00.0000000' AS DateTime2), NULL, NULL, CAST(N'2025-11-10T05:20:30.2618788' AS DateTime2), NULL, NULL, NULL, 1)
+GO
 SET IDENTITY_INSERT [dbo].[UserStores] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Vendors] ON 
@@ -5733,6 +6512,8 @@ GO
 INSERT [dbo].[Vendors] ([Id], [Name], [VendorType], [ContactPerson], [Phone], [Email], [Mobile], [Address], [TIN], [BIN], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Stationary World Ltd.', N'Office Supplies Supplier', N'Mrs. Nasima Akter', N'02-9123456', N'sales@stationaryworld.com.bd', N'01711-234567', N'23 Bangla Motor, Dhaka-1000', N'234567890123', N'000234567890', CAST(N'2025-11-04T04:05:33.8333333' AS DateTime2), NULL, NULL, NULL, 1)
 GO
 INSERT [dbo].[Vendors] ([Id], [Name], [VendorType], [ContactPerson], [Phone], [Email], [Mobile], [Address], [TIN], [BIN], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Uniform Industries Ltd.', N'Uniform Manufacturer', N'Md. Kamal Uddin', N'02-7654321', N'contact@uniformindustries.com', N'01713-345678', N'123 Tejgaon I/A, Dhaka-1208', N'345678901234', N'000345678901', CAST(N'2025-11-04T04:05:33.8333333' AS DateTime2), NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Vendors] ([Id], [Name], [VendorType], [ContactPerson], [Phone], [Email], [Mobile], [Address], [TIN], [BIN], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'zxczxc', N'Manufacturer', N'zxczxc', N'4565465400000', NULL, N'654654', N'cdsf', N'dsfdsffg', N'5465gfh', CAST(N'2025-11-10T07:16:49.7370805' AS DateTime2), N'System', CAST(N'2025-11-10T07:17:06.7900574' AS DateTime2), N'System', 0)
 GO
 SET IDENTITY_INSERT [dbo].[Vendors] OFF
 GO
@@ -5784,237 +6565,305 @@ SET IDENTITY_INSERT [dbo].[WriteOffs] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Zilas] ON 
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'Dhaka', N'DZ-01', N'ঢাকা', 2, N'Dhaka', N'Captain Md. Aminul Islam', N'01700-201001', N'dhaka.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঢাকা', CAST(N'2025-11-04T03:31:35.6566667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (1, N'Dhaka', N'DZ-01', N'ঢাকা', 2, N'Dhaka Division', N'Captain Md. Aminul Islam', N'01700-201001', N'dhaka.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঢাকা', CAST(N'2025-11-04T03:31:35.6566667' AS DateTime2), NULL, NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Gazipur', N'GZ-01', N'গাজীপুর', 2, N'Dhaka', N'Captain Md. Shafiqul Islam', N'01700-201002', N'gazipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাজীপুর', CAST(N'2025-11-04T03:31:35.6566667' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (2, N'Gazipur', N'GZ-01', N'গাজীপুর', 2, N'Dhaka Division', N'Captain Md. Shafiqul Islam', N'01700-201002', N'gazipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাজীপুর', CAST(N'2025-11-04T03:31:35.6566667' AS DateTime2), NULL, NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Rajshahi', N'RZ-01', N'রাজশাহী', 3, N'Rajshahi', N'Captain Md. Abdul Quddus', N'01700-202001', N'rajshahi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাজশাহী', CAST(N'2025-11-04T03:31:35.6600000' AS DateTime2), NULL, NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (3, N'Rajshahi', N'RZ-01', N'রাজশাহী', 3, N'Rajshahi Division', N'Captain Md. Abdul Quddus', N'01700-202001', N'rajshahi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাজশাহী', CAST(N'2025-11-04T03:31:35.6600000' AS DateTime2), NULL, NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'Gazipur Zila', N'DZ-GAZ', N'গাজীপুর জেলা', 2, N'Dhaka', N'Captain Md. Selim Ahmed', N'01700-202001', N'gazipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাজীপুর জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (4, N'Gazipur Zila', N'DZ-GAZ', N'গাজীপুর জেলা', 2, N'Dhaka Division', N'Captain Md. Selim Ahmed', N'01700-202001', N'gazipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাজীপুর জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Narayanganj Zila', N'DZ-NAR', N'নারায়ণগঞ্জ জেলা', 2, N'Dhaka', N'Captain Md. Faruk Hossain', N'01700-203001', N'narayanganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নারায়ণগঞ্জ জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (5, N'Narayanganj Zila', N'DZ-NAR', N'নারায়ণগঞ্জ জেলা', 2, N'Dhaka Division', N'Captain Md. Faruk Hossain', N'01700-203001', N'narayanganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নারায়ণগঞ্জ জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Tangail Zila', N'DZ-TAN', N'টাঙ্গাইল জেলা', 2, N'Dhaka', N'Captain Md. Shamsul Alam', N'01700-204001', N'tangail.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'টাঙ্গাইল জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (6, N'Tangail Zila', N'DZ-TAN', N'টাঙ্গাইল জেলা', 2, N'Dhaka Division', N'Captain Md. Shamsul Alam', N'01700-204001', N'tangail.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'টাঙ্গাইল জেলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Bogura', N'RZ-BOG', N'বগুড়া', 3, N'Rajshahi', N'Captain Md. Abul Kalam', N'01700-301001', N'bogura.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বগুড়া', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (7, N'Bogura', N'RZ-BOG', N'বগুড়া', 3, N'Rajshahi Division', N'Captain Md. Abul Kalam', N'01700-301001', N'bogura.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বগুড়া', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Natore', N'RZ-NAT', N'নাটোর', 3, N'Rajshahi', N'Lt. Md. Nazrul Islam', N'01700-302001', N'natore.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নাটোর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (8, N'Natore', N'RZ-NAT', N'নাটোর', 3, N'Rajshahi Division', N'Lt. Md. Nazrul Islam', N'01700-302001', N'natore.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নাটোর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Pabna', N'RZ-PAB', N'পাবনা', 3, N'Rajshahi', N'Lt. Md. Hafizul Islam', N'01700-303001', N'pabna.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পাবনা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (9, N'Pabna', N'RZ-PAB', N'পাবনা', 3, N'Rajshahi Division', N'Lt. Md. Hafizul Islam', N'01700-303001', N'pabna.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পাবনা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'Cumilla', N'CZ-COM', N'কুমিল্লা', 4, N'Chattogram', N'Captain Md. Jahangir Kabir', N'01700-401001', N'cumilla.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুমিল্লা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (10, N'Cumilla', N'CZ-COM', N'কুমিল্লা', 4, N'Chittagong Division', N'Captain Md. Jahangir Kabir', N'01700-401001', N'cumilla.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুমিল্লা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'Noakhali', N'CZ-NOA', N'নোয়াখালী', 4, N'Chattogram', N'Lt. Md. Mahbub Alam', N'01700-402001', N'noakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নোয়াখালী', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (11, N'Noakhali', N'CZ-NOA', N'নোয়াখালী', 4, N'Chittagong Division', N'Lt. Md. Mahbub Alam', N'01700-402001', N'noakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নোয়াখালী', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'Coxs Bazar', N'CZ-COX', N'কক্সবাজার', 4, N'Chattogram', N'Captain Md. Rafiqul Alam', N'01700-403001', N'coxsbazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কক্সবাজার', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (12, N'Coxs Bazar', N'CZ-COX', N'কক্সবাজার', 4, N'Chittagong Division', N'Captain Md. Rafiqul Alam', N'01700-403001', N'coxsbazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কক্সবাজার', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'Jashore', N'KZ-JAS', N'যশোর', 5, N'Khulna', N'Captain Md. Monirul Haque', N'01700-501001', N'jashore.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'যশোর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (13, N'Jashore', N'KZ-JAS', N'যশোর', 5, N'Khulna Division', N'Captain Md. Monirul Haque', N'01700-501001', N'jashore.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'যশোর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'Kushtia', N'KZ-KUS', N'কুষ্টিয়া', 5, N'Khulna', N'Lt. Md. Sharifuzzaman', N'01700-502001', N'kushtia.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুষ্টিয়া', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (14, N'Kushtia', N'KZ-KUS', N'কুষ্টিয়া', 5, N'Khulna Division', N'Lt. Md. Sharifuzzaman', N'01700-502001', N'kushtia.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুষ্টিয়া', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'Patuakhali', N'BZ-PAT', N'পটুয়াখালী', 6, N'Barisal', N'Lt. Md. Alamgir Kabir', N'01700-601001', N'patuakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পটুয়াখালী', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (15, N'Patuakhali', N'BZ-PAT', N'পটুয়াখালী', 6, N'Barisal Division', N'Lt. Md. Alamgir Kabir', N'01700-601001', N'patuakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পটুয়াখালী', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'Bhola', N'BZ-BHO', N'ভোলা', 6, N'Barisal', N'Lt. Md. Anwar Hossain', N'01700-602001', N'bhola.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ভোলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (16, N'Bhola', N'BZ-BHO', N'ভোলা', 6, N'Barisal Division', N'Lt. Md. Anwar Hossain', N'01700-602001', N'bhola.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ভোলা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'Moulvibazar', N'SZ-MOU', N'মৌলভীবাজার', 7, N'Sylhet', N'Captain Md. Humayun Kabir', N'01700-701001', N'moulvibazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মৌলভীবাজার', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (17, N'Moulvibazar', N'SZ-MOU', N'মৌলভীবাজার', 7, N'Sylhet Division', N'Captain Md. Humayun Kabir', N'01700-701001', N'moulvibazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মৌলভীবাজার', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'Habiganj', N'SZ-HAB', N'হবিগঞ্জ', 7, N'Sylhet', N'Lt. Md. Kamrul Hassan', N'01700-702001', N'habiganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'হবিগঞ্জ', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (18, N'Habiganj', N'SZ-HAB', N'হবিগঞ্জ', 7, N'Sylhet Division', N'Lt. Md. Kamrul Hassan', N'01700-702001', N'habiganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'হবিগঞ্জ', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'Dinajpur', N'RGZ-DIN', N'দিনাজপুর', 8, N'Rangpur', N'Captain Md. Abdur Rahim', N'01700-801001', N'dinajpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'দিনাজপুর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (19, N'Dinajpur', N'RGZ-DIN', N'দিনাজপুর', 8, N'Rangpur Division', N'Captain Md. Abdur Rahim', N'01700-801001', N'dinajpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'দিনাজপুর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'Thakurgaon', N'RGZ-THA', N'ঠাকুরগাঁও', 8, N'Rangpur', N'Lt. Md. Jahidul Islam', N'01700-802001', N'thakurgaon.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঠাকুরগাঁও', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (20, N'Thakurgaon', N'RGZ-THA', N'ঠাকুরগাঁও', 8, N'Rangpur Division', N'Lt. Md. Jahidul Islam', N'01700-802001', N'thakurgaon.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঠাকুরগাঁও', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, N'Netrokona', N'MZ-NET', N'নেত্রকোনা', 9, N'Mymensingh', N'Captain Md. Shahabuddin', N'01700-901001', N'netrokona.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নেত্রকোনা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (21, N'Netrokona', N'MZ-NET', N'নেত্রকোনা', 9, N'Mymensingh Division', N'Captain Md. Shahabuddin', N'01700-901001', N'netrokona.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নেত্রকোনা', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, N'Jamalpur', N'MZ-JAM', N'জামালপুর', 9, N'Mymensingh', N'Lt. Md. Shafiqul Islam', N'01700-902001', N'jamalpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'জামালপুর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (22, N'Jamalpur', N'MZ-JAM', N'জামালপুর', 9, N'Mymensingh Division', N'Lt. Md. Shafiqul Islam', N'01700-902001', N'jamalpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'জামালপুর', CAST(N'2025-11-04T06:36:31.3033333' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (25, N'Kishoreganj', N'DZ-KIS', N'কিশোরগঞ্জ', 2, N'Dhaka', N'Md. Habibur Rahman', N'01700-301005', N'kishoreganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কিশোরগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (25, N'Kishoreganj', N'DZ-KIS', N'কিশোরগঞ্জ', 2, N'Dhaka Division', N'Md. Habibur Rahman', N'01700-301005', N'kishoreganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কিশোরগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (26, N'Manikganj', N'DZ-MAN', N'মানিকগঞ্জ', 2, N'Dhaka', N'Md. Nazrul Islam', N'01700-301006', N'manikganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মানিকগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (26, N'Manikganj', N'DZ-MAN', N'মানিকগঞ্জ', 2, N'Dhaka Division', N'Md. Nazrul Islam', N'01700-301006', N'manikganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মানিকগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (27, N'Munshiganj', N'DZ-MUN', N'মুন্সিগঞ্জ', 2, N'Dhaka', N'Md. Shahin Alam', N'01700-301007', N'munshiganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মুন্সিগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (27, N'Munshiganj', N'DZ-MUN', N'মুন্সিগঞ্জ', 2, N'Dhaka Division', N'Md. Shahin Alam', N'01700-301007', N'munshiganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মুন্সিগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (28, N'Narsingdi', N'DZ-NRS', N'নরসিংদী', 2, N'Dhaka', N'Md. Azizul Haque', N'01700-301008', N'narsingdi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নরসিংদী', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (28, N'Narsingdi', N'DZ-NRS', N'নরসিংদী', 2, N'Dhaka Division', N'Md. Azizul Haque', N'01700-301008', N'narsingdi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নরসিংদী', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (29, N'Rajbari', N'DZ-RAJB', N'রাজবাড়ী', 2, N'Dhaka', N'Md. Monirul Islam', N'01700-301009', N'rajbari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাজবাড়ী', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (29, N'Rajbari', N'DZ-RAJB', N'রাজবাড়ী', 2, N'Dhaka Division', N'Md. Monirul Islam', N'01700-301009', N'rajbari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাজবাড়ী', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (30, N'Shariatpur', N'DZ-SHA', N'শরীয়তপুর', 2, N'Dhaka', N'Md. Alamgir Hossain', N'01700-301010', N'shariatpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'শরীয়তপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (30, N'Shariatpur', N'DZ-SHA', N'শরীয়তপুর', 2, N'Dhaka Division', N'Md. Alamgir Hossain', N'01700-301010', N'shariatpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'শরীয়তপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (31, N'Faridpur', N'DZ-FAR', N'ফরিদপুর', 2, N'Dhaka', N'Md. Shamsul Alam', N'01700-301011', N'faridpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ফরিদপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (31, N'Faridpur', N'DZ-FAR', N'ফরিদপুর', 2, N'Dhaka Division', N'Md. Shamsul Alam', N'01700-301011', N'faridpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ফরিদপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (32, N'Gopalganj', N'DZ-GOP', N'গোপালগঞ্জ', 2, N'Dhaka', N'Md. Abdul Jalil', N'01700-301012', N'gopalganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গোপালগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (32, N'Gopalganj', N'DZ-GOP', N'গোপালগঞ্জ', 2, N'Dhaka Division', N'Md. Abdul Jalil', N'01700-301012', N'gopalganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গোপালগঞ্জ', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (33, N'Madaripur', N'DZ-MAD', N'মাদারীপুর', 2, N'Dhaka', N'Md. Kamrul Hassan', N'01700-301013', N'madaripur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মাদারীপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (33, N'Madaripur', N'DZ-MAD', N'মাদারীপুর', 2, N'Dhaka Division', N'Md. Kamrul Hassan', N'01700-301013', N'madaripur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'মাদারীপুর', CAST(N'2025-11-04T07:12:36.6400000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (34, N'Chattogram', N'CTG-CHT', N'চট্টগ্রাম', 4, N'Chattogram', N'Md. Asaduzzaman', N'01700-401001', N'chattogram.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চট্টগ্রাম', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (34, N'Chattogram', N'CTG-CHT', N'চট্টগ্রাম', 4, N'Chittagong Division', N'Md. Asaduzzaman', N'01700-401001', N'chattogram.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চট্টগ্রাম', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (35, N'Cumilla', N'CTG-COM', N'কুমিল্লা', 4, N'Chattogram', N'Md. Mamunur Rashid', N'01700-401002', N'cumilla.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুমিল্লা', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (35, N'Cumilla', N'CTG-COM', N'কুমিল্লা', 4, N'Chittagong Division', N'Md. Mamunur Rashid', N'01700-401002', N'cumilla.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুমিল্লা', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (36, N'Noakhali', N'CTG-NOA', N'নোয়াখালী', 4, N'Chattogram', N'Md. Shahabuddin', N'01700-401003', N'noakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নোয়াখালী', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (36, N'Noakhali', N'CTG-NOA', N'নোয়াখালী', 4, N'Chittagong Division', N'Md. Shahabuddin', N'01700-401003', N'noakhali.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নোয়াখালী', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (37, N'Feni', N'CTG-FEN', N'ফেনী', 4, N'Chattogram', N'Md. Jahangir Alam', N'01700-401004', N'feni.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ফেনী', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (37, N'Feni', N'CTG-FEN', N'ফেনী', 4, N'Chittagong Division', N'Md. Jahangir Alam', N'01700-401004', N'feni.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ফেনী', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (38, N'Lakshmipur', N'CTG-LAK', N'লক্ষ্মীপুর', 4, N'Chattogram', N'Md. Rashidul Haque', N'01700-401005', N'lakshmipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'লক্ষ্মীপুর', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (38, N'Lakshmipur', N'CTG-LAK', N'লক্ষ্মীপুর', 4, N'Chittagong Division', N'Md. Rashidul Haque', N'01700-401005', N'lakshmipur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'লক্ষ্মীপুর', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (39, N'Chandpur', N'CTG-CHA', N'চাঁদপুর', 4, N'Chattogram', N'Md. Mizanur Rahman', N'01700-401006', N'chandpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চাঁদপুর', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (39, N'Chandpur', N'CTG-CHA', N'চাঁদপুর', 4, N'Chittagong Division', N'Md. Mizanur Rahman', N'01700-401006', N'chandpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চাঁদপুর', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (40, N'Coxs Bazar', N'CTG-COX', N'কক্সবাজার', 4, N'Chattogram', N'Md. Nurul Islam', N'01700-401007', N'coxsbazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কক্সবাজার', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (40, N'Coxs Bazar', N'CTG-COX', N'কক্সবাজার', 4, N'Chittagong Division', N'Md. Nurul Islam', N'01700-401007', N'coxsbazar.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কক্সবাজার', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (41, N'Rangamati', N'CTG-RAN', N'রাঙ্গামাটি', 4, N'Chattogram', N'Md. Shamim Ahmed', N'01700-401008', N'rangamati.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাঙ্গামাটি', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (41, N'Rangamati', N'CTG-RAN', N'রাঙ্গামাটি', 4, N'Chittagong Division', N'Md. Shamim Ahmed', N'01700-401008', N'rangamati.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রাঙ্গামাটি', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (42, N'Khagrachari', N'CTG-KHA', N'খাগড়াছড়ি', 4, N'Chattogram', N'Md. Harun-or-Rashid', N'01700-401009', N'khagrachari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'খাগড়াছড়ি', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (42, N'Khagrachari', N'CTG-KHA', N'খাগড়াছড়ি', 4, N'Chittagong Division', N'Md. Harun-or-Rashid', N'01700-401009', N'khagrachari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'খাগড়াছড়ি', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (43, N'Bandarban', N'CTG-BAN', N'বান্দরবান', 4, N'Chattogram', N'Md. Saiful Islam', N'01700-401010', N'bandarban.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বান্দরবান', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (43, N'Bandarban', N'CTG-BAN', N'বান্দরবান', 4, N'Chittagong Division', N'Md. Saiful Islam', N'01700-401010', N'bandarban.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বান্দরবান', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (44, N'Brahmanbaria', N'CTG-BRA', N'ব্রাহ্মণবাড়িয়া', 4, N'Chattogram', N'Md. Abdul Quddus', N'01700-401011', N'brahmanbaria.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ব্রাহ্মণবাড়িয়া', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (44, N'Brahmanbaria', N'CTG-BRA', N'ব্রাহ্মণবাড়িয়া', 4, N'Chittagong Division', N'Md. Abdul Quddus', N'01700-401011', N'brahmanbaria.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ব্রাহ্মণবাড়িয়া', CAST(N'2025-11-04T07:12:56.5266667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (47, N'Naogaon', N'RZ-NAO', N'নওগাঁ', 3, N'Rajshahi', N'Md. Azizul Haque', N'01700-501004', N'naogaon.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নওগাঁ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (47, N'Naogaon', N'RZ-NAO', N'নওগাঁ', 3, N'Rajshahi Division', N'Md. Azizul Haque', N'01700-501004', N'naogaon.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নওগাঁ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (48, N'Sirajganj', N'RZ-SIR', N'সিরাজগঞ্জ', 3, N'Rajshahi', N'Md. Alamgir Kabir', N'01700-501006', N'sirajganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সিরাজগঞ্জ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (48, N'Sirajganj', N'RZ-SIR', N'সিরাজগঞ্জ', 3, N'Rajshahi Division', N'Md. Alamgir Kabir', N'01700-501006', N'sirajganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সিরাজগঞ্জ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (49, N'Chapainawabganj', N'RZ-CHP', N'চাঁপাইনবাবগঞ্জ', 3, N'Rajshahi', N'Md. Nurul Islam', N'01700-501007', N'chapainawabganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চাঁপাইনবাবগঞ্জ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (49, N'Chapainawabganj', N'RZ-CHP', N'চাঁপাইনবাবগঞ্জ', 3, N'Rajshahi Division', N'Md. Nurul Islam', N'01700-501007', N'chapainawabganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'চাঁপাইনবাবগঞ্জ', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (50, N'Joypurhat', N'RZ-JOY', N'জয়পুরহাট', 3, N'Rajshahi', N'Md. Kamrul Hassan', N'01700-501008', N'joypurhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'জয়পুরহাট', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (50, N'Joypurhat', N'RZ-JOY', N'জয়পুরহাট', 3, N'Rajshahi Division', N'Md. Kamrul Hassan', N'01700-501008', N'joypurhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'জয়পুরহাট', CAST(N'2025-11-04T07:13:24.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (53, N'Kushtia', N'KZ-KUST', N'কুষ্টিয়া', 5, N'Khulna', N'Md. Jahangir Alam', N'01700-601010', N'kushtia.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুষ্টিয়া', CAST(N'2025-11-04T07:13:53.1500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (53, N'Kushtia', N'KZ-KUST', N'কুষ্টিয়া', 5, N'Khulna Division', N'Md. Jahangir Alam', N'01700-601010', N'kushtia.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুষ্টিয়া', CAST(N'2025-11-04T07:13:53.1500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (54, N'Barisal', N'BZ-BAR', N'বরিশাল', 6, N'Barisal', N'Md. Shamsul Alam', N'01700-701001', N'barisal.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বরিশাল', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (54, N'Barisal', N'BZ-BAR', N'বরিশাল', 6, N'Barisal Division', N'Md. Shamsul Alam', N'01700-701001', N'barisal.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বরিশাল', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (55, N'Jhalokathi', N'BZ-JHA', N'ঝালকাঠি', 6, N'Barisal', N'Md. Nurul Islam', N'01700-701002', N'jhalokathi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঝালকাঠি', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (55, N'Jhalokathi', N'BZ-JHA', N'ঝালকাঠি', 6, N'Barisal Division', N'Md. Nurul Islam', N'01700-701002', N'jhalokathi.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঝালকাঠি', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (56, N'Pirojpur', N'BZ-PIR', N'পিরোজপুর', 6, N'Barisal', N'Md. Kamal Hossain', N'01700-701003', N'pirojpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পিরোজপুর', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (56, N'Pirojpur', N'BZ-PIR', N'পিরোজপুর', 6, N'Barisal Division', N'Md. Kamal Hossain', N'01700-701003', N'pirojpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পিরোজপুর', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (57, N'Barguna', N'BZ-BAG', N'বরগুনা', 6, N'Barisal', N'Md. Monirul Islam', N'01700-701004', N'barguna.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বরগুনা', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (57, N'Barguna', N'BZ-BAG', N'বরগুনা', 6, N'Barisal Division', N'Md. Monirul Islam', N'01700-701004', N'barguna.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বরগুনা', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (58, N'Sylhet', N'SZ-SYL', N'সিলেট', 7, N'Sylhet', N'Md. Rafiqul Islam', N'01700-801001', N'sylhet.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সিলেট', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (58, N'Sylhet', N'SZ-SYL', N'সিলেট', 7, N'Sylhet Division', N'Md. Rafiqul Islam', N'01700-801001', N'sylhet.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সিলেট', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (59, N'Sunamganj', N'SZ-SUN', N'সুনামগঞ্জ', 7, N'Sylhet', N'Md. Abdul Jalil', N'01700-801002', N'sunamganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সুনামগঞ্জ', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (59, N'Sunamganj', N'SZ-SUN', N'সুনামগঞ্জ', 7, N'Sylhet Division', N'Md. Abdul Jalil', N'01700-801002', N'sunamganj.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সুনামগঞ্জ', CAST(N'2025-11-04T07:14:07.2500000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (60, N'Rangpur', N'RGZ-RAN', N'রংপুর', 8, N'Rangpur', N'Md. Kamrul Hassan', N'01700-901001', N'rangpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রংপুর', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (60, N'Rangpur', N'RGZ-RAN', N'রংপুর', 8, N'Rangpur Division', N'Md. Kamrul Hassan', N'01700-901001', N'rangpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'রংপুর', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (61, N'Gaibandha', N'RGZ-GAI', N'গাইবান্ধা', 8, N'Rangpur', N'Md. Shahin Alam', N'01700-901002', N'gaibandha.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাইবান্ধা', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (61, N'Gaibandha', N'RGZ-GAI', N'গাইবান্ধা', 8, N'Rangpur Division', N'Md. Shahin Alam', N'01700-901002', N'gaibandha.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'গাইবান্ধা', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (62, N'Kurigram', N'RGZ-KUR', N'কুড়িগ্রাম', 8, N'Rangpur', N'Md. Nazrul Islam', N'01700-901003', N'kurigram.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুড়িগ্রাম', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (62, N'Kurigram', N'RGZ-KUR', N'কুড়িগ্রাম', 8, N'Rangpur Division', N'Md. Nazrul Islam', N'01700-901003', N'kurigram.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'কুড়িগ্রাম', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (63, N'Lalmonirhat', N'RGZ-LAL', N'লালমনিরহাট', 8, N'Rangpur', N'Md. Habibur Rahman', N'01700-901004', N'lalmonirhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'লালমনিরহাট', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (63, N'Lalmonirhat', N'RGZ-LAL', N'লালমনিরহাট', 8, N'Rangpur Division', N'Md. Habibur Rahman', N'01700-901004', N'lalmonirhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'লালমনিরহাট', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (64, N'Nilphamari', N'RGZ-NIL', N'নীলফামারী', 8, N'Rangpur', N'Md. Azizul Haque', N'01700-901005', N'nilphamari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নীলফামারী', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (64, N'Nilphamari', N'RGZ-NIL', N'নীলফামারী', 8, N'Rangpur Division', N'Md. Azizul Haque', N'01700-901005', N'nilphamari.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'নীলফামারী', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (65, N'Panchagarh', N'RGZ-PAN', N'পঞ্চগড়', 8, N'Rangpur', N'Md. Monirul Islam', N'01700-901006', N'panchagarh.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পঞ্চগড়', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (65, N'Panchagarh', N'RGZ-PAN', N'পঞ্চগড়', 8, N'Rangpur Division', N'Md. Monirul Islam', N'01700-901006', N'panchagarh.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'পঞ্চগড়', CAST(N'2025-11-04T07:14:22.7666667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (66, N'Mymensingh', N'MZ-MYM', N'ময়মনসিংহ', 9, N'Mymensingh', N'Md. Shamsul Alam', N'01700-1001001', N'mymensingh.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ময়মনসিংহ', CAST(N'2025-11-04T07:14:22.7700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (66, N'Mymensingh', N'MZ-MYM', N'ময়মনসিংহ', 9, N'Mymensingh Division', N'Md. Shamsul Alam', N'01700-1001001', N'mymensingh.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ময়মনসিংহ', CAST(N'2025-11-04T07:14:22.7700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (67, N'Sherpur', N'MZ-SHE', N'শেরপুর', 9, N'Mymensingh', N'Md. Alamgir Kabir', N'01700-1001002', N'sherpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'শেরপুর', CAST(N'2025-11-04T07:14:22.7700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (67, N'Sherpur', N'MZ-SHE', N'শেরপুর', 9, N'Mymensingh Division', N'Md. Alamgir Kabir', N'01700-1001002', N'sherpur.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'শেরপুর', CAST(N'2025-11-04T07:14:22.7700000' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (69, N'Satkhira', N'KZ-SAT', N'সাতক্ষীরা', 5, N'Khulna', N'Md. Alamgir Hossain', N'01700-601003', N'satkhira.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সাতক্ষীরা', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (69, N'Satkhira', N'KZ-SAT', N'সাতক্ষীরা', 5, N'Khulna Division', N'Md. Alamgir Hossain', N'01700-601003', N'satkhira.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'সাতক্ষীরা', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (70, N'Bagerhat', N'KZ-BAG', N'বাগেরহাট', 5, N'Khulna', N'Md. Kamrul Hassan', N'01700-601004', N'bagerhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বাগেরহাট', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (70, N'Bagerhat', N'KZ-BAG', N'বাগেরহাট', 5, N'Khulna Division', N'Md. Kamrul Hassan', N'01700-601004', N'bagerhat.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'বাগেরহাট', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
-INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (71, N'Jhenaidah', N'KZ-JHE', N'ঝিনাইদহ', 5, N'Khulna', N'Md. Shahin Alam', N'01700-601005', N'jhenaidah.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঝিনাইদহ', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
+INSERT [dbo].[Zilas] ([Id], [Name], [Code], [NameBangla], [RangeId], [Division], [DistrictOfficerName], [ContactNumber], [Email], [OfficeAddress], [Area], [Population], [Remarks], [NameBn], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [IsActive]) VALUES (71, N'Jhenaidah', N'KZ-JHE', N'ঝিনাইদহ', 5, N'Khulna Division', N'Md. Shahin Alam', N'01700-601005', N'jhenaidah.zila@ansar.gov.bd', NULL, NULL, NULL, NULL, N'ঝিনাইদহ', CAST(N'2025-11-04T07:15:32.0766667' AS DateTime2), N'b9d49f27-6a2b-4bca-9ea5-ddb95d476989', NULL, NULL, 1)
 GO
 SET IDENTITY_INSERT [dbo].[Zilas] OFF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ActivityLogs_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ActivityLogs_UserId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ActivityLogs_UserId] ON [dbo].[ActivityLogs]
 (
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterItems_AllotmentLetterId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterDistributions_AllotmentLetterId]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterDistributions_AllotmentLetterId] ON [dbo].[AllotmentLetterDistributions]
+(
+	[AllotmentLetterId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterDistributions_AllotmentLetterId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterDistributions_AllotmentLetterId1] ON [dbo].[AllotmentLetterDistributions]
+(
+	[AllotmentLetterId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterDistributions_SerialNo]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterDistributions_SerialNo] ON [dbo].[AllotmentLetterDistributions]
+(
+	[SerialNo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterItems_AllotmentLetterId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterItems_AllotmentLetterId] ON [dbo].[AllotmentLetterItems]
 (
 	[AllotmentLetterId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterItems_ItemId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterItems_ItemId] ON [dbo].[AllotmentLetterItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipientItems_AllotmentLetterRecipientId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipientItems_AllotmentLetterRecipientId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipientItems_AllotmentLetterRecipientId] ON [dbo].[AllotmentLetterRecipientItems]
 (
 	[AllotmentLetterRecipientId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipientItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipientItems_AllotmentLetterRecipientId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipientItems_AllotmentLetterRecipientId1] ON [dbo].[AllotmentLetterRecipientItems]
+(
+	[AllotmentLetterRecipientId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipientItems_ItemId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipientItems_ItemId] ON [dbo].[AllotmentLetterRecipientItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_AllotmentLetterId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_AllotmentLetterId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_AllotmentLetterId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[AllotmentLetterId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_BattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_AllotmentLetterId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_AllotmentLetterId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[AllotmentLetterId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_BattalionId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_BattalionId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[BattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_BattalionId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_BattalionId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[BattalionId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_RangeId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_RangeId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_UnionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_RangeId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_RangeId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[RangeId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_RecipientType]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_RecipientType] ON [dbo].[AllotmentLetterRecipients]
+(
+	[RecipientType] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_UnionId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_UnionId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[UnionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_UnionId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_UnionId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[UnionId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_UpazilaId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_UpazilaId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[UpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetterRecipients_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetterRecipients_UpazilaId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_UpazilaId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[UpazilaId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_ZilaId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_ZilaId] ON [dbo].[AllotmentLetterRecipients]
 (
 	[ZilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_AllotmentLetterRecipients_ZilaId1]    Script Date: 11/12/2025 10:09:15 AM ******/
+CREATE NONCLUSTERED INDEX [IX_AllotmentLetterRecipients_ZilaId1] ON [dbo].[AllotmentLetterRecipients]
+(
+	[ZilaId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AllotmentLetters_AllotmentNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_AllotmentNo]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_AllotmentLetters_AllotmentNo] ON [dbo].[AllotmentLetters]
 (
 	[AllotmentNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetters_FromStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_FromStoreId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_FromStoreId] ON [dbo].[AllotmentLetters]
 (
 	[FromStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetters_IssuedToBattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_IssuedToBattalionId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_IssuedToBattalionId] ON [dbo].[AllotmentLetters]
 (
 	[IssuedToBattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetters_IssuedToRangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_IssuedToRangeId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_IssuedToRangeId] ON [dbo].[AllotmentLetters]
 (
 	[IssuedToRangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetters_IssuedToUpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_IssuedToUpazilaId]    Script Date: 11/12/2025 10:09:15 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_IssuedToUpazilaId] ON [dbo].[AllotmentLetters]
 (
 	[IssuedToUpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AllotmentLetters_IssuedToZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AllotmentLetters_IssuedToZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_IssuedToZilaId] ON [dbo].[AllotmentLetters]
 (
 	[IssuedToZilaId] ASC
@@ -6022,7 +6871,7 @@ CREATE NONCLUSTERED INDEX [IX_AllotmentLetters_IssuedToZilaId] ON [dbo].[Allotme
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalDelegations_FromUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalDelegations_FromUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalDelegations_FromUserId] ON [dbo].[ApprovalDelegations]
 (
 	[FromUserId] ASC
@@ -6030,13 +6879,13 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalDelegations_FromUserId] ON [dbo].[Approval
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalDelegations_ToUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalDelegations_ToUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalDelegations_ToUserId] ON [dbo].[ApprovalDelegations]
 (
 	[ToUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ApprovalHistories_ApprovalRequestId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalHistories_ApprovalRequestId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalHistories_ApprovalRequestId] ON [dbo].[ApprovalHistories]
 (
 	[ApprovalRequestId] ASC
@@ -6044,7 +6893,7 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalHistories_ApprovalRequestId] ON [dbo].[App
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalLevel_Level_EntityType]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalLevel_Level_EntityType]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalLevel_Level_EntityType] ON [dbo].[ApprovalLevels]
 (
 	[Level] ASC,
@@ -6053,7 +6902,7 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalLevel_Level_EntityType] ON [dbo].[Approval
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalRequests_ApprovedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalRequests_ApprovedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalRequests_ApprovedByUserId] ON [dbo].[ApprovalRequests]
 (
 	[ApprovedByUserId] ASC
@@ -6061,19 +6910,19 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalRequests_ApprovedByUserId] ON [dbo].[Appro
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalRequests_RequestedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalRequests_RequestedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalRequests_RequestedByUserId] ON [dbo].[ApprovalRequests]
 (
 	[RequestedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ApprovalSteps_ApprovalRequestId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalSteps_ApprovalRequestId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalSteps_ApprovalRequestId] ON [dbo].[ApprovalSteps]
 (
 	[ApprovalRequestId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ApprovalWorkflowLevels_WorkflowId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalWorkflowLevels_WorkflowId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalWorkflowLevels_WorkflowId] ON [dbo].[ApprovalWorkflowLevels]
 (
 	[WorkflowId] ASC
@@ -6081,7 +6930,7 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalWorkflowLevels_WorkflowId] ON [dbo].[Appro
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ApprovalWorkflows_ApproverUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ApprovalWorkflows_ApproverUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ApprovalWorkflows_ApproverUserId] ON [dbo].[ApprovalWorkflows]
 (
 	[ApproverUserId] ASC
@@ -6089,7 +6938,7 @@ CREATE NONCLUSTERED INDEX [IX_ApprovalWorkflows_ApproverUserId] ON [dbo].[Approv
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetRoleClaims_RoleId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetRoleClaims_RoleId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetRoleClaims_RoleId] ON [dbo].[AspNetRoleClaims]
 (
 	[RoleId] ASC
@@ -6097,7 +6946,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetRoleClaims_RoleId] ON [dbo].[AspNetRoleClaim
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [RoleNameIndex]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [RoleNameIndex]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [RoleNameIndex] ON [dbo].[AspNetRoles]
 (
 	[NormalizedName] ASC
@@ -6107,7 +6956,7 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserClaims_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUserClaims_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserClaims_UserId] ON [dbo].[AspNetUserClaims]
 (
 	[UserId] ASC
@@ -6115,7 +6964,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserClaims_UserId] ON [dbo].[AspNetUserClaim
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserLogins_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUserLogins_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserLogins_UserId] ON [dbo].[AspNetUserLogins]
 (
 	[UserId] ASC
@@ -6123,7 +6972,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserLogins_UserId] ON [dbo].[AspNetUserLogin
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserRoles_RoleId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUserRoles_RoleId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_RoleId] ON [dbo].[AspNetUserRoles]
 (
 	[RoleId] ASC
@@ -6131,7 +6980,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_RoleId] ON [dbo].[AspNetUserRoles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserRoles_UserId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUserRoles_UserId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_UserId1] ON [dbo].[AspNetUserRoles]
 (
 	[UserId1] ASC
@@ -6139,7 +6988,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_UserId1] ON [dbo].[AspNetUserRoles
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [EmailIndex]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [EmailIndex]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [EmailIndex] ON [dbo].[AspNetUsers]
 (
 	[NormalizedEmail] ASC
@@ -6147,7 +6996,7 @@ CREATE NONCLUSTERED INDEX [EmailIndex] ON [dbo].[AspNetUsers]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUsers_BadgeNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_BadgeNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_AspNetUsers_BadgeNumber] ON [dbo].[AspNetUsers]
 (
 	[BadgeNumber] ASC
@@ -6155,31 +7004,31 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_AspNetUsers_BadgeNumber] ON [dbo].[AspNetUs
 WHERE ([BadgeNumber] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AspNetUsers_BattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_BattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUsers_BattalionId] ON [dbo].[AspNetUsers]
 (
 	[BattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AspNetUsers_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUsers_RangeId] ON [dbo].[AspNetUsers]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AspNetUsers_UnionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_UnionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUsers_UnionId] ON [dbo].[AspNetUsers]
 (
 	[UnionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AspNetUsers_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_UpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUsers_UpazilaId] ON [dbo].[AspNetUsers]
 (
 	[UpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AspNetUsers_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AspNetUsers_ZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUsers_ZilaId] ON [dbo].[AspNetUsers]
 (
 	[ZilaId] ASC
@@ -6187,7 +7036,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUsers_ZilaId] ON [dbo].[AspNetUsers]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UserNameIndex]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [UserNameIndex]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON [dbo].[AspNetUsers]
 (
 	[NormalizedUserName] ASC
@@ -6197,13 +7046,13 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AuditLogs_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AuditLogs_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AuditLogs_UserId] ON [dbo].[AuditLogs]
 (
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_AuditReports_PhysicalInventoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_AuditReports_PhysicalInventoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AuditReports_PhysicalInventoryId] ON [dbo].[AuditReports]
 (
 	[PhysicalInventoryId] ASC
@@ -6211,7 +7060,7 @@ CREATE NONCLUSTERED INDEX [IX_AuditReports_PhysicalInventoryId] ON [dbo].[AuditR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Audits_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Audits_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Audits_UserId] ON [dbo].[Audits]
 (
 	[UserId] ASC
@@ -6219,49 +7068,49 @@ CREATE NONCLUSTERED INDEX [IX_Audits_UserId] ON [dbo].[Audits]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Barcodes_BarcodeNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Barcodes_BarcodeNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Barcodes_BarcodeNumber] ON [dbo].[Barcodes]
 (
 	[BarcodeNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Barcodes_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Barcodes_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Barcodes_ItemId] ON [dbo].[Barcodes]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Barcodes_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Barcodes_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Barcodes_StoreId] ON [dbo].[Barcodes]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchMovements_BatchId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchMovements_BatchId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchMovements_BatchId] ON [dbo].[BatchMovements]
 (
 	[BatchId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchMovements_BatchTrackingId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchMovements_BatchTrackingId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchMovements_BatchTrackingId] ON [dbo].[BatchMovements]
 (
 	[BatchTrackingId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchMovements_MovementDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchMovements_MovementDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchMovements_MovementDate] ON [dbo].[BatchMovements]
 (
 	[MovementDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchSignatureItem_BatchSignatureId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchSignatureItem_BatchSignatureId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchSignatureItem_BatchSignatureId] ON [dbo].[BatchSignatureItem]
 (
 	[BatchSignatureId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchSignatures_BatchId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchSignatures_BatchId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchSignatures_BatchId] ON [dbo].[BatchSignatures]
 (
 	[BatchId] ASC
@@ -6269,7 +7118,7 @@ CREATE NONCLUSTERED INDEX [IX_BatchSignatures_BatchId] ON [dbo].[BatchSignatures
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_BatchSignatures_SignedBy]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchSignatures_SignedBy]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchSignatures_SignedBy] ON [dbo].[BatchSignatures]
 (
 	[SignedBy] ASC
@@ -6277,20 +7126,20 @@ CREATE NONCLUSTERED INDEX [IX_BatchSignatures_SignedBy] ON [dbo].[BatchSignature
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_BatchTrackings_BatchNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchTrackings_BatchNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchTrackings_BatchNumber] ON [dbo].[BatchTrackings]
 (
 	[BatchNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchTrackings_ItemId_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchTrackings_ItemId_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchTrackings_ItemId_StoreId] ON [dbo].[BatchTrackings]
 (
 	[ItemId] ASC,
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BatchTrackings_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BatchTrackings_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BatchTrackings_StoreId] ON [dbo].[BatchTrackings]
 (
 	[StoreId] ASC
@@ -6298,19 +7147,19 @@ CREATE NONCLUSTERED INDEX [IX_BatchTrackings_StoreId] ON [dbo].[BatchTrackings]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Battalions_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Battalions_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Battalions_Code] ON [dbo].[Battalions]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Battalions_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Battalions_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Battalions_RangeId] ON [dbo].[Battalions]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BattalionStores_BattalionId_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BattalionStores_BattalionId_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_BattalionStores_BattalionId_StoreId] ON [dbo].[BattalionStores]
 (
 	[BattalionId] ASC,
@@ -6319,7 +7168,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_BattalionStores_BattalionId_StoreId] ON [db
 WHERE ([EffectiveTo] IS NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_BattalionStores_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_BattalionStores_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_BattalionStores_StoreId] ON [dbo].[BattalionStores]
 (
 	[StoreId] ASC
@@ -6327,7 +7176,7 @@ CREATE NONCLUSTERED INDEX [IX_BattalionStores_StoreId] ON [dbo].[BattalionStores
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Brands_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Brands_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Brands_Code] ON [dbo].[Brands]
 (
 	[Code] ASC
@@ -6337,85 +7186,85 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Categories_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Categories_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Categories_Code] ON [dbo].[Categories]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ConditionCheckItems_ConditionCheckId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ConditionCheckItems_ConditionCheckId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ConditionCheckItems_ConditionCheckId] ON [dbo].[ConditionCheckItems]
 (
 	[ConditionCheckId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ConditionCheckItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ConditionCheckItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ConditionCheckItems_ItemId] ON [dbo].[ConditionCheckItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ConditionChecks_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ConditionChecks_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ConditionChecks_ItemId] ON [dbo].[ConditionChecks]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ConditionChecks_ReturnId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ConditionChecks_ReturnId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ConditionChecks_ReturnId] ON [dbo].[ConditionChecks]
 (
 	[ReturnId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CycleCountSchedules_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_CycleCountSchedules_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CycleCountSchedules_CategoryId] ON [dbo].[CycleCountSchedules]
 (
 	[CategoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CycleCountSchedules_NextScheduledDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_CycleCountSchedules_NextScheduledDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CycleCountSchedules_NextScheduledDate] ON [dbo].[CycleCountSchedules]
 (
 	[NextScheduledDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CycleCountSchedules_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_CycleCountSchedules_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CycleCountSchedules_StoreId] ON [dbo].[CycleCountSchedules]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageRecords_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageRecords_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageRecords_ItemId] ON [dbo].[DamageRecords]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageRecords_ReturnId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageRecords_ReturnId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageRecords_ReturnId] ON [dbo].[DamageRecords]
 (
 	[ReturnId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageRecords_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageRecords_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageRecords_StoreId] ON [dbo].[DamageRecords]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageReportItems_DamageReportId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageReportItems_DamageReportId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageReportItems_DamageReportId] ON [dbo].[DamageReportItems]
 (
 	[DamageReportId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageReportItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageReportItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageReportItems_ItemId] ON [dbo].[DamageReportItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageReports_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageReports_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageReports_ItemId] ON [dbo].[DamageReports]
 (
 	[ItemId] ASC
@@ -6423,13 +7272,13 @@ CREATE NONCLUSTERED INDEX [IX_DamageReports_ItemId] ON [dbo].[DamageReports]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_DamageReports_ReportNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageReports_ReportNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_DamageReports_ReportNo] ON [dbo].[DamageReports]
 (
 	[ReportNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DamageReports_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DamageReports_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DamageReports_StoreId] ON [dbo].[DamageReports]
 (
 	[StoreId] ASC
@@ -6437,19 +7286,19 @@ CREATE NONCLUSTERED INDEX [IX_DamageReports_StoreId] ON [dbo].[DamageReports]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Damages_DamageNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Damages_DamageNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Damages_DamageNo] ON [dbo].[Damages]
 (
 	[DamageNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Damages_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Damages_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Damages_ItemId] ON [dbo].[Damages]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Damages_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Damages_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Damages_StoreId] ON [dbo].[Damages]
 (
 	[StoreId] ASC
@@ -6457,14 +7306,14 @@ CREATE NONCLUSTERED INDEX [IX_Damages_StoreId] ON [dbo].[Damages]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_DigitalSignatures_EntityType_EntityId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DigitalSignatures_EntityType_EntityId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_EntityType_EntityId] ON [dbo].[DigitalSignatures]
 (
 	[EntityType] ASC,
 	[EntityId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DigitalSignatures_SignedAt]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DigitalSignatures_SignedAt]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_SignedAt] ON [dbo].[DigitalSignatures]
 (
 	[SignedAt] ASC
@@ -6472,7 +7321,7 @@ CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_SignedAt] ON [dbo].[DigitalSigna
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_DigitalSignatures_SignedBy]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DigitalSignatures_SignedBy]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_SignedBy] ON [dbo].[DigitalSignatures]
 (
 	[SignedBy] ASC
@@ -6480,7 +7329,7 @@ CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_SignedBy] ON [dbo].[DigitalSigna
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_DigitalSignatures_VerifiedBy]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DigitalSignatures_VerifiedBy]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_VerifiedBy] ON [dbo].[DigitalSignatures]
 (
 	[VerifiedBy] ASC
@@ -6488,19 +7337,19 @@ CREATE NONCLUSTERED INDEX [IX_DigitalSignatures_VerifiedBy] ON [dbo].[DigitalSig
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_DisposalRecords_AuthorizedBy]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DisposalRecords_AuthorizedBy]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DisposalRecords_AuthorizedBy] ON [dbo].[DisposalRecords]
 (
 	[AuthorizedBy] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DisposalRecords_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DisposalRecords_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DisposalRecords_ItemId] ON [dbo].[DisposalRecords]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_DisposalRecords_WriteOffId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_DisposalRecords_WriteOffId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_DisposalRecords_WriteOffId] ON [dbo].[DisposalRecords]
 (
 	[WriteOffId] ASC
@@ -6508,25 +7357,25 @@ CREATE NONCLUSTERED INDEX [IX_DisposalRecords_WriteOffId] ON [dbo].[DisposalReco
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Documents_UploadedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Documents_UploadedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Documents_UploadedByUserId] ON [dbo].[Documents]
 (
 	[UploadedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiredRecords_BatchId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiredRecords_BatchId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiredRecords_BatchId] ON [dbo].[ExpiredRecords]
 (
 	[BatchId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiredRecords_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiredRecords_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiredRecords_ItemId] ON [dbo].[ExpiredRecords]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiredRecords_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiredRecords_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiredRecords_StoreId] ON [dbo].[ExpiredRecords]
 (
 	[StoreId] ASC
@@ -6534,50 +7383,50 @@ CREATE NONCLUSTERED INDEX [IX_ExpiredRecords_StoreId] ON [dbo].[ExpiredRecords]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ExpiryTrackings_DisposedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiryTrackings_DisposedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiryTrackings_DisposedByUserId] ON [dbo].[ExpiryTrackings]
 (
 	[DisposedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiryTrackings_ExpiryDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiryTrackings_ExpiryDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiryTrackings_ExpiryDate] ON [dbo].[ExpiryTrackings]
 (
 	[ExpiryDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiryTrackings_ItemId_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiryTrackings_ItemId_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiryTrackings_ItemId_StoreId] ON [dbo].[ExpiryTrackings]
 (
 	[ItemId] ASC,
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiryTrackings_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiryTrackings_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiryTrackings_ItemId1] ON [dbo].[ExpiryTrackings]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ExpiryTrackings_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ExpiryTrackings_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ExpiryTrackings_StoreId] ON [dbo].[ExpiryTrackings]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_GoodsReceiveItems_GoodsReceiveId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_GoodsReceiveItems_GoodsReceiveId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_GoodsReceiveItems_GoodsReceiveId] ON [dbo].[GoodsReceiveItems]
 (
 	[GoodsReceiveId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_GoodsReceiveItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_GoodsReceiveItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_GoodsReceiveItems_ItemId] ON [dbo].[GoodsReceiveItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_GoodsReceives_PurchaseId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_GoodsReceives_PurchaseId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_GoodsReceives_PurchaseId] ON [dbo].[GoodsReceives]
 (
 	[PurchaseId] ASC
@@ -6585,7 +7434,7 @@ CREATE NONCLUSTERED INDEX [IX_GoodsReceives_PurchaseId] ON [dbo].[GoodsReceives]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_InventoryCycleCountItems_AdjustedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCountItems_AdjustedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCountItems_AdjustedByUserId] ON [dbo].[InventoryCycleCountItems]
 (
 	[AdjustedByUserId] ASC
@@ -6593,25 +7442,25 @@ CREATE NONCLUSTERED INDEX [IX_InventoryCycleCountItems_AdjustedByUserId] ON [dbo
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_InventoryCycleCountItems_CountedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCountItems_CountedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCountItems_CountedByUserId] ON [dbo].[InventoryCycleCountItems]
 (
 	[CountedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryCycleCountItems_CycleCountId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCountItems_CycleCountId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCountItems_CycleCountId] ON [dbo].[InventoryCycleCountItems]
 (
 	[CycleCountId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryCycleCountItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCountItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCountItems_ItemId] ON [dbo].[InventoryCycleCountItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryCycleCounts_CountDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCounts_CountDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCounts_CountDate] ON [dbo].[InventoryCycleCounts]
 (
 	[CountDate] ASC
@@ -6619,7 +7468,7 @@ CREATE NONCLUSTERED INDEX [IX_InventoryCycleCounts_CountDate] ON [dbo].[Inventor
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_InventoryCycleCounts_CountNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCounts_CountNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_InventoryCycleCounts_CountNumber] ON [dbo].[InventoryCycleCounts]
 (
 	[CountNumber] ASC
@@ -6627,7 +7476,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_InventoryCycleCounts_CountNumber] ON [dbo].
 WHERE ([CountNumber] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryCycleCounts_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryCycleCounts_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryCycleCounts_StoreId] ON [dbo].[InventoryCycleCounts]
 (
 	[StoreId] ASC
@@ -6635,13 +7484,13 @@ CREATE NONCLUSTERED INDEX [IX_InventoryCycleCounts_StoreId] ON [dbo].[InventoryC
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_InventoryValuations_CalculatedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_CalculatedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_CalculatedByUserId] ON [dbo].[InventoryValuations]
 (
 	[CalculatedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryValuations_ItemId_StoreId_ValuationDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_ItemId_StoreId_ValuationDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_ItemId_StoreId_ValuationDate] ON [dbo].[InventoryValuations]
 (
 	[ItemId] ASC,
@@ -6649,55 +7498,61 @@ CREATE NONCLUSTERED INDEX [IX_InventoryValuations_ItemId_StoreId_ValuationDate] 
 	[ValuationDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryValuations_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_ItemId1] ON [dbo].[InventoryValuations]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryValuations_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_StoreId] ON [dbo].[InventoryValuations]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryValuations_StoreId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_StoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_StoreId1] ON [dbo].[InventoryValuations]
 (
 	[StoreId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_InventoryValuations_ValuationDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_InventoryValuations_ValuationDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_InventoryValuations_ValuationDate] ON [dbo].[InventoryValuations]
 (
 	[ValuationDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_IssueItems_IssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_IssueItems_IssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_IssueItems_IssueId] ON [dbo].[IssueItems]
 (
 	[IssueId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_IssueItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_IssueItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_IssueItems_ItemId] ON [dbo].[IssueItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_IssueItems_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_IssueItems_LedgerBookId]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_IssueItems_LedgerBookId] ON [dbo].[IssueItems]
+(
+	[LedgerBookId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_IssueItems_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_IssueItems_StoreId] ON [dbo].[IssueItems]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_AllotmentLetterId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_AllotmentLetterId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_AllotmentLetterId] ON [dbo].[Issues]
 (
 	[AllotmentLetterId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_ApproverSignatureId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_ApproverSignatureId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_ApproverSignatureId] ON [dbo].[Issues]
 (
 	[ApproverSignatureId] ASC
@@ -6705,49 +7560,49 @@ CREATE NONCLUSTERED INDEX [IX_Issues_ApproverSignatureId] ON [dbo].[Issues]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Issues_CreatedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_CreatedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_CreatedByUserId] ON [dbo].[Issues]
 (
 	[CreatedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_FromStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_FromStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_FromStoreId] ON [dbo].[Issues]
 (
 	[FromStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssueDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssueDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssueDate] ON [dbo].[Issues]
 (
 	[IssueDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuedToBattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuedToBattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToBattalionId] ON [dbo].[Issues]
 (
 	[IssuedToBattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuedToRangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuedToRangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToRangeId] ON [dbo].[Issues]
 (
 	[IssuedToRangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuedToUnionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuedToUnionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToUnionId] ON [dbo].[Issues]
 (
 	[IssuedToUnionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuedToUpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuedToUpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToUpazilaId] ON [dbo].[Issues]
 (
 	[IssuedToUpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuedToZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuedToZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToZilaId] ON [dbo].[Issues]
 (
 	[IssuedToZilaId] ASC
@@ -6755,31 +7610,31 @@ CREATE NONCLUSTERED INDEX [IX_Issues_IssuedToZilaId] ON [dbo].[Issues]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Issues_IssueNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssueNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Issues_IssueNo] ON [dbo].[Issues]
 (
 	[IssueNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_IssuerSignatureId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_IssuerSignatureId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_IssuerSignatureId] ON [dbo].[Issues]
 (
 	[IssuerSignatureId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_ParentIssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_ParentIssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_ParentIssueId] ON [dbo].[Issues]
 (
 	[ParentIssueId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Issues_ReceiverSignatureId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Issues_ReceiverSignatureId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Issues_ReceiverSignatureId] ON [dbo].[Issues]
 (
 	[ReceiverSignatureId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_IssueVouchers_IssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_IssueVouchers_IssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_IssueVouchers_IssueId] ON [dbo].[IssueVouchers]
 (
 	[IssueId] ASC
@@ -6787,19 +7642,19 @@ CREATE NONCLUSTERED INDEX [IX_IssueVouchers_IssueId] ON [dbo].[IssueVouchers]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_IssueVouchers_VoucherNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_IssueVouchers_VoucherNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_IssueVouchers_VoucherNumber] ON [dbo].[IssueVouchers]
 (
 	[VoucherNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ItemModels_BrandId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ItemModels_BrandId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ItemModels_BrandId] ON [dbo].[ItemModels]
 (
 	[BrandId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Items_BrandId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_BrandId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Items_BrandId] ON [dbo].[Items]
 (
 	[BrandId] ASC
@@ -6807,7 +7662,7 @@ CREATE NONCLUSTERED INDEX [IX_Items_BrandId] ON [dbo].[Items]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Items_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Items_Code] ON [dbo].[Items]
 (
 	[Code] ASC
@@ -6815,7 +7670,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Items_Code] ON [dbo].[Items]
 WHERE ([Code] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Items_IsActive]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_IsActive]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Items_IsActive] ON [dbo].[Items]
 (
 	[IsActive] ASC
@@ -6823,13 +7678,13 @@ CREATE NONCLUSTERED INDEX [IX_Items_IsActive] ON [dbo].[Items]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Items_ItemCode]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_ItemCode]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Items_ItemCode] ON [dbo].[Items]
 (
 	[ItemCode] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Items_ItemModelId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_ItemModelId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Items_ItemModelId] ON [dbo].[Items]
 (
 	[ItemModelId] ASC
@@ -6837,25 +7692,25 @@ CREATE NONCLUSTERED INDEX [IX_Items_ItemModelId] ON [dbo].[Items]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Items_Name]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_Name]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Items_Name] ON [dbo].[Items]
 (
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Items_SubCategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Items_SubCategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Items_SubCategoryId] ON [dbo].[Items]
 (
 	[SubCategoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ItemSpecifications_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ItemSpecifications_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ItemSpecifications_ItemId] ON [dbo].[ItemSpecifications]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_LedgerBooks_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_LedgerBooks_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_LedgerBooks_StoreId] ON [dbo].[LedgerBooks]
 (
 	[StoreId] ASC
@@ -6863,7 +7718,7 @@ CREATE NONCLUSTERED INDEX [IX_LedgerBooks_StoreId] ON [dbo].[LedgerBooks]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Locations_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Locations_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Locations_Code] ON [dbo].[Locations]
 (
 	[Code] ASC
@@ -6871,7 +7726,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Locations_Code] ON [dbo].[Locations]
 WHERE ([Code] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Locations_ParentLocationId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Locations_ParentLocationId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Locations_ParentLocationId] ON [dbo].[Locations]
 (
 	[ParentLocationId] ASC
@@ -6879,7 +7734,7 @@ CREATE NONCLUSTERED INDEX [IX_Locations_ParentLocationId] ON [dbo].[Locations]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_LoginLogs_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_LoginLogs_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_LoginLogs_UserId] ON [dbo].[LoginLogs]
 (
 	[UserId] ASC
@@ -6887,89 +7742,101 @@ CREATE NONCLUSTERED INDEX [IX_LoginLogs_UserId] ON [dbo].[LoginLogs]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Notifications_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Notifications_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Notifications_UserId] ON [dbo].[Notifications]
 (
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_BattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_BattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_BattalionId] ON [dbo].[PersonnelItemIssues]
 (
 	[BattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_ItemId] ON [dbo].[PersonnelItemIssues]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_LifeExpiryDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_LifeExpiryDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_LifeExpiryDate] ON [dbo].[PersonnelItemIssues]
 (
 	[LifeExpiryDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_OriginalIssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_OriginalIssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_OriginalIssueId] ON [dbo].[PersonnelItemIssues]
 (
 	[OriginalIssueId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_PersonnelItemIssues_OriginalIssueId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_OriginalIssueId1] ON [dbo].[PersonnelItemIssues]
+(
+	[OriginalIssueId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_PersonnelBadgeNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_PersonnelBadgeNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_PersonnelBadgeNo] ON [dbo].[PersonnelItemIssues]
 (
 	[PersonnelBadgeNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_RangeId] ON [dbo].[PersonnelItemIssues]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_ReceiveId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_ReceiveId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_ReceiveId] ON [dbo].[PersonnelItemIssues]
 (
 	[ReceiveId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_PersonnelItemIssues_ReceiveId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_ReceiveId1] ON [dbo].[PersonnelItemIssues]
+(
+	[ReceiveId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_Status]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_Status]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_Status] ON [dbo].[PersonnelItemIssues]
 (
 	[Status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_StoreId] ON [dbo].[PersonnelItemIssues]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_UpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_UpazilaId] ON [dbo].[PersonnelItemIssues]
 (
 	[UpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PersonnelItemIssues_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PersonnelItemIssues_ZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PersonnelItemIssues_ZilaId] ON [dbo].[PersonnelItemIssues]
 (
 	[ZilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_BattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_BattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_BattalionId] ON [dbo].[PhysicalInventories]
 (
 	[BattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_CategoryId] ON [dbo].[PhysicalInventories]
 (
 	[CategoryId] ASC
@@ -6977,7 +7844,7 @@ CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_CategoryId] ON [dbo].[Physical
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PhysicalInventories_CountedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_CountedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_CountedByUserId] ON [dbo].[PhysicalInventories]
 (
 	[CountedByUserId] ASC
@@ -6985,25 +7852,25 @@ CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_CountedByUserId] ON [dbo].[Phy
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PhysicalInventories_CountNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_CountNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_PhysicalInventories_CountNo] ON [dbo].[PhysicalInventories]
 (
 	[CountNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_RangeId] ON [dbo].[PhysicalInventories]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_StoreId] ON [dbo].[PhysicalInventories]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_UpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_UpazilaId] ON [dbo].[PhysicalInventories]
 (
 	[UpazilaId] ASC
@@ -7011,85 +7878,85 @@ CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_UpazilaId] ON [dbo].[PhysicalI
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PhysicalInventories_VerifiedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_VerifiedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_VerifiedByUserId] ON [dbo].[PhysicalInventories]
 (
 	[VerifiedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventories_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventories_ZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventories_ZilaId] ON [dbo].[PhysicalInventories]
 (
 	[ZilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventoryDetails_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventoryDetails_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventoryDetails_CategoryId] ON [dbo].[PhysicalInventoryDetails]
 (
 	[CategoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventoryDetails_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventoryDetails_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventoryDetails_ItemId] ON [dbo].[PhysicalInventoryDetails]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventoryDetails_PhysicalInventoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventoryDetails_PhysicalInventoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventoryDetails_PhysicalInventoryId] ON [dbo].[PhysicalInventoryDetails]
 (
 	[PhysicalInventoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventoryItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventoryItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventoryItems_ItemId] ON [dbo].[PhysicalInventoryItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PhysicalInventoryItems_PhysicalInventoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PhysicalInventoryItems_PhysicalInventoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PhysicalInventoryItems_PhysicalInventoryId] ON [dbo].[PhysicalInventoryItems]
 (
 	[PhysicalInventoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseItems_ItemId] ON [dbo].[PurchaseItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseItems_PurchaseId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseItems_PurchaseId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseItems_PurchaseId] ON [dbo].[PurchaseItems]
 (
 	[PurchaseId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseItems_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseItems_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseItems_StoreId] ON [dbo].[PurchaseItems]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseOrderItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseOrderItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseOrderItems_ItemId] ON [dbo].[PurchaseOrderItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseOrderItems_PurchaseOrderId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseOrderItems_PurchaseOrderId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseOrderItems_PurchaseOrderId] ON [dbo].[PurchaseOrderItems]
 (
 	[PurchaseOrderId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseOrders_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseOrders_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseOrders_StoreId] ON [dbo].[PurchaseOrders]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PurchaseOrders_VendorId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_PurchaseOrders_VendorId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_PurchaseOrders_VendorId] ON [dbo].[PurchaseOrders]
 (
 	[VendorId] ASC
@@ -7097,7 +7964,7 @@ CREATE NONCLUSTERED INDEX [IX_PurchaseOrders_VendorId] ON [dbo].[PurchaseOrders]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Purchases_CreatedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Purchases_CreatedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Purchases_CreatedByUserId] ON [dbo].[Purchases]
 (
 	[CreatedByUserId] ASC
@@ -7105,37 +7972,37 @@ CREATE NONCLUSTERED INDEX [IX_Purchases_CreatedByUserId] ON [dbo].[Purchases]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Purchases_PurchaseOrderNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Purchases_PurchaseOrderNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Purchases_PurchaseOrderNo] ON [dbo].[Purchases]
 (
 	[PurchaseOrderNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Purchases_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Purchases_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Purchases_StoreId] ON [dbo].[Purchases]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Purchases_VendorId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Purchases_VendorId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Purchases_VendorId] ON [dbo].[Purchases]
 (
 	[VendorId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityCheckItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityCheckItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityCheckItems_ItemId] ON [dbo].[QualityCheckItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityCheckItems_QualityCheckId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityCheckItems_QualityCheckId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityCheckItems_QualityCheckId] ON [dbo].[QualityCheckItems]
 (
 	[QualityCheckId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityChecks_CheckDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_CheckDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityChecks_CheckDate] ON [dbo].[QualityChecks]
 (
 	[CheckDate] ASC
@@ -7143,7 +8010,7 @@ CREATE NONCLUSTERED INDEX [IX_QualityChecks_CheckDate] ON [dbo].[QualityChecks]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_QualityChecks_CheckedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_CheckedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityChecks_CheckedByUserId] ON [dbo].[QualityChecks]
 (
 	[CheckedByUserId] ASC
@@ -7151,25 +8018,25 @@ CREATE NONCLUSTERED INDEX [IX_QualityChecks_CheckedByUserId] ON [dbo].[QualityCh
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_QualityChecks_CheckNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_CheckNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_QualityChecks_CheckNumber] ON [dbo].[QualityChecks]
 (
 	[CheckNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityChecks_GoodsReceiveId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_GoodsReceiveId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityChecks_GoodsReceiveId] ON [dbo].[QualityChecks]
 (
 	[GoodsReceiveId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityChecks_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityChecks_ItemId] ON [dbo].[QualityChecks]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_QualityChecks_PurchaseId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_QualityChecks_PurchaseId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_QualityChecks_PurchaseId] ON [dbo].[QualityChecks]
 (
 	[PurchaseId] ASC
@@ -7177,67 +8044,73 @@ CREATE NONCLUSTERED INDEX [IX_QualityChecks_PurchaseId] ON [dbo].[QualityChecks]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Ranges_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Ranges_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Ranges_Code] ON [dbo].[Ranges]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReceiveItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReceiveItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReceiveItems_ItemId] ON [dbo].[ReceiveItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReceiveItems_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReceiveItems_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReceiveItems_ItemId1] ON [dbo].[ReceiveItems]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReceiveItems_ReceiveId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReceiveItems_LedgerBookId]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_ReceiveItems_LedgerBookId] ON [dbo].[ReceiveItems]
+(
+	[LedgerBookId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ReceiveItems_ReceiveId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReceiveItems_ReceiveId] ON [dbo].[ReceiveItems]
 (
 	[ReceiveId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReceiveItems_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReceiveItems_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReceiveItems_StoreId] ON [dbo].[ReceiveItems]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_OriginalIssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_OriginalIssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_OriginalIssueId] ON [dbo].[Receives]
 (
 	[OriginalIssueId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_ReceivedFromBattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceivedFromBattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromBattalionId] ON [dbo].[Receives]
 (
 	[ReceivedFromBattalionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_ReceivedFromRangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceivedFromRangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromRangeId] ON [dbo].[Receives]
 (
 	[ReceivedFromRangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_ReceivedFromUnionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceivedFromUnionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromUnionId] ON [dbo].[Receives]
 (
 	[ReceivedFromUnionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_ReceivedFromUpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceivedFromUpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromUpazilaId] ON [dbo].[Receives]
 (
 	[ReceivedFromUpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_ReceivedFromZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceivedFromZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromZilaId] ON [dbo].[Receives]
 (
 	[ReceivedFromZilaId] ASC
@@ -7245,25 +8118,25 @@ CREATE NONCLUSTERED INDEX [IX_Receives_ReceivedFromZilaId] ON [dbo].[Receives]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Receives_ReceiveNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_ReceiveNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Receives_ReceiveNo] ON [dbo].[Receives]
 (
 	[ReceiveNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Receives_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Receives_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Receives_StoreId] ON [dbo].[Receives]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RequisitionItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_RequisitionItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_RequisitionItems_ItemId] ON [dbo].[RequisitionItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RequisitionItems_RequisitionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_RequisitionItems_RequisitionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_RequisitionItems_RequisitionId] ON [dbo].[RequisitionItems]
 (
 	[RequisitionId] ASC
@@ -7271,19 +8144,19 @@ CREATE NONCLUSTERED INDEX [IX_RequisitionItems_RequisitionId] ON [dbo].[Requisit
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Requisitions_ApprovedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_ApprovedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Requisitions_ApprovedByUserId] ON [dbo].[Requisitions]
 (
 	[ApprovedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Requisitions_FromStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_FromStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Requisitions_FromStoreId] ON [dbo].[Requisitions]
 (
 	[FromStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Requisitions_PurchaseOrderId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_PurchaseOrderId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Requisitions_PurchaseOrderId] ON [dbo].[Requisitions]
 (
 	[PurchaseOrderId] ASC
@@ -7291,7 +8164,7 @@ CREATE NONCLUSTERED INDEX [IX_Requisitions_PurchaseOrderId] ON [dbo].[Requisitio
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Requisitions_RequestedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_RequestedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Requisitions_RequestedByUserId] ON [dbo].[Requisitions]
 (
 	[RequestedByUserId] ASC
@@ -7299,37 +8172,37 @@ CREATE NONCLUSTERED INDEX [IX_Requisitions_RequestedByUserId] ON [dbo].[Requisit
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Requisitions_RequisitionNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_RequisitionNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Requisitions_RequisitionNumber] ON [dbo].[Requisitions]
 (
 	[RequisitionNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Requisitions_ToStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Requisitions_ToStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Requisitions_ToStoreId] ON [dbo].[Requisitions]
 (
 	[ToStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReturnItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReturnItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReturnItems_ItemId] ON [dbo].[ReturnItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ReturnItems_ReturnId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ReturnItems_ReturnId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_ReturnItems_ReturnId] ON [dbo].[ReturnItems]
 (
 	[ReturnId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Returns_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Returns_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Returns_ItemId] ON [dbo].[Returns]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Returns_OriginalIssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Returns_OriginalIssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Returns_OriginalIssueId] ON [dbo].[Returns]
 (
 	[OriginalIssueId] ASC
@@ -7337,19 +8210,19 @@ CREATE NONCLUSTERED INDEX [IX_Returns_OriginalIssueId] ON [dbo].[Returns]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Returns_ReturnNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Returns_ReturnNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Returns_ReturnNo] ON [dbo].[Returns]
 (
 	[ReturnNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Returns_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Returns_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Returns_StoreId] ON [dbo].[Returns]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Returns_ToStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Returns_ToStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Returns_ToStoreId] ON [dbo].[Returns]
 (
 	[ToStoreId] ASC
@@ -7357,7 +8230,7 @@ CREATE NONCLUSTERED INDEX [IX_Returns_ToStoreId] ON [dbo].[Returns]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ShipmentTrackings_TrackingCode]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_ShipmentTrackings_TrackingCode]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_ShipmentTrackings_TrackingCode] ON [dbo].[ShipmentTrackings]
 (
 	[TrackingCode] ASC
@@ -7365,13 +8238,13 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_ShipmentTrackings_TrackingCode] ON [dbo].[S
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_SignatureOTPs_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SignatureOTPs_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SignatureOTPs_UserId] ON [dbo].[SignatureOTPs]
 (
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Signatures_IssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Signatures_IssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Signatures_IssueId] ON [dbo].[Signatures]
 (
 	[IssueId] ASC
@@ -7379,26 +8252,26 @@ CREATE NONCLUSTERED INDEX [IX_Signatures_IssueId] ON [dbo].[Signatures]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Signatures_ReferenceType_ReferenceId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Signatures_ReferenceType_ReferenceId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Signatures_ReferenceType_ReferenceId] ON [dbo].[Signatures]
 (
 	[ReferenceType] ASC,
 	[ReferenceId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustmentItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustmentItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustmentItems_ItemId] ON [dbo].[StockAdjustmentItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustmentItems_StockAdjustmentId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustmentItems_StockAdjustmentId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustmentItems_StockAdjustmentId] ON [dbo].[StockAdjustmentItems]
 (
 	[StockAdjustmentId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_AdjustmentDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_AdjustmentDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_AdjustmentDate] ON [dbo].[StockAdjustments]
 (
 	[AdjustmentDate] ASC
@@ -7406,7 +8279,7 @@ CREATE NONCLUSTERED INDEX [IX_StockAdjustments_AdjustmentDate] ON [dbo].[StockAd
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockAdjustments_AdjustmentNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_AdjustmentNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StockAdjustments_AdjustmentNo] ON [dbo].[StockAdjustments]
 (
 	[AdjustmentNo] ASC
@@ -7414,49 +8287,49 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_StockAdjustments_AdjustmentNo] ON [dbo].[St
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockAdjustments_ApprovedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_ApprovedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_ApprovedByUserId] ON [dbo].[StockAdjustments]
 (
 	[ApprovedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_ItemId] ON [dbo].[StockAdjustments]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_ItemId1] ON [dbo].[StockAdjustments]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_PhysicalInventoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_PhysicalInventoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_PhysicalInventoryId] ON [dbo].[StockAdjustments]
 (
 	[PhysicalInventoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_StoreId] ON [dbo].[StockAdjustments]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAdjustments_StoreId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAdjustments_StoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAdjustments_StoreId1] ON [dbo].[StockAdjustments]
 (
 	[StoreId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAlerts_AlertDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAlerts_AlertDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAlerts_AlertDate] ON [dbo].[StockAlerts]
 (
 	[AlertDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAlerts_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAlerts_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAlerts_ItemId] ON [dbo].[StockAlerts]
 (
 	[ItemId] ASC
@@ -7464,19 +8337,19 @@ CREATE NONCLUSTERED INDEX [IX_StockAlerts_ItemId] ON [dbo].[StockAlerts]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockAlerts_Status]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAlerts_Status]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAlerts_Status] ON [dbo].[StockAlerts]
 (
 	[Status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockAlerts_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockAlerts_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockAlerts_StoreId] ON [dbo].[StockAlerts]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockEntries_EntryDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockEntries_EntryDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockEntries_EntryDate] ON [dbo].[StockEntries]
 (
 	[EntryDate] ASC
@@ -7484,7 +8357,7 @@ CREATE NONCLUSTERED INDEX [IX_StockEntries_EntryDate] ON [dbo].[StockEntries]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockEntries_EntryNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockEntries_EntryNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StockEntries_EntryNo] ON [dbo].[StockEntries]
 (
 	[EntryNo] ASC
@@ -7492,100 +8365,145 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_StockEntries_EntryNo] ON [dbo].[StockEntrie
 WHERE ([EntryNo] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockEntries_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockEntries_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockEntries_StoreId] ON [dbo].[StockEntries]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockEntryItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockEntryItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockEntryItems_ItemId] ON [dbo].[StockEntryItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockEntryItems_StockEntryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockEntryItems_StockEntryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockEntryItems_StockEntryId] ON [dbo].[StockEntryItems]
 (
 	[StockEntryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockMovements_DestinationStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_DestinationStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_DestinationStoreId] ON [dbo].[StockMovements]
 (
 	[DestinationStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockMovements_ItemId_MovementDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_DestinationStoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_DestinationStoreId1] ON [dbo].[StockMovements]
+(
+	[DestinationStoreId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_StockMovements_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_ItemId] ON [dbo].[StockMovements]
+(
+	[ItemId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_StockMovements_ItemId_MovementDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_ItemId_MovementDate] ON [dbo].[StockMovements]
 (
 	[ItemId] ASC,
 	[MovementDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [IX_StockMovements_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_ItemId1] ON [dbo].[StockMovements]
+(
+	[ItemId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockMovements_MovedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_MovedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_MovedByUserId] ON [dbo].[StockMovements]
 (
 	[MovedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockMovements_SourceStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_MovementDate]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_MovementDate] ON [dbo].[StockMovements]
+(
+	[MovementDate] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_StockMovements_ReferenceType_ReferenceId]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_ReferenceType_ReferenceId] ON [dbo].[StockMovements]
+(
+	[ReferenceType] ASC,
+	[ReferenceId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_StockMovements_SourceStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_SourceStoreId] ON [dbo].[StockMovements]
 (
 	[SourceStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockMovements_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_SourceStoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_SourceStoreId1] ON [dbo].[StockMovements]
+(
+	[SourceStoreId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_StockMovements_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_StoreId] ON [dbo].[StockMovements]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockMovements_StoreItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockMovements_StoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
+CREATE NONCLUSTERED INDEX [IX_StockMovements_StoreId1] ON [dbo].[StockMovements]
+(
+	[StoreId1] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_StockMovements_StoreItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockMovements_StoreItemId] ON [dbo].[StockMovements]
 (
 	[StoreItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockOperations_CreatedAt]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockOperations_CreatedAt]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockOperations_CreatedAt] ON [dbo].[StockOperations]
 (
 	[CreatedAt] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockOperations_FromStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockOperations_FromStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockOperations_FromStoreId] ON [dbo].[StockOperations]
 (
 	[FromStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockOperations_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockOperations_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockOperations_ItemId] ON [dbo].[StockOperations]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockOperations_ToStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockOperations_ToStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockOperations_ToStoreId] ON [dbo].[StockOperations]
 (
 	[ToStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockReturns_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockReturns_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockReturns_ItemId] ON [dbo].[StockReturns]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockReturns_OriginalIssueId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockReturns_OriginalIssueId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockReturns_OriginalIssueId] ON [dbo].[StockReturns]
 (
 	[OriginalIssueId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StockReturns_ReturnDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockReturns_ReturnDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StockReturns_ReturnDate] ON [dbo].[StockReturns]
 (
 	[ReturnDate] ASC
@@ -7593,7 +8511,7 @@ CREATE NONCLUSTERED INDEX [IX_StockReturns_ReturnDate] ON [dbo].[StockReturns]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StockReturns_ReturnNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StockReturns_ReturnNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StockReturns_ReturnNumber] ON [dbo].[StockReturns]
 (
 	[ReturnNumber] ASC
@@ -7601,19 +8519,19 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_StockReturns_ReturnNumber] ON [dbo].[StockR
 WHERE ([ReturnNumber] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreConfigurations_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreConfigurations_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreConfigurations_StoreId] ON [dbo].[StoreConfigurations]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreItems_ItemId] ON [dbo].[StoreItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreItems_StoreId_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreItems_StoreId_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StoreItems_StoreId_ItemId] ON [dbo].[StoreItems]
 (
 	[StoreId] ASC,
@@ -7622,7 +8540,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_StoreItems_StoreId_ItemId] ON [dbo].[StoreI
 WHERE ([StoreId] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_BattalionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_BattalionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_BattalionId] ON [dbo].[Stores]
 (
 	[BattalionId] ASC
@@ -7630,19 +8548,19 @@ CREATE NONCLUSTERED INDEX [IX_Stores_BattalionId] ON [dbo].[Stores]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Stores_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Stores_Code] ON [dbo].[Stores]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_IsActive]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_IsActive]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_IsActive] ON [dbo].[Stores]
 (
 	[IsActive] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_LocationId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_LocationId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_LocationId] ON [dbo].[Stores]
 (
 	[LocationId] ASC
@@ -7650,81 +8568,81 @@ CREATE NONCLUSTERED INDEX [IX_Stores_LocationId] ON [dbo].[Stores]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Stores_Name]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_Name]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_Name] ON [dbo].[Stores]
 (
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_RangeId] ON [dbo].[Stores]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_StoreTypeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_StoreTypeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_StoreTypeId] ON [dbo].[Stores]
 (
 	[StoreTypeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_UnionId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_UnionId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_UnionId] ON [dbo].[Stores]
 (
 	[UnionId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_UpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_UpazilaId] ON [dbo].[Stores]
 (
 	[UpazilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Stores_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Stores_ZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Stores_ZilaId] ON [dbo].[Stores]
 (
 	[ZilaId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreStocks_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreStocks_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreStocks_ItemId] ON [dbo].[StoreStocks]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreStocks_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreStocks_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreStocks_ItemId1] ON [dbo].[StoreStocks]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreStocks_StoreId_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreStocks_StoreId_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StoreStocks_StoreId_ItemId] ON [dbo].[StoreStocks]
 (
 	[StoreId] ASC,
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreStocks_StoreId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreStocks_StoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreStocks_StoreId1] ON [dbo].[StoreStocks]
 (
 	[StoreId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreTypeCategories_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreTypeCategories_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreTypeCategories_CategoryId] ON [dbo].[StoreTypeCategories]
 (
 	[CategoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreTypeCategories_StoreTypeId_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreTypeCategories_StoreTypeId_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StoreTypeCategories_StoreTypeId_CategoryId] ON [dbo].[StoreTypeCategories]
 (
 	[StoreTypeId] ASC,
 	[CategoryId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_StoreTypeCategories_StoreTypeId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreTypeCategories_StoreTypeId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_StoreTypeCategories_StoreTypeId1] ON [dbo].[StoreTypeCategories]
 (
 	[StoreTypeId1] ASC
@@ -7732,13 +8650,13 @@ CREATE NONCLUSTERED INDEX [IX_StoreTypeCategories_StoreTypeId1] ON [dbo].[StoreT
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_StoreTypes_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_StoreTypes_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StoreTypes_Code] ON [dbo].[StoreTypes]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_SubCategories_CategoryId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SubCategories_CategoryId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SubCategories_CategoryId] ON [dbo].[SubCategories]
 (
 	[CategoryId] ASC
@@ -7746,7 +8664,7 @@ CREATE NONCLUSTERED INDEX [IX_SubCategories_CategoryId] ON [dbo].[SubCategories]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_SubCategories_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SubCategories_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_SubCategories_Code] ON [dbo].[SubCategories]
 (
 	[Code] ASC
@@ -7754,7 +8672,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_SubCategories_Code] ON [dbo].[SubCategories
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_SupplierEvaluations_ApprovedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SupplierEvaluations_ApprovedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_ApprovedByUserId] ON [dbo].[SupplierEvaluations]
 (
 	[ApprovedByUserId] ASC
@@ -7762,19 +8680,19 @@ CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_ApprovedByUserId] ON [dbo].[Su
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_SupplierEvaluations_EvaluatedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SupplierEvaluations_EvaluatedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_EvaluatedByUserId] ON [dbo].[SupplierEvaluations]
 (
 	[EvaluatedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_SupplierEvaluations_EvaluationDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SupplierEvaluations_EvaluationDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_EvaluationDate] ON [dbo].[SupplierEvaluations]
 (
 	[EvaluationDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_SupplierEvaluations_VendorId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SupplierEvaluations_VendorId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_VendorId] ON [dbo].[SupplierEvaluations]
 (
 	[VendorId] ASC
@@ -7782,13 +8700,13 @@ CREATE NONCLUSTERED INDEX [IX_SupplierEvaluations_VendorId] ON [dbo].[SupplierEv
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_SystemConfigurations_ModifiedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_SystemConfigurations_ModifiedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_SystemConfigurations_ModifiedByUserId] ON [dbo].[SystemConfigurations]
 (
 	[ModifiedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TemperatureLogs_LogTime]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TemperatureLogs_LogTime]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TemperatureLogs_LogTime] ON [dbo].[TemperatureLogs]
 (
 	[LogTime] ASC
@@ -7796,73 +8714,73 @@ CREATE NONCLUSTERED INDEX [IX_TemperatureLogs_LogTime] ON [dbo].[TemperatureLogs
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_TemperatureLogs_RecordedByUserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TemperatureLogs_RecordedByUserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TemperatureLogs_RecordedByUserId] ON [dbo].[TemperatureLogs]
 (
 	[RecordedByUserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TemperatureLogs_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TemperatureLogs_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TemperatureLogs_StoreId] ON [dbo].[TemperatureLogs]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TemperatureLogs_StoreId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TemperatureLogs_StoreId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TemperatureLogs_StoreId1] ON [dbo].[TemperatureLogs]
 (
 	[StoreId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TrackingHistories_LastUpdated]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TrackingHistories_LastUpdated]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TrackingHistories_LastUpdated] ON [dbo].[TrackingHistories]
 (
 	[LastUpdated] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TrackingHistories_ShipmentTrackingId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TrackingHistories_ShipmentTrackingId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TrackingHistories_ShipmentTrackingId] ON [dbo].[TrackingHistories]
 (
 	[ShipmentTrackingId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferDiscrepancies_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferDiscrepancies_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferDiscrepancies_ItemId] ON [dbo].[TransferDiscrepancies]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferDiscrepancies_TransferId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferDiscrepancies_TransferId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferDiscrepancies_TransferId] ON [dbo].[TransferDiscrepancies]
 (
 	[TransferId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferItems_ItemId] ON [dbo].[TransferItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferItems_TransferId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferItems_TransferId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferItems_TransferId] ON [dbo].[TransferItems]
 (
 	[TransferId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Transfers_FromStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Transfers_FromStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Transfers_FromStoreId] ON [dbo].[Transfers]
 (
 	[FromStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Transfers_ToStoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Transfers_ToStoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Transfers_ToStoreId] ON [dbo].[Transfers]
 (
 	[ToStoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Transfers_TransferDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Transfers_TransferDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Transfers_TransferDate] ON [dbo].[Transfers]
 (
 	[TransferDate] ASC
@@ -7870,19 +8788,19 @@ CREATE NONCLUSTERED INDEX [IX_Transfers_TransferDate] ON [dbo].[Transfers]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Transfers_TransferNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Transfers_TransferNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Transfers_TransferNo] ON [dbo].[Transfers]
 (
 	[TransferNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferShipmentItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferShipmentItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferShipmentItems_ItemId] ON [dbo].[TransferShipmentItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferShipmentItems_ShipmentId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferShipmentItems_ShipmentId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_TransferShipmentItems_ShipmentId] ON [dbo].[TransferShipmentItems]
 (
 	[ShipmentId] ASC
@@ -7890,13 +8808,13 @@ CREATE NONCLUSTERED INDEX [IX_TransferShipmentItems_ShipmentId] ON [dbo].[Transf
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_TransferShipments_ShipmentNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferShipments_ShipmentNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_TransferShipments_ShipmentNo] ON [dbo].[TransferShipments]
 (
 	[ShipmentNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_TransferShipments_TransferId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_TransferShipments_TransferId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_TransferShipments_TransferId] ON [dbo].[TransferShipments]
 (
 	[TransferId] ASC
@@ -7904,13 +8822,13 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_TransferShipments_TransferId] ON [dbo].[Tra
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Unions_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Unions_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Unions_Code] ON [dbo].[Unions]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Unions_UpazilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Unions_UpazilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Unions_UpazilaId] ON [dbo].[Unions]
 (
 	[UpazilaId] ASC
@@ -7918,7 +8836,7 @@ CREATE NONCLUSTERED INDEX [IX_Unions_UpazilaId] ON [dbo].[Unions]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Units_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Units_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Units_Code] ON [dbo].[Units]
 (
 	[Code] ASC
@@ -7926,13 +8844,13 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Units_Code] ON [dbo].[Units]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Upazilas_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Upazilas_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Upazilas_Code] ON [dbo].[Upazilas]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Upazilas_ZilaId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Upazilas_ZilaId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Upazilas_ZilaId] ON [dbo].[Upazilas]
 (
 	[ZilaId] ASC
@@ -7940,13 +8858,13 @@ CREATE NONCLUSTERED INDEX [IX_Upazilas_ZilaId] ON [dbo].[Upazilas]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_UserNotificationPreferences_UserId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_UserNotificationPreferences_UserId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_UserNotificationPreferences_UserId] ON [dbo].[UserNotificationPreferences]
 (
 	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserStores_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_UserStores_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_UserStores_StoreId] ON [dbo].[UserStores]
 (
 	[StoreId] ASC
@@ -7954,7 +8872,7 @@ CREATE NONCLUSTERED INDEX [IX_UserStores_StoreId] ON [dbo].[UserStores]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_UserStores_UserId_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_UserStores_UserId_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserStores_UserId_StoreId] ON [dbo].[UserStores]
 (
 	[UserId] ASC,
@@ -7965,7 +8883,7 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Vendors_Email]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Vendors_Email]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Vendors_Email] ON [dbo].[Vendors]
 (
 	[Email] ASC
@@ -7973,31 +8891,31 @@ CREATE NONCLUSTERED INDEX [IX_Vendors_Email] ON [dbo].[Vendors]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Vendors_Name]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Vendors_Name]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Vendors_Name] ON [dbo].[Vendors]
 (
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Warranties_EndDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Warranties_EndDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Warranties_EndDate] ON [dbo].[Warranties]
 (
 	[EndDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Warranties_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Warranties_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Warranties_ItemId] ON [dbo].[Warranties]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Warranties_ItemId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Warranties_ItemId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Warranties_ItemId1] ON [dbo].[Warranties]
 (
 	[ItemId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Warranties_VendorId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Warranties_VendorId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Warranties_VendorId] ON [dbo].[Warranties]
 (
 	[VendorId] ASC
@@ -8005,43 +8923,43 @@ CREATE NONCLUSTERED INDEX [IX_Warranties_VendorId] ON [dbo].[Warranties]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Warranties_WarrantyNumber]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Warranties_WarrantyNumber]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Warranties_WarrantyNumber] ON [dbo].[Warranties]
 (
 	[WarrantyNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffItems_ItemId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffItems_ItemId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffItems_ItemId] ON [dbo].[WriteOffItems]
 (
 	[ItemId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffItems_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffItems_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffItems_StoreId] ON [dbo].[WriteOffItems]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffItems_WriteOffId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffItems_WriteOffId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffItems_WriteOffId] ON [dbo].[WriteOffItems]
 (
 	[WriteOffId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffItems_WriteOffRequestId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffItems_WriteOffRequestId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffItems_WriteOffRequestId] ON [dbo].[WriteOffItems]
 (
 	[WriteOffRequestId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffItems_WriteOffRequestId1]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffItems_WriteOffRequestId1]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffItems_WriteOffRequestId1] ON [dbo].[WriteOffItems]
 (
 	[WriteOffRequestId1] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffRequests_DamageReportId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffRequests_DamageReportId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffRequests_DamageReportId] ON [dbo].[WriteOffRequests]
 (
 	[DamageReportId] ASC
@@ -8049,7 +8967,7 @@ CREATE NONCLUSTERED INDEX [IX_WriteOffRequests_DamageReportId] ON [dbo].[WriteOf
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_WriteOffRequests_RequestedBy]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffRequests_RequestedBy]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffRequests_RequestedBy] ON [dbo].[WriteOffRequests]
 (
 	[RequestedBy] ASC
@@ -8057,25 +8975,25 @@ CREATE NONCLUSTERED INDEX [IX_WriteOffRequests_RequestedBy] ON [dbo].[WriteOffRe
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_WriteOffRequests_RequestNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffRequests_RequestNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_WriteOffRequests_RequestNo] ON [dbo].[WriteOffRequests]
 (
 	[RequestNo] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffRequests_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffRequests_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffRequests_StoreId] ON [dbo].[WriteOffRequests]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffs_StoreId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffs_StoreId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffs_StoreId] ON [dbo].[WriteOffs]
 (
 	[StoreId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_WriteOffs_WriteOffDate]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffs_WriteOffDate]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_WriteOffs_WriteOffDate] ON [dbo].[WriteOffs]
 (
 	[WriteOffDate] ASC
@@ -8083,7 +9001,7 @@ CREATE NONCLUSTERED INDEX [IX_WriteOffs_WriteOffDate] ON [dbo].[WriteOffs]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_WriteOffs_WriteOffNo]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_WriteOffs_WriteOffNo]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_WriteOffs_WriteOffNo] ON [dbo].[WriteOffs]
 (
 	[WriteOffNo] ASC
@@ -8091,24 +9009,41 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_WriteOffs_WriteOffNo] ON [dbo].[WriteOffs]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Zilas_Code]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Zilas_Code]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Zilas_Code] ON [dbo].[Zilas]
 (
 	[Code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Zilas_RangeId]    Script Date: 11/6/2025 1:16:43 PM ******/
+/****** Object:  Index [IX_Zilas_RangeId]    Script Date: 11/12/2025 10:09:16 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Zilas_RangeId] ON [dbo].[Zilas]
 (
 	[RangeId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] ADD  DEFAULT (N'') FOR [RecipientType]
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] ADD  DEFAULT (N'') FOR [RecipientName]
+GO
 ALTER TABLE [dbo].[ApprovalLevels] ADD  DEFAULT (CONVERT([bit],(0))) FOR [IsSystemDefined]
+GO
+ALTER TABLE [dbo].[BackupLog] ADD  DEFAULT (getdate()) FOR [CreatedAt]
 GO
 ALTER TABLE [dbo].[ActivityLogs]  WITH CHECK ADD  CONSTRAINT [FK_ActivityLogs_AspNetUsers_UserId] FOREIGN KEY([UserId])
 REFERENCES [dbo].[AspNetUsers] ([Id])
 GO
 ALTER TABLE [dbo].[ActivityLogs] CHECK CONSTRAINT [FK_ActivityLogs_AspNetUsers_UserId]
+GO
+ALTER TABLE [dbo].[AllotmentLetterDistributions]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterDistributions_AllotmentLetters_AllotmentLetterId] FOREIGN KEY([AllotmentLetterId])
+REFERENCES [dbo].[AllotmentLetters] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AllotmentLetterDistributions] CHECK CONSTRAINT [FK_AllotmentLetterDistributions_AllotmentLetters_AllotmentLetterId]
+GO
+ALTER TABLE [dbo].[AllotmentLetterDistributions]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterDistributions_AllotmentLetters_AllotmentLetterId1] FOREIGN KEY([AllotmentLetterId1])
+REFERENCES [dbo].[AllotmentLetters] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterDistributions] CHECK CONSTRAINT [FK_AllotmentLetterDistributions_AllotmentLetters_AllotmentLetterId1]
 GO
 ALTER TABLE [dbo].[AllotmentLetterItems]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterItems_AllotmentLetters_AllotmentLetterId] FOREIGN KEY([AllotmentLetterId])
 REFERENCES [dbo].[AllotmentLetters] ([Id])
@@ -8127,9 +9062,13 @@ ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipientItems] CHECK CONSTRAINT [FK_AllotmentLetterRecipientItems_AllotmentLetterRecipients_AllotmentLetterRecipientId]
 GO
+ALTER TABLE [dbo].[AllotmentLetterRecipientItems]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipientItems_AllotmentLetterRecipients_AllotmentLetterRecipientId1] FOREIGN KEY([AllotmentLetterRecipientId1])
+REFERENCES [dbo].[AllotmentLetterRecipients] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipientItems] CHECK CONSTRAINT [FK_AllotmentLetterRecipientItems_AllotmentLetterRecipients_AllotmentLetterRecipientId1]
+GO
 ALTER TABLE [dbo].[AllotmentLetterRecipientItems]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipientItems_Items_ItemId] FOREIGN KEY([ItemId])
 REFERENCES [dbo].[Items] ([Id])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipientItems] CHECK CONSTRAINT [FK_AllotmentLetterRecipientItems_Items_ItemId]
 GO
@@ -8139,30 +9078,60 @@ ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_AllotmentLetters_AllotmentLetterId]
 GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_AllotmentLetters_AllotmentLetterId1] FOREIGN KEY([AllotmentLetterId1])
+REFERENCES [dbo].[AllotmentLetters] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_AllotmentLetters_AllotmentLetterId1]
+GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Battalions_BattalionId] FOREIGN KEY([BattalionId])
 REFERENCES [dbo].[Battalions] ([Id])
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Battalions_BattalionId]
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Battalions_BattalionId1] FOREIGN KEY([BattalionId1])
+REFERENCES [dbo].[Battalions] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Battalions_BattalionId1]
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Ranges_RangeId] FOREIGN KEY([RangeId])
 REFERENCES [dbo].[Ranges] ([Id])
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Ranges_RangeId]
 GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Ranges_RangeId1] FOREIGN KEY([RangeId1])
+REFERENCES [dbo].[Ranges] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Ranges_RangeId1]
+GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Unions_UnionId] FOREIGN KEY([UnionId])
 REFERENCES [dbo].[Unions] ([Id])
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Unions_UnionId]
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Unions_UnionId1] FOREIGN KEY([UnionId1])
+REFERENCES [dbo].[Unions] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Unions_UnionId1]
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Upazilas_UpazilaId] FOREIGN KEY([UpazilaId])
 REFERENCES [dbo].[Upazilas] ([Id])
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Upazilas_UpazilaId]
 GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Upazilas_UpazilaId1] FOREIGN KEY([UpazilaId1])
+REFERENCES [dbo].[Upazilas] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Upazilas_UpazilaId1]
+GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Zilas_ZilaId] FOREIGN KEY([ZilaId])
 REFERENCES [dbo].[Zilas] ([Id])
 GO
 ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Zilas_ZilaId]
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetterRecipients_Zilas_ZilaId1] FOREIGN KEY([ZilaId1])
+REFERENCES [dbo].[Zilas] ([Id])
+GO
+ALTER TABLE [dbo].[AllotmentLetterRecipients] CHECK CONSTRAINT [FK_AllotmentLetterRecipients_Zilas_ZilaId1]
 GO
 ALTER TABLE [dbo].[AllotmentLetters]  WITH CHECK ADD  CONSTRAINT [FK_AllotmentLetters_Battalions_IssuedToBattalionId] FOREIGN KEY([IssuedToBattalionId])
 REFERENCES [dbo].[Battalions] ([Id])
@@ -8599,6 +9568,11 @@ REFERENCES [dbo].[Items] ([Id])
 GO
 ALTER TABLE [dbo].[IssueItems] CHECK CONSTRAINT [FK_IssueItems_Items_ItemId]
 GO
+ALTER TABLE [dbo].[IssueItems]  WITH CHECK ADD  CONSTRAINT [FK_IssueItems_LedgerBooks_LedgerBookId] FOREIGN KEY([LedgerBookId])
+REFERENCES [dbo].[LedgerBooks] ([Id])
+GO
+ALTER TABLE [dbo].[IssueItems] CHECK CONSTRAINT [FK_IssueItems_LedgerBooks_LedgerBookId]
+GO
 ALTER TABLE [dbo].[IssueItems]  WITH CHECK ADD  CONSTRAINT [FK_IssueItems_Stores_StoreId] FOREIGN KEY([StoreId])
 REFERENCES [dbo].[Stores] ([Id])
 GO
@@ -8728,6 +9702,11 @@ REFERENCES [dbo].[Issues] ([Id])
 GO
 ALTER TABLE [dbo].[PersonnelItemIssues] CHECK CONSTRAINT [FK_PersonnelItemIssues_Issues_OriginalIssueId]
 GO
+ALTER TABLE [dbo].[PersonnelItemIssues]  WITH CHECK ADD  CONSTRAINT [FK_PersonnelItemIssues_Issues_OriginalIssueId1] FOREIGN KEY([OriginalIssueId1])
+REFERENCES [dbo].[Issues] ([Id])
+GO
+ALTER TABLE [dbo].[PersonnelItemIssues] CHECK CONSTRAINT [FK_PersonnelItemIssues_Issues_OriginalIssueId1]
+GO
 ALTER TABLE [dbo].[PersonnelItemIssues]  WITH CHECK ADD  CONSTRAINT [FK_PersonnelItemIssues_Items_ItemId] FOREIGN KEY([ItemId])
 REFERENCES [dbo].[Items] ([Id])
 GO
@@ -8742,6 +9721,11 @@ ALTER TABLE [dbo].[PersonnelItemIssues]  WITH CHECK ADD  CONSTRAINT [FK_Personne
 REFERENCES [dbo].[Receives] ([Id])
 GO
 ALTER TABLE [dbo].[PersonnelItemIssues] CHECK CONSTRAINT [FK_PersonnelItemIssues_Receives_ReceiveId]
+GO
+ALTER TABLE [dbo].[PersonnelItemIssues]  WITH CHECK ADD  CONSTRAINT [FK_PersonnelItemIssues_Receives_ReceiveId1] FOREIGN KEY([ReceiveId1])
+REFERENCES [dbo].[Receives] ([Id])
+GO
+ALTER TABLE [dbo].[PersonnelItemIssues] CHECK CONSTRAINT [FK_PersonnelItemIssues_Receives_ReceiveId1]
 GO
 ALTER TABLE [dbo].[PersonnelItemIssues]  WITH CHECK ADD  CONSTRAINT [FK_PersonnelItemIssues_Stores_StoreId] FOREIGN KEY([StoreId])
 REFERENCES [dbo].[Stores] ([Id])
@@ -8923,6 +9907,11 @@ ALTER TABLE [dbo].[ReceiveItems]  WITH CHECK ADD  CONSTRAINT [FK_ReceiveItems_It
 REFERENCES [dbo].[Items] ([Id])
 GO
 ALTER TABLE [dbo].[ReceiveItems] CHECK CONSTRAINT [FK_ReceiveItems_Items_ItemId1]
+GO
+ALTER TABLE [dbo].[ReceiveItems]  WITH CHECK ADD  CONSTRAINT [FK_ReceiveItems_LedgerBooks_LedgerBookId] FOREIGN KEY([LedgerBookId])
+REFERENCES [dbo].[LedgerBooks] ([Id])
+GO
+ALTER TABLE [dbo].[ReceiveItems] CHECK CONSTRAINT [FK_ReceiveItems_LedgerBooks_LedgerBookId]
 GO
 ALTER TABLE [dbo].[ReceiveItems]  WITH CHECK ADD  CONSTRAINT [FK_ReceiveItems_Receives_ReceiveId] FOREIGN KEY([ReceiveId])
 REFERENCES [dbo].[Receives] ([Id])
@@ -9122,9 +10111,13 @@ ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_AspNetUse
 GO
 ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Items_ItemId] FOREIGN KEY([ItemId])
 REFERENCES [dbo].[Items] ([Id])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Items_ItemId]
+GO
+ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Items_ItemId1] FOREIGN KEY([ItemId1])
+REFERENCES [dbo].[Items] ([Id])
+GO
+ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Items_ItemId1]
 GO
 ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_StoreItems_StoreItemId] FOREIGN KEY([StoreItemId])
 REFERENCES [dbo].[StoreItems] ([Id])
@@ -9136,15 +10129,30 @@ REFERENCES [dbo].[Stores] ([Id])
 GO
 ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_DestinationStoreId]
 GO
+ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Stores_DestinationStoreId1] FOREIGN KEY([DestinationStoreId1])
+REFERENCES [dbo].[Stores] ([Id])
+GO
+ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_DestinationStoreId1]
+GO
 ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Stores_SourceStoreId] FOREIGN KEY([SourceStoreId])
 REFERENCES [dbo].[Stores] ([Id])
 GO
 ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_SourceStoreId]
 GO
+ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Stores_SourceStoreId1] FOREIGN KEY([SourceStoreId1])
+REFERENCES [dbo].[Stores] ([Id])
+GO
+ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_SourceStoreId1]
+GO
 ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Stores_StoreId] FOREIGN KEY([StoreId])
 REFERENCES [dbo].[Stores] ([Id])
 GO
 ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_StoreId]
+GO
+ALTER TABLE [dbo].[StockMovements]  WITH CHECK ADD  CONSTRAINT [FK_StockMovements_Stores_StoreId1] FOREIGN KEY([StoreId1])
+REFERENCES [dbo].[Stores] ([Id])
+GO
+ALTER TABLE [dbo].[StockMovements] CHECK CONSTRAINT [FK_StockMovements_Stores_StoreId1]
 GO
 ALTER TABLE [dbo].[StockOperations]  WITH CHECK ADD  CONSTRAINT [FK_StockOperations_Items_ItemId] FOREIGN KEY([ItemId])
 REFERENCES [dbo].[Items] ([Id])
@@ -9177,15 +10185,13 @@ ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[StoreConfigurations] CHECK CONSTRAINT [FK_StoreConfigurations_Stores_StoreId]
 GO
-ALTER TABLE [dbo].[StoreItems]  WITH NOCHECK ADD  CONSTRAINT [FK_StoreItems_Items_ItemId] FOREIGN KEY([ItemId])
+ALTER TABLE [dbo].[StoreItems]  WITH CHECK ADD  CONSTRAINT [FK_StoreItems_Items_ItemId] FOREIGN KEY([ItemId])
 REFERENCES [dbo].[Items] ([Id])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[StoreItems] CHECK CONSTRAINT [FK_StoreItems_Items_ItemId]
 GO
-ALTER TABLE [dbo].[StoreItems]  WITH NOCHECK ADD  CONSTRAINT [FK_StoreItems_Stores_StoreId] FOREIGN KEY([StoreId])
+ALTER TABLE [dbo].[StoreItems]  WITH CHECK ADD  CONSTRAINT [FK_StoreItems_Stores_StoreId] FOREIGN KEY([StoreId])
 REFERENCES [dbo].[Stores] ([Id])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[StoreItems] CHECK CONSTRAINT [FK_StoreItems_Stores_StoreId]
 GO
@@ -9455,6 +10461,163 @@ REFERENCES [dbo].[Ranges] ([Id])
 ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Zilas] CHECK CONSTRAINT [FK_Zilas_Ranges_RangeId]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_BackupDatabase]    Script Date: 11/12/2025 10:09:16 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+                CREATE PROCEDURE [dbo].[sp_BackupDatabase]
+                    @BackupType NVARCHAR(10) = 'FULL',
+                    @BackupPath NVARCHAR(500) = NULL,
+                    @BackupFileName NVARCHAR(255) OUTPUT,
+                    @ErrorMessage NVARCHAR(4000) OUTPUT,
+                    @Success BIT OUTPUT
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+
+                    DECLARE @DatabaseName NVARCHAR(128);
+                    DECLARE @DefaultBackupPath NVARCHAR(500);
+                    DECLARE @FullBackupPath NVARCHAR(1000);
+                    DECLARE @BackupCommand NVARCHAR(MAX);
+                    DECLARE @Timestamp NVARCHAR(20);
+
+                    SET @Success = 0;
+                    SET @ErrorMessage = NULL;
+
+                    BEGIN TRY
+                        SET @DatabaseName = DB_NAME();
+                        SET @Timestamp = CONVERT(NVARCHAR(20), GETDATE(), 112) + '_' +
+                                        REPLACE(CONVERT(NVARCHAR(20), GETDATE(), 108), ':', '');
+
+                        IF @BackupType = 'FULL'
+                            SET @BackupFileName = @DatabaseName + '_Backup_' + @Timestamp + '.bak';
+                        ELSE IF @BackupType = 'DIFF'
+                            SET @BackupFileName = @DatabaseName + '_Diff_' + @Timestamp + '.bak';
+                        ELSE IF @BackupType = 'LOG'
+                            SET @BackupFileName = @DatabaseName + '_Log_' + @Timestamp + '.trn';
+                        ELSE
+                        BEGIN
+                            SET @ErrorMessage = 'Invalid backup type. Use FULL, DIFF, or LOG.';
+                            RETURN;
+                        END
+
+                        IF @BackupPath IS NULL
+                        BEGIN
+                            EXEC master.dbo.xp_instance_regread
+                                N'HKEY_LOCAL_MACHINE',
+                                N'Software\Microsoft\MSSQLServer\MSSQLServer',
+                                N'BackupDirectory',
+                                @DefaultBackupPath OUTPUT;
+
+                            IF @DefaultBackupPath IS NULL
+                                SET @DefaultBackupPath = 'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\Backup';
+
+                            SET @BackupPath = @DefaultBackupPath;
+                        END
+
+                        IF RIGHT(@BackupPath, 1) != '\'
+                            SET @BackupPath = @BackupPath + '\';
+
+                        SET @FullBackupPath = @BackupPath + @BackupFileName;
+
+                        IF @BackupType = 'FULL'
+                        BEGIN
+                            SET @BackupCommand =
+                                'BACKUP DATABASE [' + @DatabaseName + '] ' +
+                                'TO DISK = N''' + @FullBackupPath + ''' ' +
+                                'WITH FORMAT, INIT, ' +
+                                'NAME = N''' + @DatabaseName + '-Full Database Backup'', ' +
+                                'COMPRESSION, STATS = 10, CHECKSUM';
+                        END
+                        ELSE IF @BackupType = 'DIFF'
+                        BEGIN
+                            SET @BackupCommand =
+                                'BACKUP DATABASE [' + @DatabaseName + '] ' +
+                                'TO DISK = N''' + @FullBackupPath + ''' ' +
+                                'WITH DIFFERENTIAL, FORMAT, INIT, ' +
+                                'NAME = N''' + @DatabaseName + '-Differential Database Backup'', ' +
+                                'COMPRESSION, STATS = 10, CHECKSUM';
+                        END
+                        ELSE IF @BackupType = 'LOG'
+                        BEGIN
+                            SET @BackupCommand =
+                                'BACKUP LOG [' + @DatabaseName + '] ' +
+                                'TO DISK = N''' + @FullBackupPath + ''' ' +
+                                'WITH FORMAT, INIT, ' +
+                                'NAME = N''' + @DatabaseName + '-Transaction Log Backup'', ' +
+                                'COMPRESSION, STATS = 10, CHECKSUM';
+                        END
+
+                        EXEC sp_executesql @BackupCommand;
+
+                        SET @Success = 1;
+                        SET @ErrorMessage = 'Backup completed successfully: ' + @FullBackupPath;
+
+                    END TRY
+                    BEGIN CATCH
+                        SET @Success = 0;
+                        SET @ErrorMessage =
+                            'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR(10)) + ' | ' +
+                            'Error Message: ' + ERROR_MESSAGE() + ' | ' +
+                            'Error Line: ' + CAST(ERROR_LINE() AS NVARCHAR(10));
+                    END CATCH
+                END
+            
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetBackupHistory]    Script Date: 11/12/2025 10:09:16 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+                CREATE PROCEDURE [dbo].[sp_GetBackupHistory]
+                    @Top INT = 50
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+
+                    SELECT TOP (@Top)
+                        Id,
+                        BackupType,
+                        BackupFileName,
+                        BackupPath,
+                        BackupSize,
+                        Success,
+                        ErrorMessage,
+                        CreatedAt,
+                        CreatedBy
+                    FROM [dbo].[BackupLog]
+                    ORDER BY CreatedAt DESC;
+                END
+            
+GO
+/****** Object:  StoredProcedure [dbo].[sp_LogBackup]    Script Date: 11/12/2025 10:09:16 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+                CREATE PROCEDURE [dbo].[sp_LogBackup]
+                    @BackupType NVARCHAR(10),
+                    @BackupFileName NVARCHAR(255),
+                    @BackupPath NVARCHAR(1000),
+                    @BackupSize BIGINT = NULL,
+                    @Success BIT,
+                    @ErrorMessage NVARCHAR(4000) = NULL,
+                    @CreatedBy NVARCHAR(256) = NULL
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+
+                    INSERT INTO [dbo].[BackupLog]
+                        (BackupType, BackupFileName, BackupPath, BackupSize, Success, ErrorMessage, CreatedBy)
+                    VALUES
+                        (@BackupType, @BackupFileName, @BackupPath, @BackupSize, @Success, @ErrorMessage, @CreatedBy);
+                END
+            
 GO
 USE [master]
 GO
