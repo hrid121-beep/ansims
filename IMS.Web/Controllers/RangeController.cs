@@ -604,7 +604,7 @@ namespace IMS.Web.Controllers
                 }
 
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Code,Name,Commander,Contact,Location,Status");
+                csv.AppendLine("Code,Name,Commander,Contact,Status");
 
                 foreach (var range in ranges)
                 {
@@ -612,7 +612,6 @@ namespace IMS.Web.Controllers
                         $"\"{EscapeCsv(range.Name)}\"," +
                         $"\"{EscapeCsv(range.CommanderName)}\"," +
                         $"\"{EscapeCsv(range.ContactNumber)}\"," +
-                        $"\"{EscapeCsv(range.Location)}\"," +
                         $"\"{(range.IsActive ? "Active" : "Inactive")}\"");
                 }
 

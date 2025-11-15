@@ -702,7 +702,7 @@ namespace IMS.Web.Controllers
                 }
 
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Code,Name,Range,Commander,Contact,Location,Strength,Status");
+                csv.AppendLine("Code,Name,Range,Commander,Contact,Location,Status");
 
                 foreach (var battalion in battalions)
                 {
@@ -712,7 +712,6 @@ namespace IMS.Web.Controllers
                         $"\"{EscapeCsv(battalion.CommanderName)}\"," +
                         $"\"{EscapeCsv(battalion.ContactNumber)}\"," +
                         $"\"{EscapeCsv(battalion.Location)}\"," +
-                        $"{battalion.Strength ?? 0}," +
                         $"\"{(battalion.IsActive ? "Active" : "Inactive")}\"");
                 }
 
@@ -762,11 +761,11 @@ namespace IMS.Web.Controllers
                     infoParagraph.SpacingAfter = 15f;
                     document.Add(infoParagraph);
 
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(7);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(6);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 10f, 20f, 15f, 15f, 12f, 10f, 10f });
+                    mainTable.SetWidths(new float[] { 12f, 25f, 18f, 18f, 15f, 12f });
 
-                    var headerTexts = new[] { "Code", "Name", "Range", "Commander", "Contact", "Strength", "Status" };
+                    var headerTexts = new[] { "Code", "Name", "Range", "Commander", "Contact", "Status" };
                     foreach (var headerText in headerTexts)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
@@ -783,7 +782,6 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase(battalion.RangeName ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(battalion.CommanderName ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(battalion.ContactNumber ?? "", normalFont));
-                        mainTable.AddCell(new iTextSharp.text.Phrase((battalion.Strength ?? 0).ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(battalion.IsActive ? "Active" : "Inactive", normalFont));
                     }
 

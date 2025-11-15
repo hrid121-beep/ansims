@@ -893,7 +893,7 @@ namespace IMS.Web.Controllers
                 var csv = new System.Text.StringBuilder();
 
                 // Add headers
-                csv.AppendLine("Item Code,Name,Category,Sub Category,Brand,Model,Unit,Unit Price,Min Stock,Max Stock,Reorder Level,Is Perishable,Shelf Life (Days),Status");
+                csv.AppendLine("Item Code,Name,Category,Sub Category,Brand,Model,Unit,Unit Price,Min Stock,Max Stock,Reorder Level,Status");
 
                 // Add data
                 foreach (var item in items)
@@ -905,12 +905,10 @@ namespace IMS.Web.Controllers
                         $"\"{EscapeCsv(item.BrandName)}\"," +
                         $"\"{EscapeCsv(item.ModelName)}\"," +
                         $"\"{EscapeCsv(item.Unit)}\"," +
-                        $"{item.UnitPrice ?? 0}," +
+                        $"{item.UnitPrice ?? 0m}," +
                         $"{item.MinimumStock ?? 0}," +
                         $"{item.MaximumStock ?? 0}," +
                         $"{item.ReorderLevel ?? 0}," +
-                        $"\"{(item.IsPerishable ? "Yes" : "No")}\"," +
-                        $"{item.ShelfLifeDays ?? 0}," +
                         $"\"{(item.IsActive ? "Active" : "Inactive")}\"");
                 }
 
