@@ -588,7 +588,7 @@ namespace IMS.Web.Controllers
         // ==================== EXPORT OPERATIONS ====================
 
         [HttpGet]
-        [HasPermission(Permission.ViewRange)]
+        [HasPermission(Permission.ViewAllRanges)]
         public async Task<IActionResult> ExportToCsv(string status = null)
         {
             try
@@ -627,7 +627,7 @@ namespace IMS.Web.Controllers
         }
 
         [HttpGet]
-        [HasPermission(Permission.ViewRange)]
+        [HasPermission(Permission.ViewAllRanges)]
         public async Task<IActionResult> ExportToPdf(string status = null)
         {
             try
