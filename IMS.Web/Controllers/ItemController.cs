@@ -906,9 +906,9 @@ namespace IMS.Web.Controllers
                         $"\"{EscapeCsv(item.ModelName)}\"," +
                         $"\"{EscapeCsv(item.Unit)}\"," +
                         $"{item.UnitPrice ?? 0m}," +
-                        $"{item.MinimumStock ?? 0}," +
-                        $"{item.MaximumStock ?? 0}," +
-                        $"{item.ReorderLevel ?? 0}," +
+                        $"{item.MinimumStock ?? 0m}," +
+                        $"{item.MaximumStock ?? 0m}," +
+                        $"{item.ReorderLevel}," +
                         $"\"{(item.IsActive ? "Active" : "Inactive")}\"");
                 }
 
@@ -1004,7 +1004,7 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.ModelName ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.Unit ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase($"৳{(item.UnitPrice ?? 0m):N2}", normalFont));
-                        mainTable.AddCell(new iTextSharp.text.Phrase((item.MinimumStock ?? 0).ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase((item.MinimumStock ?? 0m).ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.IsActive ? "Active" : "Inactive", normalFont));
                     }
 
