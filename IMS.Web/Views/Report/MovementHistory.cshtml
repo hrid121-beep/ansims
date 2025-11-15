@@ -26,19 +26,26 @@
     <div class="container-fluid">
         <!-- Timeline Filter -->
         <div class="card card-secondary">
-            <div class="card-header">
+            <div class="card-header bg-light">
                 <h3 class="card-title">
-                    <i class="fas fa-filter"></i> Filter Options
+                    <i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong>
                 </h3>
+                <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
-                <form>
+                <form id="filterForm">
+                    <!-- Row 1: Main filters -->
                     <div class="row">
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>Item:</label>
-                                <select class="form-control select2" style="width: 100%;">
-                                    <option>All Items</option>
+                                <label><i class="fas fa-box"></i> Item:</label>
+                                <select id="itemFilter" class="form-control select2" style="width: 100%;">
+                                    <option value="">All Items</option>
                                     <option>Laptop Dell XPS</option>
                                     <option>Office Paper A4</option>
                                     <option>Printer HP LaserJet</option>
@@ -47,9 +54,9 @@
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>Movement Type:</label>
-                                <select class="form-control select2" style="width: 100%;">
-                                    <option>All Types</option>
+                                <label><i class="fas fa-exchange-alt"></i> Movement Type:</label>
+                                <select id="typeFilter" class="form-control select2" style="width: 100%;">
+                                    <option value="">All Types</option>
                                     <option>Purchase</option>
                                     <option>Issue</option>
                                     <option>Transfer</option>
@@ -60,9 +67,9 @@
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>Store:</label>
-                                <select class="form-control select2" style="width: 100%;">
-                                    <option>All Stores</option>
+                                <label><i class="fas fa-warehouse"></i> Store:</label>
+                                <select id="storeFilter" class="form-control select2" style="width: 100%;">
+                                    <option value="">All Stores</option>
                                     <option>Main Warehouse</option>
                                     <option>Branch Store 1</option>
                                     <option>Branch Store 2</option>
@@ -71,21 +78,64 @@
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>From Date:</label>
-                                <input type="date" class="form-control" value="2025-01-01">
+                                <label><i class="far fa-calendar-alt"></i> From Date:</label>
+                                <input type="date" id="fromDate" class="form-control" value="2025-01-01">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>To Date:</label>
-                                <input type="date" class="form-control" value="2025-01-27">
+                                <label><i class="far fa-calendar-alt"></i> To Date:</label>
+                                <input type="date" id="toDate" class="form-control" value="2025-01-27">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-secondary btn-block">
-                                    <i class="fas fa-search"></i> Search
+                                    <i class="fas fa-search"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Additional filters -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="searchFilter" class="form-control"
+                                       placeholder="Search by Reference No, User, or Item">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Quantity:</label>
+                                <input type="number" id="minQtyFilter" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Quantity:</label>
+                                <input type="number" id="maxQtyFilter" class="form-control" placeholder="99999">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-sort-alpha-down"></i> Sort By:</label>
+                                <select id="sortByFilter" class="form-control select2">
+                                    <option value="">-- Default --</option>
+                                    <option value="date-desc">Date (Newest First)</option>
+                                    <option value="date-asc">Date (Oldest First)</option>
+                                    <option value="qty-desc">Quantity (High to Low)</option>
+                                    <option value="qty-asc">Quantity (Low to High)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset
                                 </button>
                             </div>
                         </div>
@@ -149,15 +199,15 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body table-responsive p-0" style="height: 400px;">
-                <table class="table table-head-fixed text-nowrap">
+            <div class="card-body">
+                <table id="movementTable" class="table table-bordered table-striped table-hover">
                     <thead>
                         <tr>
                             <th>Date/Time</th>
                             <th>Movement ID</th>
                             <th>Type</th>
                             <th>Item</th>
-                            <th>Quantity</th>
+                            <th data-type="num">Quantity</th>
                             <th>From</th>
                             <th>To</th>
                             <th>User</th>
@@ -341,8 +391,94 @@
 @section Scripts {
     <script>
         $(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2();
+            //Initialize Select2 Elements with theme
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                allowClear: true
+            });
+
+            // Initialize DataTable with enhanced filtering
+            var table = $("#movementTable").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[0, "desc"]], // Sort by Date/Time descending
+                "language": {
+                    "search": "Quick Table Search:",
+                    "lengthMenu": "Show _MENU_ movements per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ movements",
+                    "infoEmpty": "No movements available",
+                    "infoFiltered": "(filtered from _MAX_ total movements)"
+                }
+            });
+
+            // Apply advanced filters
+            $('#itemFilter, #typeFilter, #storeFilter, #searchFilter, #minQtyFilter, #maxQtyFilter, #sortByFilter').on('change keyup', function() {
+                applyAdvancedFilters();
+            });
+
+            function applyAdvancedFilters() {
+                var itemFilter = $('#itemFilter').val().toLowerCase();
+                var typeFilter = $('#typeFilter').val().toLowerCase();
+                var storeFilter = $('#storeFilter').val().toLowerCase();
+                var searchFilter = $('#searchFilter').val().toLowerCase();
+                var minQty = parseFloat($('#minQtyFilter').val()) || 0;
+                var maxQty = parseFloat($('#maxQtyFilter').val()) || Infinity;
+                var sortBy = $('#sortByFilter').val();
+
+                // Custom filtering function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'movementTable') return true;
+
+                        // Column indices: 0=Date, 1=MovementID, 2=Type, 3=Item, 4=Qty, 5=From, 6=To, 7=User, 8=Ref, 9=Notes
+                        var rowType = data[2].toLowerCase();
+                        var rowItem = data[3].toLowerCase();
+                        var rowFrom = data[5].toLowerCase();
+                        var rowTo = data[6].toLowerCase();
+                        var rowUser = data[7].toLowerCase();
+                        var rowRef = data[8].toLowerCase();
+                        var rowQtyText = data[4];
+                        var rowQty = Math.abs(parseFloat(rowQtyText.replace(/[^0-9.-]+/g, ''))) || 0;
+
+                        // Item filter
+                        if (itemFilter && !rowItem.includes(itemFilter)) return false;
+
+                        // Type filter
+                        if (typeFilter && !rowType.includes(typeFilter)) return false;
+
+                        // Store filter (From or To)
+                        if (storeFilter && !rowFrom.includes(storeFilter) && !rowTo.includes(storeFilter)) return false;
+
+                        // Search filter (Movement ID, Item, User, Reference)
+                        if (searchFilter && !data[1].toLowerCase().includes(searchFilter) &&
+                            !rowItem.includes(searchFilter) && !rowUser.includes(searchFilter) &&
+                            !rowRef.includes(searchFilter)) return false;
+
+                        // Quantity range filter
+                        if (rowQty < minQty || rowQty > maxQty) return false;
+
+                        return true;
+                    }
+                );
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop();
+
+                // Apply sorting if specified
+                if (sortBy) {
+                    var orderColumn, orderDir;
+                    if (sortBy === 'date-desc') { orderColumn = 0; orderDir = 'desc'; }
+                    else if (sortBy === 'date-asc') { orderColumn = 0; orderDir = 'asc'; }
+                    else if (sortBy === 'qty-desc') { orderColumn = 4; orderDir = 'desc'; }
+                    else if (sortBy === 'qty-asc') { orderColumn = 4; orderDir = 'asc'; }
+
+                    if (orderColumn !== undefined) {
+                        table.order([orderColumn, orderDir]).draw();
+                    }
+                }
+            }
 
             // Movement Chart
             var movementChartCanvas = $('#movementChart').get(0).getContext('2d');
@@ -396,5 +532,13 @@
                 options: movementChartOptions
             });
         });
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #minQtyFilter, #maxQtyFilter').val('');
+            location.reload();
+        }
     </script>
 }
