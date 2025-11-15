@@ -87,9 +87,6 @@
                             <i class="fas fa-download"></i> Export
                         </button>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="@Url.Action("ExportToExcel", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
-                                <i class="fas fa-file-excel text-success"></i> Excel
-                            </a>
                             <a class="dropdown-item" href="@Url.Action("ExportToPDF", new { search = Context.Request.Query["search"], storeId = Context.Request.Query["storeId"], barcodeType = Context.Request.Query["barcodeType"], scanStatus = Context.Request.Query["scanStatus"] })">
                                 <i class="fas fa-file-pdf text-danger"></i> PDF Report
                             </a>
