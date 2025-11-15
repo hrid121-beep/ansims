@@ -282,7 +282,7 @@ namespace IMS.Web.Controllers
                     foreach (var header in headers)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
-                        cell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GRAY;
+                        cell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GREY;
                         cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
                         cell.Padding = 5;
                         table.AddCell(cell);
