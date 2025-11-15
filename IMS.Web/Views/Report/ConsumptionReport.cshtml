@@ -12,35 +12,39 @@
     <div class="container-fluid">
         <!-- Filter Card -->
         <div class="card card-secondary">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
+                <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                </div>
             </div>
             <div class="card-body">
-                <form asp-action="ConsumptionReport" method="get">
+                <form asp-action="ConsumptionReport" method="get" id="filterForm">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>From Date:</label>
-                                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" required>
+                                <label><i class="far fa-calendar-alt"></i> From Date:</label>
+                                <input type="date" name="fromDate" id="fromDate" value="@ViewBag.FromDate" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>To Date:</label>
-                                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" required>
+                                <label><i class="far fa-calendar-alt"></i> To Date:</label>
+                                <input type="date" name="toDate" id="toDate" value="@ViewBag.ToDate" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>Store:</label>
-                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2" style="width: 100%;">
+                                <label><i class="fas fa-warehouse"></i> Store:</label>
+                                <select name="storeId" id="storeId" asp-items="ViewBag.Stores" class="form-control select2" style="width: 100%;">
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>Category:</label>
-                                <select name="categoryId" asp-items="ViewBag.Categories" class="form-control select2" style="width: 100%;">
+                                <label><i class="fas fa-tags"></i> Category:</label>
+                                <select name="categoryId" id="categoryId" asp-items="ViewBag.Categories" class="form-control select2" style="width: 100%;">
                                 </select>
                             </div>
                         </div>
@@ -48,7 +52,46 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-secondary btn-block">
-                                    <i class="fas fa-search"></i> Search
+                                    <i class="fas fa-search"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="searchFilter" class="form-control" placeholder="Search by Item Name or Category">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Consumption:</label>
+                                <input type="number" id="minConsumptionFilter" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Consumption:</label>
+                                <input type="number" id="maxConsumptionFilter" class="form-control" placeholder="99999">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-sort-alpha-down"></i> Sort By:</label>
+                                <select id="sortByFilter" class="form-control select2">
+                                    <option value="">-- Default --</option>
+                                    <option value="consumption-desc">Consumption (High to Low)</option>
+                                    <option value="consumption-asc">Consumption (Low to High)</option>
+                                    <option value="value-desc">Value (High to Low)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset
                                 </button>
                             </div>
                         </div>
@@ -423,6 +466,14 @@
             if (categoryId) url += '&categoryId=' + categoryId;
 
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #minConsumptionFilter, #maxConsumptionFilter').val('');
+            window.location.href = '@Url.Action("ConsumptionReport", "Report")';
         }
     </script>
 
