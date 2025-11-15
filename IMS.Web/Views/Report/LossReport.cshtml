@@ -73,41 +73,43 @@
 
         <!-- Filter Card -->
         <div class="card card-danger card-outline">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
                 <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <form asp-action="LossReport" method="get">
+                <form asp-action="LossReport" method="get" id="filterForm">
+                    <!-- Row 1: Server-side filters -->
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label for="fromDate">From Date:</label>
+                                <label for="fromDate"><i class="far fa-calendar-alt"></i> From Date:</label>
                                 <input type="date" class="form-control" id="fromDate" name="fromDate" value="@ViewBag.FromDate">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label for="toDate">To Date:</label>
+                                <label for="toDate"><i class="far fa-calendar-alt"></i> To Date:</label>
                                 <input type="date" class="form-control" id="toDate" name="toDate" value="@ViewBag.ToDate">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label for="lossType">Loss Type:</label>
-                                <select class="form-control" id="lossType" name="lossType">
+                                <label for="lossType"><i class="fas fa-exclamation-triangle"></i> Loss Type:</label>
+                                <select class="form-control select2" id="lossType" name="lossType">
                                     @Html.Raw(ViewBag.LossTypes)
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label for="storeId">Store:</label>
-                                <select class="form-control" id="storeId" name="storeId">
+                                <label for="storeId"><i class="fas fa-warehouse"></i> Store:</label>
+                                <select class="form-control select2" id="storeId" name="storeId">
                                     @Html.Raw(ViewBag.Stores)
                                 </select>
                             </div>
@@ -116,7 +118,67 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-danger btn-block">
-                                    <i class="fas fa-search"></i> Search
+                                    <i class="fas fa-search"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Client-side filters -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="searchFilter" class="form-control" placeholder="Search by Loss No, Item, or Reason">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Quantity:</label>
+                                <input type="number" id="minQtyFilter" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Quantity:</label>
+                                <input type="number" id="maxQtyFilter" class="form-control" placeholder="999999">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Value filters -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Value (৳):</label>
+                                <input type="number" id="minValueFilter" class="form-control" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Value (৳):</label>
+                                <input type="number" id="maxValueFilter" class="form-control" placeholder="999999999" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-sort-alpha-down"></i> Sort By:</label>
+                                <select id="sortByFilter" class="form-control select2">
+                                    <option value="">-- Default --</option>
+                                    <option value="value-desc">Value (High to Low)</option>
+                                    <option value="value-asc">Value (Low to High)</option>
+                                    <option value="qty-desc">Quantity (High to Low)</option>
+                                    <option value="qty-asc">Quantity (Low to High)</option>
+                                    <option value="date-desc">Date (Newest First)</option>
+                                    <option value="date-asc">Date (Oldest First)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset Filters
                                 </button>
                             </div>
                         </div>
@@ -316,8 +378,14 @@
 @section Scripts {
     <script>
         $(function () {
-            // Initialize DataTable
-            $("#lossTable").DataTable({
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                allowClear: true
+            });
+
+            // Initialize DataTable with enhanced filtering
+            var table = $("#lossTable").DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": false,
@@ -325,8 +393,73 @@
                 "order": [[2, "desc"]], // Sort by date descending
                 "columnDefs": [
                     { "orderable": false, "targets": 0 } // Disable sorting on serial column
-                ]
+                ],
+                "language": {
+                    "search": "Quick Table Search:",
+                    "lengthMenu": "Show _MENU_ losses per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ losses",
+                    "infoEmpty": "No losses available",
+                    "infoFiltered": "(filtered from _MAX_ total losses)"
+                }
             });
+
+            // Apply advanced filters
+            $('#searchFilter, #minQtyFilter, #maxQtyFilter, #minValueFilter, #maxValueFilter, #sortByFilter').on('change keyup', function() {
+                applyAdvancedFilters();
+            });
+
+            function applyAdvancedFilters() {
+                var searchFilter = $('#searchFilter').val().toLowerCase();
+                var minQty = parseFloat($('#minQtyFilter').val()) || 0;
+                var maxQty = parseFloat($('#maxQtyFilter').val()) || Infinity;
+                var minValue = parseFloat($('#minValueFilter').val()) || 0;
+                var maxValue = parseFloat($('#maxValueFilter').val()) || Infinity;
+                var sortBy = $('#sortByFilter').val();
+
+                // Custom filtering function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'lossTable') return true;
+
+                        // Column indices: 1=Loss No, 2=Date, 3=Type, 4=Item, 5=Store, 6=Quantity, 7=Value, 8=Reason
+                        var rowLossNo = data[1].toLowerCase();
+                        var rowItem = data[4].toLowerCase();
+                        var rowReason = data[8].toLowerCase();
+                        var rowQty = parseFloat(data[6].replace(/[^0-9.-]+/g, '')) || 0;
+                        var rowValue = parseFloat(data[7].replace(/[^0-9.-]+/g, '')) || 0;
+
+                        // Search filter (Loss No, Item, Reason)
+                        if (searchFilter && !rowLossNo.includes(searchFilter) &&
+                            !rowItem.includes(searchFilter) && !rowReason.includes(searchFilter)) return false;
+
+                        // Quantity range filter
+                        if (rowQty < minQty || rowQty > maxQty) return false;
+
+                        // Value range filter
+                        if (rowValue < minValue || rowValue > maxValue) return false;
+
+                        return true;
+                    }
+                );
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop();
+
+                // Apply sorting if specified
+                if (sortBy) {
+                    var orderColumn, orderDir;
+                    if (sortBy === 'value-desc') { orderColumn = 7; orderDir = 'desc'; }
+                    else if (sortBy === 'value-asc') { orderColumn = 7; orderDir = 'asc'; }
+                    else if (sortBy === 'qty-desc') { orderColumn = 6; orderDir = 'desc'; }
+                    else if (sortBy === 'qty-asc') { orderColumn = 6; orderDir = 'asc'; }
+                    else if (sortBy === 'date-desc') { orderColumn = 2; orderDir = 'desc'; }
+                    else if (sortBy === 'date-asc') { orderColumn = 2; orderDir = 'asc'; }
+
+                    if (orderColumn !== undefined) {
+                        table.order([orderColumn, orderDir]).draw();
+                    }
+                }
+            }
 
             // Pie Chart - Loss Type Distribution
             var pieChartCanvas = $('#pieChart').get(0).getContext('2d');
@@ -423,6 +556,14 @@
 
             url += params.join('&');
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #minQtyFilter, #maxQtyFilter, #minValueFilter, #maxValueFilter').val('');
+            window.location.href = '@Url.Action("LossReport", "Report")';
         }
     </script>
 }
