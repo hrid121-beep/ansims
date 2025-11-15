@@ -29,40 +29,82 @@
             </div>
             <div class="card-body">
                 <!-- Filter Section -->
-                <form asp-action="AuditReport" method="get" class="mb-4">
+                <form asp-action="AuditReport" method="get" class="mb-4" id="filterForm">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Advanced Filter Options</strong>
+                        <span class="badge badge-info float-right">Real-time Filtering</span>
+                    </div>
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>From Date</label>
-                                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" required>
+                                <label><i class="far fa-calendar-alt"></i> From Date</label>
+                                <input type="date" name="fromDate" id="fromDate" value="@ViewBag.FromDate" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>To Date</label>
-                                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" required>
+                                <label><i class="far fa-calendar-alt"></i> To Date</label>
+                                <input type="date" name="toDate" id="toDate" value="@ViewBag.ToDate" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Transaction Type</label>
-                                <select name="transactionType" asp-items="ViewBag.TransactionTypes" class="form-control">
+                                <label><i class="fas fa-exchange-alt"></i> Transaction Type</label>
+                                <select name="transactionType" id="transactionType" asp-items="ViewBag.TransactionTypes" class="form-control select2">
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Store</label>
-                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2">
+                                <label><i class="fas fa-warehouse"></i> Store</label>
+                                <select name="storeId" id="storeId" asp-items="ViewBag.Stores" class="form-control select2">
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Apply Filter
-                            </button>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search</label>
+                                <input type="text" id="searchFilter" class="form-control" placeholder="Search by User, Entity, or Action">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> User Filter</label>
+                                <select id="userFilter" class="form-control select2">
+                                    <option value="">-- All Users --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><i class="fas fa-tasks"></i> Action Type</label>
+                                <select id="actionFilter" class="form-control select2">
+                                    <option value="">-- All Actions --</option>
+                                    <option value="Create">Create</option>
+                                    <option value="Update">Update</option>
+                                    <option value="Delete">Delete</option>
+                                    <option value="Approve">Approve</option>
+                                    <option value="Reject">Reject</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-filter"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -410,6 +452,14 @@
             if (storeId) url += '&storeId=' + storeId;
 
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #userFilter, #actionFilter').val('');
+            window.location.href = '@Url.Action("AuditReport", "Report")';
         }
     </script>
 
