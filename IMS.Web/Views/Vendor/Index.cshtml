@@ -38,9 +38,22 @@
                             Vendor List
                         </h3>
                         <div class="card-tools">
-                            <a asp-action="Create" class="btn btn-light btn-sm">
-                                <i class="fas fa-plus"></i> Add New Vendor
-                            </a>
+                            <div class="btn-group">
+                                <a asp-action="Create" class="btn btn-light btn-sm">
+                                    <i class="fas fa-plus"></i> Add New Vendor
+                                </a>
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                        <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                    </a>
+                                    <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                        <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -333,6 +346,17 @@
                     toastr.error('@TempData["Error"]');
                     </text>
             }
+
+            // Export handlers
+            $('#exportCsvBtn').on('click', function(e) {
+                e.preventDefault();
+                window.location.href = '@Url.Action("ExportToCsv", "Vendor")';
+            });
+
+            $('#exportPdfBtn').on('click', function(e) {
+                e.preventDefault();
+                window.location.href = '@Url.Action("ExportToPdf", "Vendor")';
+            });
         });
     </script>
 }

@@ -54,9 +54,22 @@
                     <div class="card-header">
                         <h3 class="card-title">Battalion List</h3>
                         <div class="card-tools">
-                            <a asp-action="Create" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Add New Battalion
-                            </a>
+                            <div class="btn-group">
+                                <a asp-action="Create" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Add New Battalion
+                                </a>
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                        <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                    </a>
+                                    <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                        <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -474,6 +487,41 @@
             // Refresh delete button state when modal is hidden
             $('#deleteModal').on('hidden.bs.modal', function() {
                 $('#confirmDeleteBtn').html('<i class="fas fa-trash"></i> Yes, Delete Battalion').prop('disabled', false);
+            });
+
+            // Export handlers
+            $('#exportCsvBtn').on('click', function(e) {
+                e.preventDefault();
+                var statusFilter = $('#statusFilter').val();
+                var exportUrl = '@Url.Action("ExportToCsv", "Battalion")';
+                if (statusFilter) {
+                    exportUrl += '?status=' + encodeURIComponent(statusFilter);
+                }
+                Swal.fire({
+                    title: 'Exporting to CSV...',
+                    text: 'Please wait while we generate your file',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                window.location.href = exportUrl;
+                setTimeout(function() { Swal.close(); }, 2000);
+            });
+
+            $('#exportPdfBtn').on('click', function(e) {
+                e.preventDefault();
+                var statusFilter = $('#statusFilter').val();
+                var exportUrl = '@Url.Action("ExportToPdf", "Battalion")';
+                if (statusFilter) {
+                    exportUrl += '?status=' + encodeURIComponent(statusFilter);
+                }
+                Swal.fire({
+                    title: 'Exporting to PDF...',
+                    text: 'Please wait while we generate your file',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                window.location.href = exportUrl;
+                setTimeout(function() { Swal.close(); }, 2000);
             });
         });
     </script>

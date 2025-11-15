@@ -87,9 +87,17 @@
                                 <a asp-action="Import" class="btn btn-success btn-sm">
                                     <i class="fas fa-file-import"></i> Import CSV
                                 </a>
-                                <a asp-action="Export" class="btn btn-info btn-sm">
-                                    <i class="fas fa-file-export"></i> Export
-                                </a>
+                                <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" id="exportCsvBtn">
+                                        <i class="fas fa-file-csv text-success"></i> Export to CSV
+                                    </a>
+                                    <a class="dropdown-item" href="#" id="exportPdfBtn">
+                                        <i class="fas fa-file-pdf text-danger"></i> Export to PDF
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -307,6 +315,17 @@
                 $('#deleteName').text(name);
                 $('#deleteForm').attr('action', '@Url.Action("Delete")/' + id);
                 $('#deleteModal').modal('show');
+            });
+
+            // Export handlers
+            $('#exportCsvBtn').on('click', function(e) {
+                e.preventDefault();
+                window.location.href = '@Url.Action("ExportToCsv", "Zila")';
+            });
+
+            $('#exportPdfBtn').on('click', function(e) {
+                e.preventDefault();
+                window.location.href = '@Url.Action("ExportToPdf", "Zila")';
             });
         });
     </script>
