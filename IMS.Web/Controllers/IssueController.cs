@@ -757,28 +757,6 @@ namespace IMS.Web.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> PhysicalHandover()
-        {
-            try
-            {
-                var issues = await _issueService.GetAllIssuesAsync();
-                var readyForHandover = issues.Where(i =>
-                    i.Status == "Approved" &&
-                    !string.IsNullOrEmpty(i.VoucherNumber) &&
-                    string.IsNullOrEmpty(i.SignaturePath)
-                ).OrderBy(i => i.ApprovedDate);
-
-                return View(readyForHandover);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading physical handover page");
-                TempData["Error"] = "Failed to load handover list";
-                return RedirectToAction("Index");
-            }
-        }
-
         #endregion
 
         #region Barcode Scanning

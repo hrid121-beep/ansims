@@ -120,6 +120,18 @@
                     }
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="handover-tab" data-toggle="tab" href="#handover" role="tab">
+                    <i class="fas fa-handshake"></i> Physical Handover
+                    @{
+                        var handoverCount = items.Count(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath));
+                    }
+                    @if (handoverCount > 0)
+                    {
+                        <span class="badge badge-warning">@handoverCount</span>
+                    }
+                </a>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -559,6 +571,161 @@
                 </div>
             </div>
             <!-- End Vouchers Tab -->
+
+            <!-- Physical Handover Tab -->
+            <div class="tab-pane fade" id="handover" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-handshake"></i> Physical Handover</h3>
+                        <div class="card-tools">
+                            <span class="text-muted">Approved issues ready for physical handover</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var handoverIssues = items.Where(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath)).OrderByDescending(i => i.IssueDate).ToList();
+                        }
+                        @if (!handoverIssues.Any())
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <h5>No Items Ready for Handover</h5>
+                                <p>There are no approved issues pending physical handover. Issues appear here after vouchers are generated and before signatures are collected.</p>
+                                <a href="#all-issues" data-toggle="tab" class="btn btn-primary mt-2">
+                                    <i class="fas fa-arrow-left"></i> View All Issues
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Summary Statistics -->
+                            <div class="row mb-3">
+                                <div class="col-lg-3 col-6">
+                                    <div class="small-box bg-warning">
+                                        <div class="inner">
+                                            <h3>@handoverIssues.Count</h3>
+                                            <p>Ready for Handover</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-handshake"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6">
+                                    <div class="small-box bg-info">
+                                        <div class="inner">
+                                            <h3>@handoverIssues.Sum(i => i.TotalItems)</h3>
+                                            <p>Total Items</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6">
+                                    <div class="small-box bg-success">
+                                        <div class="inner">
+                                            <h3>@handoverIssues.Sum(i => i.TotalQuantity)</h3>
+                                            <p>Total Quantity</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-cubes"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6">
+                                    <div class="small-box bg-primary">
+                                        <div class="inner">
+                                            <h3>৳@handoverIssues.Sum(i => i.TotalValue ?? 0).ToString("N0")</h3>
+                                            <p>Total Value</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <table id="handoverTable" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Voucher No</th>
+                                        <th>Issue No</th>
+                                        <th>Issue Date</th>
+                                        <th>From Store</th>
+                                        <th>Issued To</th>
+                                        <th>Purpose</th>
+                                        <th>Items</th>
+                                        <th>Quantity</th>
+                                        <th>Value</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in handoverIssues)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge badge-warning badge-lg">
+                                                    <i class="fas fa-hashtag"></i> @item.VoucherNumber
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="text-primary">
+                                                    <strong>@item.IssueNo</strong>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <i class="far fa-calendar-alt"></i>
+                                                @item.IssueDate.ToString("dd-MMM-yyyy")
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-warehouse"></i>
+                                                @(item.FromStoreName ?? item.StoreName ?? "N/A")
+                                            </td>
+                                            <td>
+                                                <strong>@(item.IssuedToName ?? "N/A")</strong><br />
+                                                <small class="text-muted">@item.IssuedToType</small>
+                                            </td>
+                                            <td>@item.Purpose</td>
+                                            <td class="text-center">
+                                                <span class="badge badge-secondary">
+                                                    @item.TotalItems
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-info">
+                                                    @item.TotalQuantity
+                                                </span>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>৳@((item.TotalValue ?? 0).ToString("N2"))</strong>
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.Id"
+                                                       class="btn btn-info" data-toggle="tooltip" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="PrintVoucher" asp-route-id="@item.Id"
+                                                       target="_blank" class="btn btn-primary" data-toggle="tooltip" title="Print Voucher">
+                                                        <i class="fas fa-print"></i>
+                                                    </a>
+                                                    <a asp-action="ProcessHandover" asp-route-id="@item.Id"
+                                                       class="btn btn-success" data-toggle="tooltip" title="Process Physical Handover">
+                                                        <i class="fas fa-handshake"></i> Process
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+            <!-- End Physical Handover Tab -->
         </div>
         <!-- End Tab Content -->
     </div>
@@ -590,6 +757,24 @@
                     "infoFiltered": "(filtered from _MAX_ total vouchers)",
                     "zeroRecords": "No matching vouchers found",
                     "emptyTable": "No vouchers available"
+                }
+            });
+
+            // Initialize Physical Handover DataTable
+            $('#handoverTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pageLength": 25,
+                "order": [[2, "desc"]], // Sort by Issue Date descending (latest first)
+                "language": {
+                    "search": "Search Handovers:",
+                    "lengthMenu": "Show _MENU_ items per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ items ready for handover",
+                    "infoEmpty": "No items ready for handover",
+                    "infoFiltered": "(filtered from _MAX_ total items)",
+                    "zeroRecords": "No matching items found",
+                    "emptyTable": "No items ready for handover"
                 }
             });
         });
