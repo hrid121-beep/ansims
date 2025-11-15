@@ -71,34 +71,36 @@
     <div class="container-fluid">
         <!-- Filter Card -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
                 <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <form asp-action="TransferReport" method="get">
+                <form asp-action="TransferReport" method="get" id="filterForm">
+                    <!-- Row 1: Server-side filters -->
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>From Date:</label>
+                                <label><i class="far fa-calendar-alt"></i> From Date:</label>
                                 <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>To Date:</label>
+                                <label><i class="far fa-calendar-alt"></i> To Date:</label>
                                 <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>From Store:</label>
-                                <select id="fromStoreId" name="fromStoreId" class="form-control">
-                                    <option value="">All Stores</option>
+                                <label><i class="fas fa-warehouse"></i> From Store:</label>
+                                <select id="fromStoreId" name="fromStoreId" class="form-control select2">
+                                    <option value="">-- All Stores --</option>
                                     @if (ViewBag.Stores != null)
                                     {
                                         @foreach (var store in ViewBag.Stores)
@@ -111,9 +113,9 @@
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label>To Store:</label>
-                                <select id="toStoreId" name="toStoreId" class="form-control">
-                                    <option value="">All Stores</option>
+                                <label><i class="fas fa-warehouse"></i> To Store:</label>
+                                <select id="toStoreId" name="toStoreId" class="form-control select2">
+                                    <option value="">-- All Stores --</option>
                                     @if (ViewBag.Stores != null)
                                     {
                                         @foreach (var store in ViewBag.Stores)
@@ -128,7 +130,68 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search"></i> Generate Report
+                                    <i class="fas fa-search"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Client-side filters -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-info-circle"></i> Status:</label>
+                                <select id="statusFilter" class="form-control select2">
+                                    <option value="">-- All Statuses --</option>
+                                    <option value="Draft">Draft</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="InTransit">In Transit</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="searchFilter" class="form-control" placeholder="Search by Transfer No or Store Name">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Quantity:</label>
+                                <input type="number" id="minQtyFilter" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Additional filters -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Quantity:</label>
+                                <input type="number" id="maxQtyFilter" class="form-control" placeholder="999999">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-cubes"></i> Min Items:</label>
+                                <input type="number" id="minItemsFilter" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-cubes"></i> Max Items:</label>
+                                <input type="number" id="maxItemsFilter" class="form-control" placeholder="999">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset Filters
                                 </button>
                             </div>
                         </div>
@@ -329,27 +392,73 @@
 
     <script>
         $(document).ready(function () {
-            // Initialize DataTable
-            $('#transferTable').DataTable({
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                allowClear: true
+            });
+
+            // Initialize DataTable with enhanced filtering
+            var table = $('#transferTable').DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": false,
                 "pageLength": 25,
                 "order": [[2, "desc"]], // Sort by date descending
                 "language": {
-                    "search": "Search:",
-                    "lengthMenu": "Show _MENU_ entries",
-                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-                    "infoEmpty": "Showing 0 to 0 of 0 entries",
-                    "infoFiltered": "(filtered from _MAX_ total entries)",
-                    "paginate": {
-                        "first": "First",
-                        "last": "Last",
-                        "next": "Next",
-                        "previous": "Previous"
-                    }
+                    "search": "Quick Table Search:",
+                    "lengthMenu": "Show _MENU_ transfers per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ transfers",
+                    "infoEmpty": "No transfers available",
+                    "infoFiltered": "(filtered from _MAX_ total transfers)"
                 }
             });
+
+            // Apply advanced filters
+            $('#statusFilter, #searchFilter, #minQtyFilter, #maxQtyFilter, #minItemsFilter, #maxItemsFilter').on('change keyup', function() {
+                applyAdvancedFilters();
+            });
+
+            function applyAdvancedFilters() {
+                var statusFilter = $('#statusFilter').val().toLowerCase();
+                var searchFilter = $('#searchFilter').val().toLowerCase();
+                var minQty = parseFloat($('#minQtyFilter').val()) || 0;
+                var maxQty = parseFloat($('#maxQtyFilter').val()) || Infinity;
+                var minItems = parseFloat($('#minItemsFilter').val()) || 0;
+                var maxItems = parseFloat($('#maxItemsFilter').val()) || Infinity;
+
+                // Custom filtering function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'transferTable') return true;
+
+                        var rowStatus = data[7].toLowerCase(); // Status column
+                        var rowTransferNo = data[1].toLowerCase(); // Transfer No column
+                        var rowFromStore = data[3].toLowerCase(); // From Store column
+                        var rowToStore = data[4].toLowerCase(); // To Store column
+                        var rowItems = parseInt(data[5]) || 0; // Items column
+                        var rowQty = parseInt(data[6]) || 0; // Quantity column
+
+                        // Status filter
+                        if (statusFilter && !rowStatus.includes(statusFilter)) return false;
+
+                        // Search filter (Transfer No, From Store, To Store)
+                        if (searchFilter && !rowTransferNo.includes(searchFilter) &&
+                            !rowFromStore.includes(searchFilter) && !rowToStore.includes(searchFilter)) return false;
+
+                        // Quantity range filter
+                        if (rowQty < minQty || rowQty > maxQty) return false;
+
+                        // Items range filter
+                        if (rowItems < minItems || rowItems > maxItems) return false;
+
+                        return true;
+                    }
+                );
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop();
+            }
 
             // From Store Chart
             var fromStoreChartCanvas = $('#fromStoreChart').get(0).getContext('2d');
@@ -449,6 +558,14 @@
 
             url += params.join('&');
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #minQtyFilter, #maxQtyFilter, #minItemsFilter, #maxItemsFilter').val('');
+            window.location.href = '@Url.Action("TransferReport", "Report")';
         }
     </script>
 

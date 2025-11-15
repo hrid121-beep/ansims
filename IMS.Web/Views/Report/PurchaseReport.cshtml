@@ -76,33 +76,36 @@
     <div class="container-fluid">
         <!-- Filter Card -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Filter Options</h3>
+            <div class="card-header bg-light">
+                <h3 class="card-title"><i class="fas fa-filter"></i> <strong>Advanced Filter Options</strong></h3>
                 <div class="card-tools">
+                    <span class="badge badge-info mr-2">Real-time Filtering</span>
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
             </div>
             <div class="card-body">
-                <form asp-action="PurchaseReport" method="get">
+                <form asp-action="PurchaseReport" method="get" id="filterForm">
+                    <!-- Row 1: Server-side filters -->
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>From Date:</label>
+                                <label><i class="far fa-calendar-alt"></i> From Date:</label>
                                 <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.FromDate">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>To Date:</label>
+                                <label><i class="far fa-calendar-alt"></i> To Date:</label>
                                 <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.ToDate">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Vendor:</label>
-                                <select id="vendorId" name="vendorId" class="form-control">
+                                <label><i class="fas fa-truck"></i> Vendor:</label>
+                                <select id="vendorId" name="vendorId" class="form-control select2">
+                                    <option value="">-- All Vendors --</option>
                                     @if (vendors != null)
                                     {
                                         @foreach (var item in vendors)
@@ -117,7 +120,72 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-search"></i> Generate Report
+                                    <i class="fas fa-search"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Client-side filters -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-info-circle"></i> Status:</label>
+                                <select id="statusFilter" class="form-control select2">
+                                    <option value="">-- All Statuses --</option>
+                                    <option value="Draft">Draft</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-file-invoice-dollar"></i> Payment Status:</label>
+                                <select id="paymentStatusFilter" class="form-control select2">
+                                    <option value="">-- All Payments --</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                    <option value="Partial">Partial</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="searchFilter" class="form-control" placeholder="Search by PO Number or Vendor Name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Amount range filters -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Amount (৳):</label>
+                                <input type="number" id="minAmountFilter" class="form-control" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-less-than-equal"></i> Max Amount (৳):</label>
+                                <input type="number" id="maxAmountFilter" class="form-control" placeholder="999999999" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-greater-than-equal"></i> Min Discount (৳):</label>
+                                <input type="number" id="minDiscountFilter" class="form-control" placeholder="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="clearFilters()">
+                                    <i class="fas fa-redo"></i> Reset Filters
                                 </button>
                             </div>
                         </div>
@@ -228,18 +296,18 @@
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped" id="purchaseTable">
+                <table class="table table-bordered table-striped table-hover" id="purchaseTable">
                     <thead>
                         <tr>
                             <th>PO Number</th>
                             <th>Date</th>
                             <th>Vendor</th>
-                            <th>Items</th>
-                            <th class="text-right">Total Amount</th>
-                            <th class="text-right">Discount</th>
-                            <th class="text-right">Net Amount</th>
+                            <th data-type="num">Items</th>
+                            <th data-type="num-fmt" class="text-right">Total Amount</th>
+                            <th data-type="num-fmt" class="text-right">Discount</th>
+                            <th data-type="num-fmt" class="text-right">Net Amount</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="no-export">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -351,27 +419,74 @@
 
     <script>
         $(document).ready(function () {
-            // Initialize DataTable
-            $('#purchaseTable').DataTable({
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                allowClear: true
+            });
+
+            // Initialize DataTable with enhanced filtering
+            var table = $('#purchaseTable').DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": false,
                 "pageLength": 25,
                 "order": [[1, "desc"]], // Sort by date descending
                 "language": {
-                    "search": "Search:",
-                    "lengthMenu": "Show _MENU_ entries",
-                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-                    "infoEmpty": "Showing 0 to 0 of 0 entries",
-                    "infoFiltered": "(filtered from _MAX_ total entries)",
-                    "paginate": {
-                        "first": "First",
-                        "last": "Last",
-                        "next": "Next",
-                        "previous": "Previous"
-                    }
+                    "search": "Quick Table Search:",
+                    "lengthMenu": "Show _MENU_ purchases per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ purchases",
+                    "infoEmpty": "No purchases available",
+                    "infoFiltered": "(filtered from _MAX_ total purchases)"
                 }
             });
+
+            // Apply advanced filters
+            $('#statusFilter, #paymentStatusFilter, #searchFilter, #minAmountFilter, #maxAmountFilter, #minDiscountFilter').on('change keyup', function() {
+                applyAdvancedFilters();
+            });
+
+            function applyAdvancedFilters() {
+                var statusFilter = $('#statusFilter').val().toLowerCase();
+                var paymentStatusFilter = $('#paymentStatusFilter').val().toLowerCase();
+                var searchFilter = $('#searchFilter').val().toLowerCase();
+                var minAmount = parseFloat($('#minAmountFilter').val()) || 0;
+                var maxAmount = parseFloat($('#maxAmountFilter').val()) || Infinity;
+                var minDiscount = parseFloat($('#minDiscountFilter').val()) || 0;
+
+                // Custom filtering function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'purchaseTable') return true;
+
+                        var rowStatus = data[7].toLowerCase();
+                        var rowVendor = data[2].toLowerCase();
+                        var rowPONumber = data[0].toLowerCase();
+                        var rowNetAmount = parseFloat(data[6].replace(/[^0-9.-]+/g, '')) || 0;
+                        var rowDiscount = parseFloat(data[5].replace(/[^0-9.-]+/g, '')) || 0;
+
+                        // Status filter
+                        if (statusFilter && !rowStatus.includes(statusFilter)) return false;
+
+                        // Search filter (PO Number or Vendor)
+                        if (searchFilter && !rowPONumber.includes(searchFilter) && !rowVendor.includes(searchFilter)) return false;
+
+                        // Amount range filter
+                        if (rowNetAmount < minAmount || rowNetAmount > maxAmount) return false;
+
+                        // Discount filter
+                        if (rowDiscount < minDiscount) return false;
+
+                        // Payment status filter (placeholder - would need backend support for real data)
+                        // if (paymentStatusFilter) { ... }
+
+                        return true;
+                    }
+                );
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop();
+            }
 
             // Vendor Chart
             var vendorChartCanvas = $('#vendorChart').get(0).getContext('2d');
@@ -517,6 +632,14 @@
 
             url += params.join('&');
             window.location.href = url;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            $('#filterForm')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#searchFilter, #minAmountFilter, #maxAmountFilter, #minDiscountFilter').val('');
+            window.location.href = '@Url.Action("PurchaseReport", "Report")';
         }
     </script>
 
