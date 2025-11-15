@@ -1003,7 +1003,7 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.BrandName ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.ModelName ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.Unit ?? "", normalFont));
-                        mainTable.AddCell(new iTextSharp.text.Phrase($"৳{item.UnitPrice ?? 0:N2}", normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase($"৳{(item.UnitPrice ?? 0m):N2}", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase((item.MinimumStock ?? 0).ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.IsActive ? "Active" : "Inactive", normalFont));
                     }
