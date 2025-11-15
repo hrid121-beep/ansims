@@ -4,6 +4,7 @@ using IMS.Domain.Enums;
 using IMS.Web.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace IMS.Web.Controllers
 {
@@ -11,10 +12,12 @@ namespace IMS.Web.Controllers
     public class VendorController : Controller
     {
         private readonly IVendorService _vendorService;
+        private readonly ILogger<VendorController> _logger;
 
-        public VendorController(IVendorService vendorService)
+        public VendorController(IVendorService vendorService, ILogger<VendorController> logger)
         {
             _vendorService = vendorService;
+            _logger = logger;
         }
 
         [HasPermission(Permission.ViewVendor)]
@@ -134,12 +137,11 @@ namespace IMS.Web.Controllers
                 }
 
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Code,Name,Contact Person,Phone,Email,Address,Status");
+                csv.AppendLine("Name,Contact Person,Phone,Email,Address,Status");
 
                 foreach (var vendor in vendors)
                 {
-                    csv.AppendLine($"\"{EscapeCsv(vendor.Code)}\"," +
-                        $"\"{EscapeCsv(vendor.Name)}\"," +
+                    csv.AppendLine($"\"{EscapeCsv(vendor.Name)}\"," +
                         $"\"{EscapeCsv(vendor.ContactPerson)}\"," +
                         $"\"{EscapeCsv(vendor.Phone)}\"," +
                         $"\"{EscapeCsv(vendor.Email)}\"," +
@@ -193,11 +195,11 @@ namespace IMS.Web.Controllers
                     infoParagraph.SpacingAfter = 15f;
                     document.Add(infoParagraph);
 
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(6);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(5);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 12f, 20f, 18f, 15f, 20f, 15f });
+                    mainTable.SetWidths(new float[] { 25f, 20f, 18f, 22f, 15f });
 
-                    var headerTexts = new[] { "Code", "Name", "Contact Person", "Phone", "Email", "Status" };
+                    var headerTexts = new[] { "Name", "Contact Person", "Phone", "Email", "Status" };
                     foreach (var headerText in headerTexts)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
@@ -209,7 +211,6 @@ namespace IMS.Web.Controllers
 
                     foreach (var vendor in vendors)
                     {
-                        mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Code ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.ContactPerson ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Phone ?? "", normalFont));

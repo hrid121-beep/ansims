@@ -4,6 +4,7 @@ using IMS.Domain.Enums;
 using IMS.Web.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace IMS.Web.Controllers
 {
@@ -12,11 +13,13 @@ namespace IMS.Web.Controllers
     {
         private readonly ICategoryService _categoryService;
         private readonly ISubCategoryService _subCategoryService;
+        private readonly ILogger<CategoryController> _logger;
 
-        public CategoryController(ICategoryService categoryService, ISubCategoryService subCategoryService)
+        public CategoryController(ICategoryService categoryService, ISubCategoryService subCategoryService, ILogger<CategoryController> logger)
         {
             _categoryService = categoryService;
             _subCategoryService = subCategoryService;
+            _logger = logger;
         }
 
         [HasPermission(Permission.ViewCategory)]
@@ -225,7 +228,7 @@ namespace IMS.Web.Controllers
                     csv.AppendLine($"\"{EscapeCsv(category.Code)}\"," +
                         $"\"{EscapeCsv(category.Name)}\"," +
                         $"\"{EscapeCsv(category.Description)}\"," +
-                        $"{category.ItemCount ?? 0}," +
+                        $"{category.ItemCount}," +
                         $"\"{(category.IsActive ? "Active" : "Inactive")}\"," +
                         $"\"{category.CreatedAt:dd-MMM-yyyy}\"");
                 }
@@ -295,7 +298,7 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Code ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Description ?? "", normalFont));
-                        mainTable.AddCell(new iTextSharp.text.Phrase((category.ItemCount ?? 0).ToString(), normalFont));
+                        mainTable.AddCell(new iTextSharp.text.Phrase(category.ItemCount.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.IsActive ? "Active" : "Inactive", normalFont));
                     }
 
