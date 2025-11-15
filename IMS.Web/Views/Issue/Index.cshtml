@@ -137,51 +137,36 @@
             <li class="nav-item">
                 <a class="nav-link active" id="all-issues-tab" data-toggle="tab" href="#all-issues" role="tab"
                    data-toggle-second="tooltip" title="Manage all issues - Create, edit, submit for approval, and track status">
-                    <div class="d-flex align-items-center">
-                        <span class="badge badge-primary mr-2">1</span>
-                        <div>
-                            <i class="fas fa-list"></i> <strong>All Issues</strong>
-                            <small class="d-block text-muted" style="font-size: 0.75rem;">Complete Management</small>
-                        </div>
-                    </div>
+                    <i class="fas fa-list"></i> <strong>All Issues</strong>
+                    <small class="d-block text-muted" style="font-size: 0.75rem;">Complete Management</small>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="vouchers-tab" data-toggle="tab" href="#vouchers" role="tab"
                    data-toggle-second="tooltip" title="View and print approved issue vouchers with QR codes">
-                    <div class="d-flex align-items-center">
-                        <span class="badge badge-info mr-2">2</span>
-                        <div>
-                            <i class="fas fa-qrcode"></i> <strong>Issue Vouchers</strong>
-                            <small class="d-block text-muted" style="font-size: 0.75rem;">Print & Download</small>
-                            @{
-                                var voucherCount = items.Count(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed"));
-                            }
-                            @if (voucherCount > 0)
-                            {
-                                <span class="badge badge-info badge-pill ml-2">@voucherCount</span>
-                            }
-                        </div>
-                    </div>
+                    <i class="fas fa-qrcode"></i> <strong>Issue Vouchers</strong>
+                    @{
+                        var voucherCount = items.Count(i => !string.IsNullOrEmpty(i.VoucherNumber) && (i.Status == "Approved" || i.Status == "Issued" || i.Status == "Completed"));
+                    }
+                    @if (voucherCount > 0)
+                    {
+                        <span class="badge badge-info ml-2">@voucherCount</span>
+                    }
+                    <small class="d-block text-muted" style="font-size: 0.75rem;">Print & Download</small>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="handover-tab" data-toggle="tab" href="#handover" role="tab"
                    data-toggle-second="tooltip" title="Process physical handover with signature collection">
-                    <div class="d-flex align-items-center">
-                        <span class="badge badge-warning mr-2">3</span>
-                        <div>
-                            <i class="fas fa-handshake"></i> <strong>Physical Handover</strong>
-                            <small class="d-block text-muted" style="font-size: 0.75rem;">Signature Collection</small>
-                            @{
-                                var handoverCount = items.Count(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath));
-                            }
-                            @if (handoverCount > 0)
-                            {
-                                <span class="badge badge-warning badge-pill ml-2">@handoverCount pending</span>
-                            }
-                        </div>
-                    </div>
+                    <i class="fas fa-handshake"></i> <strong>Physical Handover</strong>
+                    @{
+                        var handoverCount = items.Count(i => i.Status == "Approved" && !string.IsNullOrEmpty(i.VoucherNumber) && string.IsNullOrEmpty(i.SignaturePath));
+                    }
+                    @if (handoverCount > 0)
+                    {
+                        <span class="badge badge-warning ml-2">@handoverCount</span>
+                    }
+                    <small class="d-block text-muted" style="font-size: 0.75rem;">Signature Collection</small>
                 </a>
             </li>
         </ul>
