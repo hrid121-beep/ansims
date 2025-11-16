@@ -14,8 +14,8 @@ using static StoreTypeConversionHelper;
 using OfficeOpenXml;
 using Range = IMS.Domain.Entities.Range;
 
-// Set EPPlus License Context
-ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+// Set EPPlus License for version 8+
+ExcelPackage.License = OfficeOpenXml.LicenseType.NonCommercial;
 
 var builder = WebApplication.CreateBuilder(args);
 
