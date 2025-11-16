@@ -8,6 +8,7 @@ using OfficeOpenXml;
 using QuestPDF.Infrastructure;
 using System.Drawing;
 using System.IO;
+using System.Text;
 
 namespace IMS.Application.Services
 {
