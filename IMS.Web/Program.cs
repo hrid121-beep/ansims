@@ -11,7 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static StoreTypeConversionHelper;
+using OfficeOpenXml;
 using Range = IMS.Domain.Entities.Range;
+
+// Set EPPlus License Context
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var builder = WebApplication.CreateBuilder(args);
 
