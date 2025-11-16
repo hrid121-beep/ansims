@@ -11,13 +11,28 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static StoreTypeConversionHelper;
-using OfficeOpenXml;
 using Range = IMS.Domain.Entities.Range;
 
-// Set EPPlus License Context
-ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure EPPlus License for version 8.0+
+// EPPlus 8 reads from configuration automatically, but we set it explicitly to avoid runtime errors
+try
+{
+    // For EPPlus 8.0+, the license is set via configuration in appsettings.json
+    // This is a fallback in case configuration reading fails
+    var licenseContextValue = builder.Configuration.GetValue<string>("EPPlus:ExcelPackage:LicenseContext");
+    if (string.IsNullOrEmpty(licenseContextValue))
+    {
+        // Set via environment variable as fallback
+        Environment.SetEnvironmentVariable("EPPlus__ExcelPackage__LicenseContext", "NonCommercial");
+    }
+}
+catch
+{
+    // If all else fails, set environment variable
+    Environment.SetEnvironmentVariable("EPPlus__ExcelPackage__LicenseContext", "NonCommercial");
+}
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
