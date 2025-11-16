@@ -137,6 +137,14 @@
                         Class A Items - High Priority (Top 70% Value)
                     </h3>
                     <div class="card-tools">
+                        <div class="btn-group mr-2">
+                            <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
                         <span class="badge badge-danger">@Model.ClassAItems.Count items</span>
                     </div>
                 </div>
