@@ -202,6 +202,7 @@
                                         <label for="selectAll"></label>
                                     </div>
                                 </th>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Code</th>
                                 <th>Name</th>
                                 <th>Type</th>
@@ -216,6 +217,9 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                var serialNo = 1;
+                            }
                             @foreach (var store in Model)
                             {
                                 <tr data-id="@store.Id">
@@ -225,6 +229,7 @@
                                             <label for="check_@store.Id"></label>
                                         </div>
                                     </td>
+                                    <td class="text-center">@serialNo</td>
                                     <td>
                                         <span class="badge badge-secondary">@store.Code</span>
                                     </td>
@@ -337,6 +342,7 @@
                                             </button>
                                         </div>
                                     </td>
+                                    @{ serialNo++; }
                                 </tr>
                             }
                         </tbody>

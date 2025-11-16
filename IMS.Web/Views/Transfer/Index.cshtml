@@ -86,6 +86,7 @@
                 <table id="transfersTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>Transfer No</th>
                             <th>Date</th>
                             <th>From Store</th>
@@ -97,6 +98,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            var serialNo = 1;
+                        }
                         @foreach (var item in Model)
                         {
                             var statusBadgeClass = item.Status switch
@@ -110,6 +114,7 @@
                             };
 
                             <tr>
+                                <td class="text-center">@serialNo</td>
                                 <td><strong>@item.TransferNo</strong></td>
                                 <td>@item.TransferDate.ToString("dd-MMM-yyyy")</td>
                                 <td>
@@ -153,6 +158,7 @@
                                         <i class="fas fa-route"></i>
                                     </a>
                                 </td>
+                                @{ serialNo++; }
                             </tr>
                         }
                     </tbody>

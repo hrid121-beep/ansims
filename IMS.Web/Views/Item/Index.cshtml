@@ -261,6 +261,7 @@
                                                 <label for="checkAll"></label>
                                             </div>
                                         </th>
+                                        <th class="text-center" style="width: 50px;">#</th>
                                         <th>Item Code</th>
                                         <th>Name</th>
                                         <th>Category</th>
@@ -274,6 +275,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @{
+                                        var serialNo = 1;
+                                    }
                                     @foreach (var item in Model)
                                     {
                                         var stockPercentage = item.MinimumStock > 0 ? (item.CurrentStock / item.MinimumStock) * 100 : 100;
@@ -287,6 +291,7 @@
                                                     <label for="check@(item.Id)"></label>
                                                 </div>
                                             </td>
+                                            <td class="text-center">@serialNo</td>
                                             <td>
                                                 <span class="badge badge-secondary">@item.ItemCode</span>
                                             </td>
@@ -459,6 +464,7 @@
                                                     </div>
                                                 </div>
                                             </td>
+                                            @{ serialNo++; }
                                         </tr>
                                     }
                                 </tbody>

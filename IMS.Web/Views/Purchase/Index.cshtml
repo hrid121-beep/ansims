@@ -171,6 +171,7 @@
                 <table id="purchaseTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>PO Number</th>
                             <th>Date</th>
                             <th>Vendor/Source</th>
@@ -183,9 +184,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            var serialNo = 1;
+                        }
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="text-center">@serialNo</td>
                                 <td>
                                     <a asp-action="Details" asp-route-id="@item.Id">
                                         @item.PurchaseOrderNo
@@ -252,6 +257,7 @@
                                         </a>
                                     </div>
                                 </td>
+                                @{ serialNo++; }
                             </tr>
                         }
                     </tbody>

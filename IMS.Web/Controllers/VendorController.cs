@@ -137,16 +137,19 @@ namespace IMS.Web.Controllers
                 }
 
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Name,Contact Person,Phone,Email,Address,Status");
+                csv.AppendLine("#,Name,Contact Person,Phone,Email,Address,Status");
 
+                int serialNo = 1;
                 foreach (var vendor in vendors)
                 {
-                    csv.AppendLine($"\"{EscapeCsv(vendor.Name)}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                        $"\"{EscapeCsv(vendor.Name)}\"," +
                         $"\"{EscapeCsv(vendor.ContactPerson)}\"," +
                         $"\"{EscapeCsv(vendor.Phone)}\"," +
                         $"\"{EscapeCsv(vendor.Email)}\"," +
                         $"\"{EscapeCsv(vendor.Address)}\"," +
                         $"\"{(vendor.IsActive ? "Active" : "Inactive")}\"");
+                    serialNo++;
                 }
 
                 return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"Vendors_{DateTime.Now:yyyyMMddHHmmss}.csv");
@@ -195,11 +198,11 @@ namespace IMS.Web.Controllers
                     infoParagraph.SpacingAfter = 15f;
                     document.Add(infoParagraph);
 
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(5);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(6);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 25f, 20f, 18f, 22f, 15f });
+                    mainTable.SetWidths(new float[] { 5f, 25f, 20f, 18f, 22f, 10f });
 
-                    var headerTexts = new[] { "Name", "Contact Person", "Phone", "Email", "Status" };
+                    var headerTexts = new[] { "#", "Name", "Contact Person", "Phone", "Email", "Status" };
                     foreach (var headerText in headerTexts)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
@@ -209,13 +212,16 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(cell);
                     }
 
+                    int serialNo = 1;
                     foreach (var vendor in vendors)
                     {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.ContactPerson ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Phone ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.Email ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(vendor.IsActive ? "Active" : "Inactive", normalFont));
+                        serialNo++;
                     }
 
                     document.Add(mainTable);

@@ -590,11 +590,12 @@ namespace IMS.Web.Controllers
                     document.Add(new iTextSharp.text.Paragraph("\n"));
 
                     // Damage details table
-                    var table = new iTextSharp.text.pdf.PdfPTable(7);
+                    var table = new iTextSharp.text.pdf.PdfPTable(8);
                     table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 12, 15, 15, 10, 15, 15, 18 });
+                    table.SetWidths(new float[] { 5, 12, 15, 15, 10, 15, 13, 15 });
 
                     // Headers
+                    table.AddCell(new iTextSharp.text.Phrase("#", boldFont));
                     table.AddCell(new iTextSharp.text.Phrase("Damage No", boldFont));
                     table.AddCell(new iTextSharp.text.Phrase("Date", boldFont));
                     table.AddCell(new iTextSharp.text.Phrase("Item", boldFont));
@@ -604,8 +605,10 @@ namespace IMS.Web.Controllers
                     table.AddCell(new iTextSharp.text.Phrase("Description", boldFont));
 
                     // Data rows
+                    int serialNo = 1;
                     foreach (var damage in damages)
                     {
+                        table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), normalFont));
                         table.AddCell(new iTextSharp.text.Phrase(damage.DamageNo ?? "", normalFont));
                         table.AddCell(new iTextSharp.text.Phrase(damage.DamageDate.ToString("dd-MMM-yyyy"), normalFont));
                         table.AddCell(new iTextSharp.text.Phrase(damage.ItemName ?? "", normalFont));
@@ -613,6 +616,7 @@ namespace IMS.Web.Controllers
                         table.AddCell(new iTextSharp.text.Phrase(damage.DamageType ?? "", normalFont));
                         table.AddCell(new iTextSharp.text.Phrase(damage.Status ?? "", normalFont));
                         table.AddCell(new iTextSharp.text.Phrase(damage.Description ?? "", normalFont));
+                        serialNo++;
                     }
 
                     document.Add(table);
@@ -698,7 +702,7 @@ namespace IMS.Web.Controllers
                     row++;
 
                     // Headers
-                    var headers = new[] { "Damage No", "Date", "Store", "Item", "Quantity", "Type", "Status", "Description", "Action Taken" };
+                    var headers = new[] { "#", "Damage No", "Date", "Store", "Item", "Quantity", "Type", "Status", "Description", "Action Taken" };
                     for (int i = 0; i < headers.Length; i++)
                     {
                         worksheet.Cell(row, i + 1).Value = headers[i];
@@ -709,24 +713,27 @@ namespace IMS.Web.Controllers
                     row++;
 
                     // Data rows
+                    int serialNo = 1;
                     foreach (var damage in damages)
                     {
-                        worksheet.Cell(row, 1).Value = damage.DamageNo ?? "";
-                        worksheet.Cell(row, 2).Value = damage.DamageDate.ToString("dd-MMM-yyyy");
-                        worksheet.Cell(row, 3).Value = damage.StoreName ?? "";
-                        worksheet.Cell(row, 4).Value = damage.ItemName ?? "";
-                        worksheet.Cell(row, 5).Value = damage.Quantity ?? 0;
-                        worksheet.Cell(row, 6).Value = damage.DamageType ?? "";
-                        worksheet.Cell(row, 7).Value = damage.Status ?? "";
-                        worksheet.Cell(row, 8).Value = damage.Description ?? "";
-                        worksheet.Cell(row, 9).Value = damage.ActionTaken ?? "";
+                        worksheet.Cell(row, 1).Value = serialNo;
+                        worksheet.Cell(row, 2).Value = damage.DamageNo ?? "";
+                        worksheet.Cell(row, 3).Value = damage.DamageDate.ToString("dd-MMM-yyyy");
+                        worksheet.Cell(row, 4).Value = damage.StoreName ?? "";
+                        worksheet.Cell(row, 5).Value = damage.ItemName ?? "";
+                        worksheet.Cell(row, 6).Value = damage.Quantity ?? 0;
+                        worksheet.Cell(row, 7).Value = damage.DamageType ?? "";
+                        worksheet.Cell(row, 8).Value = damage.Status ?? "";
+                        worksheet.Cell(row, 9).Value = damage.Description ?? "";
+                        worksheet.Cell(row, 10).Value = damage.ActionTaken ?? "";
 
                         // Apply borders
-                        for (int i = 1; i <= 9; i++)
+                        for (int i = 1; i <= 10; i++)
                         {
                             worksheet.Cell(row, i).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                         }
                         row++;
+                        serialNo++;
                     }
 
                     // Auto-fit columns

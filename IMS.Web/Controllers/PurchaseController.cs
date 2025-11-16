@@ -1156,14 +1156,14 @@ namespace IMS.Web.Controllers
                     document.Add(dateText);
                     document.Add(new iTextSharp.text.Paragraph(" "));
 
-                    // Table with 7 columns
-                    var table = new iTextSharp.text.pdf.PdfPTable(7);
+                    // Table with 8 columns
+                    var table = new iTextSharp.text.pdf.PdfPTable(8);
                     table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 12f, 12f, 18f, 15f, 10f, 13f, 10f });
+                    table.SetWidths(new float[] { 5f, 12f, 12f, 18f, 15f, 10f, 13f, 10f });
 
                     // Header
                     var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
-                    string[] headers = { "PO Number", "Date", "Vendor/Source", "Store", "Type", "Total Amount", "Status" };
+                    string[] headers = { "#", "PO Number", "Date", "Vendor/Source", "Store", "Type", "Total Amount", "Status" };
                     foreach (var header in headers)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -1175,8 +1175,10 @@ namespace IMS.Web.Controllers
 
                     // Data
                     var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+                    int serialNo = 1;
                     foreach (var purchase in purchases)
                     {
+                        table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), dataFont));
                         table.AddCell(new iTextSharp.text.Phrase(purchase.PurchaseOrderNo ?? "", dataFont));
                         table.AddCell(new iTextSharp.text.Phrase(purchase.PurchaseDate.ToString("dd-MMM-yyyy"), dataFont));
 
@@ -1190,6 +1192,7 @@ namespace IMS.Web.Controllers
 
                         table.AddCell(new iTextSharp.text.Phrase($"৳{purchase.TotalAmount:N2}", dataFont));
                         table.AddCell(new iTextSharp.text.Phrase(purchase.Status ?? "", dataFont));
+                        serialNo++;
                     }
 
                     document.Add(table);
@@ -1218,14 +1221,16 @@ namespace IMS.Web.Controllers
             try
             {
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("PO Number,Purchase Date,Vendor/Source,Store,Type,Items Count,Total Amount,Discount,Status,Created By,Created Date");
+                csv.AppendLine("#,PO Number,Purchase Date,Vendor/Source,Store,Type,Items Count,Total Amount,Discount,Status,Created By,Created Date");
 
+                int serialNo = 1;
                 foreach (var purchase in purchases)
                 {
                     var vendorSource = purchase.IsMarketplacePurchase ? "Marketplace Purchase" : purchase.VendorName;
                     var purchaseType = purchase.IsMarketplacePurchase ? "Marketplace" : "Vendor";
 
-                    csv.AppendLine($"\"{purchase.PurchaseOrderNo}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                                  $"\"{purchase.PurchaseOrderNo}\"," +
                                   $"\"{purchase.PurchaseDate:dd-MMM-yyyy}\"," +
                                   $"\"{vendorSource}\"," +
                                   $"\"{purchase.StoreName}\"," +
@@ -1236,6 +1241,7 @@ namespace IMS.Web.Controllers
                                   $"\"{purchase.Status}\"," +
                                   $"\"{purchase.CreatedBy}\"," +
                                   $"\"{purchase.CreatedAt:dd-MMM-yyyy HH:mm}\"");
+                    serialNo++;
                 }
 
                 var fileName = $"PurchaseOrders_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
@@ -1257,43 +1263,47 @@ namespace IMS.Web.Controllers
                     var worksheet = workbook.Worksheets.Add("Purchase Orders");
 
                     // Header
-                    worksheet.Cell(1, 1).Value = "PO Number";
-                    worksheet.Cell(1, 2).Value = "Purchase Date";
-                    worksheet.Cell(1, 3).Value = "Vendor/Source";
-                    worksheet.Cell(1, 4).Value = "Store";
-                    worksheet.Cell(1, 5).Value = "Type";
-                    worksheet.Cell(1, 6).Value = "Items Count";
-                    worksheet.Cell(1, 7).Value = "Total Amount";
-                    worksheet.Cell(1, 8).Value = "Discount";
-                    worksheet.Cell(1, 9).Value = "Status";
-                    worksheet.Cell(1, 10).Value = "Created By";
-                    worksheet.Cell(1, 11).Value = "Created Date";
+                    worksheet.Cell(1, 1).Value = "#";
+                    worksheet.Cell(1, 2).Value = "PO Number";
+                    worksheet.Cell(1, 3).Value = "Purchase Date";
+                    worksheet.Cell(1, 4).Value = "Vendor/Source";
+                    worksheet.Cell(1, 5).Value = "Store";
+                    worksheet.Cell(1, 6).Value = "Type";
+                    worksheet.Cell(1, 7).Value = "Items Count";
+                    worksheet.Cell(1, 8).Value = "Total Amount";
+                    worksheet.Cell(1, 9).Value = "Discount";
+                    worksheet.Cell(1, 10).Value = "Status";
+                    worksheet.Cell(1, 11).Value = "Created By";
+                    worksheet.Cell(1, 12).Value = "Created Date";
 
                     // Style header
-                    var headerRange = worksheet.Range(1, 1, 1, 11);
+                    var headerRange = worksheet.Range(1, 1, 1, 12);
                     headerRange.Style.Font.Bold = true;
                     headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
                     headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
 
                     // Data
                     int row = 2;
+                    int serialNo = 1;
                     foreach (var purchase in purchases)
                     {
                         var vendorSource = purchase.IsMarketplacePurchase ? "Marketplace Purchase" : purchase.VendorName;
                         var purchaseType = purchase.IsMarketplacePurchase ? "Marketplace" : "Vendor";
 
-                        worksheet.Cell(row, 1).Value = purchase.PurchaseOrderNo;
-                        worksheet.Cell(row, 2).Value = purchase.PurchaseDate.ToString("dd-MMM-yyyy");
-                        worksheet.Cell(row, 3).Value = vendorSource;
-                        worksheet.Cell(row, 4).Value = purchase.StoreName;
-                        worksheet.Cell(row, 5).Value = purchaseType;
-                        worksheet.Cell(row, 6).Value = purchase.Items?.Count ?? 0;
-                        worksheet.Cell(row, 7).Value = purchase.TotalAmount;
-                        worksheet.Cell(row, 8).Value = purchase.Discount;
-                        worksheet.Cell(row, 9).Value = purchase.Status;
-                        worksheet.Cell(row, 10).Value = purchase.CreatedBy;
-                        worksheet.Cell(row, 11).Value = purchase.CreatedAt.ToString("dd-MMM-yyyy HH:mm");
+                        worksheet.Cell(row, 1).Value = serialNo;
+                        worksheet.Cell(row, 2).Value = purchase.PurchaseOrderNo;
+                        worksheet.Cell(row, 3).Value = purchase.PurchaseDate.ToString("dd-MMM-yyyy");
+                        worksheet.Cell(row, 4).Value = vendorSource;
+                        worksheet.Cell(row, 5).Value = purchase.StoreName;
+                        worksheet.Cell(row, 6).Value = purchaseType;
+                        worksheet.Cell(row, 7).Value = purchase.Items?.Count ?? 0;
+                        worksheet.Cell(row, 8).Value = purchase.TotalAmount;
+                        worksheet.Cell(row, 9).Value = purchase.Discount;
+                        worksheet.Cell(row, 10).Value = purchase.Status;
+                        worksheet.Cell(row, 11).Value = purchase.CreatedBy;
+                        worksheet.Cell(row, 12).Value = purchase.CreatedAt.ToString("dd-MMM-yyyy HH:mm");
                         row++;
+                        serialNo++;
                     }
 
                     // Auto-fit columns

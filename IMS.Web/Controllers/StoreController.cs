@@ -906,16 +906,18 @@ namespace IMS.Web.Controllers
                 var csv = new System.Text.StringBuilder();
 
                 // Add headers
-                csv.AppendLine("Code,Name,Type,Level,Location,Manager,Contact,Items,Capacity,Assigned Users,Status,Created Date,Created By");
+                csv.AppendLine("#,Code,Name,Type,Level,Location,Manager,Contact,Items,Capacity,Assigned Users,Status,Created Date,Created By");
 
                 // Add data
+                int serialNo = 1;
                 foreach (var store in stores)
                 {
                     var location = !string.IsNullOrEmpty(store.BattalionName) ? store.BattalionName :
                                   !string.IsNullOrEmpty(store.ZilaName) ? store.ZilaName :
                                   !string.IsNullOrEmpty(store.RangeName) ? store.RangeName : "HQ";
 
-                    csv.AppendLine($"\"{EscapeCsv(store.Code)}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                        $"\"{EscapeCsv(store.Code)}\"," +
                         $"\"{EscapeCsv(store.Name)}\"," +
                         $"\"{EscapeCsv(store.StoreTypeName)}\"," +
                         $"\"{store.Level}\"," +
@@ -928,6 +930,7 @@ namespace IMS.Web.Controllers
                         $"\"{(store.IsActive ? "Active" : "Inactive")}\"," +
                         $"\"{store.CreatedAt:dd-MMM-yyyy}\"," +
                         $"\"{EscapeCsv(store.CreatedBy)}\"");
+                    serialNo++;
                 }
 
                 var fileContent = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
@@ -1007,12 +1010,12 @@ namespace IMS.Web.Controllers
                     document.Add(infoParagraph);
 
                     // Create main table
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(10);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(11);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 10f, 15f, 12f, 10f, 12f, 12f, 8f, 8f, 8f, 10f });
+                    mainTable.SetWidths(new float[] { 5f, 10f, 15f, 12f, 10f, 12f, 12f, 7f, 7f, 7f, 8f });
 
                     // Add table headers
-                    var headerTexts = new[] { "Code", "Name", "Type", "Level", "Location", "Manager", "Items", "Capacity", "Users", "Status" };
+                    var headerTexts = new[] { "#", "Code", "Name", "Type", "Level", "Location", "Manager", "Items", "Capacity", "Users", "Status" };
 
                     foreach (var headerText in headerTexts)
                     {
@@ -1025,12 +1028,14 @@ namespace IMS.Web.Controllers
                     }
 
                     // Add table data
+                    int serialNo = 1;
                     foreach (var store in stores)
                     {
                         var location = !string.IsNullOrEmpty(store.BattalionName) ? store.BattalionName :
                                       !string.IsNullOrEmpty(store.ZilaName) ? store.ZilaName :
                                       !string.IsNullOrEmpty(store.RangeName) ? store.RangeName : "HQ";
 
+                        mainTable.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.Code ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.StoreTypeName ?? "", normalFont));
@@ -1041,6 +1046,7 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.Capacity?.ToString() ?? "N/A", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.AssignedUserCount.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(store.IsActive ? "Active" : "Inactive", normalFont));
+                        serialNo++;
                     }
 
                     document.Add(mainTable);

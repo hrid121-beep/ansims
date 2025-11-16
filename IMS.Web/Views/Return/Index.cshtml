@@ -86,6 +86,7 @@
                 <table id="returnsTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>Return No</th>
                             <th>Date</th>
                             <th>Item</th>
@@ -97,9 +98,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            var serialNo = 1;
+                        }
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="text-center">@serialNo</td>
                                 <td>@item.ReturnNo</td>
                                 <td>@item.ReturnDate.ToString("dd-MMM-yyyy")</td>
                                 <td>@item.ItemName</td>
@@ -124,6 +129,7 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
+                                @{ serialNo++; }
                             </tr>
                         }
                     </tbody>

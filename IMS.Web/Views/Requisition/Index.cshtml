@@ -37,6 +37,7 @@
                 <table id="requisitionTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>Requisition No</th>
                             <th>Request Date</th>
                             <th>Required By</th>
@@ -50,9 +51,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            var serialNo = 1;
+                        }
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="text-center">@serialNo</td>
                                 <td>@item.RequisitionNumber</td>
                                 <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
                                 <td>@item.RequiredByDate.ToString("dd/MM/yyyy")</td>
@@ -115,6 +120,7 @@
                                         </form>
                                     }
                                 </td>
+                                @{ serialNo++; }
                             </tr>
                         }
                     </tbody>

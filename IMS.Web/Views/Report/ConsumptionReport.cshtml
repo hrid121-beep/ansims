@@ -156,6 +156,7 @@
                 <table class="table table-bordered table-striped table-hover" id="consumptionTable">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>Item Code</th>
                             <th>Item Name</th>
                             <th>Category</th>
@@ -169,10 +170,12 @@
                     <tbody>
                         @if (Model.Items != null && Model.Items.Any())
                         {
+                            var serialNo = 1;
                             @foreach (var item in Model.Items.OrderByDescending(x => x.TotalValue))
                             {
                                 var percentage = Model.TotalConsumptionValue > 0 ? (item.TotalValue / Model.TotalConsumptionValue * 100) : 0;
                                 <tr>
+                                    <td class="text-center">@serialNo</td>
                                     <td><strong>@item.ItemCode</strong></td>
                                     <td>@item.ItemName</td>
                                     <td>@item.CategoryName</td>
@@ -182,18 +185,19 @@
                                     <td class="text-right">৳@item.TotalValue.ToString("N2")</td>
                                     <td class="text-right">@percentage.ToString("N2")%</td>
                                 </tr>
+                                @{ serialNo++; }
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center">No consumption data available for the selected period</td>
+                                <td colspan="9" class="text-center">No consumption data available for the selected period</td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr class="bg-light font-weight-bold">
-                            <td colspan="6" class="text-right">Total:</td>
+                            <td colspan="7" class="text-right">Total:</td>
                             <td class="text-right">৳@Model.TotalConsumptionValue.ToString("N2")</td>
                             <td class="text-right">100.00%</td>
                         </tr>

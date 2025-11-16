@@ -221,16 +221,19 @@ namespace IMS.Web.Controllers
                 }
 
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Code,Name,Description,Item Count,Status,Created Date");
+                csv.AppendLine("#,Code,Name,Description,Item Count,Status,Created Date");
 
+                int serialNo = 1;
                 foreach (var category in categories)
                 {
-                    csv.AppendLine($"\"{EscapeCsv(category.Code)}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                        $"\"{EscapeCsv(category.Code)}\"," +
                         $"\"{EscapeCsv(category.Name)}\"," +
                         $"\"{EscapeCsv(category.Description)}\"," +
                         $"{category.ItemCount}," +
                         $"\"{(category.IsActive ? "Active" : "Inactive")}\"," +
                         $"\"{category.CreatedAt:dd-MMM-yyyy}\"");
+                    serialNo++;
                 }
 
                 return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"Categories_{DateTime.Now:yyyyMMddHHmmss}.csv");
@@ -279,11 +282,11 @@ namespace IMS.Web.Controllers
                     infoParagraph.SpacingAfter = 15f;
                     document.Add(infoParagraph);
 
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(5);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(6);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 15f, 25f, 35f, 12f, 13f });
+                    mainTable.SetWidths(new float[] { 5f, 15f, 25f, 35f, 10f, 10f });
 
-                    var headerTexts = new[] { "Code", "Name", "Description", "Items", "Status" };
+                    var headerTexts = new[] { "#", "Code", "Name", "Description", "Items", "Status" };
                     foreach (var headerText in headerTexts)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
@@ -293,13 +296,16 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(cell);
                     }
 
+                    int serialNo = 1;
                     foreach (var category in categories)
                     {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Code ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.Description ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.ItemCount.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(category.IsActive ? "Active" : "Inactive", normalFont));
+                        serialNo++;
                     }
 
                     document.Add(mainTable);

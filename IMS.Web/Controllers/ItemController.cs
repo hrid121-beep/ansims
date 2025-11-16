@@ -893,12 +893,14 @@ namespace IMS.Web.Controllers
                 var csv = new System.Text.StringBuilder();
 
                 // Add headers
-                csv.AppendLine("Item Code,Name,Category,Sub Category,Brand,Model,Unit,Unit Price,Min Stock,Max Stock,Reorder Level,Status");
+                csv.AppendLine("#,Item Code,Name,Category,Sub Category,Brand,Model,Unit,Unit Price,Min Stock,Max Stock,Reorder Level,Status");
 
                 // Add data
+                int serialNo = 1;
                 foreach (var item in items)
                 {
-                    csv.AppendLine($"\"{EscapeCsv(item.ItemCode ?? item.Code)}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                        $"\"{EscapeCsv(item.ItemCode ?? item.Code)}\"," +
                         $"\"{EscapeCsv(item.Name)}\"," +
                         $"\"{EscapeCsv(item.CategoryName)}\"," +
                         $"\"{EscapeCsv(item.SubCategoryName)}\"," +
@@ -910,6 +912,7 @@ namespace IMS.Web.Controllers
                         $"{item.MaximumStock ?? 0m}," +
                         $"{item.ReorderLevel}," +
                         $"\"{(item.IsActive ? "Active" : "Inactive")}\"");
+                    serialNo++;
                 }
 
                 var fileContent = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
@@ -979,12 +982,12 @@ namespace IMS.Web.Controllers
                     document.Add(infoParagraph);
 
                     // Create table
-                    var mainTable = new iTextSharp.text.pdf.PdfPTable(9);
+                    var mainTable = new iTextSharp.text.pdf.PdfPTable(10);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 10f, 15f, 12f, 12f, 10f, 8f, 8f, 8f, 8f });
+                    mainTable.SetWidths(new float[] { 5f, 10f, 15f, 12f, 12f, 10f, 8f, 8f, 8f, 8f });
 
                     // Add headers
-                    var headerTexts = new[] { "Code", "Name", "Category", "Brand", "Model", "Unit", "Price", "Min Stock", "Status" };
+                    var headerTexts = new[] { "#", "Code", "Name", "Category", "Brand", "Model", "Unit", "Price", "Min Stock", "Status" };
                     foreach (var headerText in headerTexts)
                     {
                         var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(headerText, headerFont));
@@ -995,8 +998,10 @@ namespace IMS.Web.Controllers
                     }
 
                     // Add data
+                    int serialNo = 1;
                     foreach (var item in items)
                     {
+                        mainTable.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.ItemCode ?? item.Code ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.Name ?? "", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.CategoryName ?? "", normalFont));
@@ -1006,6 +1011,7 @@ namespace IMS.Web.Controllers
                         mainTable.AddCell(new iTextSharp.text.Phrase($"৳{(item.UnitPrice ?? 0m):N2}", normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase((item.MinimumStock ?? 0m).ToString(), normalFont));
                         mainTable.AddCell(new iTextSharp.text.Phrase(item.IsActive ? "Active" : "Inactive", normalFont));
+                        serialNo++;
                     }
 
                     document.Add(mainTable);

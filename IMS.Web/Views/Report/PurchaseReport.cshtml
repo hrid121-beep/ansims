@@ -231,6 +231,7 @@
                 <table class="table table-bordered table-striped" id="purchaseTable">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>PO Number</th>
                             <th>Date</th>
                             <th>Vendor</th>
@@ -245,9 +246,11 @@
                     <tbody>
                         @if (purchases.Any())
                         {
+                            var serialNo = 1;
                             @foreach (var purchase in purchases)
                             {
                                 <tr>
+                                    <td class="text-center">@serialNo</td>
                                     <td><strong>@purchase.PurchaseOrderNo</strong></td>
                                     <td>@purchase.PurchaseDate.ToString("yyyy-MM-dd")</td>
                                     <td>@(purchase.VendorName ?? "Marketplace")</td>
@@ -288,18 +291,19 @@
                                         </a>
                                     </td>
                                 </tr>
+                                @{ serialNo++; }
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="9" class="text-center">No purchase records found for the selected period.</td>
+                                <td colspan="10" class="text-center">No purchase records found for the selected period.</td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr class="bg-light font-weight-bold">
-                            <td colspan="6" class="text-right">Total:</td>
+                            <td colspan="7" class="text-right">Total:</td>
                             <td class="text-right">৳@totalPurchaseValue.ToString("N2")</td>
                             <td colspan="2"></td>
                         </tr>

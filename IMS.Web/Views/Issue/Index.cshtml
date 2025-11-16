@@ -261,6 +261,7 @@
                         <table id="issuesTable" class="table table-bordered table-striped table-hover">
                             <thead>
                                 <tr>
+                                    <th class="text-center" style="width: 50px;">#</th>
                                     <th width="100">Issue No</th>
                                     <th width="100">Date</th>
                                     <th width="150">From Store</th>
@@ -272,9 +273,13 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @{
+                                    var serialNo = 1;
+                                }
                                 @foreach (var item in items)
                                 {
                                     <tr>
+                                        <td class="text-center">@serialNo</td>
                                         <td>
                                             <a asp-action="Details" asp-route-id="@item.Id" class="text-primary">
                                                 <strong>@item.IssueNo</strong>
@@ -410,6 +415,7 @@
                                                 }
                                             </div>
                                         </td>
+                                        @{ serialNo++; }
                                     </tr>
                                 }
                             </tbody>
@@ -498,6 +504,7 @@
                             <table id="vouchersTable" class="table table-bordered table-striped table-hover">
                                 <thead>
                                     <tr>
+                                        <th class="text-center" style="width: 50px;">#</th>
                                         <th>Voucher No</th>
                                         <th>Issue No</th>
                                         <th>Issue Date</th>
@@ -510,9 +517,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @{
+                                        var voucherSerialNo = 1;
+                                    }
                                     @foreach (var item in voucherIssues)
                                     {
                                         <tr>
+                                            <td class="text-center">@voucherSerialNo</td>
                                             <td>
                                                 <span class="badge badge-info badge-lg">
                                                     <i class="fas fa-hashtag"></i> @item.VoucherNumber
@@ -599,6 +610,7 @@
                                                     }
                                                 </div>
                                             </td>
+                                            @{ voucherSerialNo++; }
                                         </tr>
                                     }
                                 </tbody>
@@ -638,6 +650,7 @@
                             <table id="handoverTable" class="table table-bordered table-striped table-hover">
                                 <thead>
                                     <tr>
+                                        <th class="text-center" style="width: 50px;">#</th>
                                         <th>Voucher No</th>
                                         <th>Issue No</th>
                                         <th>Issue Date</th>
@@ -651,9 +664,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @{
+                                        var handoverSerialNo = 1;
+                                    }
                                     @foreach (var item in handoverIssues)
                                     {
                                         <tr>
+                                            <td class="text-center">@handoverSerialNo</td>
                                             <td>
                                                 <span class="badge badge-warning badge-lg">
                                                     <i class="fas fa-hashtag"></i> @item.VoucherNumber
@@ -706,6 +723,7 @@
                                                     </a>
                                                 </div>
                                             </td>
+                                            @{ handoverSerialNo++; }
                                         </tr>
                                     }
                                 </tbody>

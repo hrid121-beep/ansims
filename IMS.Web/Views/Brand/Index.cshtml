@@ -35,6 +35,7 @@
                     <table class="table table-bordered table-striped" id="brandTable">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Brand Name</th>
                                 <th>Code</th>
                                 <th>Description</th>
@@ -44,9 +45,13 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                var serialNo = 1;
+                            }
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <td class="text-center">@serialNo</td>
                                     <td>
                                         <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
                                     </td>
@@ -76,6 +81,7 @@
                                             </button>
                                         </div>
                                     </td>
+                                    @{ serialNo++; }
                                 </tr>
                             }
                         </tbody>

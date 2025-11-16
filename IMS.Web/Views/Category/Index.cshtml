@@ -48,6 +48,7 @@
                     <table class="table table-bordered table-striped" id="categoryTable">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Name</th>
                                 <th>Description</th>
                                 <th>Sub Categories</th>
@@ -57,9 +58,13 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                var serialNo = 1;
+                            }
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <td class="text-center">@serialNo</td>
                                     <td>
                                         <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
                                         @if (!string.IsNullOrEmpty(item.Code))
@@ -90,6 +95,7 @@
                                             </button>
                                         </div>
                                     </td>
+                                    @{ serialNo++; }
                                 </tr>
                             }
                         </tbody>

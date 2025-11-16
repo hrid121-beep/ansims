@@ -109,6 +109,7 @@
                     <table class="table table-bordered table-striped table-hover" id="expiredTable">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Item Code</th>
                                 <th>Item Name</th>
                                 <th>Category</th>
@@ -122,10 +123,14 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                var serialNo = 1;
+                            }
                             @foreach (var item in Model.ExpiredItems.OrderBy(x => x.ExpiryDate))
                             {
                                 var daysAgo = (DateTime.Now - item.ExpiryDate).Days;
                                 <tr class="table-danger">
+                                    <td class="text-center">@serialNo</td>
                                     <td><strong>@item.ItemCode</strong></td>
                                     <td>@item.ItemName</td>
                                     <td>@item.CategoryName</td>
@@ -141,11 +146,12 @@
                                     <td class="text-right">@daysAgo days</td>
                                     <td class="text-right">৳@item.Value.ToString("N2")</td>
                                 </tr>
+                                @{ serialNo++; }
                             }
                         </tbody>
                         <tfoot>
                             <tr class="bg-light font-weight-bold">
-                                <td colspan="9" class="text-right">Total Expired Value:</td>
+                                <td colspan="10" class="text-right">Total Expired Value:</td>
                                 <td class="text-right">৳@Model.TotalExpiredValue.ToString("N2")</td>
                             </tr>
                         </tfoot>
@@ -178,6 +184,7 @@
                     <table class="table table-bordered table-striped table-hover" id="expiringTable">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Item Code</th>
                                 <th>Item Name</th>
                                 <th>Category</th>
@@ -191,12 +198,16 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                var serialNo2 = 1;
+                            }
                             @foreach (var item in Model.ExpiringItems.OrderBy(x => x.ExpiryDate))
                             {
                                 var daysLeft = (item.ExpiryDate - DateTime.Now).Days;
                                 var badgeClass = daysLeft <= 7 ? "badge-danger" : daysLeft <= 30 ? "badge-warning" : "badge-info";
                                 var rowClass = daysLeft <= 7 ? "table-danger" : daysLeft <= 30 ? "table-warning" : "";
                                 <tr class="@rowClass">
+                                    <td class="text-center">@serialNo2</td>
                                     <td><strong>@item.ItemCode</strong></td>
                                     <td>@item.ItemName</td>
                                     <td>@item.CategoryName</td>
@@ -214,11 +225,12 @@
                                     </td>
                                     <td class="text-right">৳@item.Value.ToString("N2")</td>
                                 </tr>
+                                @{ serialNo2++; }
                             }
                         </tbody>
                         <tfoot>
                             <tr class="bg-light font-weight-bold">
-                                <td colspan="9" class="text-right">Total Expiring Value:</td>
+                                <td colspan="10" class="text-right">Total Expiring Value:</td>
                                 <td class="text-right">৳@Model.TotalExpiringValue.ToString("N2")</td>
                             </tr>
                         </tfoot>
