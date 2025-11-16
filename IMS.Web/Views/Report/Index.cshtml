@@ -23,10 +23,55 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <!-- Small boxes (Stat box) -->
-        <div class="row">
-            <!-- Issue Report -->
-            <div class="col-lg-4 col-6">
+        <!-- Dashboard Statistics (Top Row) -->
+        <div class="row mb-3">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-box"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Items</span>
+                        <span class="info-box-number">@ViewBag.TotalItems</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-warehouse"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Stock Value</span>
+                        <span class="info-box-number">৳ @ViewBag.TotalStockValue</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Low Stock Items</span>
+                        <span class="info-box-number">@ViewBag.LowStockCount</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending Approvals</span>
+                        <span class="info-box-number">@ViewBag.PendingApprovals</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Cards Section -->
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar"></i> Available Reports</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Issue Report -->
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-success">
                     <div class="inner">
                         <h3>Issue</h3>
@@ -41,7 +86,7 @@
                 </div>
             </div>
             <!-- Stock Report -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-dark">
                     <div class="inner">
                         <h3>Stock</h3>
@@ -57,7 +102,7 @@
             </div>
 
             <!-- Purchase Report -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-info">
                     <div class="inner">
                         <h3>Purchase</h3>
@@ -73,7 +118,7 @@
             </div>
 
             <!-- Transfer Report -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-warning">
                     <div class="inner">
                         <h3>Transfer</h3>
@@ -89,7 +134,7 @@
             </div>
 
             <!-- Movement History -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-secondary">
                     <div class="inner">
                         <h3>Movement</h3>
@@ -104,24 +149,8 @@
                 </div>
             </div>
 
-            <!-- Summary Dashboard -->
-            <div class="col-lg-4 col-6">
-                <div class="small-box bg-primary">
-                    <div class="inner">
-                        <h3>Summary</h3>
-                        <p>Overall inventory dashboard</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <a asp-action="Dashboard" class="small-box-footer">
-                        View Dashboard <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-
             <!-- Central Store Register -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-indigo">
                     <div class="inner">
                         <h3>Central Store</h3>
@@ -137,7 +166,7 @@
             </div>
 
             <!-- Consumption Analysis -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-cyan">
                     <div class="inner">
                         <h3>Consumption</h3>
@@ -153,7 +182,7 @@
             </div>
 
             <!-- Expiry Report -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-orange">
                     <div class="inner">
                         <h3>Expiry</h3>
@@ -169,7 +198,7 @@
             </div>
 
             <!-- ABC Analysis -->
-            <div class="col-lg-4 col-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
                 <div class="small-box bg-purple">
                     <div class="inner">
                         <h3>ABC Analysis</h3>
@@ -182,10 +211,103 @@
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
+                </div>
             </div>
         </div>
 
-        <!-- Quick Stats Row -->
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-line"></i> Stock Movement Trend (Last 7 Days)</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stockMovementChart" style="height: 280px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Stock by Store</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="storeDistributionChart" style="height: 280px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-shopping-cart"></i> Recent Purchases (Last 10)</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>PO No</th>
+                                    <th>Vendor</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentPurchases">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-arrow-right"></i> Recent Issues (Last 10)</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>Issue No</th>
+                                    <th>Issued To</th>
+                                    <th>Items</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentIssues">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Row (Original) -->
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -233,3 +355,126 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize charts
+            loadStockMovementChart();
+            loadStoreDistributionChart();
+            loadRecentActivities();
+        });
+
+        function loadStockMovementChart() {
+            var ctx = document.getElementById('stockMovementChart').getContext('2d');
+            var stockMovementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday', 'Today'],
+                    datasets: [
+                        {
+                            label: 'Purchases',
+                            data: [12, 19, 15, 25, 22, 30, 28],
+                            borderColor: '#17a2b8',
+                            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Issues',
+                            data: [8, 15, 20, 18, 25, 22, 30],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Transfers',
+                            data: [5, 8, 12, 10, 15, 12, 18],
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadStoreDistributionChart() {
+            var ctx = document.getElementById('storeDistributionChart').getContext('2d');
+            var storeDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Central Store', 'Provision Store', 'Battalion Stores', 'Range Stores', 'Other'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#007bff',
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadRecentActivities() {
+            // Simulate loading recent purchases
+            setTimeout(function() {
+                var purchasesHtml = `
+                    <tr><td>1</td><td>PO-2025-123</td><td>ABC Suppliers</td><td>৳ 45,000</td><td><span class="badge badge-success">Approved</span></td></tr>
+                    <tr><td>2</td><td>PO-2025-122</td><td>XYZ Trading</td><td>৳ 32,500</td><td><span class="badge badge-info">Pending</span></td></tr>
+                    <tr><td>3</td><td>PO-2025-121</td><td>Tech Solutions</td><td>৳ 78,900</td><td><span class="badge badge-success">Approved</span></td></tr>
+                    <tr><td>4</td><td>PO-2025-120</td><td>Office Mart</td><td>৳ 23,400</td><td><span class="badge badge-success">Approved</span></td></tr>
+                    <tr><td>5</td><td>PO-2025-119</td><td>Supply Chain Ltd</td><td>৳ 56,700</td><td><span class="badge badge-warning">Processing</span></td></tr>
+                `;
+                $('#recentPurchases').html(purchasesHtml);
+            }, 500);
+
+            // Simulate loading recent issues
+            setTimeout(function() {
+                var issuesHtml = `
+                    <tr><td>1</td><td>ISS-2025-456</td><td>Admin Dept</td><td>12 items</td><td><span class="badge badge-success">Completed</span></td></tr>
+                    <tr><td>2</td><td>ISS-2025-455</td><td>HR Dept</td><td>8 items</td><td><span class="badge badge-info">In Progress</span></td></tr>
+                    <tr><td>3</td><td>ISS-2025-454</td><td>IT Dept</td><td>15 items</td><td><span class="badge badge-success">Completed</span></td></tr>
+                    <tr><td>4</td><td>ISS-2025-453</td><td>Finance</td><td>6 items</td><td><span class="badge badge-success">Completed</span></td></tr>
+                    <tr><td>5</td><td>ISS-2025-452</td><td>Sales Dept</td><td>20 items</td><td><span class="badge badge-warning">Pending</span></td></tr>
+                `;
+                $('#recentIssues').html(issuesHtml);
+            }, 700);
+        }
+    </script>
+}
