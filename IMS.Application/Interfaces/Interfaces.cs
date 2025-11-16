@@ -798,6 +798,9 @@ namespace IMS.Application.Interfaces
         Task<byte[]> GenerateVarianceReportPdfAsync(int physicalInventoryId);
         Task<byte[]> GenerateABCAnalysisReportPdfAsync(string analysisMethod = "Value", int months = 12);
 
+        // CSV Export Methods
+        Task<byte[]> GenerateConsumptionReportCsvAsync(DateTime? fromDate, DateTime? toDate, int? storeId = null, int? categoryId = null);
+
         // Central Store Register Report (কেন্দ্রীয় ভান্ডার মজুদ তালিকা)
         Task<CentralStoreRegisterDto> GetCentralStoreRegisterAsync(int? storeId = null, int? categoryId = null, string sortBy = "Ledger", DateTime? startDate = null, DateTime? endDate = null);
         Task<byte[]> GenerateCentralStoreRegisterPdfAsync(int? storeId = null, int? categoryId = null, string sortBy = "Ledger", DateTime? startDate = null, DateTime? endDate = null);

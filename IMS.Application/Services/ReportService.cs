@@ -4099,6 +4099,38 @@ namespace IMS.Application.Services
             return ms.ToArray();
         }
 
+        public async Task<byte[]> GenerateConsumptionReportCsvAsync(DateTime? fromDate, DateTime? toDate, int? storeId = null, int? categoryId = null)
+        {
+            var report = await GetConsumptionAnalysisReportAsync(fromDate, toDate, storeId, categoryId);
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Consumption Analysis Report");
+            csv.AppendLine($"Period: {report.FromDate:dd MMM yyyy} - {report.ToDate:dd MMM yyyy}");
+            csv.AppendLine();
+            csv.AppendLine("#,Item Code,Item Name,Category,Total Quantity,Unit,Avg Unit Price,Total Value,% of Total");
+
+            int serialNo = 1;
+            foreach (var item in report.Items.OrderByDescending(x => x.TotalValue))
+            {
+                var percentage = report.TotalConsumptionValue > 0 ? (item.TotalValue / report.TotalConsumptionValue * 100) : 0;
+                csv.AppendLine($"{serialNo}," +
+                              $"\"{EscapeCsv(item.ItemCode)}\"," +
+                              $"\"{EscapeCsv(item.ItemName)}\"," +
+                              $"\"{EscapeCsv(item.CategoryName)}\"," +
+                              $"{item.TotalQuantity:N2}," +
+                              $"\"{EscapeCsv(item.Unit)}\"," +
+                              $"{item.AverageUnitPrice:N2}," +
+                              $"{item.TotalValue:N2}," +
+                              $"{percentage:N2}%");
+                serialNo++;
+            }
+
+            csv.AppendLine();
+            csv.AppendLine($",,,,,,Total:,{report.TotalConsumptionValue:N2},100.00%");
+
+            return Encoding.UTF8.GetBytes(csv.ToString());
+        }
+
         public async Task<byte[]> GenerateConsumptionReportPdfAsync(DateTime? fromDate, DateTime? toDate, int? storeId = null, int? categoryId = null)
         {
             var report = await GetConsumptionAnalysisReportAsync(fromDate, toDate, storeId, categoryId);

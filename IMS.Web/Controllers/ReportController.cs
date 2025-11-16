@@ -605,16 +605,16 @@ namespace IMS.Web.Controllers
         {
             try
             {
-                var reportData = await _reportService.GenerateConsumptionReportExcelAsync(fromDate, toDate, storeId, categoryId);
-                var fileName = $"ConsumptionReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                var reportData = await _reportService.GenerateConsumptionReportCsvAsync(fromDate, toDate, storeId, categoryId);
+                var fileName = $"ConsumptionReport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
 
                 return File(reportData,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "text/csv",
                     fileName);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error generating Excel report: " + ex.Message;
+                TempData["Error"] = "Error generating CSV report: " + ex.Message;
                 return RedirectToAction(nameof(ConsumptionReport));
             }
         }
