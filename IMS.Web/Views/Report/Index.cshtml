@@ -171,6 +171,38 @@
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
+            </div>
+
+            <!-- Adjustment Report -->
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+                <div class="small-box bg-teal">
+                    <div class="inner">
+                        <h3>Adjustment</h3>
+                        <p>Stock adjustments and corrections</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <a asp-controller="StockAdjustment" asp-action="Index" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Write-off Report -->
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+                <div class="small-box bg-maroon">
+                    <div class="inner">
+                        <h3>Write-off</h3>
+                        <p>Damaged, expired & lost items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <a asp-controller="WriteOff" asp-action="Index" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
+                        View Report <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
                 </div>
             </div>
         </div>
