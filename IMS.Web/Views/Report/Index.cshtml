@@ -23,46 +23,6 @@
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <!-- Dashboard Statistics (Top Row) -->
-        <div class="row mb-3">
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="info-box">
-                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-box"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Items</span>
-                        <span class="info-box-number">@ViewBag.TotalItems</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="info-box">
-                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-warehouse"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Stock Value</span>
-                        <span class="info-box-number">৳ @ViewBag.TotalStockValue</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="info-box">
-                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation-triangle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Low Stock Items</span>
-                        <span class="info-box-number">@ViewBag.LowStockCount</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="info-box">
-                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-clock"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Pending Approvals</span>
-                        <span class="info-box-number">@ViewBag.PendingApprovals</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Report Cards Section -->
         <div class="card card-outline card-primary">
             <div class="card-header">
@@ -80,7 +40,7 @@
                     <div class="icon">
                         <i class="fas fa-arrow-right"></i>
                     </div>
-                    <a asp-action="IssueReport" class="small-box-footer">
+                    <a asp-action="IssueReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -95,7 +55,7 @@
                     <div class="icon">
                         <i class="fas fa-boxes"></i>
                     </div>
-                    <a asp-action="StockReport" class="small-box-footer">
+                    <a asp-action="StockReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -111,7 +71,7 @@
                     <div class="icon">
                         <i class="fas fa-shopping-cart"></i>
                     </div>
-                    <a asp-action="PurchaseReport" class="small-box-footer">
+                    <a asp-action="PurchaseReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -127,7 +87,7 @@
                     <div class="icon">
                         <i class="fas fa-exchange-alt"></i>
                     </div>
-                    <a asp-action="TransferReport" class="small-box-footer">
+                    <a asp-action="TransferReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -143,7 +103,7 @@
                     <div class="icon">
                         <i class="fas fa-history"></i>
                     </div>
-                    <a asp-action="MovementHistory" class="small-box-footer">
+                    <a asp-action="MovementHistory" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -159,7 +119,7 @@
                     <div class="icon">
                         <i class="fas fa-warehouse"></i>
                     </div>
-                    <a asp-action="CentralStoreRegister" class="small-box-footer">
+                    <a asp-action="CentralStoreRegister" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -175,7 +135,7 @@
                     <div class="icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <a asp-action="ConsumptionReport" class="small-box-footer">
+                    <a asp-action="ConsumptionReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -191,7 +151,7 @@
                     <div class="icon">
                         <i class="fas fa-calendar-times"></i>
                     </div>
-                    <a asp-action="ExpiryReport" class="small-box-footer">
+                    <a asp-action="ExpiryReport" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -207,7 +167,7 @@
                     <div class="icon">
                         <i class="fas fa-sort-amount-down"></i>
                     </div>
-                    <a asp-action="ABCAnalysis" class="small-box-footer">
+                    <a asp-action="ABCAnalysis" class="small-box-footer" style="font-size: 0.85rem; padding: 5px 10px;">
                         View Report <i class="fas fa-arrow-circle-right"></i>
                     </a>
                 </div>
@@ -307,52 +267,6 @@
             </div>
         </div>
 
-        <!-- Quick Stats Row (Original) -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Quick Statistics</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 col-sm-6 col-12">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-info"><i class="fas fa-shopping-bag"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Purchases</span>
-                                        <span class="info-box-number">@ViewBag.TotalPurchases</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-sm-6 col-12">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-arrow-up"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Issues</span>
-                                        <span class="info-box-number">@ViewBag.TotalIssues</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-sm-6 col-12">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-warning"><i class="fas fa-sync"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Transfers</span>
-                                        <span class="info-box-number">@ViewBag.TotalTransfers</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 
