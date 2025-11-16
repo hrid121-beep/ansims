@@ -136,6 +136,7 @@
                 <table class="table table-hover text-nowrap" id="varianceTable">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>Item Name</th>
                             <th class="text-right">System Qty</th>
                             <th class="text-right">Physical Qty</th>
@@ -147,6 +148,7 @@
                     <tbody>
                         @if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
                         {
+                            @{ var serialNo = 1; }
                             @foreach (var variance in Model.ItemsWithVariance.OrderByDescending(v => Math.Abs(v.VarianceValue)))
                             {
                                 string rowClass = "";
@@ -173,6 +175,7 @@
                                 }
 
                                 <tr class="@rowClass">
+                                    <td class="text-center">@serialNo</td>
                                     <td><strong>@variance.ItemName</strong></td>
                                     <td class="text-right">@((variance.SystemQuantity % 1 == 0) ? variance.SystemQuantity.ToString("N0") : variance.SystemQuantity.ToString("N2"))</td>
                                     <td class="text-right">@((variance.PhysicalQuantity % 1 == 0) ? variance.PhysicalQuantity.ToString("N0") : variance.PhysicalQuantity.ToString("N2"))</td>
@@ -212,12 +215,13 @@
                                         <span class="badge @badgeClass">@statusText</span>
                                     </td>
                                 </tr>
+                                @{ serialNo++; }
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center">No variance data available</td>
+                                <td colspan="7" class="text-center">No variance data available</td>
                             </tr>
                         }
                     </tbody>
@@ -225,7 +229,7 @@
                     {
                         <tfoot>
                             <tr class="bg-light font-weight-bold">
-                                <td colspan="4" class="text-right">Total Variance Value:</td>
+                                <td colspan="5" class="text-right">Total Variance Value:</td>
                                 <td class="text-right">
                                     @if (Model.TotalVarianceValue > 0)
                                     {

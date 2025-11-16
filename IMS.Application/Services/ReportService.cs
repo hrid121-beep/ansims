@@ -660,16 +660,17 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Purchase Report");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "PO Number";
-                worksheet.Cells[1, 2].Value = "Purchase Date";
-                worksheet.Cells[1, 3].Value = "Vendor";
-                worksheet.Cells[1, 4].Value = "Total Amount";
-                worksheet.Cells[1, 5].Value = "Discount";
-                worksheet.Cells[1, 6].Value = "Net Amount";
-                worksheet.Cells[1, 7].Value = "Purchase Type";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "PO Number";
+                worksheet.Cells[1, 3].Value = "Purchase Date";
+                worksheet.Cells[1, 4].Value = "Vendor";
+                worksheet.Cells[1, 5].Value = "Total Amount";
+                worksheet.Cells[1, 6].Value = "Discount";
+                worksheet.Cells[1, 7].Value = "Net Amount";
+                worksheet.Cells[1, 8].Value = "Purchase Type";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 7])
+                using (var range = worksheet.Cells[1, 1, 1, 8])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -678,32 +679,35 @@ namespace IMS.Application.Services
 
                 var purchases = await GetPurchaseReportAsync(fromDate, toDate);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var purchase in purchases)
                 {
-                    worksheet.Cells[row, 1].Value = purchase.PurchaseOrderNo;
-                    worksheet.Cells[row, 2].Value = purchase.PurchaseDate.ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 3].Value = purchase.VendorName ?? "Marketplace";
-                    worksheet.Cells[row, 4].Value = purchase.TotalAmount;
-                    worksheet.Cells[row, 5].Value = purchase.Discount;
-                    worksheet.Cells[row, 6].Value = purchase.TotalAmount - purchase.Discount;
-                    worksheet.Cells[row, 7].Value = purchase.PurchaseType;
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = purchase.PurchaseOrderNo;
+                    worksheet.Cells[row, 3].Value = purchase.PurchaseDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 4].Value = purchase.VendorName ?? "Marketplace";
+                    worksheet.Cells[row, 5].Value = purchase.TotalAmount;
+                    worksheet.Cells[row, 6].Value = purchase.Discount;
+                    worksheet.Cells[row, 7].Value = purchase.TotalAmount - purchase.Discount;
+                    worksheet.Cells[row, 8].Value = purchase.PurchaseType;
 
                     row++;
+                    serialNo++;
                 }
 
                 // Add totals
                 row++;
-                worksheet.Cells[row, 3].Value = "TOTAL:";
-                worksheet.Cells[row, 3].Style.Font.Bold = true;
-                worksheet.Cells[row, 4].Formula = $"SUM(D2:D{row - 1})";
+                worksheet.Cells[row, 4].Value = "TOTAL:";
+                worksheet.Cells[row, 4].Style.Font.Bold = true;
                 worksheet.Cells[row, 5].Formula = $"SUM(E2:E{row - 1})";
                 worksheet.Cells[row, 6].Formula = $"SUM(F2:F{row - 1})";
+                worksheet.Cells[row, 7].Formula = $"SUM(G2:G{row - 1})";
 
                 // Format currency columns
-                worksheet.Column(4).Style.Numberformat.Format = "#,##0.00";
                 worksheet.Column(5).Style.Numberformat.Format = "#,##0.00";
                 worksheet.Column(6).Style.Numberformat.Format = "#,##0.00";
+                worksheet.Column(7).Style.Numberformat.Format = "#,##0.00";
 
                 // Auto-fit columns
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
@@ -719,16 +723,17 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Issue Report");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "Issue No";
-                worksheet.Cells[1, 2].Value = "Issue Date";
-                worksheet.Cells[1, 3].Value = "Issued To";
-                worksheet.Cells[1, 4].Value = "Type";
-                worksheet.Cells[1, 5].Value = "Purpose";
-                worksheet.Cells[1, 6].Value = "Total Items";
-                worksheet.Cells[1, 7].Value = "Total Quantity";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "Issue No";
+                worksheet.Cells[1, 3].Value = "Issue Date";
+                worksheet.Cells[1, 4].Value = "Issued To";
+                worksheet.Cells[1, 5].Value = "Type";
+                worksheet.Cells[1, 6].Value = "Purpose";
+                worksheet.Cells[1, 7].Value = "Total Items";
+                worksheet.Cells[1, 8].Value = "Total Quantity";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 7])
+                using (var range = worksheet.Cells[1, 1, 1, 8])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -737,18 +742,21 @@ namespace IMS.Application.Services
 
                 var issues = await GetIssueReportAsync(fromDate, toDate);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var issue in issues)
                 {
-                    worksheet.Cells[row, 1].Value = issue.IssueNo;
-                    worksheet.Cells[row, 2].Value = issue.IssueDate.ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 3].Value = issue.IssuedTo;
-                    worksheet.Cells[row, 4].Value = issue.IssuedToType;
-                    worksheet.Cells[row, 5].Value = issue.Purpose;
-                    worksheet.Cells[row, 6].Value = issue.Items.Count();
-                    worksheet.Cells[row, 7].Value = issue.Items.Sum(i => i.Quantity);
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = issue.IssueNo;
+                    worksheet.Cells[row, 3].Value = issue.IssueDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 4].Value = issue.IssuedTo;
+                    worksheet.Cells[row, 5].Value = issue.IssuedToType;
+                    worksheet.Cells[row, 6].Value = issue.Purpose;
+                    worksheet.Cells[row, 7].Value = issue.Items.Count();
+                    worksheet.Cells[row, 8].Value = issue.Items.Sum(i => i.Quantity);
 
                     row++;
+                    serialNo++;
                 }
 
                 // Add summary
@@ -1035,16 +1043,17 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Transfer Report");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "Transfer No";
-                worksheet.Cells[1, 2].Value = "Transfer Date";
-                worksheet.Cells[1, 3].Value = "From Store";
-                worksheet.Cells[1, 4].Value = "To Store";
-                worksheet.Cells[1, 5].Value = "Total Items";
-                worksheet.Cells[1, 6].Value = "Total Quantity";
-                worksheet.Cells[1, 7].Value = "Remarks";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "Transfer No";
+                worksheet.Cells[1, 3].Value = "Transfer Date";
+                worksheet.Cells[1, 4].Value = "From Store";
+                worksheet.Cells[1, 5].Value = "To Store";
+                worksheet.Cells[1, 6].Value = "Total Items";
+                worksheet.Cells[1, 7].Value = "Total Quantity";
+                worksheet.Cells[1, 8].Value = "Remarks";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 7])
+                using (var range = worksheet.Cells[1, 1, 1, 8])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -1053,18 +1062,21 @@ namespace IMS.Application.Services
 
                 var transfers = await GetTransferReportAsync(fromDate, toDate, fromStoreId, toStoreId);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var transfer in transfers)
                 {
-                    worksheet.Cells[row, 1].Value = transfer.TransferNo;
-                    worksheet.Cells[row, 2].Value = transfer.TransferDate.ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 3].Value = transfer.FromStoreName;
-                    worksheet.Cells[row, 4].Value = transfer.ToStoreName;
-                    worksheet.Cells[row, 5].Value = transfer.Items.Count();
-                    worksheet.Cells[row, 6].Value = transfer.Items.Sum(i => i.Quantity);
-                    worksheet.Cells[row, 7].Value = transfer.Remarks;
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = transfer.TransferNo;
+                    worksheet.Cells[row, 3].Value = transfer.TransferDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 4].Value = transfer.FromStoreName;
+                    worksheet.Cells[row, 5].Value = transfer.ToStoreName;
+                    worksheet.Cells[row, 6].Value = transfer.Items.Count();
+                    worksheet.Cells[row, 7].Value = transfer.Items.Sum(i => i.Quantity);
+                    worksheet.Cells[row, 8].Value = transfer.Remarks;
 
                     row++;
+                    serialNo++;
                 }
 
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
@@ -1301,17 +1313,18 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Loss Report");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "Loss No";
-                worksheet.Cells[1, 2].Value = "Loss Date";
-                worksheet.Cells[1, 3].Value = "Loss Type";
-                worksheet.Cells[1, 4].Value = "Item Name";
-                worksheet.Cells[1, 5].Value = "Store";
-                worksheet.Cells[1, 6].Value = "Quantity";
-                worksheet.Cells[1, 7].Value = "Value";
-                worksheet.Cells[1, 8].Value = "Reason";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "Loss No";
+                worksheet.Cells[1, 3].Value = "Loss Date";
+                worksheet.Cells[1, 4].Value = "Loss Type";
+                worksheet.Cells[1, 5].Value = "Item Name";
+                worksheet.Cells[1, 6].Value = "Store";
+                worksheet.Cells[1, 7].Value = "Quantity";
+                worksheet.Cells[1, 8].Value = "Value";
+                worksheet.Cells[1, 9].Value = "Reason";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 8])
+                using (var range = worksheet.Cells[1, 1, 1, 9])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -1320,23 +1333,26 @@ namespace IMS.Application.Services
 
                 var losses = await GetLossReportAsync(fromDate, toDate, lossType, storeId);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var loss in losses)
                 {
                     var lossItem = (dynamic)loss;
-                    worksheet.Cells[row, 1].Value = lossItem.LossNo;
-                    worksheet.Cells[row, 2].Value = ((DateTime)lossItem.LossDate).ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 3].Value = lossItem.LossType;
-                    worksheet.Cells[row, 4].Value = lossItem.ItemName;
-                    worksheet.Cells[row, 5].Value = lossItem.StoreName;
-                    worksheet.Cells[row, 6].Value = lossItem.Quantity;
-                    worksheet.Cells[row, 7].Value = lossItem.Value;
-                    worksheet.Cells[row, 8].Value = lossItem.Reason;
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = lossItem.LossNo;
+                    worksheet.Cells[row, 3].Value = ((DateTime)lossItem.LossDate).ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 4].Value = lossItem.LossType;
+                    worksheet.Cells[row, 5].Value = lossItem.ItemName;
+                    worksheet.Cells[row, 6].Value = lossItem.StoreName;
+                    worksheet.Cells[row, 7].Value = lossItem.Quantity;
+                    worksheet.Cells[row, 8].Value = lossItem.Value;
+                    worksheet.Cells[row, 9].Value = lossItem.Reason;
 
                     row++;
+                    serialNo++;
                 }
 
-                worksheet.Column(7).Style.Numberformat.Format = "#,##0.00";
+                worksheet.Column(8).Style.Numberformat.Format = "#,##0.00";
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
                 return package.GetAsByteArray();
             }
@@ -1579,18 +1595,19 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Movement History");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "Movement Date";
-                worksheet.Cells[1, 2].Value = "Movement Type";
-                worksheet.Cells[1, 3].Value = "Reference No";
-                worksheet.Cells[1, 4].Value = "Item Name";
-                worksheet.Cells[1, 5].Value = "Store ID";
-                worksheet.Cells[1, 6].Value = "Quantity";
-                worksheet.Cells[1, 7].Value = "Unit Price";
-                worksheet.Cells[1, 8].Value = "Total Value";
-                worksheet.Cells[1, 9].Value = "Remarks";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "Movement Date";
+                worksheet.Cells[1, 3].Value = "Movement Type";
+                worksheet.Cells[1, 4].Value = "Reference No";
+                worksheet.Cells[1, 5].Value = "Item Name";
+                worksheet.Cells[1, 6].Value = "Store ID";
+                worksheet.Cells[1, 7].Value = "Quantity";
+                worksheet.Cells[1, 8].Value = "Unit Price";
+                worksheet.Cells[1, 9].Value = "Total Value";
+                worksheet.Cells[1, 10].Value = "Remarks";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 9])
+                using (var range = worksheet.Cells[1, 1, 1, 10])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -1599,21 +1616,24 @@ namespace IMS.Application.Services
 
                 var movements = await GetMovementHistoryAsync(fromDate, toDate, itemId, movementType, storeId);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var movement in movements)
                 {
                     var movementItem = (dynamic)movement;
-                    worksheet.Cells[row, 1].Value = ((DateTime)movementItem.MovementDate).ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 2].Value = movementItem.MovementType;
-                    worksheet.Cells[row, 3].Value = movementItem.ReferenceNo;
-                    worksheet.Cells[row, 4].Value = movementItem.ItemName;
-                    worksheet.Cells[row, 5].Value = movementItem.StoreId;
-                    worksheet.Cells[row, 6].Value = movementItem.Quantity;
-                    worksheet.Cells[row, 7].Value = movementItem.UnitPrice;
-                    worksheet.Cells[row, 8].Value = movementItem.TotalValue;
-                    worksheet.Cells[row, 9].Value = movementItem.Remarks;
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = ((DateTime)movementItem.MovementDate).ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 3].Value = movementItem.MovementType;
+                    worksheet.Cells[row, 4].Value = movementItem.ReferenceNo;
+                    worksheet.Cells[row, 5].Value = movementItem.ItemName;
+                    worksheet.Cells[row, 6].Value = movementItem.StoreId;
+                    worksheet.Cells[row, 7].Value = movementItem.Quantity;
+                    worksheet.Cells[row, 8].Value = movementItem.UnitPrice;
+                    worksheet.Cells[row, 9].Value = movementItem.TotalValue;
+                    worksheet.Cells[row, 10].Value = movementItem.Remarks;
 
                     row++;
+                    serialNo++;
                 }
 
                 worksheet.Column(6).Style.Numberformat.Format = "#,##0.00";
@@ -1763,16 +1783,17 @@ namespace IMS.Application.Services
                 var worksheet = package.Workbook.Worksheets.Add("Purchase Report");
 
                 // Headers
-                worksheet.Cells[1, 1].Value = "PO Number";
-                worksheet.Cells[1, 2].Value = "Purchase Date";
-                worksheet.Cells[1, 3].Value = "Vendor";
-                worksheet.Cells[1, 4].Value = "Total Amount";
-                worksheet.Cells[1, 5].Value = "Discount";
-                worksheet.Cells[1, 6].Value = "Net Amount";
-                worksheet.Cells[1, 7].Value = "Purchase Type";
+                worksheet.Cells[1, 1].Value = "#";
+                worksheet.Cells[1, 2].Value = "PO Number";
+                worksheet.Cells[1, 3].Value = "Purchase Date";
+                worksheet.Cells[1, 4].Value = "Vendor";
+                worksheet.Cells[1, 5].Value = "Total Amount";
+                worksheet.Cells[1, 6].Value = "Discount";
+                worksheet.Cells[1, 7].Value = "Net Amount";
+                worksheet.Cells[1, 8].Value = "Purchase Type";
 
                 // Style headers
-                using (var range = worksheet.Cells[1, 1, 1, 7])
+                using (var range = worksheet.Cells[1, 1, 1, 8])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -1781,24 +1802,27 @@ namespace IMS.Application.Services
 
                 var purchases = await GetPurchaseReportAsync(fromDate, toDate, vendorId);
                 int row = 2;
+                int serialNo = 1;
 
                 foreach (var purchase in purchases)
                 {
-                    worksheet.Cells[row, 1].Value = purchase.PurchaseOrderNo;
-                    worksheet.Cells[row, 2].Value = purchase.PurchaseDate.ToString("yyyy-MM-dd");
-                    worksheet.Cells[row, 3].Value = purchase.VendorName ?? "Marketplace";
-                    worksheet.Cells[row, 4].Value = purchase.TotalAmount;
-                    worksheet.Cells[row, 5].Value = purchase.Discount;
-                    worksheet.Cells[row, 6].Value = purchase.TotalAmount - purchase.Discount;
-                    worksheet.Cells[row, 7].Value = purchase.PurchaseType;
+                    worksheet.Cells[row, 1].Value = serialNo;
+                    worksheet.Cells[row, 2].Value = purchase.PurchaseOrderNo;
+                    worksheet.Cells[row, 3].Value = purchase.PurchaseDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 4].Value = purchase.VendorName ?? "Marketplace";
+                    worksheet.Cells[row, 5].Value = purchase.TotalAmount;
+                    worksheet.Cells[row, 6].Value = purchase.Discount;
+                    worksheet.Cells[row, 7].Value = purchase.TotalAmount - purchase.Discount;
+                    worksheet.Cells[row, 8].Value = purchase.PurchaseType;
 
                     row++;
+                    serialNo++;
                 }
 
                 // Format currency columns
-                worksheet.Column(4).Style.Numberformat.Format = "#,##0.00";
                 worksheet.Column(5).Style.Numberformat.Format = "#,##0.00";
                 worksheet.Column(6).Style.Numberformat.Format = "#,##0.00";
+                worksheet.Column(7).Style.Numberformat.Format = "#,##0.00";
 
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
                 return package.GetAsByteArray();
@@ -1815,13 +1839,15 @@ namespace IMS.Application.Services
             csv.Append("\uFEFF");
 
             // Headers
-            csv.AppendLine("PO Number,Purchase Date,Vendor,Total Amount,Discount,Net Amount,Purchase Type,Status");
+            csv.AppendLine("#,PO Number,Purchase Date,Vendor,Total Amount,Discount,Net Amount,Purchase Type,Status");
 
             // Data rows
+            int serialNo = 1;
             foreach (var purchase in purchases)
             {
                 var netAmount = purchase.TotalAmount - purchase.Discount;
-                csv.AppendLine($"\"{EscapeCsv(purchase.PurchaseOrderNo)}\"," +
+                csv.AppendLine($"{serialNo}," +
+                              $"\"{EscapeCsv(purchase.PurchaseOrderNo)}\"," +
                               $"\"{purchase.PurchaseDate:yyyy-MM-dd}\"," +
                               $"\"{EscapeCsv(purchase.VendorName ?? "Marketplace")}\"," +
                               $"{purchase.TotalAmount:F2}," +
@@ -1829,6 +1855,7 @@ namespace IMS.Application.Services
                               $"{netAmount:F2}," +
                               $"\"{EscapeCsv(purchase.PurchaseType)}\"," +
                               $"\"{EscapeCsv(purchase.Status)}\"");
+                serialNo++;
             }
 
             return System.Text.Encoding.UTF8.GetBytes(csv.ToString());
@@ -3029,52 +3056,56 @@ namespace IMS.Application.Services
             worksheet.Cell(1, 1).Value = "Consumption Analysis Report";
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 14;
-            worksheet.Range(1, 1, 1, 9).Merge();
+            worksheet.Range(1, 1, 1, 10).Merge();
 
             worksheet.Cell(2, 1).Value = $"Period: {report.FromDate:dd MMM yyyy} - {report.ToDate:dd MMM yyyy}";
-            worksheet.Range(2, 1, 2, 9).Merge();
+            worksheet.Range(2, 1, 2, 10).Merge();
 
             // Headers
             var headerRow = 4;
-            worksheet.Cell(headerRow, 1).Value = "Item Code";
-            worksheet.Cell(headerRow, 2).Value = "Item Name";
-            worksheet.Cell(headerRow, 3).Value = "Category";
-            worksheet.Cell(headerRow, 4).Value = "Total Quantity";
-            worksheet.Cell(headerRow, 5).Value = "Unit";
-            worksheet.Cell(headerRow, 6).Value = "Avg Consumption";
-            worksheet.Cell(headerRow, 7).Value = "Total Value";
-            worksheet.Cell(headerRow, 8).Value = "Avg Unit Price";
-            worksheet.Cell(headerRow, 9).Value = "Consumption Count";
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Item Code";
+            worksheet.Cell(headerRow, 3).Value = "Item Name";
+            worksheet.Cell(headerRow, 4).Value = "Category";
+            worksheet.Cell(headerRow, 5).Value = "Total Quantity";
+            worksheet.Cell(headerRow, 6).Value = "Unit";
+            worksheet.Cell(headerRow, 7).Value = "Avg Consumption";
+            worksheet.Cell(headerRow, 8).Value = "Total Value";
+            worksheet.Cell(headerRow, 9).Value = "Avg Unit Price";
+            worksheet.Cell(headerRow, 10).Value = "Consumption Count";
 
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Font.Bold = true;
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
             // Data
             var row = headerRow + 1;
+            int serialNo = 1;
             foreach (var item in report.Items)
             {
-                worksheet.Cell(row, 1).Value = item.ItemCode;
-                worksheet.Cell(row, 2).Value = item.ItemName;
-                worksheet.Cell(row, 3).Value = item.CategoryName;
-                worksheet.Cell(row, 4).Value = item.TotalQuantity;
-                worksheet.Cell(row, 5).Value = item.Unit;
-                worksheet.Cell(row, 6).Value = item.AverageConsumption;
-                worksheet.Cell(row, 7).Value = item.TotalValue;
-                worksheet.Cell(row, 8).Value = item.AverageUnitPrice;
-                worksheet.Cell(row, 9).Value = item.ConsumptionCount;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = item.ItemCode;
+                worksheet.Cell(row, 3).Value = item.ItemName;
+                worksheet.Cell(row, 4).Value = item.CategoryName;
+                worksheet.Cell(row, 5).Value = item.TotalQuantity;
+                worksheet.Cell(row, 6).Value = item.Unit;
+                worksheet.Cell(row, 7).Value = item.AverageConsumption;
+                worksheet.Cell(row, 8).Value = item.TotalValue;
+                worksheet.Cell(row, 9).Value = item.AverageUnitPrice;
+                worksheet.Cell(row, 10).Value = item.ConsumptionCount;
                 row++;
+                serialNo++;
             }
 
             // Totals
-            worksheet.Cell(row, 3).Value = "TOTAL:";
-            worksheet.Cell(row, 3).Style.Font.Bold = true;
-            worksheet.Cell(row, 7).Value = report.TotalConsumptionValue;
-            worksheet.Cell(row, 7).Style.Font.Bold = true;
-            worksheet.Range(row, 1, row, 9).Style.Fill.BackgroundColor = XLColor.LightGray;
+            worksheet.Cell(row, 4).Value = "TOTAL:";
+            worksheet.Cell(row, 4).Style.Font.Bold = true;
+            worksheet.Cell(row, 8).Value = report.TotalConsumptionValue;
+            worksheet.Cell(row, 8).Style.Font.Bold = true;
+            worksheet.Range(row, 1, row, 10).Style.Fill.BackgroundColor = XLColor.LightGray;
 
             // Formatting
-            worksheet.Columns(4, 4).Style.NumberFormat.Format = "#,##0.00";
-            worksheet.Columns(6, 8).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Columns(5, 5).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Columns(7, 9).Style.NumberFormat.Format = "#,##0.00";
             worksheet.Columns().AdjustToContents();
 
             using var stream = new MemoryStream();
@@ -3093,51 +3124,55 @@ namespace IMS.Application.Services
             worksheet.Cell(1, 1).Value = "Item Expiry Report";
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 14;
-            worksheet.Range(1, 1, 1, 10).Merge();
+            worksheet.Range(1, 1, 1, 11).Merge();
 
             worksheet.Cell(2, 1).Value = $"Report Date: {report.AsOfDate:dd MMM yyyy}";
-            worksheet.Cell(2, 6).Value = $"Monitoring Period: Next {daysAhead} Days";
+            worksheet.Cell(2, 7).Value = $"Monitoring Period: Next {daysAhead} Days";
 
             // Headers
             var headerRow = 4;
-            worksheet.Cell(headerRow, 1).Value = "Item Code";
-            worksheet.Cell(headerRow, 2).Value = "Item Name";
-            worksheet.Cell(headerRow, 3).Value = "Batch Number";
-            worksheet.Cell(headerRow, 4).Value = "Expiry Date";
-            worksheet.Cell(headerRow, 5).Value = "Days to Expiry";
-            worksheet.Cell(headerRow, 6).Value = "Quantity";
-            worksheet.Cell(headerRow, 7).Value = "Unit";
-            worksheet.Cell(headerRow, 8).Value = "Value";
-            worksheet.Cell(headerRow, 9).Value = "Store";
-            worksheet.Cell(headerRow, 10).Value = "Status";
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Item Code";
+            worksheet.Cell(headerRow, 3).Value = "Item Name";
+            worksheet.Cell(headerRow, 4).Value = "Batch Number";
+            worksheet.Cell(headerRow, 5).Value = "Expiry Date";
+            worksheet.Cell(headerRow, 6).Value = "Days to Expiry";
+            worksheet.Cell(headerRow, 7).Value = "Quantity";
+            worksheet.Cell(headerRow, 8).Value = "Unit";
+            worksheet.Cell(headerRow, 9).Value = "Value";
+            worksheet.Cell(headerRow, 10).Value = "Store";
+            worksheet.Cell(headerRow, 11).Value = "Status";
 
-            worksheet.Range(headerRow, 1, headerRow, 10).Style.Font.Bold = true;
-            worksheet.Range(headerRow, 1, headerRow, 10).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 11).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 11).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
             // Data
             var row = headerRow + 1;
+            int serialNo = 1;
             foreach (var item in report.ExpiringItems)
             {
-                worksheet.Cell(row, 1).Value = item.ItemCode;
-                worksheet.Cell(row, 2).Value = item.ItemName;
-                worksheet.Cell(row, 3).Value = item.BatchNumber;
-                worksheet.Cell(row, 4).Value = item.ExpiryDate.ToString("dd MMM yyyy");
-                worksheet.Cell(row, 5).Value = item.DaysToExpiry;
-                worksheet.Cell(row, 6).Value = item.Quantity;
-                worksheet.Cell(row, 7).Value = item.Unit;
-                worksheet.Cell(row, 8).Value = item.Value;
-                worksheet.Cell(row, 9).Value = item.StoreName;
-                worksheet.Cell(row, 10).Value = item.Status;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = item.ItemCode;
+                worksheet.Cell(row, 3).Value = item.ItemName;
+                worksheet.Cell(row, 4).Value = item.BatchNumber;
+                worksheet.Cell(row, 5).Value = item.ExpiryDate.ToString("dd MMM yyyy");
+                worksheet.Cell(row, 6).Value = item.DaysToExpiry;
+                worksheet.Cell(row, 7).Value = item.Quantity;
+                worksheet.Cell(row, 8).Value = item.Unit;
+                worksheet.Cell(row, 9).Value = item.Value;
+                worksheet.Cell(row, 10).Value = item.StoreName;
+                worksheet.Cell(row, 11).Value = item.Status;
 
                 // Color coding
                 if (item.Status == "Expired")
-                    worksheet.Range(row, 1, row, 10).Style.Fill.BackgroundColor = XLColor.Red;
+                    worksheet.Range(row, 1, row, 11).Style.Fill.BackgroundColor = XLColor.Red;
                 else if (item.DaysToExpiry <= 7)
-                    worksheet.Range(row, 1, row, 10).Style.Fill.BackgroundColor = XLColor.Orange;
+                    worksheet.Range(row, 1, row, 11).Style.Fill.BackgroundColor = XLColor.Orange;
                 else if (item.DaysToExpiry <= 30)
-                    worksheet.Range(row, 1, row, 10).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Range(row, 1, row, 11).Style.Fill.BackgroundColor = XLColor.LightYellow;
 
                 row++;
+                serialNo++;
             }
 
             // Summary
@@ -3180,40 +3215,44 @@ namespace IMS.Application.Services
             worksheet.Cell(1, 1).Value = "Audit Trail Report";
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 14;
-            worksheet.Range(1, 1, 1, 9).Merge();
+            worksheet.Range(1, 1, 1, 10).Merge();
 
             worksheet.Cell(2, 1).Value = $"Period: {report.FromDate:dd MMM yyyy} - {report.ToDate:dd MMM yyyy}";
-            worksheet.Range(2, 1, 2, 9).Merge();
+            worksheet.Range(2, 1, 2, 10).Merge();
 
             // Headers
             var headerRow = 4;
-            worksheet.Cell(headerRow, 1).Value = "Date";
-            worksheet.Cell(headerRow, 2).Value = "Transaction Type";
-            worksheet.Cell(headerRow, 3).Value = "Reference No";
-            worksheet.Cell(headerRow, 4).Value = "Item Name";
-            worksheet.Cell(headerRow, 5).Value = "Store";
-            worksheet.Cell(headerRow, 6).Value = "Quantity";
-            worksheet.Cell(headerRow, 7).Value = "Action";
-            worksheet.Cell(headerRow, 8).Value = "Performed By";
-            worksheet.Cell(headerRow, 9).Value = "Remarks";
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Date";
+            worksheet.Cell(headerRow, 3).Value = "Transaction Type";
+            worksheet.Cell(headerRow, 4).Value = "Reference No";
+            worksheet.Cell(headerRow, 5).Value = "Item Name";
+            worksheet.Cell(headerRow, 6).Value = "Store";
+            worksheet.Cell(headerRow, 7).Value = "Quantity";
+            worksheet.Cell(headerRow, 8).Value = "Action";
+            worksheet.Cell(headerRow, 9).Value = "Performed By";
+            worksheet.Cell(headerRow, 10).Value = "Remarks";
 
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Font.Bold = true;
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
             // Data
             var row = headerRow + 1;
+            int serialNo = 1;
             foreach (var item in report.Transactions)
             {
-                worksheet.Cell(row, 1).Value = item.TransactionDate.ToString("dd MMM yyyy HH:mm");
-                worksheet.Cell(row, 2).Value = item.TransactionType;
-                worksheet.Cell(row, 3).Value = item.ReferenceNo;
-                worksheet.Cell(row, 4).Value = item.ItemName;
-                worksheet.Cell(row, 5).Value = item.StoreName;
-                worksheet.Cell(row, 6).Value = item.Quantity;
-                worksheet.Cell(row, 7).Value = item.Action;
-                worksheet.Cell(row, 8).Value = item.PerformedBy;
-                worksheet.Cell(row, 9).Value = item.Remarks;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = item.TransactionDate.ToString("dd MMM yyyy HH:mm");
+                worksheet.Cell(row, 3).Value = item.TransactionType;
+                worksheet.Cell(row, 4).Value = item.ReferenceNo;
+                worksheet.Cell(row, 5).Value = item.ItemName;
+                worksheet.Cell(row, 6).Value = item.StoreName;
+                worksheet.Cell(row, 7).Value = item.Quantity;
+                worksheet.Cell(row, 8).Value = item.Action;
+                worksheet.Cell(row, 9).Value = item.PerformedBy;
+                worksheet.Cell(row, 10).Value = item.Remarks;
                 row++;
+                serialNo++;
             }
 
             // Summary
@@ -3221,7 +3260,7 @@ namespace IMS.Application.Services
             worksheet.Cell(row, 1).Value = "Total Transactions:";
             worksheet.Cell(row, 1).Style.Font.Bold = true;
             worksheet.Cell(row, 2).Value = report.TotalTransactions;
-            worksheet.Range(row, 1, row, 9).Style.Fill.BackgroundColor = XLColor.LightGray;
+            worksheet.Range(row, 1, row, 10).Style.Fill.BackgroundColor = XLColor.LightGray;
 
             // Formatting
             worksheet.Columns(6, 6).Style.NumberFormat.Format = "#,##0.00";
@@ -3243,43 +3282,47 @@ namespace IMS.Application.Services
             worksheet.Cell(1, 1).Value = "Variance Analysis Report";
             worksheet.Cell(1, 1).Style.Font.Bold = true;
             worksheet.Cell(1, 1).Style.Font.FontSize = 14;
-            worksheet.Range(1, 1, 1, 6).Merge();
+            worksheet.Range(1, 1, 1, 7).Merge();
 
             worksheet.Cell(2, 1).Value = $"Reference: {report.ReferenceNumber}";
-            worksheet.Cell(2, 4).Value = $"Count Date: {report.CountDate:dd MMM yyyy}";
+            worksheet.Cell(2, 5).Value = $"Count Date: {report.CountDate:dd MMM yyyy}";
 
             // Headers
             var headerRow = 4;
-            worksheet.Cell(headerRow, 1).Value = "Item Name";
-            worksheet.Cell(headerRow, 2).Value = "System Qty";
-            worksheet.Cell(headerRow, 3).Value = "Physical Qty";
-            worksheet.Cell(headerRow, 4).Value = "Variance Qty";
-            worksheet.Cell(headerRow, 5).Value = "Variance Value";
-            worksheet.Cell(headerRow, 6).Value = "Status";
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Item Name";
+            worksheet.Cell(headerRow, 3).Value = "System Qty";
+            worksheet.Cell(headerRow, 4).Value = "Physical Qty";
+            worksheet.Cell(headerRow, 5).Value = "Variance Qty";
+            worksheet.Cell(headerRow, 6).Value = "Variance Value";
+            worksheet.Cell(headerRow, 7).Value = "Status";
 
-            worksheet.Range(headerRow, 1, headerRow, 6).Style.Font.Bold = true;
-            worksheet.Range(headerRow, 1, headerRow, 6).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 7).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 7).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
             // Data
             var row = headerRow + 1;
+            int serialNo = 1;
             foreach (var item in report.ItemsWithVariance)
             {
-                worksheet.Cell(row, 1).Value = item.ItemName;
-                worksheet.Cell(row, 2).Value = item.SystemQuantity;
-                worksheet.Cell(row, 3).Value = item.PhysicalQuantity;
-                worksheet.Cell(row, 4).Value = item.Variance;
-                worksheet.Cell(row, 5).Value = item.VarianceValue;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = item.ItemName;
+                worksheet.Cell(row, 3).Value = item.SystemQuantity;
+                worksheet.Cell(row, 4).Value = item.PhysicalQuantity;
+                worksheet.Cell(row, 5).Value = item.Variance;
+                worksheet.Cell(row, 6).Value = item.VarianceValue;
 
                 string status = item.Variance == 0 ? "Match" : item.Variance < 0 ? "Shortage" : "Overage";
-                worksheet.Cell(row, 6).Value = status;
+                worksheet.Cell(row, 7).Value = status;
 
                 // Color coding
                 if (item.Variance < 0)
-                    worksheet.Range(row, 1, row, 6).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightYellow;
                 else if (item.Variance > 0)
-                    worksheet.Range(row, 1, row, 6).Style.Fill.BackgroundColor = XLColor.Pink;
+                    worksheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.Pink;
 
                 row++;
+                serialNo++;
             }
 
             // Summary
@@ -3363,63 +3406,71 @@ namespace IMS.Application.Services
 
             // Detailed Items Headers
             var headerRow = summaryRow + 2;
-            worksheet.Cell(headerRow, 1).Value = "Class";
-            worksheet.Cell(headerRow, 2).Value = "Item Code";
-            worksheet.Cell(headerRow, 3).Value = "Item Name";
-            worksheet.Cell(headerRow, 4).Value = "Category";
-            worksheet.Cell(headerRow, 5).Value = "Annual Value";
-            worksheet.Cell(headerRow, 6).Value = "Annual Quantity";
-            worksheet.Cell(headerRow, 7).Value = "% of Total";
-            worksheet.Cell(headerRow, 8).Value = "Cumulative %";
-            worksheet.Cell(headerRow, 9).Value = "Current Stock";
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Class";
+            worksheet.Cell(headerRow, 3).Value = "Item Code";
+            worksheet.Cell(headerRow, 4).Value = "Item Name";
+            worksheet.Cell(headerRow, 5).Value = "Category";
+            worksheet.Cell(headerRow, 6).Value = "Annual Value";
+            worksheet.Cell(headerRow, 7).Value = "Annual Quantity";
+            worksheet.Cell(headerRow, 8).Value = "% of Total";
+            worksheet.Cell(headerRow, 9).Value = "Cumulative %";
+            worksheet.Cell(headerRow, 10).Value = "Current Stock";
 
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Font.Bold = true;
-            worksheet.Range(headerRow, 1, headerRow, 9).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 10).Style.Fill.BackgroundColor = XLColor.LightBlue;
 
             // Data - Class A Items
             var row = headerRow + 1;
+            int serialNo = 1;
             foreach (var item in report.ClassAItems)
             {
-                worksheet.Cell(row, 1).Value = "A";
-                worksheet.Cell(row, 2).Value = item.ItemCode;
-                worksheet.Cell(row, 3).Value = item.ItemName;
-                worksheet.Cell(row, 4).Value = item.CategoryName;
-                worksheet.Cell(row, 5).Value = item.AnnualConsumptionValue;
-                worksheet.Cell(row, 6).Value = item.AnnualConsumptionQuantity;
-                worksheet.Cell(row, 7).Value = item.PercentageOfTotalValue;
-                worksheet.Cell(row, 8).Value = item.CumulativePercentage;
-                worksheet.Cell(row, 9).Value = item.CurrentStock;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = "A";
+                worksheet.Cell(row, 3).Value = item.ItemCode;
+                worksheet.Cell(row, 4).Value = item.ItemName;
+                worksheet.Cell(row, 5).Value = item.CategoryName;
+                worksheet.Cell(row, 6).Value = item.AnnualConsumptionValue;
+                worksheet.Cell(row, 7).Value = item.AnnualConsumptionQuantity;
+                worksheet.Cell(row, 8).Value = item.PercentageOfTotalValue;
+                worksheet.Cell(row, 9).Value = item.CumulativePercentage;
+                worksheet.Cell(row, 10).Value = item.CurrentStock;
                 row++;
+                serialNo++;
             }
 
             // Class B Items
             foreach (var item in report.ClassBItems)
             {
-                worksheet.Cell(row, 1).Value = "B";
-                worksheet.Cell(row, 2).Value = item.ItemCode;
-                worksheet.Cell(row, 3).Value = item.ItemName;
-                worksheet.Cell(row, 4).Value = item.CategoryName;
-                worksheet.Cell(row, 5).Value = item.AnnualConsumptionValue;
-                worksheet.Cell(row, 6).Value = item.AnnualConsumptionQuantity;
-                worksheet.Cell(row, 7).Value = item.PercentageOfTotalValue;
-                worksheet.Cell(row, 8).Value = item.CumulativePercentage;
-                worksheet.Cell(row, 9).Value = item.CurrentStock;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = "B";
+                worksheet.Cell(row, 3).Value = item.ItemCode;
+                worksheet.Cell(row, 4).Value = item.ItemName;
+                worksheet.Cell(row, 5).Value = item.CategoryName;
+                worksheet.Cell(row, 6).Value = item.AnnualConsumptionValue;
+                worksheet.Cell(row, 7).Value = item.AnnualConsumptionQuantity;
+                worksheet.Cell(row, 8).Value = item.PercentageOfTotalValue;
+                worksheet.Cell(row, 9).Value = item.CumulativePercentage;
+                worksheet.Cell(row, 10).Value = item.CurrentStock;
                 row++;
+                serialNo++;
             }
 
             // Class C Items
             foreach (var item in report.ClassCItems)
             {
-                worksheet.Cell(row, 1).Value = "C";
-                worksheet.Cell(row, 2).Value = item.ItemCode;
-                worksheet.Cell(row, 3).Value = item.ItemName;
-                worksheet.Cell(row, 4).Value = item.CategoryName;
-                worksheet.Cell(row, 5).Value = item.AnnualConsumptionValue;
-                worksheet.Cell(row, 6).Value = item.AnnualConsumptionQuantity;
-                worksheet.Cell(row, 7).Value = item.PercentageOfTotalValue;
-                worksheet.Cell(row, 8).Value = item.CumulativePercentage;
-                worksheet.Cell(row, 9).Value = item.CurrentStock;
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = "C";
+                worksheet.Cell(row, 3).Value = item.ItemCode;
+                worksheet.Cell(row, 4).Value = item.ItemName;
+                worksheet.Cell(row, 5).Value = item.CategoryName;
+                worksheet.Cell(row, 6).Value = item.AnnualConsumptionValue;
+                worksheet.Cell(row, 7).Value = item.AnnualConsumptionQuantity;
+                worksheet.Cell(row, 8).Value = item.PercentageOfTotalValue;
+                worksheet.Cell(row, 9).Value = item.CumulativePercentage;
+                worksheet.Cell(row, 10).Value = item.CurrentStock;
                 row++;
+                serialNo++;
             }
 
             // Formatting
@@ -4072,15 +4123,15 @@ namespace IMS.Application.Services
             document.Add(dateRange);
 
             // Table
-            var table = new iTextSharp.text.pdf.PdfPTable(9);
+            var table = new iTextSharp.text.pdf.PdfPTable(10);
             table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 8f, 15f, 12f, 10f, 8f, 10f, 12f, 10f, 10f });
+            table.SetWidths(new float[] { 5f, 8f, 15f, 12f, 10f, 8f, 10f, 12f, 10f, 10f });
 
             // Headers
             var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
             var cellFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
 
-            string[] headers = { "Item Code", "Item Name", "Category", "Total Qty", "Unit", "Avg Consumption", "Total Value", "Avg Unit Price", "Count" };
+            string[] headers = { "#", "Item Code", "Item Name", "Category", "Total Qty", "Unit", "Avg Consumption", "Total Value", "Avg Unit Price", "Count" };
             foreach (var header in headers)
             {
                 var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -4091,8 +4142,10 @@ namespace IMS.Application.Services
             }
 
             // Data
+            int serialNo = 1;
             foreach (var item in report.Items)
             {
+                table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ItemCode ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ItemName ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.CategoryName ?? "", cellFont));
@@ -4102,6 +4155,7 @@ namespace IMS.Application.Services
                 table.AddCell(new iTextSharp.text.Phrase(item.TotalValue.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.AverageUnitPrice.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ConsumptionCount.ToString(), cellFont));
+                serialNo++;
             }
 
             document.Add(table);
@@ -4139,15 +4193,15 @@ namespace IMS.Application.Services
             document.Add(info);
 
             // Table
-            var table = new iTextSharp.text.pdf.PdfPTable(10);
+            var table = new iTextSharp.text.pdf.PdfPTable(11);
             table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 8f, 15f, 12f, 10f, 8f, 10f, 8f, 10f, 12f, 7f });
+            table.SetWidths(new float[] { 5f, 8f, 15f, 12f, 10f, 8f, 10f, 8f, 10f, 12f, 7f });
 
             // Headers
             var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 9);
             var cellFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8);
 
-            string[] headers = { "Item Code", "Item Name", "Batch No", "Expiry Date", "Days", "Quantity", "Unit", "Value", "Store", "Status" };
+            string[] headers = { "#", "Item Code", "Item Name", "Batch No", "Expiry Date", "Days", "Quantity", "Unit", "Value", "Store", "Status" };
             foreach (var header in headers)
             {
                 var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -4158,8 +4212,10 @@ namespace IMS.Application.Services
             }
 
             // Data
+            int serialNo = 1;
             foreach (var item in report.ExpiringItems)
             {
+                table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ItemCode ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ItemName ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.BatchNumber ?? "", cellFont));
@@ -4170,6 +4226,7 @@ namespace IMS.Application.Services
                 table.AddCell(new iTextSharp.text.Phrase(item.Value.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.StoreName ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.Status ?? "", cellFont));
+                serialNo++;
             }
 
             document.Add(table);
@@ -4207,15 +4264,15 @@ namespace IMS.Application.Services
             document.Add(dateRange);
 
             // Table
-            var table = new iTextSharp.text.pdf.PdfPTable(9);
+            var table = new iTextSharp.text.pdf.PdfPTable(10);
             table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 12f, 12f, 10f, 15f, 12f, 10f, 10f, 12f, 7f });
+            table.SetWidths(new float[] { 5f, 12f, 12f, 10f, 15f, 12f, 10f, 10f, 12f, 7f });
 
             // Headers
             var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 9);
             var cellFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8);
 
-            string[] headers = { "Date", "Type", "Ref No", "Item", "Store", "Quantity", "Action", "Performed By", "Remarks" };
+            string[] headers = { "#", "Date", "Type", "Ref No", "Item", "Store", "Quantity", "Action", "Performed By", "Remarks" };
             foreach (var header in headers)
             {
                 var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -4226,8 +4283,10 @@ namespace IMS.Application.Services
             }
 
             // Data
+            int serialNo = 1;
             foreach (var item in report.Transactions.Take(100)) // Limit for PDF
             {
+                table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.TransactionDate.ToString("dd MMM yyyy"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.TransactionType ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ReferenceNo ?? "", cellFont));
@@ -4237,6 +4296,7 @@ namespace IMS.Application.Services
                 table.AddCell(new iTextSharp.text.Phrase(item.Action ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.PerformedBy ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.Remarks ?? "", cellFont));
+                serialNo++;
             }
 
             document.Add(table);
@@ -4273,15 +4333,15 @@ namespace IMS.Application.Services
             document.Add(info);
 
             // Table
-            var table = new iTextSharp.text.pdf.PdfPTable(6);
+            var table = new iTextSharp.text.pdf.PdfPTable(7);
             table.WidthPercentage = 100;
-            table.SetWidths(new float[] { 25f, 15f, 15f, 15f, 15f, 15f });
+            table.SetWidths(new float[] { 5f, 25f, 15f, 15f, 15f, 15f, 15f });
 
             // Headers
             var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10);
             var cellFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
 
-            string[] headers = { "Item Name", "System Qty", "Physical Qty", "Variance Qty", "Variance Value", "Status" };
+            string[] headers = { "#", "Item Name", "System Qty", "Physical Qty", "Variance Qty", "Variance Value", "Status" };
             foreach (var header in headers)
             {
                 var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -4292,16 +4352,19 @@ namespace IMS.Application.Services
             }
 
             // Data
+            int serialNo = 1;
             foreach (var item in report.ItemsWithVariance)
             {
                 string status = item.Variance == 0 ? "Match" : item.Variance < 0 ? "Shortage" : "Overage";
 
+                table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.ItemName ?? "", cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.SystemQuantity.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.PhysicalQuantity.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.Variance.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(item.VarianceValue.ToString("N2"), cellFont));
                 table.AddCell(new iTextSharp.text.Phrase(status, cellFont));
+                serialNo++;
             }
 
             document.Add(table);
@@ -4382,12 +4445,12 @@ namespace IMS.Application.Services
             // Detailed Items Table (Top 50 only for PDF)
             document.Add(new iTextSharp.text.Paragraph("\nTop Items Detail:", headerFont));
 
-            var detailTable = new iTextSharp.text.pdf.PdfPTable(7);
+            var detailTable = new iTextSharp.text.pdf.PdfPTable(8);
             detailTable.WidthPercentage = 100;
             detailTable.SpacingBefore = 10f;
-            detailTable.SetWidths(new float[] { 8f, 10f, 18f, 15f, 15f, 15f, 10f });
+            detailTable.SetWidths(new float[] { 5f, 8f, 10f, 18f, 15f, 15f, 15f, 10f });
 
-            string[] detailHeaders = { "Class", "Code", "Item Name", "Annual Value", "Annual Qty", "% of Total", "Stock" };
+            string[] detailHeaders = { "#", "Class", "Code", "Item Name", "Annual Value", "Annual Qty", "% of Total", "Stock" };
             foreach (var header in detailHeaders)
             {
                 var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
@@ -4399,8 +4462,10 @@ namespace IMS.Application.Services
             var smallFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8);
 
             // Add top items from each class
+            int serialNo = 1;
             foreach (var item in report.ClassAItems.Take(20))
             {
+                detailTable.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), smallFont));
                 detailTable.AddCell(new iTextSharp.text.Phrase("A", smallFont));
                 detailTable.AddCell(new iTextSharp.text.Phrase(item.ItemCode ?? "", smallFont));
                 detailTable.AddCell(new iTextSharp.text.Phrase(item.ItemName ?? "", smallFont));
@@ -4408,6 +4473,7 @@ namespace IMS.Application.Services
                 detailTable.AddCell(new iTextSharp.text.Phrase(item.AnnualConsumptionQuantity.ToString("N2"), smallFont));
                 detailTable.AddCell(new iTextSharp.text.Phrase($"{item.PercentageOfTotalValue:N2}%", smallFont));
                 detailTable.AddCell(new iTextSharp.text.Phrase(item.CurrentStock.ToString("N2"), smallFont));
+                serialNo++;
             }
 
             document.Add(detailTable);

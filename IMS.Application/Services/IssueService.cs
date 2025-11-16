@@ -3098,12 +3098,14 @@ namespace IMS.Application.Services
                 var csv = new StringBuilder();
 
                 // Add headers
-                csv.AppendLine("Issue No,Voucher No,Issue Date,Status,Type,Recipient,Badge No,Purpose,From Store,Total Items,Issued By,Approved By,Approved Date,Created Date,Created By");
+                csv.AppendLine("#,Issue No,Voucher No,Issue Date,Status,Type,Recipient,Badge No,Purpose,From Store,Total Items,Issued By,Approved By,Approved Date,Created Date,Created By");
 
                 // Add data
+                int serialNo = 1;
                 foreach (var issue in issues)
                 {
-                    csv.AppendLine($"\"{EscapeCsv(issue.IssueNo)}\"," +
+                    csv.AppendLine($"{serialNo}," +
+                        $"\"{EscapeCsv(issue.IssueNo)}\"," +
                         $"\"{EscapeCsv(issue.VoucherNumber)}\"," +
                         $"\"{issue.IssueDate:dd-MMM-yyyy}\"," +
                         $"\"{EscapeCsv(issue.Status)}\"," +
@@ -3118,6 +3120,7 @@ namespace IMS.Application.Services
                         $"\"{issue.ApprovedDate?.ToString("dd-MMM-yyyy")}\"," +
                         $"\"{issue.CreatedAt:dd-MMM-yyyy HH:mm}\"," +
                         $"\"{EscapeCsv(issue.CreatedBy)}\"");
+                    serialNo++;
                 }
 
                 return Encoding.UTF8.GetBytes(csv.ToString());
@@ -3177,12 +3180,12 @@ namespace IMS.Application.Services
                     document.Add(infoParagraph);
 
                     // Create main table (Issues)
-                    var mainTable = new PdfPTable(11);
+                    var mainTable = new PdfPTable(12);
                     mainTable.WidthPercentage = 100;
-                    mainTable.SetWidths(new float[] { 10f, 10f, 9f, 7f, 8f, 12f, 8f, 12f, 8f, 10f, 9f });
+                    mainTable.SetWidths(new float[] { 5f, 10f, 10f, 9f, 7f, 8f, 12f, 8f, 12f, 8f, 10f, 9f });
 
                     // Add table headers
-                    var headerTexts = new[] { "Issue No", "Voucher No", "Issue Date", "Status", "Type", "Recipient", "Badge No", "From Store", "Total Items", "Issued By", "Approved By" };
+                    var headerTexts = new[] { "#", "Issue No", "Voucher No", "Issue Date", "Status", "Type", "Recipient", "Badge No", "From Store", "Total Items", "Issued By", "Approved By" };
 
                     foreach (var headerText in headerTexts)
                     {
@@ -3195,8 +3198,10 @@ namespace IMS.Application.Services
                     }
 
                     // Add data rows
+                    int serialNo = 1;
                     foreach (var issue in issues)
                     {
+                        mainTable.AddCell(new PdfPCell(new Phrase(serialNo.ToString(), smallFont)) { Padding = 4f, HorizontalAlignment = Element.ALIGN_CENTER });
                         mainTable.AddCell(new PdfPCell(new Phrase(issue.IssueNo ?? "-", smallFont)) { Padding = 4f });
                         mainTable.AddCell(new PdfPCell(new Phrase(issue.VoucherNumber ?? "-", smallFont)) { Padding = 4f });
                         mainTable.AddCell(new PdfPCell(new Phrase(issue.IssueDate.ToString("dd-MMM-yy"), smallFont)) { Padding = 4f });
@@ -3208,6 +3213,7 @@ namespace IMS.Application.Services
                         mainTable.AddCell(new PdfPCell(new Phrase((issue.Items?.Count ?? 0).ToString(), smallFont)) { Padding = 4f, HorizontalAlignment = Element.ALIGN_CENTER });
                         mainTable.AddCell(new PdfPCell(new Phrase(issue.IssuedBy ?? "-", smallFont)) { Padding = 4f });
                         mainTable.AddCell(new PdfPCell(new Phrase(issue.ApprovedBy ?? "-", smallFont)) { Padding = 4f });
+                        serialNo++;
                     }
 
                     document.Add(mainTable);
