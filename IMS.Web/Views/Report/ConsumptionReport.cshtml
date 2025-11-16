@@ -8,6 +8,25 @@
     <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
 }
 
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Consumption Analysis Report</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Consumption Report</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
         <!-- Filter Card -->
@@ -142,13 +161,16 @@
             <div class="card-header">
                 <h3 class="card-title">Detailed Item Consumption</h3>
                 <div class="card-tools">
-                    <div class="input-group input-group-sm" style="width: 150px;">
-                        <input type="text" id="tableSearch" class="form-control float-right" placeholder="Search">
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-default">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
+                    <div class="btn-group mr-2">
+                        <a asp-action="ExportConsumptionReport" asp-route-format="excel" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a asp-action="ExportConsumptionReport" asp-route-format="csv" class="btn btn-info btn-sm">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </a>
+                        <a asp-action="ExportConsumptionReport" asp-route-format="pdf" class="btn btn-danger btn-sm">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
                     </div>
                 </div>
             </div>
