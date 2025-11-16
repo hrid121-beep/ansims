@@ -182,7 +182,7 @@
                     <tbody>
                         @if (Model.Transactions != null && Model.Transactions.Any())
                         {
-                            @{ var serialNo = 1; }
+                            var serialNo = 1;
                             @foreach (var transaction in Model.Transactions.OrderByDescending(x => x.TransactionDate))
                             {
                                 string badgeClass = transaction.TransactionType switch

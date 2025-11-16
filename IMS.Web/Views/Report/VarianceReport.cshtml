@@ -148,7 +148,7 @@
                     <tbody>
                         @if (Model.ItemsWithVariance != null && Model.ItemsWithVariance.Any())
                         {
-                            @{ var serialNo = 1; }
+                            var serialNo = 1;
                             @foreach (var variance in Model.ItemsWithVariance.OrderByDescending(v => Math.Abs(v.VarianceValue)))
                             {
                                 string rowClass = "";
