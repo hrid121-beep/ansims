@@ -25,11 +25,16 @@
     --font-mono: "Consolas", "Monaco", "Courier New", monospace;
 }
 
-/* Apply fonts globally */
+/* Apply fonts globally - Override AdminLTE */
 body {
-    font-family: var(--font-sans-serif);
+    font-family: var(--font-sans-serif) !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Additional override for all elements */
+* {
+    font-family: inherit;
 }
 
 /* Bengali text specific */
@@ -123,17 +128,27 @@ code, pre, .code {
    ======================================== */
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-sans-serif);
+    font-family: var(--font-sans-serif) !important;
     font-weight: 600;
 }
 
 .table {
-    font-family: var(--font-sans-serif);
+    font-family: var(--font-sans-serif) !important;
 }
 
 .btn {
-    font-family: var(--font-sans-serif);
+    font-family: var(--font-sans-serif) !important;
     font-weight: 500;
+}
+
+/* Override AdminLTE specific classes */
+.content-wrapper,
+.main-sidebar,
+.main-header,
+.card,
+.form-control,
+.input-group-text {
+    font-family: var(--font-sans-serif) !important;
 }
 
 /* Better text rendering */
