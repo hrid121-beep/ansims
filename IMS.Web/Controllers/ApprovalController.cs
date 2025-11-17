@@ -22,6 +22,7 @@ namespace IMS.Web.Controllers
         private readonly IIssueService _issueService;
         private readonly INotificationService _notificationService;
         private readonly IStockEntryService _stockEntryService;
+        private readonly IPhysicalInventoryService _physicalInventoryService;
 
         public ApprovalController(
             IApprovalService approvalService,
@@ -31,7 +32,8 @@ namespace IMS.Web.Controllers
             IPurchaseService purchaseService,
             IIssueService issueService,
             INotificationService notificationService,
-            IStockEntryService stockEntryService)
+            IStockEntryService stockEntryService,
+            IPhysicalInventoryService physicalInventoryService)
         {
             _approvalService = approvalService;
             _unitOfWork = unitOfWork;
@@ -41,6 +43,7 @@ namespace IMS.Web.Controllers
             _issueService = issueService;
             _notificationService = notificationService;
             _stockEntryService = stockEntryService;
+            _physicalInventoryService = physicalInventoryService;
         }
 
         [HttpGet]
@@ -154,6 +157,47 @@ namespace IMS.Web.Controllers
                 }
             }
 
+            // Add pending Physical Inventory approvals
+            var pendingInventories = await _unitOfWork.PhysicalInventories
+                .Query()
+                .Include(pi => pi.Store)
+                .Where(pi => pi.Status == PhysicalInventoryStatus.UnderReview && pi.IsActive)
+                .ToListAsync();
+
+            foreach (var inventory in pendingInventories)
+            {
+                // Check if user can approve physical inventories
+                bool canApprove = User.IsInRole("Admin") ||
+                                 User.IsInRole("Director") ||
+                                 User.IsInRole("StoreManager") ||
+                                 userRoles.Contains("DDGAdmin") ||
+                                 userRoles.Contains("DDStore") ||
+                                 userRoles.Contains("ADStore") ||
+                                 userRoles.Contains("RangeCommander") ||
+                                 userRoles.Contains("BattalionCommander");
+
+                if (canApprove)
+                {
+                    // Get variance value for priority
+                    decimal varianceValue = Math.Abs(inventory.TotalVarianceValue ?? 0);
+
+                    pendingApprovals.Add(new ApprovalViewModel
+                    {
+                        Id = inventory.Id,
+                        EntityType = "PHYSICAL_INVENTORY",
+                        EntityId = inventory.Id,
+                        Amount = varianceValue,
+                        RequestedBy = inventory.InitiatedBy,
+                        RequestedByName = inventory.InitiatedBy,
+                        RequestedByRole = "Store Keeper",
+                        RequestedDate = inventory.InitiatedDate ?? inventory.CountDate,
+                        Priority = varianceValue > 50000 ? "High" : "Normal",
+                        Description = inventory.ReferenceNumber ?? $"PI-{inventory.Id:D6}",
+                        CurrentLevel = 1
+                    });
+                }
+            }
+
             return pendingApprovals.OrderByDescending(a => a.Priority == "Critical" ? 3 : a.Priority == "High" ? 2 : 1)
                                    .ThenBy(a => a.RequestedDate)
                                    .ToList();
@@ -213,6 +257,47 @@ namespace IMS.Web.Controllers
                     }
 
                     return Json(new { success = stockEntryResult, message = stockEntryMessage });
+                }
+
+                // Handle Physical Inventory approvals (they don't use ApprovalRequest table)
+                if (entityType == "PHYSICAL_INVENTORY")
+                {
+                    try
+                    {
+                        if (action.ToLower() == "approve")
+                        {
+                            await _physicalInventoryService.ApprovePhysicalInventoryAsync(
+                                id,
+                                User.Identity.Name,
+                                remarks ?? "Approved from Approval Center",
+                                autoAdjust: false);
+
+                            return Json(new {
+                                success = true,
+                                message = "Physical inventory approved successfully",
+                                redirectUrl = Url.Action("Review", "PhysicalInventory", new { id })
+                            });
+                        }
+                        else if (action.ToLower() == "reject")
+                        {
+                            if (string.IsNullOrWhiteSpace(remarks))
+                            {
+                                return Json(new { success = false, message = "Rejection reason is required" });
+                            }
+
+                            await _physicalInventoryService.RejectPhysicalInventoryAsync(
+                                id,
+                                User.Identity.Name,
+                                remarks);
+
+                            return Json(new { success = true, message = "Physical inventory rejected" });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error processing physical inventory approval {id}");
+                        return Json(new { success = false, message = ex.Message });
+                    }
                 }
 
                 // Handle standard ApprovalRequest-based approvals
@@ -747,6 +832,7 @@ namespace IMS.Web.Controllers
                     "ALLOTMENT_LETTER" => (await _unitOfWork.AllotmentLetters.GetByIdAsync(entityId))?.AllotmentNo ?? $"ALL-{entityId:D6}",
                     "TRANSFER" => (await _unitOfWork.Transfers.GetByIdAsync(entityId))?.TransferNo ?? $"TRF-{entityId:D6}",
                     "RETURN" => (await _unitOfWork.Returns.GetByIdAsync(entityId))?.ReturnNo ?? $"RET-{entityId:D6}",
+                    "PHYSICAL_INVENTORY" => (await _unitOfWork.PhysicalInventories.GetByIdAsync(entityId))?.ReferenceNumber ?? $"PI-{entityId:D6}",
                     _ => $"{entityType} #{entityId}"
                 };
             }

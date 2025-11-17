@@ -161,6 +161,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-cyan">
+                    <div class="inner">
+                        <h3 id="physicalInventoryCount">@initialData.Count(x => x.EntityType == "PHYSICAL_INVENTORY")</h3>
+                        <p>Physical Inventories</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row mb-3">
@@ -412,7 +424,8 @@
                 return: approvals.filter(a => a.entityType === 'RETURN').length,
                 writeoff: approvals.filter(a => a.entityType === 'WRITEOFF' || a.entityType === 'WRITE_OFF').length,
                 stockEntry: approvals.filter(a => a.entityType === 'STOCK_ENTRY').length,
-                receive: approvals.filter(a => a.entityType === 'RECEIVE').length
+                receive: approvals.filter(a => a.entityType === 'RECEIVE').length,
+                physicalInventory: approvals.filter(a => a.entityType === 'PHYSICAL_INVENTORY').length
             };
 
             $('#totalPending').text(counts.total);
@@ -426,6 +439,7 @@
             $('#writeoffCount').text(counts.writeoff);
             $('#stockEntryCount').text(counts.stockEntry);
             $('#receiveCount').text(counts.receive);
+            $('#physicalInventoryCount').text(counts.physicalInventory);
         }
 
         function approveItem(id, entityType) {
@@ -508,7 +522,8 @@
                 'WRITEOFF': 'card-maroon',
                 'WRITE_OFF': 'card-maroon',
                 'STOCK_ENTRY': 'card-primary',
-                'RECEIVE': 'card-indigo'
+                'RECEIVE': 'card-indigo',
+                'PHYSICAL_INVENTORY': 'card-cyan'
             };
             return colors[type] || 'card-secondary';
         }
@@ -525,7 +540,8 @@
                 'WRITEOFF': 'fas fa-trash-alt',
                 'WRITE_OFF': 'fas fa-trash-alt',
                 'STOCK_ENTRY': 'fas fa-boxes',
-                'RECEIVE': 'fas fa-download'
+                'RECEIVE': 'fas fa-download',
+                'PHYSICAL_INVENTORY': 'fas fa-clipboard-check'
             };
             return icons[type] || 'fas fa-file';
         }
@@ -542,7 +558,8 @@
                 'WRITEOFF': 'Write-Off Requests',
                 'WRITE_OFF': 'Write-Off Requests',
                 'STOCK_ENTRY': 'Stock Entries',
-                'RECEIVE': 'Receive Requests'
+                'RECEIVE': 'Receive Requests',
+                'PHYSICAL_INVENTORY': 'Physical Inventories'
             };
             return names[type] || type;
         }
@@ -559,7 +576,8 @@
                 'WRITEOFF': 'WriteOff',
                 'WRITE_OFF': 'WriteOff',
                 'STOCK_ENTRY': 'StockEntry',
-                'RECEIVE': 'Receive'
+                'RECEIVE': 'Receive',
+                'PHYSICAL_INVENTORY': 'PhysicalInventory'
             };
             return controllers[type] || type;
         }
