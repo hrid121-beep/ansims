@@ -228,15 +228,28 @@ namespace IMS.Web.Controllers
 
                 // Create CSV
                 var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Item Code,Item Name,Store,Alert Level,Current Stock,Minimum Stock,Alert Date,Status");
+                csv.AppendLine("Stock Alerts Report");
+                csv.AppendLine($"Generated: {DateTime.Now:dd MMM yyyy HH:mm}");
+                csv.AppendLine();
+                csv.AppendLine("#,Item Code,Item Name,Store,Alert Level,Current Stock,Minimum Stock,Alert Date,Status");
 
-                foreach (var alert in alerts)
+                int serialNo = 1;
+                foreach (var alert in alerts.OrderByDescending(a => a.AlertLevel))
                 {
-                    csv.AppendLine($"{alert.ItemCode},{alert.ItemName},{alert.StoreName},{alert.AlertLevel},{alert.CurrentStock},{alert.MinimumStock},{alert.AlertDate:yyyy-MM-dd},{alert.Status}");
+                    csv.AppendLine($"{serialNo}," +
+                                  $"\"{alert.ItemCode}\"," +
+                                  $"\"{EscapeCsv(alert.ItemName)}\"," +
+                                  $"\"{EscapeCsv(alert.StoreName)}\"," +
+                                  $"\"{alert.AlertLevel}\"," +
+                                  $"{alert.CurrentStock}," +
+                                  $"{alert.MinimumStock}," +
+                                  $"\"{alert.AlertDate:yyyy-MM-dd}\"," +
+                                  $"\"{alert.Status}\"");
+                    serialNo++;
                 }
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
-                return File(bytes, "text/csv", $"StockAlerts_{DateTime.Now:yyyyMMdd}.csv");
+                return File(bytes, "text/csv", $"StockAlerts_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             }
             catch (Exception ex)
             {
@@ -244,6 +257,216 @@ namespace IMS.Web.Controllers
                 TempData["Error"] = "Failed to export alerts: " + ex.Message;
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportToExcel(string level = null, int? storeId = null)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var dashboard = await _stockAlertService.GetPersonalizedAlertsAsync(userId);
+
+                var alerts = new List<StockAlertDto>();
+                alerts.AddRange(dashboard.CriticalAlerts);
+                alerts.AddRange(dashboard.WarningAlerts);
+                alerts.AddRange(dashboard.InfoAlerts);
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(level))
+                {
+                    alerts = alerts.Where(a => a.AlertLevel?.Equals(level, StringComparison.OrdinalIgnoreCase) == true).ToList();
+                }
+
+                if (storeId.HasValue)
+                {
+                    alerts = alerts.Where(a => a.StoreId == storeId.Value).ToList();
+                }
+
+                // Generate Excel using ClosedXML
+                using var workbook = new ClosedXML.Excel.XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Stock Alerts");
+
+                // Title
+                worksheet.Cell(1, 1).Value = "Stock Alerts Report";
+                worksheet.Cell(1, 1).Style.Font.Bold = true;
+                worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+                worksheet.Range(1, 1, 1, 9).Merge();
+
+                // Date
+                worksheet.Cell(2, 1).Value = $"Generated: {DateTime.Now:dd MMM yyyy HH:mm}";
+                worksheet.Range(2, 1, 2, 9).Merge();
+
+                // Summary
+                worksheet.Cell(3, 1).Value = $"Critical: {alerts.Count(a => a.AlertLevel == "Critical")} | " +
+                    $"High: {alerts.Count(a => a.AlertLevel == "High")} | " +
+                    $"Medium: {alerts.Count(a => a.AlertLevel == "Medium")} | " +
+                    $"Low: {alerts.Count(a => a.AlertLevel == "Low")}";
+                worksheet.Range(3, 1, 3, 9).Merge();
+
+                // Headers
+                var headerRow = 5;
+                worksheet.Cell(headerRow, 1).Value = "#";
+                worksheet.Cell(headerRow, 2).Value = "Item Code";
+                worksheet.Cell(headerRow, 3).Value = "Item Name";
+                worksheet.Cell(headerRow, 4).Value = "Store";
+                worksheet.Cell(headerRow, 5).Value = "Alert Level";
+                worksheet.Cell(headerRow, 6).Value = "Current Stock";
+                worksheet.Cell(headerRow, 7).Value = "Minimum Stock";
+                worksheet.Cell(headerRow, 8).Value = "Alert Date";
+                worksheet.Cell(headerRow, 9).Value = "Status";
+
+                worksheet.Range(headerRow, 1, headerRow, 9).Style.Font.Bold = true;
+                worksheet.Range(headerRow, 1, headerRow, 9).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+
+                // Data
+                int row = headerRow + 1;
+                int serialNo = 1;
+                foreach (var alert in alerts.OrderByDescending(a => a.AlertLevel))
+                {
+                    worksheet.Cell(row, 1).Value = serialNo;
+                    worksheet.Cell(row, 2).Value = alert.ItemCode;
+                    worksheet.Cell(row, 3).Value = alert.ItemName;
+                    worksheet.Cell(row, 4).Value = alert.StoreName;
+                    worksheet.Cell(row, 5).Value = alert.AlertLevel;
+                    worksheet.Cell(row, 6).Value = alert.CurrentStock;
+                    worksheet.Cell(row, 7).Value = alert.MinimumStock;
+                    worksheet.Cell(row, 8).Value = alert.AlertDate.ToString("dd-MMM-yyyy");
+                    worksheet.Cell(row, 9).Value = alert.Status;
+
+                    row++;
+                    serialNo++;
+                }
+
+                // Auto-fit columns
+                worksheet.Columns().AdjustToContents();
+
+                using var ms = new System.IO.MemoryStream();
+                workbook.SaveAs(ms);
+
+                var fileName = $"StockAlerts_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting stock alerts to Excel");
+                TempData["Error"] = "Failed to export to Excel: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(string level = null, int? storeId = null)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var dashboard = await _stockAlertService.GetPersonalizedAlertsAsync(userId);
+
+                var alerts = new List<StockAlertDto>();
+                alerts.AddRange(dashboard.CriticalAlerts);
+                alerts.AddRange(dashboard.WarningAlerts);
+                alerts.AddRange(dashboard.InfoAlerts);
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(level))
+                {
+                    alerts = alerts.Where(a => a.AlertLevel?.Equals(level, StringComparison.OrdinalIgnoreCase) == true).ToList();
+                }
+
+                if (storeId.HasValue)
+                {
+                    alerts = alerts.Where(a => a.StoreId == storeId.Value).ToList();
+                }
+
+                // Generate PDF using iTextSharp
+                using var ms = new System.IO.MemoryStream();
+                var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, ms);
+
+                document.Open();
+
+                // Title
+                var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 16);
+                var title = new iTextSharp.text.Paragraph("Stock Alerts Report", titleFont);
+                title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                document.Add(title);
+
+                // Date
+                var dateFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+                var dateInfo = new iTextSharp.text.Paragraph($"Generated: {DateTime.Now:dd MMM yyyy HH:mm}", dateFont);
+                dateInfo.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                dateInfo.SpacingAfter = 10f;
+                document.Add(dateInfo);
+
+                // Summary
+                var summaryFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+                var summary = new iTextSharp.text.Paragraph(
+                    $"Critical: {alerts.Count(a => a.AlertLevel == "Critical")} | " +
+                    $"High: {alerts.Count(a => a.AlertLevel == "High")} | " +
+                    $"Medium: {alerts.Count(a => a.AlertLevel == "Medium")} | " +
+                    $"Low: {alerts.Count(a => a.AlertLevel == "Low")}", summaryFont);
+                summary.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                summary.SpacingAfter = 10f;
+                document.Add(summary);
+
+                // Table
+                var table = new iTextSharp.text.pdf.PdfPTable(9);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 5f, 10f, 20f, 15f, 10f, 10f, 10f, 12f, 8f });
+
+                // Headers
+                var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 8);
+                var headers = new[] { "#", "Item Code", "Item Name", "Store", "Alert Level", "Current", "Minimum", "Alert Date", "Status" };
+                foreach (var header in headers)
+                {
+                    var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                    cell.BackgroundColor = iTextSharp.text.BaseColor.LightGray;
+                    cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    cell.Padding = 5f;
+                    table.AddCell(cell);
+                }
+
+                // Data
+                var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 7);
+                int serialNo = 1;
+                foreach (var alert in alerts.OrderByDescending(a => a.AlertLevel))
+                {
+                    table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.ItemCode ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.ItemName ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.StoreName ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.AlertLevel ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.CurrentStock.ToString(), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.MinimumStock.ToString(), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.AlertDate.ToString("dd-MMM-yyyy"), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(alert.Status ?? "", dataFont));
+                    serialNo++;
+                }
+
+                document.Add(table);
+                document.Close();
+
+                var fileName = $"StockAlerts_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(ms.ToArray(), "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting stock alerts to PDF");
+                TempData["Error"] = "Failed to export to PDF: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            if (value.Contains("\""))
+                value = value.Replace("\"", "\"\"");
+
+            return value;
         }
 
         private string GetTimeAgo(DateTime date)
