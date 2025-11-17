@@ -706,13 +706,11 @@ namespace IMS.Application.Services
                 CompletedBy = inventory.CompletedBy,
                 CompletedDate = inventory.CompletedDate,
                 VerifiedBy = inventory.VerifiedBy,
-                VerifiedDate = inventory.VerifiedDate,
+                ReviewedBy = inventory.ReviewedBy,
+                ReviewedDate = inventory.ReviewedDate,
                 ApprovedBy = inventory.ApprovedBy,
                 ApprovedDate = inventory.ApprovedDate,
                 ApprovalRemarks = inventory.ApprovalRemarks,
-                RejectedBy = inventory.RejectedBy,
-                RejectedDate = inventory.RejectedDate,
-                RejectionReason = inventory.RejectionReason,
 
                 // Financial data
                 TotalVariance = inventory.TotalVariance ?? 0,
@@ -725,15 +723,13 @@ namespace IMS.Application.Services
                 AuditOfficer = inventory.AuditOfficer,
                 Remarks = inventory.Remarks,
 
-                // Details
+                // Details - only map properties that exist in PhysicalInventoryDetailDto
                 Details = inventory.Details?.Select(d => new PhysicalInventoryDetailDto
                 {
                     Id = d.Id,
-                    PhysicalInventoryId = d.PhysicalInventoryId,
                     ItemId = d.ItemId,
                     ItemCode = d.Item?.ItemCode ?? d.Item?.Code ?? "",
                     ItemName = d.Item?.Name ?? "Unknown Item",
-                    CategoryId = d.CategoryId,
                     CategoryName = d.Item?.SubCategory?.Category?.Name ?? "Uncategorized",
                     SystemQuantity = d.SystemQuantity,
                     PhysicalQuantity = d.PhysicalQuantity,
@@ -743,7 +739,7 @@ namespace IMS.Application.Services
                     Status = d.Status,
                     CountedBy = d.CountedBy,
                     CountedDate = d.CountedDate,
-                    Location = d.Location,
+                    LocationCode = d.Location,  // Map Location to LocationCode
                     Remarks = d.Remarks
                 }).ToList() ?? new List<PhysicalInventoryDetailDto>()
             };
