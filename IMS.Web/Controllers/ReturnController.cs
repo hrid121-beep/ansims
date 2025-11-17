@@ -267,5 +267,39 @@ namespace IMS.Web.Controllers
             ViewBag.Items = new SelectList(items, "Id", "Name");
             ViewBag.Stores = new SelectList(stores, "Id", "Name");
         }
+
+        // POST: Return/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,StoreManager")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var returnRequest = await _returnService.GetReturnByIdAsync(id);
+                if (returnRequest == null)
+                {
+                    TempData["Error"] = "Return request not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                await _returnService.DeleteReturnAsync(id, User.Identity.Name);
+
+                TempData["Success"] = $"Return request '{returnRequest.ReturnNo}' has been deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Business logic validation error (status, stock movement, restocked, etc.)
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting return {ReturnId}", id);
+                TempData["Error"] = "An error occurred while deleting the return request.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

@@ -588,6 +588,7 @@ namespace IMS.Application.Interfaces
         Task<ServiceResult> AuthorizeReturnAsync(int returnId, bool isApproved, string reason = null);
         Task<ServiceResult> ProcessReturnRestockingAsync(int returnId, ReturnRestockDto restockDto);
         Task<ServiceResult> CreateDamageReportAsync(int returnId, DamageReportDto damageDto);
+        Task<bool> DeleteReturnAsync(int returnId, string deletedBy);
     }
 
     // WriteOff Service Interface

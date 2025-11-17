@@ -1181,5 +1181,78 @@ namespace IMS.Application.Services
                 return ServiceResult.Failure($"Error: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Deletes a return request with comprehensive validation
+        /// </summary>
+        public async Task<bool> DeleteReturnAsync(int returnId, string deletedBy)
+        {
+            var returnRequest = await _unitOfWork.Returns
+                .Query()
+                .Include(r => r.Items)
+                .FirstOrDefaultAsync(r => r.Id == returnId);
+
+            if (returnRequest == null)
+                throw new InvalidOperationException("Return request not found");
+
+            // 1. Status Check - Only allow deletion of Pending or Rejected returns
+            if (returnRequest.Status != "Pending" &&
+                returnRequest.Status != "Rejected" &&
+                returnRequest.Status != "Draft")
+            {
+                throw new InvalidOperationException(
+                    "Only Pending, Draft, or Rejected returns can be deleted. " +
+                    $"Current status: {returnRequest.Status}");
+            }
+
+            // 2. CRITICAL: Check StockMovement records
+            var hasStockMovements = await _unitOfWork.StockMovements
+                .Query()
+                .AnyAsync(sm => sm.ReferenceType == "Return" && sm.ReferenceId == returnId);
+
+            if (hasStockMovements)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete - Stock movement records exist for this return. " +
+                    "This return has already impacted inventory. Contact administrator for reversal.");
+            }
+
+            // 3. Check if return has been restocked
+            if (returnRequest.IsRestocked)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete - Return has already been restocked into inventory.");
+            }
+
+            // 4. Check if already processed (approved, received, etc.)
+            if (returnRequest.Status == "Approved" ||
+                returnRequest.Status == "Received" ||
+                returnRequest.Status == "Restocked" ||
+                returnRequest.Status == "Completed")
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete processed returns. This violates audit trail integrity.");
+            }
+
+            // 5. Soft Delete (NEVER hard delete transactional data!)
+            returnRequest.IsActive = false;
+            returnRequest.UpdatedBy = deletedBy;
+            returnRequest.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.Returns.Update(returnRequest);
+            await _unitOfWork.CompleteAsync();
+
+            // 6. Log the deletion
+            await _activityLogService.LogActivityAsync(
+                "Return",
+                returnRequest.Id,
+                "Delete",
+                $"Return {returnRequest.ReturnNo} deleted by {deletedBy}. " +
+                $"Reason: {returnRequest.Reason}, Items: {returnRequest.Items?.Count ?? 0}",
+                deletedBy
+            );
+
+            return true;
+        }
     }
 }
