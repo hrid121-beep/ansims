@@ -595,7 +595,7 @@ namespace IMS.Application.Services
             }
         }
 
-        private string GetStockStatus(StoreItem storeItem)
+        private static string GetStockStatus(StoreItem storeItem)
         {
             if (storeItem.CurrentStock == 0)
                 return "Out of Stock";

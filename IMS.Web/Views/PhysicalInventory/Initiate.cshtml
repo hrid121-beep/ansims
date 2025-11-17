@@ -249,55 +249,83 @@
             var select = $('#SelectedItemIds');
             select.prop('disabled', true);
 
+            // Show loading message
+            toastr.info('Loading items from store...', '', { timeOut: 1000 });
+
             $.ajax({
                 url: '@Url.Action("GetStoreItems", "PhysicalInventory")',
                 data: { storeId: storeId },
+                dataType: 'json',
                 success: function(data) {
-                    console.log('Items loaded:', data);
+                    console.log('Raw AJAX response:', data);
+                    console.log('Response type:', typeof data);
+                    console.log('Is array:', Array.isArray(data));
+                    console.log('Length:', data ? data.length : 'null/undefined');
 
                     // Destroy Select2 before modifying options
                     if (select.hasClass('select2-hidden-accessible')) {
                         select.select2('destroy');
                     }
 
-                    select.empty();
+                    // Clear all options and selections
+                    select.empty().val(null);
 
-                    if (data && data.length > 0) {
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        console.log('Processing', data.length, 'items');
+
                         $.each(data, function(index, item) {
+                            console.log('Processing item', index, ':', item);
+
                             // Handle both PascalCase and camelCase property names
                             var itemId = item.id || item.Id;
                             var itemCode = item.code || item.itemCode || item.Code || item.ItemCode || '';
                             var itemName = item.name || item.Name || 'Unknown';
 
-                            select.append($('<option></option>')
-                                .attr('value', itemId)
-                                .text(itemCode + ' - ' + itemName));
+                            var optionText = (itemCode ? itemCode + ' - ' : '') + itemName;
+                            console.log('Adding option:', itemId, '=', optionText);
+
+                            var option = new Option(optionText, itemId, false, false);
+                            select.append(option);
                         });
-                        console.log('Items added to dropdown:', data.length, 'items');
+
+                        console.log('Total options in dropdown:', select.find('option').length);
+                        toastr.success(data.length + ' items loaded successfully');
                     } else {
-                        select.append('<option value="">No items available in this store</option>');
-                        console.log('No items found for this store');
+                        console.log('No items in response');
+                        var option = new Option('No items available in this store', '', false, false);
+                        select.append(option);
+                        toastr.warning('No items found in this store');
                     }
 
-                    // Re-initialize Select2
+                    // Re-initialize Select2 with proper configuration
                     select.select2({
                         theme: 'bootstrap4',
                         width: '100%',
-                        placeholder: 'Select items...',
-                        allowClear: true
+                        placeholder: 'Select items to count...',
+                        allowClear: true,
+                        closeOnSelect: false,
+                        language: {
+                            noResults: function() {
+                                return "No items found";
+                            }
+                        }
                     });
 
                     // Re-enable the select
                     select.prop('disabled', false);
+
+                    console.log('Select2 re-initialized successfully');
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error loading items:', error);
-                    console.error('Response:', xhr.responseText);
+                    console.error('AJAX Error:', error);
+                    console.error('Status:', status);
+                    console.error('Response Text:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
 
                     // Re-enable the select even on error
                     select.prop('disabled', false);
 
-                    toastr.error('Failed to load store items. Please try again.');
+                    toastr.error('Failed to load store items: ' + error);
                 }
             });
         }
