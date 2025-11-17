@@ -717,7 +717,7 @@ namespace IMS.Application.Services
                         pi.Status != PhysicalInventoryStatus.Cancelled);
 
                 if (ongoingInventory != null)
-                    throw new InvalidOperationException($"An ongoing physical inventory exists: {ongoingInventory.ReferenceNumber}");
+                    throw new InvalidOperationException($"An ongoing physical inventory already exists for this store (Ref: {ongoingInventory.ReferenceNumber}, Status: {ongoingInventory.Status}). Please complete or cancel the existing count before starting a new one.|{ongoingInventory.Id}");
 
                 // Generate reference number based on organization hierarchy
                 dto.ReferenceNumber = await GenerateHierarchicalReferenceNumberAsync(store);

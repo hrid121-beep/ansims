@@ -237,30 +237,45 @@
 
         function loadStoreItems() {
             var storeId = $('#StoreId').val();
-            if (storeId) {
-                $.ajax({
-                    url: '@Url.Action("GetStoreItems", "PhysicalInventory")',
-                    data: { storeId: storeId },
-                    success: function(data) {
-                        var select = $('#SelectedItemIds');
-                        select.empty();
-                        if (data && data.length > 0) {
-                            $.each(data, function(index, item) {
-                                select.append($('<option></option>')
-                                    .attr('value', item.Id || item.id)
-                                    .text((item.Code || item.code) + ' - ' + (item.Name || item.name)));
-                            });
-                            select.trigger('change');
-                        } else {
-                            select.append('<option value="">No items available in this store</option>');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error loading items:', error);
-                        alert('Failed to load store items. Please try again.');
-                    }
-                });
+            if (!storeId) {
+                console.log('No store selected');
+                return;
             }
+
+            console.log('Loading items for store:', storeId);
+
+            $.ajax({
+                url: '@Url.Action("GetStoreItems", "PhysicalInventory")',
+                data: { storeId: storeId },
+                success: function(data) {
+                    console.log('Items loaded:', data);
+                    var select = $('#SelectedItemIds');
+                    select.empty();
+
+                    if (data && data.length > 0) {
+                        $.each(data, function(index, item) {
+                            // Handle both PascalCase and camelCase property names
+                            var itemId = item.id || item.Id;
+                            var itemCode = item.code || item.itemCode || item.Code || item.ItemCode || '';
+                            var itemName = item.name || item.Name || 'Unknown';
+
+                            select.append($('<option></option>')
+                                .attr('value', itemId)
+                                .text(itemCode + ' - ' + itemName));
+                        });
+                        select.trigger('change');
+                        console.log('Items added to dropdown');
+                    } else {
+                        select.append('<option value="">No items available in this store</option>');
+                        console.log('No items found for this store');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading items:', error);
+                    console.error('Response:', xhr.responseText);
+                    toastr.error('Failed to load store items. Please try again.');
+                }
+            });
         }
     </script>
 

@@ -137,6 +137,18 @@ namespace IMS.Web.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                // Check if error message contains ongoing inventory ID
+                if (ex.Message.Contains("|"))
+                {
+                    var parts = ex.Message.Split('|');
+                    var message = parts[0];
+                    var ongoingInventoryId = int.Parse(parts[1]);
+
+                    TempData["Error"] = message;
+                    TempData["OngoingInventoryId"] = ongoingInventoryId;
+                    return RedirectToAction(nameof(Index));
+                }
+
                 ModelState.AddModelError("", ex.Message);
             }
             catch (Exception ex)
