@@ -1545,6 +1545,7 @@ namespace IMS.Application.Interfaces
 
         // Schedule and Export methods
         Task<PhysicalInventoryDto> SchedulePhysicalInventoryAsync(PhysicalInventoryDto dto);
+        Task<byte[]> ExportCountHistoryExcelAsync(int? storeId = null, PhysicalInventoryStatus? status = null, string fiscalYear = null);
         Task<byte[]> ExportCountHistoryCsvAsync(int? storeId = null, PhysicalInventoryStatus? status = null, string fiscalYear = null);
         Task<byte[]> ExportCountHistoryPdfAsync(int? storeId = null, PhysicalInventoryStatus? status = null, string fiscalYear = null);
     }
