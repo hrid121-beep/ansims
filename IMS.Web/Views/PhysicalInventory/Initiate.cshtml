@@ -51,16 +51,33 @@
                 <h5><i class="icon fas fa-exclamation-triangle"></i> Ongoing Physical Inventory Detected!</h5>
                 @ViewBag.OngoingInventoryWarning
                 <br /><br />
-                <a href="@Url.Action("Details", new { id = ongoingInventory.Id })" class="btn btn-sm btn-info">
-                    <i class="fas fa-eye"></i> View Ongoing Inventory
-                </a>
-                @if (ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.Initiated ||
-                     ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.InProgress)
-                {
-                    <a href="@Url.Action("Count", new { id = ongoingInventory.Id })" class="btn btn-sm btn-warning">
-                        <i class="fas fa-clipboard-list"></i> Continue Counting
+                <div class="btn-group" role="group">
+                    <a href="@Url.Action("Details", new { id = ongoingInventory.Id })" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> View Details
                     </a>
-                }
+                    @if (ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.Initiated ||
+                         ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.InProgress)
+                    {
+                        <a href="@Url.Action("Count", new { id = ongoingInventory.Id })" class="btn btn-sm btn-warning">
+                            <i class="fas fa-clipboard-list"></i> Continue Counting
+                        </a>
+                    }
+                    else if (ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.UnderReview)
+                    {
+                        <a href="@Url.Action("Review", new { id = ongoingInventory.Id })" class="btn btn-sm btn-primary">
+                            <i class="fas fa-clipboard-check"></i> Review Count
+                        </a>
+                        <a href="@Url.Action("Index", "Approval")" class="btn btn-sm btn-success">
+                            <i class="fas fa-tasks"></i> Go to Approval Center
+                        </a>
+                    }
+                    else if (ongoingInventory.Status == IMS.Domain.Enums.PhysicalInventoryStatus.Completed)
+                    {
+                        <a href="@Url.Action("Review", new { id = ongoingInventory.Id })" class="btn btn-sm btn-primary">
+                            <i class="fas fa-clipboard-check"></i> Submit for Review
+                        </a>
+                    }
+                </div>
             </div>
         }
 
