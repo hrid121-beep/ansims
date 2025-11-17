@@ -1455,6 +1455,7 @@ namespace IMS.Application.Interfaces
         Task<byte[]> GenerateTemperatureReportAsync(int? storeId, DateTime fromDate, DateTime toDate);
         Task SendTemperatureAlertAsync(int storeId, decimal temperature, string reason);
         Task<TemperatureStatisticsDto> GetTemperatureStatisticsAsync(int? storeId, DateTime? fromDate, DateTime? toDate);
+        Task<bool> DeleteTemperatureLogAsync(int logId, string deletedBy);
     }
 
     public interface IExpiryTrackingService

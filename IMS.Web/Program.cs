@@ -156,6 +156,7 @@ builder.Services.AddScoped<IBarcodeService, BarcodeService>();
 builder.Services.AddScoped<IExpiryTrackingService, ExpiryTrackingService>();
 builder.Services.AddScoped<IBatchTrackingService, BatchTrackingService>();
 builder.Services.AddScoped<IDigitalSignatureService, DigitalSignatureService>();
+builder.Services.AddScoped<ITemperatureLogService, TemperatureLogService>();
 
 // ========================================
 // INVENTORY OPERATION SERVICES

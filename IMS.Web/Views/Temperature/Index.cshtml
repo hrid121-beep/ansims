@@ -146,6 +146,7 @@
                             <th>Equipment</th>
                             <th>Recorded By</th>
                             <th>Alert</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -179,6 +180,31 @@
                                            data-toggle="tooltip" title="@log.AlertReason"></i>
                                     }
                                 </td>
+                                <td class="text-center">
+                                    @{
+                                        var hoursSinceLog = (DateTime.Now - log.LogTime).TotalHours;
+                                        var canDelete = hoursSinceLog <= 48 &&
+                                                       (User.IsInRole("Admin") ||
+                                                        User.IsInRole("StoreKeeper") ||
+                                                        User.IsInRole("StoreManager"));
+                                    }
+                                    @if (canDelete)
+                                    {
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Delete (within 48 hours)"
+                                                onclick="confirmDeleteTemperature(@log.Id, '@log.LogTime.ToString("yyyy-MM-dd HH:mm")')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    }
+                                    else if (hoursSinceLog > 48)
+                                    {
+                                        <span class="text-muted" data-toggle="tooltip"
+                                              title="Cannot delete logs older than 48 hours">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -194,7 +220,10 @@
         $(document).ready(function() {
             $('#temperatureTable').DataTable({
                 "order": [[0, "desc"]],
-                "pageLength": 25
+                "pageLength": 25,
+                "columnDefs": [
+                    { "orderable": false, "targets": [8] } // Disable sorting on Actions column
+                ]
             });
 
             // Temperature Chart
@@ -250,6 +279,48 @@
                     }
                 }
             });
+
+            // Enable tooltips
+            $('[data-toggle="tooltip"]').tooltip();
         });
+
+        function confirmDeleteTemperature(id, logTime) {
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `Do you want to delete the temperature log from <strong>${logTime}</strong>?<br><br>` +
+                      '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone!</span><br>' +
+                      '<small class="text-muted">Note: Temperature logs can only be deleted within 48 hours of recording.</small>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it!',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create and submit form
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '@Url.Action("Delete", "Temperature")/' + id;
+
+                    // Add anti-forgery token
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (token) {
+                        var tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = '__RequestVerificationToken';
+                        tokenInput.value = token.value;
+                        form.appendChild(tokenInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     </script>
 }
+<!-- Hidden form for anti-forgery token -->
+<form id="deleteForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>

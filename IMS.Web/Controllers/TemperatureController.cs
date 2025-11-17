@@ -105,5 +105,31 @@ namespace IMS.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        // POST: Temperature/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,StoreKeeper,StoreManager")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _temperatureLogService.DeleteTemperatureLogAsync(id, User.Identity.Name);
+                TempData["Success"] = "Temperature log deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Business logic validation error (time restriction, etc.)
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting temperature log {LogId}", id);
+                TempData["Error"] = "An error occurred while deleting the temperature log.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }
