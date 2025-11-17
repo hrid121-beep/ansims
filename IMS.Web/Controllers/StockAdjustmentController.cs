@@ -192,31 +192,156 @@ namespace IMS.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ExportToPdf(DateTime? fromDate, DateTime? toDate)
         {
-            fromDate ??= DateTime.Today.AddMonths(-1);
-            toDate ??= DateTime.Today;
+            try
+            {
+                fromDate ??= DateTime.Today.AddMonths(-1);
+                toDate ??= DateTime.Today;
 
-            var adjustments = await _stockAdjustmentService.GetAdjustmentsByDateRangeAsync(fromDate.Value, toDate.Value);
-            var statistics = await _stockAdjustmentService.GetAdjustmentStatisticsAsync(fromDate, toDate);
+                var adjustments = await _stockAdjustmentService.GetAdjustmentsByDateRangeAsync(fromDate.Value, toDate.Value);
 
-            // TODO: Implement PDF generation using iTextSharp or similar library
-            // For now, return NotImplemented
-            TempData["Info"] = "PDF export feature will be implemented soon";
-            return RedirectToAction(nameof(Report), new { fromDate, toDate });
+                using var ms = new System.IO.MemoryStream();
+                var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, ms);
+
+                document.Open();
+
+                // Title
+                var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 16);
+                var title = new iTextSharp.text.Paragraph("Stock Adjustment Report", titleFont);
+                title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                document.Add(title);
+
+                // Date Range
+                var dateFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+                var dateRange = new iTextSharp.text.Paragraph($"Period: {fromDate:dd MMM yyyy} - {toDate:dd MMM yyyy}", dateFont);
+                dateRange.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                dateRange.SpacingAfter = 10f;
+                document.Add(dateRange);
+
+                // Table
+                var table = new iTextSharp.text.pdf.PdfPTable(11);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 5f, 12f, 10f, 15f, 12f, 8f, 8f, 10f, 10f, 12f, 8f });
+
+                // Headers
+                var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 8);
+                var headers = new[] { "#", "Adjustment No", "Date", "Item", "Store", "Old Qty", "New Qty", "Adjustment", "Type", "Reason", "Status" };
+                foreach (var header in headers)
+                {
+                    var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                    cell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GRAY;
+                    cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    cell.Padding = 5f;
+                    table.AddCell(cell);
+                }
+
+                // Data
+                var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 7);
+                int serialNo = 1;
+                foreach (var item in adjustments.OrderByDescending(a => a.AdjustmentDate))
+                {
+                    table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.AdjustmentNo ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.AdjustmentDate.ToString("dd-MMM-yyyy"), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.ItemName ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.StoreName ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.OldQuantity?.ToString("N0") ?? "0", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.NewQuantity?.ToString("N0") ?? "0", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase((item.AdjustmentType == "Increase" ? "+" : "-") + item.AdjustmentQuantity?.ToString("N0"), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.AdjustmentType ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.Reason?.Substring(0, Math.Min(20, item.Reason.Length)) ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.Status ?? "", dataFont));
+                    serialNo++;
+                }
+
+                document.Add(table);
+                document.Close();
+
+                var fileName = $"StockAdjustment_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(ms.ToArray(), "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error generating PDF: " + ex.Message;
+                return RedirectToAction(nameof(Report), new { fromDate, toDate });
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> ExportToExcel(DateTime? fromDate, DateTime? toDate)
         {
-            fromDate ??= DateTime.Today.AddMonths(-1);
-            toDate ??= DateTime.Today;
+            try
+            {
+                fromDate ??= DateTime.Today.AddMonths(-1);
+                toDate ??= DateTime.Today;
 
-            var adjustments = await _stockAdjustmentService.GetAdjustmentsByDateRangeAsync(fromDate.Value, toDate.Value);
-            var statistics = await _stockAdjustmentService.GetAdjustmentStatisticsAsync(fromDate, toDate);
+                var adjustments = await _stockAdjustmentService.GetAdjustmentsByDateRangeAsync(fromDate.Value, toDate.Value);
 
-            // TODO: Implement Excel generation using EPPlus or ClosedXML
-            // For now, return NotImplemented
-            TempData["Info"] = "Excel export feature will be implemented soon";
-            return RedirectToAction(nameof(Report), new { fromDate, toDate });
+                using var workbook = new ClosedXML.Excel.XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Stock Adjustments");
+
+                // Title
+                worksheet.Cell(1, 1).Value = "Stock Adjustment Report";
+                worksheet.Cell(1, 1).Style.Font.Bold = true;
+                worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+                worksheet.Range(1, 1, 1, 11).Merge();
+
+                // Date Range
+                worksheet.Cell(2, 1).Value = $"Period: {fromDate:dd MMM yyyy} - {toDate:dd MMM yyyy}";
+                worksheet.Range(2, 1, 2, 11).Merge();
+
+                // Headers
+                var headerRow = 4;
+                worksheet.Cell(headerRow, 1).Value = "#";
+                worksheet.Cell(headerRow, 2).Value = "Adjustment No";
+                worksheet.Cell(headerRow, 3).Value = "Date";
+                worksheet.Cell(headerRow, 4).Value = "Item";
+                worksheet.Cell(headerRow, 5).Value = "Store";
+                worksheet.Cell(headerRow, 6).Value = "Old Qty";
+                worksheet.Cell(headerRow, 7).Value = "New Qty";
+                worksheet.Cell(headerRow, 8).Value = "Adjustment";
+                worksheet.Cell(headerRow, 9).Value = "Type";
+                worksheet.Cell(headerRow, 10).Value = "Reason";
+                worksheet.Cell(headerRow, 11).Value = "Status";
+
+                worksheet.Range(headerRow, 1, headerRow, 11).Style.Font.Bold = true;
+                worksheet.Range(headerRow, 1, headerRow, 11).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+
+                // Data
+                int row = headerRow + 1;
+                int serialNo = 1;
+                foreach (var item in adjustments.OrderByDescending(a => a.AdjustmentDate))
+                {
+                    worksheet.Cell(row, 1).Value = serialNo;
+                    worksheet.Cell(row, 2).Value = item.AdjustmentNo;
+                    worksheet.Cell(row, 3).Value = item.AdjustmentDate.ToString("dd-MMM-yyyy");
+                    worksheet.Cell(row, 4).Value = item.ItemName;
+                    worksheet.Cell(row, 5).Value = item.StoreName;
+                    worksheet.Cell(row, 6).Value = item.OldQuantity ?? 0;
+                    worksheet.Cell(row, 7).Value = item.NewQuantity ?? 0;
+                    worksheet.Cell(row, 8).Value = (item.AdjustmentType == "Increase" ? "+" : "-") + (item.AdjustmentQuantity ?? 0);
+                    worksheet.Cell(row, 9).Value = item.AdjustmentType;
+                    worksheet.Cell(row, 10).Value = item.Reason;
+                    worksheet.Cell(row, 11).Value = item.Status;
+
+                    row++;
+                    serialNo++;
+                }
+
+                // Auto-fit columns
+                worksheet.Columns().AdjustToContents();
+
+                using var ms = new System.IO.MemoryStream();
+                workbook.SaveAs(ms);
+
+                var fileName = $"StockAdjustment_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error generating Excel: " + ex.Message;
+                return RedirectToAction(nameof(Report), new { fromDate, toDate });
+            }
         }
 
         private async Task LoadViewBagData()
