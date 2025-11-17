@@ -994,10 +994,73 @@ namespace IMS.Web.Controllers
                         .ToList()
                 };
 
-                // TODO: Implement PDF generation using iTextSharp or similar library
-                // The reportData object contains all necessary data for the PDF
-                TempData["Info"] = "PDF export feature will be implemented soon";
-                return RedirectToAction(nameof(Report), new { startDate, endDate, status });
+                // Generate PDF using iTextSharp
+                using var ms = new System.IO.MemoryStream();
+                var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 25, 25, 30, 30);
+                var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, ms);
+
+                document.Open();
+
+                // Title
+                var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 16);
+                var title = new iTextSharp.text.Paragraph("Write-off Report", titleFont);
+                title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                document.Add(title);
+
+                // Date Range
+                var dateFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+                var dateRange = new iTextSharp.text.Paragraph($"Period: {start:dd MMM yyyy} - {end:dd MMM yyyy}", dateFont);
+                dateRange.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                dateRange.SpacingAfter = 10f;
+                document.Add(dateRange);
+
+                // Summary
+                var summaryFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+                var summary = new iTextSharp.text.Paragraph(
+                    $"Total: {reportData.TotalCount} | Approved: {reportData.ApprovedCount} | Pending: {reportData.PendingCount} | " +
+                    $"Rejected: {reportData.RejectedCount} | Total Value: ৳{reportData.TotalValue:N2}", summaryFont);
+                summary.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                summary.SpacingAfter = 10f;
+                document.Add(summary);
+
+                // Table
+                var table = new iTextSharp.text.pdf.PdfPTable(8);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 5f, 12f, 10f, 20f, 12f, 10f, 15f, 8f });
+
+                // Headers
+                var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 8);
+                var headers = new[] { "#", "Write-off No", "Date", "Reason", "Store", "Items", "Total Value", "Status" };
+                foreach (var header in headers)
+                {
+                    var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                    cell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GRAY;
+                    cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                    cell.Padding = 5f;
+                    table.AddCell(cell);
+                }
+
+                // Data
+                var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 7);
+                int serialNo = 1;
+                foreach (var item in writeOffs.OrderByDescending(w => w.WriteOffDate))
+                {
+                    table.AddCell(new iTextSharp.text.Phrase(serialNo.ToString(), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.WriteOffNo ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.WriteOffDate.ToString("dd-MMM-yyyy"), dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.Reason ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.StoreName ?? "", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase($"{item.Items?.Count() ?? 0} items", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase($"৳{item.TotalValue:N2}", dataFont));
+                    table.AddCell(new iTextSharp.text.Phrase(item.Status ?? "", dataFont));
+                    serialNo++;
+                }
+
+                document.Add(table);
+                document.Close();
+
+                var fileName = $"WriteOffReport_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(ms.ToArray(), "application/pdf", fileName);
             }
             catch (Exception ex)
             {
@@ -1066,10 +1129,65 @@ namespace IMS.Web.Controllers
                         .ToList()
                 };
 
-                // TODO: Implement Excel generation using EPPlus or ClosedXML
-                // The reportData object contains all necessary data for the Excel file
-                TempData["Info"] = "Excel export feature will be implemented soon";
-                return RedirectToAction(nameof(Report), new { startDate, endDate, status });
+                // Generate Excel using ClosedXML
+                using var workbook = new ClosedXML.Excel.XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Write-off Report");
+
+                // Title
+                worksheet.Cell(1, 1).Value = "Write-off Report";
+                worksheet.Cell(1, 1).Style.Font.Bold = true;
+                worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+                worksheet.Range(1, 1, 1, 8).Merge();
+
+                // Date Range
+                worksheet.Cell(2, 1).Value = $"Period: {start:dd MMM yyyy} - {end:dd MMM yyyy}";
+                worksheet.Range(2, 1, 2, 8).Merge();
+
+                // Summary
+                worksheet.Cell(3, 1).Value = $"Total: {reportData.TotalCount} | Approved: {reportData.ApprovedCount} | Pending: {reportData.PendingCount} | " +
+                    $"Rejected: {reportData.RejectedCount} | Total Value: ৳{reportData.TotalValue:N2}";
+                worksheet.Range(3, 1, 3, 8).Merge();
+
+                // Headers
+                var headerRow = 5;
+                worksheet.Cell(headerRow, 1).Value = "#";
+                worksheet.Cell(headerRow, 2).Value = "Write-off No";
+                worksheet.Cell(headerRow, 3).Value = "Date";
+                worksheet.Cell(headerRow, 4).Value = "Reason";
+                worksheet.Cell(headerRow, 5).Value = "Store";
+                worksheet.Cell(headerRow, 6).Value = "Items";
+                worksheet.Cell(headerRow, 7).Value = "Total Value";
+                worksheet.Cell(headerRow, 8).Value = "Status";
+
+                worksheet.Range(headerRow, 1, headerRow, 8).Style.Font.Bold = true;
+                worksheet.Range(headerRow, 1, headerRow, 8).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+
+                // Data
+                int row = headerRow + 1;
+                int serialNo = 1;
+                foreach (var item in writeOffs.OrderByDescending(w => w.WriteOffDate))
+                {
+                    worksheet.Cell(row, 1).Value = serialNo;
+                    worksheet.Cell(row, 2).Value = item.WriteOffNo;
+                    worksheet.Cell(row, 3).Value = item.WriteOffDate.ToString("dd-MMM-yyyy");
+                    worksheet.Cell(row, 4).Value = item.Reason;
+                    worksheet.Cell(row, 5).Value = item.StoreName;
+                    worksheet.Cell(row, 6).Value = $"{item.Items?.Count() ?? 0} items";
+                    worksheet.Cell(row, 7).Value = item.TotalValue;
+                    worksheet.Cell(row, 8).Value = item.Status;
+
+                    row++;
+                    serialNo++;
+                }
+
+                // Auto-fit columns
+                worksheet.Columns().AdjustToContents();
+
+                using var ms = new System.IO.MemoryStream();
+                workbook.SaveAs(ms);
+
+                var fileName = $"WriteOffReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }
             catch (Exception ex)
             {
@@ -1077,6 +1195,91 @@ namespace IMS.Web.Controllers
                 TempData["Error"] = "An error occurred while exporting to Excel.";
                 return RedirectToAction(nameof(Report), new { startDate, endDate, status });
             }
+        }
+
+        /// <summary>
+        /// Export write-off report to CSV
+        /// </summary>
+        [HttpGet]
+        [RequirePermission(Permission.ViewWriteOffReport)]
+        public async Task<IActionResult> ExportToCsv(DateTime? startDate, DateTime? endDate, string status = null)
+        {
+            try
+            {
+                var start = startDate ?? DateTime.Now.AddMonths(-1);
+                var end = endDate ?? DateTime.Now.Date.AddDays(1).AddSeconds(-1);
+
+                IEnumerable<WriteOffDto> writeOffs;
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    var filtered = await _writeOffService.GetWriteOffsByStatusAsync(status);
+                    writeOffs = filtered.Where(w => w.WriteOffDate >= start && w.WriteOffDate <= end);
+                }
+                else
+                {
+                    writeOffs = await _writeOffService.GetWriteOffsByDateRangeAsync(start, end);
+                }
+
+                var reportData = new WriteOffReportViewModel
+                {
+                    StartDate = start,
+                    EndDate = end,
+                    Status = status,
+                    WriteOffs = writeOffs,
+                    TotalCount = writeOffs.Count(),
+                    TotalValue = writeOffs.Where(w => w.Status == "Approved").Sum(w => w.TotalValue),
+                    ApprovedCount = writeOffs.Count(w => w.Status == "Approved"),
+                    PendingCount = writeOffs.Count(w => w.Status == "Pending"),
+                    RejectedCount = writeOffs.Count(w => w.Status == "Rejected"),
+                    DraftCount = writeOffs.Count(w => w.Status == "Draft")
+                };
+
+                // Generate CSV
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("Write-off Report");
+                csv.AppendLine($"Period: {start:dd MMM yyyy} - {end:dd MMM yyyy}");
+                csv.AppendLine($"Total: {reportData.TotalCount} | Approved: {reportData.ApprovedCount} | Pending: {reportData.PendingCount} | Rejected: {reportData.RejectedCount} | Total Value: ৳{reportData.TotalValue:N2}");
+                csv.AppendLine();
+                csv.AppendLine("#,Write-off No,Date,Reason,Store,Items Count,Total Value,Status");
+
+                int serialNo = 1;
+                foreach (var item in writeOffs.OrderByDescending(w => w.WriteOffDate))
+                {
+                    csv.AppendLine($"{serialNo}," +
+                                  $"\"{item.WriteOffNo}\"," +
+                                  $"\"{item.WriteOffDate:dd-MMM-yyyy}\"," +
+                                  $"\"{EscapeCsv(item.Reason)}\"," +
+                                  $"\"{EscapeCsv(item.StoreName)}\"," +
+                                  $"{item.Items?.Count() ?? 0}," +
+                                  $"{item.TotalValue:N2}," +
+                                  $"\"{item.Status}\"");
+                    serialNo++;
+                }
+
+                var fileName = $"WriteOffReport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting write-off report to CSV");
+                TempData["Error"] = "An error occurred while exporting to CSV.";
+                return RedirectToAction(nameof(Report), new { startDate, endDate, status });
+            }
+        }
+
+        /// <summary>
+        /// Helper method to escape CSV values
+        /// </summary>
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            if (value.Contains("\""))
+                value = value.Replace("\"", "\"\"");
+
+            return value;
         }
 
         #endregion
