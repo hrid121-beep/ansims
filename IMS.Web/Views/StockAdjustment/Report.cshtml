@@ -15,25 +15,25 @@
     var totalDecreaseQty = adjustments.Where(a => a.AdjustmentType == "Decrease").Sum(a => a.AdjustmentQuantity ?? 0);
 }
 
+<!-- Content Header (Page header) -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-chart-line text-info"></i> Adjustment Report
-                </h1>
+                <h1 class="m-0">Stock Adjustment Report</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-action="Index">Adjustments</a></li>
-                    <li class="breadcrumb-item active">Report</li>
+                    <li class="breadcrumb-item"><a asp-controller="Report" asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active">Adjustment Report</li>
                 </ol>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
 
@@ -53,43 +53,55 @@
             </div>
         }
 
-        <!-- Date Filter Card -->
-        <div class="card card-primary">
+        <!-- Filter Card -->
+        <div class="card card-secondary">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-filter"></i> Filter Options</h3>
             </div>
             <div class="card-body">
-                <form asp-action="Report" method="get" class="form-inline">
-                    <div class="form-group mr-3">
-                        <label for="fromDate" class="mr-2">From Date:</label>
-                        <input type="date" name="fromDate" id="fromDate" class="form-control"
-                               value="@(fromDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd"))">
+                <form asp-action="Report" method="get">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date:</label>
+                                <input type="date" name="fromDate" class="form-control"
+                                       value="@(fromDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd"))">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>To Date:</label>
+                                <input type="date" name="toDate" class="form-control"
+                                       value="@(toDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Store:</label>
+                                <select name="storeId" asp-items="ViewBag.Stores" class="form-control select2" style="width: 100%;">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Adjustment Type:</label>
+                                <select name="adjustmentType" class="form-control">
+                                    <option value="">All Types</option>
+                                    <option value="Increase">Increase</option>
+                                    <option value="Decrease">Decrease</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-secondary btn-block">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group mr-3">
-                        <label for="toDate" class="mr-2">To Date:</label>
-                        <input type="date" name="toDate" id="toDate" class="form-control"
-                               value="@(toDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))">
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Generate Report
-                    </button>
-                    <button type="button" class="btn btn-success ml-2" onclick="window.print()">
-                        <i class="fas fa-print"></i> Print
-                    </button>
-                    <button type="button" class="btn btn-info ml-2" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel"></i> Export Excel
-                    </button>
                 </form>
-            </div>
-        </div>
-
-        <!-- Report Period Info -->
-        <div class="card card-info">
-            <div class="card-body">
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar-alt"></i>
-                    Report Period: <strong>@fromDate?.ToString("dd MMM yyyy")</strong> to <strong>@toDate?.ToString("dd MMM yyyy")</strong>
-                </h5>
             </div>
         </div>
 
@@ -159,19 +171,29 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-table"></i> Detailed Adjustment Records</h3>
+                <div class="card-tools">
+                    <div class="btn-group mr-2">
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <table class="table table-bordered table-striped table-hover" id="reportTable">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th style="width: 50px;" class="text-center">#</th>
                             <th>Adjustment No</th>
                             <th>Date</th>
                             <th>Item</th>
                             <th>Store</th>
-                            <th>Old Qty</th>
-                            <th>New Qty</th>
-                            <th>Adjustment</th>
+                            <th class="text-right">Old Qty</th>
+                            <th class="text-right">New Qty</th>
+                            <th class="text-right">Adjustment</th>
                             <th>Type</th>
                             <th>Reason</th>
                             <th>Status</th>
@@ -192,7 +214,7 @@
                                 };
 
                                 <tr>
-                                    <td>@serial</td>
+                                    <td class="text-center">@serial</td>
                                     <td>
                                         <strong><code>@item.AdjustmentNo</code></strong>
                                     </td>
@@ -287,51 +309,42 @@
 
 @section Scripts {
     <script src="~/adminlte/plugins/chart.js/Chart.min.js"></script>
+    <script src="~/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Initialize DataTable (without buttons)
             $('#reportTable').DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": false,
-                "pageLength": 50,
+                "pageLength": 25,
                 "order": [[2, "desc"]], // Sort by date descending
                 "columnDefs": [
                     { "orderable": false, "targets": [0] } // Disable sorting on serial
                 ],
-                "buttons": [
-                    {
-                        extend: 'copy',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
+                "language": {
+                    "search": "অনুসন্ধান:",
+                    "lengthMenu": "প্রদর্শন _MENU_ এন্ট্রি",
+                    "info": "দেখানো হচ্ছে _START_ থেকে _END_ পর্যন্ত, মোট _TOTAL_ টি",
+                    "infoEmpty": "কোনো এন্ট্রি নেই",
+                    "infoFiltered": "(মোট _MAX_ এন্ট্রি থেকে ফিল্টার করা হয়েছে)",
+                    "paginate": {
+                        first: "প্রথম",
+                        last: "শেষ",
+                        next: "পরবর্তী",
+                        previous: "পূর্ববর্তী"
                     },
-                    {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':not(.no-export):not(:last-child)'
-                        }
-                    }
-                ]
-            }).buttons().container().appendTo('#reportTable_wrapper .col-md-6:eq(0)');
+                    "emptyTable": "টেবিলে কোনো ডেটা নেই"
+                }
+            });
 
             // Type Chart
             var increaseCount = @adjustments.Count(a => a.AdjustmentType == "Increase");
@@ -390,14 +403,35 @@
             });
         });
 
+        // Export to Excel
         function exportToExcel() {
-            var table = $('#reportTable').DataTable();
-            table.button('.buttons-excel').trigger();
+            var fromDate = '@(fromDate?.ToString("yyyy-MM-dd") ?? "")';
+            var toDate = '@(toDate?.ToString("yyyy-MM-dd") ?? "")';
+
+            var url = '@Url.Action("ExportToExcel", "StockAdjustment")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            window.location.href = url;
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            var fromDate = '@(fromDate?.ToString("yyyy-MM-dd") ?? "")';
+            var toDate = '@(toDate?.ToString("yyyy-MM-dd") ?? "")';
+
+            var url = '@Url.Action("ExportToPdf", "StockAdjustment")' +
+                      '?fromDate=' + encodeURIComponent(fromDate) +
+                      '&toDate=' + encodeURIComponent(toDate);
+
+            window.location.href = url;
         }
     </script>
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <style>
         @@media print {
             .main-header, .main-sidebar, .content-header, .card-tools, .btn, .breadcrumb {
@@ -411,28 +445,6 @@
 
             .info-box {
                 box-shadow: none !important;
-            }
-        }
-
-        .form-inline .form-group {
-            margin-bottom: 10px;
-        }
-
-        @@media (max-width: 768px) {
-            .form-inline .form-group {
-                display: block;
-                margin-right: 0 !important;
-                width: 100%;
-            }
-
-            .form-inline .form-control {
-                width: 100%;
-            }
-
-            .form-inline .btn {
-                width: 100%;
-                margin-top: 10px;
-                margin-left: 0 !important;
             }
         }
     </style>
