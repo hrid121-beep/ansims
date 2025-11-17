@@ -159,15 +159,32 @@ namespace IMS.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Report(DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> Report(DateTime? fromDate, DateTime? toDate, int? storeId = null, string adjustmentType = null)
         {
             fromDate ??= DateTime.Today.AddMonths(-1);
             toDate ??= DateTime.Today;
 
             var adjustments = await _stockAdjustmentService.GetAdjustmentsByDateRangeAsync(fromDate.Value, toDate.Value);
+
+            // Filter by store if provided
+            if (storeId.HasValue)
+            {
+                adjustments = adjustments.Where(a => a.StoreId == storeId.Value).ToList();
+            }
+
+            // Filter by adjustment type if provided
+            if (!string.IsNullOrEmpty(adjustmentType))
+            {
+                adjustments = adjustments.Where(a => a.AdjustmentType == adjustmentType).ToList();
+            }
+
             ViewBag.Statistics = await _stockAdjustmentService.GetAdjustmentStatisticsAsync(fromDate, toDate);
             ViewBag.FromDate = fromDate;
             ViewBag.ToDate = toDate;
+
+            // Load stores for dropdown
+            var stores = await _storeService.GetAllStoresAsync();
+            ViewBag.Stores = new SelectList(stores, "Id", "Name", storeId);
 
             return View(adjustments);
         }
