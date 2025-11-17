@@ -157,12 +157,17 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-table"></i> Physical Count Records</h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-success btn-sm" onclick="exportToCSV()">
-                        <i class="fas fa-file-csv"></i> Export CSV
-                    </button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
-                        <i class="fas fa-file-pdf"></i> Export PDF
-                    </button>
+                    <div class="btn-group mr-2">
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                    </div>
                     <a asp-action="Initiate" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Start New Count
                     </a>
@@ -335,6 +340,22 @@
             var fiscalYear = document.querySelector('select[name="fiscalYear"]').value;
 
             var url = '@Url.Action("ExportCountHistoryPdf", "PhysicalInventory")' + '?';
+            var params = [];
+
+            if (storeId) params.push('storeId=' + storeId);
+            if (status) params.push('status=' + status);
+            if (fiscalYear) params.push('fiscalYear=' + fiscalYear);
+
+            url += params.join('&');
+            window.location.href = url;
+        }
+
+        function exportToExcel() {
+            var storeId = document.querySelector('select[name="storeId"]').value;
+            var status = document.querySelector('select[name="status"]').value;
+            var fiscalYear = document.querySelector('select[name="fiscalYear"]').value;
+
+            var url = '@Url.Action("ExportCountHistoryExcel", "PhysicalInventory")' + '?';
             var params = [];
 
             if (storeId) params.push('storeId=' + storeId);

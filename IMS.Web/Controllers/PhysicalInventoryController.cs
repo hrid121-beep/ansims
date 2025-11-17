@@ -738,5 +738,26 @@ namespace IMS.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        // GET: PhysicalInventory/ExportCountHistoryExcel
+        [HasPermission(Permission.ExportPhysicalInventory)]
+        public async Task<IActionResult> ExportCountHistoryExcel(
+            int? storeId = null,
+            PhysicalInventoryStatus? status = null,
+            string fiscalYear = null)
+        {
+            try
+            {
+                var data = await _physicalInventoryService.ExportCountHistoryExcelAsync(storeId, status, fiscalYear);
+                var fileName = $"CountHistory_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting count history to Excel");
+                TempData["Error"] = "Error generating Excel report: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

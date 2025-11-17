@@ -2066,6 +2066,123 @@ namespace IMS.Application.Services
             }
         }
 
+        public async Task<byte[]> ExportCountHistoryExcelAsync(int? storeId = null, PhysicalInventoryStatus? status = null, string fiscalYear = null)
+        {
+            var query = _unitOfWork.PhysicalInventories.Query()
+                .Include(pi => pi.Store)
+                .Include(pi => pi.Details)
+                .AsQueryable();
+
+            // Apply filters
+            if (storeId.HasValue)
+                query = query.Where(pi => pi.StoreId == storeId.Value);
+
+            if (status.HasValue)
+                query = query.Where(pi => pi.Status == status.Value);
+
+            if (!string.IsNullOrEmpty(fiscalYear))
+                query = query.Where(pi => pi.FiscalYear == fiscalYear);
+
+            var inventories = await query
+                .OrderByDescending(pi => pi.CountDate)
+                .ToListAsync();
+
+            // Generate Excel using ClosedXML
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Physical Count History");
+
+            // Title
+            worksheet.Cell(1, 1).Value = "Bangladesh Ansar & VDP";
+            worksheet.Cell(1, 1).Style.Font.Bold = true;
+            worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+            worksheet.Range(1, 1, 1, 9).Merge();
+            worksheet.Cell(1, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+            // Subtitle
+            worksheet.Cell(2, 1).Value = "Physical Count History Report";
+            worksheet.Cell(2, 1).Style.Font.Bold = true;
+            worksheet.Cell(2, 1).Style.Font.FontSize = 12;
+            worksheet.Range(2, 1, 2, 9).Merge();
+            worksheet.Cell(2, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+            // Report Info
+            int currentRow = 4;
+            worksheet.Cell(currentRow, 1).Value = $"Generated: {DateTime.Now:dd-MMM-yyyy HH:mm}";
+            currentRow++;
+
+            if (storeId.HasValue)
+            {
+                var storeName = inventories.FirstOrDefault()?.Store?.Name;
+                worksheet.Cell(currentRow, 1).Value = $"Store: {storeName}";
+                currentRow++;
+            }
+
+            if (status.HasValue)
+            {
+                worksheet.Cell(currentRow, 1).Value = $"Status: {status.Value}";
+                currentRow++;
+            }
+
+            if (!string.IsNullOrEmpty(fiscalYear))
+            {
+                worksheet.Cell(currentRow, 1).Value = $"Fiscal Year: {fiscalYear}";
+                currentRow++;
+            }
+
+            worksheet.Cell(currentRow, 1).Value = $"Total Records: {inventories.Count}";
+            currentRow += 2;
+
+            // Headers
+            var headerRow = currentRow;
+            worksheet.Cell(headerRow, 1).Value = "#";
+            worksheet.Cell(headerRow, 2).Value = "Reference No";
+            worksheet.Cell(headerRow, 3).Value = "Store";
+            worksheet.Cell(headerRow, 4).Value = "Count Date";
+            worksheet.Cell(headerRow, 5).Value = "Type";
+            worksheet.Cell(headerRow, 6).Value = "Status";
+            worksheet.Cell(headerRow, 7).Value = "Variance";
+            worksheet.Cell(headerRow, 8).Value = "Progress %";
+            worksheet.Cell(headerRow, 9).Value = "Fiscal Year";
+
+            worksheet.Range(headerRow, 1, headerRow, 9).Style.Font.Bold = true;
+            worksheet.Range(headerRow, 1, headerRow, 9).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightBlue;
+            worksheet.Range(headerRow, 1, headerRow, 9).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+            // Data
+            int row = headerRow + 1;
+            int serialNo = 1;
+            foreach (var inventory in inventories)
+            {
+                var progress = 0;
+                if (inventory.Details != null && inventory.Details.Any())
+                {
+                    var countedItems = inventory.Details.Count(d => d.Status == CountStatus.Counted || d.Status == CountStatus.Verified);
+                    progress = (countedItems * 100) / inventory.Details.Count;
+                }
+
+                worksheet.Cell(row, 1).Value = serialNo;
+                worksheet.Cell(row, 2).Value = inventory.ReferenceNumber;
+                worksheet.Cell(row, 3).Value = inventory.Store?.Name;
+                worksheet.Cell(row, 4).Value = inventory.CountDate.ToString("dd-MMM-yyyy");
+                worksheet.Cell(row, 5).Value = inventory.CountType.ToString();
+                worksheet.Cell(row, 6).Value = inventory.Status.ToString();
+                worksheet.Cell(row, 7).Value = inventory.TotalVariance ?? 0;
+                worksheet.Cell(row, 8).Value = progress;
+                worksheet.Cell(row, 9).Value = inventory.FiscalYear;
+
+                row++;
+                serialNo++;
+            }
+
+            // Auto-fit columns
+            worksheet.Columns().AdjustToContents();
+
+            using var ms = new System.IO.MemoryStream();
+            workbook.SaveAs(ms);
+
+            return ms.ToArray();
+        }
+
         private string EscapeCsv(string value)
         {
             if (string.IsNullOrEmpty(value))
