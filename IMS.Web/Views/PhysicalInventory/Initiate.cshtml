@@ -239,17 +239,27 @@
             var storeId = $('#StoreId').val();
             if (!storeId) {
                 console.log('No store selected');
+                toastr.warning('Please select a store first.');
                 return;
             }
 
             console.log('Loading items for store:', storeId);
+
+            // Show loading indicator
+            var select = $('#SelectedItemIds');
+            select.prop('disabled', true);
 
             $.ajax({
                 url: '@Url.Action("GetStoreItems", "PhysicalInventory")',
                 data: { storeId: storeId },
                 success: function(data) {
                     console.log('Items loaded:', data);
-                    var select = $('#SelectedItemIds');
+
+                    // Destroy Select2 before modifying options
+                    if (select.hasClass('select2-hidden-accessible')) {
+                        select.select2('destroy');
+                    }
+
                     select.empty();
 
                     if (data && data.length > 0) {
@@ -263,16 +273,30 @@
                                 .attr('value', itemId)
                                 .text(itemCode + ' - ' + itemName));
                         });
-                        select.trigger('change');
-                        console.log('Items added to dropdown');
+                        console.log('Items added to dropdown:', data.length, 'items');
                     } else {
                         select.append('<option value="">No items available in this store</option>');
                         console.log('No items found for this store');
                     }
+
+                    // Re-initialize Select2
+                    select.select2({
+                        theme: 'bootstrap4',
+                        width: '100%',
+                        placeholder: 'Select items...',
+                        allowClear: true
+                    });
+
+                    // Re-enable the select
+                    select.prop('disabled', false);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error loading items:', error);
                     console.error('Response:', xhr.responseText);
+
+                    // Re-enable the select even on error
+                    select.prop('disabled', false);
+
                     toastr.error('Failed to load store items. Please try again.');
                 }
             });
