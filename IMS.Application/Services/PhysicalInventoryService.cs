@@ -1562,6 +1562,34 @@ namespace IMS.Application.Services
 
             return MapToDto(inventory);
         }
+
+        public async Task<bool> DeletePhysicalInventoryAsync(int inventoryId, string deletedBy)
+        {
+            var inventory = await GetPhysicalInventoryWithDetailsAsync(inventoryId);
+
+            if (inventory == null)
+                throw new InvalidOperationException("Physical inventory not found");
+
+            // Only allow deletion of Initiated, Cancelled, or Rejected inventories
+            if (inventory.Status != PhysicalInventoryStatus.Initiated &&
+                inventory.Status != PhysicalInventoryStatus.Cancelled &&
+                inventory.Status != PhysicalInventoryStatus.Rejected)
+            {
+                throw new InvalidOperationException(
+                    "Only Initiated, Cancelled, or Rejected inventories can be deleted.");
+            }
+
+            // Soft delete by setting IsActive to false
+            inventory.IsActive = false;
+            inventory.UpdatedBy = deletedBy;
+            inventory.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.PhysicalInventories.Update(inventory);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
+        }
+
         public async Task<IEnumerable<PhysicalInventoryHistoryDto>> GetInventoryHistoryAsync(
             int? storeId = null, int? itemId = null)
         {

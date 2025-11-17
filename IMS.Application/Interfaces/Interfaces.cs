@@ -1537,6 +1537,7 @@ namespace IMS.Application.Interfaces
         Task<IEnumerable<string>> GetAvailableFiscalYearsAsync();
         Task<PhysicalInventoryDto> CancelPhysicalInventoryAsync(
             int inventoryId, string cancelledBy, string cancellationReason);
+        Task<bool> DeletePhysicalInventoryAsync(int inventoryId, string deletedBy);
         Task<List<PhysicalInventoryDto>> GetAllCountsAsync();
         Task<List<PhysicalInventoryDto>> GetPendingCountsAsync();
 

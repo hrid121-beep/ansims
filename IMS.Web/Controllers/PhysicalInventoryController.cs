@@ -510,6 +510,43 @@ namespace IMS.Web.Controllers
             }
         }
 
+        // POST: PhysicalInventory/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var inventory = await _physicalInventoryService.GetPhysicalInventoryByIdAsync(id);
+                if (inventory == null)
+                {
+                    TempData["Error"] = "Physical inventory not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Only allow deletion of Initiated, Cancelled, or Rejected inventories
+                if (inventory.Status != PhysicalInventoryStatus.Initiated &&
+                    inventory.Status != PhysicalInventoryStatus.Cancelled &&
+                    inventory.Status != PhysicalInventoryStatus.Rejected)
+                {
+                    TempData["Error"] = "Only Initiated, Cancelled, or Rejected inventories can be deleted.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                await _physicalInventoryService.DeletePhysicalInventoryAsync(id, User.Identity.Name);
+
+                TempData["Success"] = $"Physical inventory '{inventory.ReferenceNumber}' has been deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting physical inventory {InventoryId}", id);
+                TempData["Error"] = "An error occurred while deleting the physical inventory.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         // GET: PhysicalInventory/VarianceReport/5
         [HasPermission(Permission.ViewPhysicalInventory)]
         public async Task<IActionResult> VarianceReport(int id)
