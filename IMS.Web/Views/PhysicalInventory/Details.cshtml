@@ -441,10 +441,15 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('.datatable').DataTable({
-                pageLength: 25,
-                order: [[5, 'desc']] // Sort by variance
-            });
+            // DataTable is already initialized globally in _Layout.cshtml
+            // Get reference to existing DataTable and update settings
+            try {
+                var table = $('.datatable').DataTable();
+                table.page.len(25).draw('page');
+                table.order([[5, 'desc']]).draw();
+            } catch (e) {
+                console.log('DataTable initialization handled globally');
+            }
         });
 
         function showCancelModal() {

@@ -687,16 +687,65 @@ namespace IMS.Application.Services
                 CountDate = inventory.CountDate,
                 CountType = inventory.CountType,
                 Status = inventory.Status,
+                StatusText = inventory.Status.ToString(),
                 FiscalYear = inventory.FiscalYear,
+
+                // Organizational hierarchy
+                BattalionId = inventory.BattalionId,
+                BattalionName = inventory.Battalion?.Name,
+                RangeId = inventory.RangeId,
+                RangeName = inventory.Range?.Name,
+                ZilaId = inventory.ZilaId,
+                ZilaName = inventory.Zila?.Name,
+                UpazilaId = inventory.UpazilaId,
+                UpazilaName = inventory.Upazila?.Name,
+
+                // Lifecycle tracking
                 InitiatedBy = inventory.InitiatedBy,
                 InitiatedDate = inventory.InitiatedDate,
+                CompletedBy = inventory.CompletedBy,
+                CompletedDate = inventory.CompletedDate,
+                VerifiedBy = inventory.VerifiedBy,
+                VerifiedDate = inventory.VerifiedDate,
+                ApprovedBy = inventory.ApprovedBy,
+                ApprovedDate = inventory.ApprovedDate,
+                ApprovalRemarks = inventory.ApprovalRemarks,
+                RejectedBy = inventory.RejectedBy,
+                RejectedDate = inventory.RejectedDate,
+                RejectionReason = inventory.RejectionReason,
+
+                // Financial data
                 TotalVariance = inventory.TotalVariance ?? 0,
                 TotalVarianceValue = inventory.TotalVarianceValue ?? 0,
+                TotalSystemValue = inventory.TotalSystemValue ?? 0,
+                TotalPhysicalValue = inventory.TotalPhysicalValue ?? 0,
+
+                // Audit information
+                IsAuditRequired = inventory.IsAuditRequired,
+                AuditOfficer = inventory.AuditOfficer,
+                Remarks = inventory.Remarks,
+
+                // Details
                 Details = inventory.Details?.Select(d => new PhysicalInventoryDetailDto
                 {
+                    Id = d.Id,
+                    PhysicalInventoryId = d.PhysicalInventoryId,
                     ItemId = d.ItemId,
-                    Status = d.Status
-                }).ToList()
+                    ItemCode = d.Item?.ItemCode ?? d.Item?.Code ?? "",
+                    ItemName = d.Item?.Name ?? "Unknown Item",
+                    CategoryId = d.CategoryId,
+                    CategoryName = d.Item?.SubCategory?.Category?.Name ?? "Uncategorized",
+                    SystemQuantity = d.SystemQuantity,
+                    PhysicalQuantity = d.PhysicalQuantity,
+                    Variance = d.Variance,
+                    VarianceValue = d.VarianceValue ?? 0,
+                    UnitPrice = d.UnitPrice ?? 0,
+                    Status = d.Status,
+                    CountedBy = d.CountedBy,
+                    CountedDate = d.CountedDate,
+                    Location = d.Location,
+                    Remarks = d.Remarks
+                }).ToList() ?? new List<PhysicalInventoryDetailDto>()
             };
         }
         public async Task<PhysicalInventoryDto> InitiatePhysicalInventoryAsync(PhysicalInventoryDto dto)
