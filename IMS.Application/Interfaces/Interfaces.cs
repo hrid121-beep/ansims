@@ -1532,6 +1532,7 @@ namespace IMS.Application.Interfaces
         Task<bool> CanUserInitiateCountAsync(string userId, int storeId);
         Task<PhysicalInventoryDto> SubmitForApprovalAsync(int inventoryId, string verifiedBy);
         Task<IEnumerable<ItemDto>> GetStoreItemsAsync(int storeId);
+        Task<PhysicalInventoryDto> GetOngoingInventoryForStoreAsync(int storeId);
         Task<string> GetCurrentFiscalYearAsync();
         Task<IEnumerable<string>> GetAvailableFiscalYearsAsync();
         Task<PhysicalInventoryDto> CancelPhysicalInventoryAsync(

@@ -1440,26 +1440,47 @@ namespace IMS.Application.Services
         }
         public async Task<IEnumerable<ItemDto>> GetStoreItemsAsync(int storeId)
         {
-            var storeStock = await _unitOfWork.StoreStocks
+            // CRITICAL FIX: Query from StoreItems table (not StoreStocks)
+            // StoreItems is the primary table used throughout the project
+            var storeItems = await _unitOfWork.StoreItems
                 .Query()
-                .Include(ss => ss.Item)
+                .Include(si => si.Item)
                     .ThenInclude(i => i.SubCategory)
-                        .ThenInclude(sc => sc.Category)  // Fix: Use proper navigation
-                .Where(ss => ss.StoreId == storeId && ss.Item != null)  // ✅ Ensure Item is not null
+                        .ThenInclude(sc => sc.Category)
+                .Where(si => si.StoreId == storeId && si.IsActive && si.Item != null && si.Item.IsActive)
                 .ToListAsync();
 
-            return storeStock
-                .Where(ss => ss.Item != null)  // ✅ Double check for null items
-                .Select(ss => new ItemDto
+            return storeItems
+                .Select(si => new ItemDto
                 {
-                    Id = ss.ItemId,
-                    ItemCode = ss.Item.ItemCode ?? ss.Item.Code ?? "",  // ✅ Handle both property names
-                    Code = ss.Item.ItemCode ?? ss.Item.Code ?? "",
-                    Name = ss.Item.Name ?? "Unknown Item",
-                    CategoryName = ss.Item.SubCategory?.Category?.Name ?? "Uncategorized"
+                    Id = si.ItemId,
+                    ItemCode = si.Item.ItemCode ?? si.Item.Code ?? "",
+                    Code = si.Item.ItemCode ?? si.Item.Code ?? "",
+                    Name = si.Item.Name ?? "Unknown Item",
+                    CategoryName = si.Item.SubCategory?.Category?.Name ?? "Uncategorized",
+                    CurrentStock = si.CurrentStock,
+                    Unit = si.Item.Unit ?? "Piece"
                 })
                 .ToList();
         }
+
+        public async Task<PhysicalInventoryDto> GetOngoingInventoryForStoreAsync(int storeId)
+        {
+            var ongoingInventory = await _unitOfWork.PhysicalInventories
+                .Query()
+                .Include(pi => pi.Store)
+                .FirstOrDefaultAsync(pi =>
+                    pi.StoreId == storeId &&
+                    pi.Status != PhysicalInventoryStatus.Approved &&
+                    pi.Status != PhysicalInventoryStatus.Rejected &&
+                    pi.Status != PhysicalInventoryStatus.Cancelled);
+
+            if (ongoingInventory == null)
+                return null;
+
+            return MapToDto(ongoingInventory);
+        }
+
         public async Task<string> GetCurrentFiscalYearAsync()
         {
             var currentDate = DateTime.Now;

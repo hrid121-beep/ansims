@@ -91,6 +91,14 @@ namespace IMS.Web.Controllers
                         TempData["Error"] = "You don't have permission to initiate count for this store.";
                         return RedirectToAction(nameof(Index));
                     }
+
+                    // Check for ongoing inventory for this store
+                    var ongoingInventory = await _physicalInventoryService.GetOngoingInventoryForStoreAsync(storeId.Value);
+                    if (ongoingInventory != null)
+                    {
+                        ViewBag.OngoingInventory = ongoingInventory;
+                        ViewBag.OngoingInventoryWarning = $"This store already has an ongoing physical inventory (Ref: {ongoingInventory.ReferenceNumber}, Status: {ongoingInventory.Status}). Please complete or cancel it before starting a new count.";
+                    }
                 }
 
                 await LoadInitiateViewBagData(storeId);
