@@ -365,5 +365,39 @@ namespace IMS.Web.Controllers
                 "Other"
             });
         }
+
+        // POST: StockAdjustment/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,DDGAdmin,DDStore")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var adjustment = await _stockAdjustmentService.GetStockAdjustmentByIdAsync(id);
+                if (adjustment == null)
+                {
+                    TempData["Error"] = "Stock adjustment not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                await _stockAdjustmentService.DeleteStockAdjustmentAsync(id, User.Identity.Name);
+
+                TempData["Success"] = $"Stock adjustment '{adjustment.AdjustmentNo}' has been deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Business logic validation error (status, stock movement, etc.)
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting stock adjustment {AdjustmentId}", id);
+                TempData["Error"] = "An error occurred while deleting the stock adjustment.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

@@ -631,6 +631,70 @@ namespace IMS.Application.Services
             );
         }
 
+        /// <summary>
+        /// Deletes a stock adjustment with comprehensive validation
+        /// </summary>
+        public async Task<bool> DeleteStockAdjustmentAsync(int adjustmentId, string deletedBy)
+        {
+            var adjustment = await _unitOfWork.StockAdjustments
+                .Query()
+                .Include(a => a.Items)
+                .FirstOrDefaultAsync(a => a.Id == adjustmentId);
+
+            if (adjustment == null)
+                throw new InvalidOperationException("Stock adjustment not found");
+
+            // 1. Status Check - Only allow deletion of Pending, Rejected, or Cancelled
+            if (adjustment.Status != "Pending" &&
+                adjustment.Status != "Rejected" &&
+                adjustment.Status != "Cancelled" &&
+                adjustment.Status != "Draft")
+            {
+                throw new InvalidOperationException(
+                    "Only Pending, Draft, Rejected, or Cancelled adjustments can be deleted. " +
+                    $"Current status: {adjustment.Status}");
+            }
+
+            // 2. CRITICAL: Check StockMovement records
+            var hasStockMovements = await _unitOfWork.StockMovements
+                .Query()
+                .AnyAsync(sm => sm.ReferenceType == "StockAdjustment" && sm.ReferenceId == adjustmentId);
+
+            if (hasStockMovements)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete - Stock movement records exist for this adjustment. " +
+                    "This adjustment has already impacted inventory. Contact administrator for reversal.");
+            }
+
+            // 3. Check if approved (double safety check)
+            if (adjustment.IsApproved || adjustment.Status == "Approved" || adjustment.Status == "Posted")
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete approved or posted adjustments. This violates audit trail integrity.");
+            }
+
+            // 4. Soft Delete (NEVER hard delete transactional data!)
+            adjustment.IsActive = false;
+            adjustment.UpdatedBy = deletedBy;
+            adjustment.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.StockAdjustments.Update(adjustment);
+            await _unitOfWork.CompleteAsync();
+
+            // 5. Log the deletion
+            await _activityLogService.LogActivityAsync(
+                "Stock Adjustment",
+                adjustment.Id,
+                "Delete",
+                $"Stock Adjustment {adjustment.AdjustmentNo} deleted by {deletedBy}. " +
+                $"Reason: {adjustment.Reason}",
+                deletedBy
+            );
+
+            return true;
+        }
+
         #endregion
     }
 }

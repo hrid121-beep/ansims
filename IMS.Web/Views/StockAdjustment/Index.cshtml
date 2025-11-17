@@ -188,6 +188,17 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             }
+                                            @if ((User.IsInRole("Admin") || User.IsInRole("DDGAdmin") || User.IsInRole("DDStore")) &&
+                                                (item.Status == "Pending" || item.Status == "Draft" ||
+                                                 item.Status == "Rejected" || item.Status == "Cancelled"))
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Delete"
+                                                        onclick="confirmDeleteAdjustment(@item.Id, '@item.AdjustmentNo')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -311,5 +322,44 @@
                 $('#rejectModal').modal('show');
             });
         });
+
+        function confirmDeleteAdjustment(id, adjustmentNo) {
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `Do you want to delete Stock Adjustment <strong>${adjustmentNo}</strong>?<br><br>` +
+                      '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone!</span><br>' +
+                      '<small class="text-muted">Note: Deletion is only allowed for Pending, Draft, Rejected, or Cancelled adjustments without stock movements.</small>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it!',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create and submit form
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '@Url.Action("Delete", "StockAdjustment")/' + id;
+
+                    // Add anti-forgery token
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (token) {
+                        var tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = '__RequestVerificationToken';
+                        tokenInput.value = token.value;
+                        form.appendChild(tokenInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     </script>
 }
+<!-- Hidden form for anti-forgery token -->
+<form id="deleteForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>

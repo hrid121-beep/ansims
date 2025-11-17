@@ -927,6 +927,7 @@ namespace IMS.Application.Interfaces
         Task<StockAdjustmentDto> GetAdjustmentAsync(int id);
         Task<List<StockAdjustmentDto>> GetAdjustmentsAsync();
         Task<bool> ProcessAdjustmentAsync(int id);
+        Task<bool> DeleteStockAdjustmentAsync(int adjustmentId, string deletedBy);
 
     }
 
