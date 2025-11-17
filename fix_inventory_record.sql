@@ -19,7 +19,14 @@ FROM PhysicalInventories
 WHERE Id = 1;
 
 -- If you have multiple records with NULL values, use this query to find them:
-SELECT Id, ReferenceNumber, FiscalYear, StoreId, StoreName = S.Name, Status, CountDate
+SELECT
+    PI.Id,
+    PI.ReferenceNumber,
+    PI.FiscalYear,
+    PI.StoreId,
+    StoreName = S.Name,
+    PI.Status,
+    PI.CountDate
 FROM PhysicalInventories PI
 LEFT JOIN Stores S ON PI.StoreId = S.Id
-WHERE ReferenceNumber IS NULL OR FiscalYear IS NULL;
+WHERE PI.ReferenceNumber IS NULL OR PI.FiscalYear IS NULL;
