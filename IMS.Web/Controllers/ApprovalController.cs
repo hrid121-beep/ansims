@@ -842,5 +842,52 @@ namespace IMS.Web.Controllers
                 return $"{entityType} #{entityId}";
             }
         }
+
+        // DEBUG: Test Physical Inventory loading
+        [HttpGet]
+        public async Task<IActionResult> DebugPhysicalInventories()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userRoles = await _userManager.GetRolesAsync(await _userManager.FindByIdAsync(userId));
+
+            // Get all Physical Inventories in UnderReview status
+            var allInventories = await _unitOfWork.PhysicalInventories
+                .Query()
+                .Include(pi => pi.Store)
+                .Where(pi => pi.Status == PhysicalInventoryStatus.UnderReview)
+                .ToListAsync();
+
+            var result = new
+            {
+                CurrentUser = User.Identity.Name,
+                UserId = userId,
+                UserRoles = userRoles.ToList(),
+                TotalUnderReview = allInventories.Count,
+                AllInventories = allInventories.Select(inv => new
+                {
+                    inv.Id,
+                    inv.ReferenceNumber,
+                    inv.Status,
+                    StatusValue = (int)inv.Status,
+                    inv.IsActive,
+                    inv.StoreId,
+                    StoreName = inv.Store?.Name,
+                    inv.InitiatedBy,
+                    inv.InitiatedDate,
+                    inv.TotalVarianceValue
+                }).ToList(),
+                CanApproveCheck = new
+                {
+                    IsAdmin = User.IsInRole("Admin"),
+                    IsDirector = User.IsInRole("Director"),
+                    IsStoreManager = User.IsInRole("StoreManager"),
+                    IsDDGAdmin = userRoles.Contains("DDGAdmin"),
+                    IsDDStore = userRoles.Contains("DDStore"),
+                    IsADStore = userRoles.Contains("ADStore")
+                }
+            };
+
+            return Json(result);
+        }
     }
 }
