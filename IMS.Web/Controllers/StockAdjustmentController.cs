@@ -394,8 +394,7 @@ namespace IMS.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting stock adjustment {AdjustmentId}", id);
-                TempData["Error"] = "An error occurred while deleting the stock adjustment.";
+                TempData["Error"] = $"An error occurred while deleting the stock adjustment: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
