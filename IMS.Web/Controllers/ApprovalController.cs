@@ -328,32 +328,76 @@ namespace IMS.Web.Controllers
                     return Json(new { success = false, message = "Approval request not found" });
                 }
 
-                var dto = new ApprovalActionDto
-                {
-                    EntityType = approvalRequest.EntityType,
-                    EntityId = approvalRequest.EntityId,
-                    ApprovedBy = userId,
-                    ApprovedDate = DateTime.Now,
-                    Remarks = remarks
-                };
-
                 bool result = false;
                 string message = "";
 
-                if (action.ToLower() == "approve")
+                // Admin can approve/reject anything directly without level checks
+                if (User.IsInRole("Admin"))
                 {
-                    result = await _approvalService.ApproveRequestAsync(dto);
-                    message = result ? "Approved successfully" : "Failed to approve";
-
-                    if (result)
+                    if (action.ToLower() == "approve")
                     {
+                        // Admin bypass: Direct approval
+                        approvalRequest.Status = ApprovalStatus.Approved.ToString();
+                        approvalRequest.ApprovedBy = userId;
+                        approvalRequest.ApprovedDate = DateTime.Now;
+                        approvalRequest.Remarks = remarks ?? "Approved by Admin";
+
+                        _unitOfWork.ApprovalRequests.Update(approvalRequest);
+                        await _unitOfWork.CompleteAsync();
+
+                        // Log admin bypass approval
+                        _logger.LogInformation($"Admin {User.Identity.Name} directly approved {approvalRequest.EntityType} #{approvalRequest.EntityId} (bypassing approval levels)");
+
                         await HandlePostApprovalActions(approvalRequest);
+
+                        result = true;
+                        message = "Approved successfully by Admin";
+                    }
+                    else if (action.ToLower() == "reject")
+                    {
+                        // Admin bypass: Direct rejection
+                        approvalRequest.Status = ApprovalStatus.Rejected.ToString();
+                        approvalRequest.RejectedBy = userId;
+                        approvalRequest.RejectedDate = DateTime.Now;
+                        approvalRequest.Remarks = remarks ?? "Rejected by Admin";
+
+                        _unitOfWork.ApprovalRequests.Update(approvalRequest);
+                        await _unitOfWork.CompleteAsync();
+
+                        // Log admin bypass rejection
+                        _logger.LogInformation($"Admin {User.Identity.Name} directly rejected {approvalRequest.EntityType} #{approvalRequest.EntityId} (bypassing approval levels)");
+
+                        result = true;
+                        message = "Rejected successfully by Admin";
                     }
                 }
-                else if (action.ToLower() == "reject")
+                else
                 {
-                    result = await _approvalService.RejectRequestAsync(dto);
-                    message = result ? "Rejected successfully" : "Failed to reject";
+                    // Non-Admin: Use standard approval service with level checks
+                    var dto = new ApprovalActionDto
+                    {
+                        EntityType = approvalRequest.EntityType,
+                        EntityId = approvalRequest.EntityId,
+                        ApprovedBy = userId,
+                        ApprovedDate = DateTime.Now,
+                        Remarks = remarks
+                    };
+
+                    if (action.ToLower() == "approve")
+                    {
+                        result = await _approvalService.ApproveRequestAsync(dto);
+                        message = result ? "Approved successfully" : "Failed to approve";
+
+                        if (result)
+                        {
+                            await HandlePostApprovalActions(approvalRequest);
+                        }
+                    }
+                    else if (action.ToLower() == "reject")
+                    {
+                        result = await _approvalService.RejectRequestAsync(dto);
+                        message = result ? "Rejected successfully" : "Failed to reject";
+                    }
                 }
 
                 return Json(new { success = result, message = message });
