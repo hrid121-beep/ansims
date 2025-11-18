@@ -562,6 +562,7 @@ namespace IMS.Application.Interfaces
         // Helper Methods
         Task<string> GenerateDamageNoAsync();
         Task<bool> DamageNoExistsAsync(string damageNo);
+        Task<bool> DeleteDamageAsync(int damageId, string deletedBy);
     }
 
     // Return Service Interface

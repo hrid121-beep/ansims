@@ -517,6 +517,86 @@ namespace IMS.Application.Services
             };
         }
 
+        /// <summary>
+        /// Deletes a damage report with comprehensive validation
+        /// </summary>
+        public async Task<bool> DeleteDamageAsync(int damageId, string deletedBy)
+        {
+            var damageReport = await _unitOfWork.DamageReports
+                .Query()
+                .Include(d => d.Items)
+                .FirstOrDefaultAsync(d => d.Id == damageId);
+
+            if (damageReport == null)
+                throw new InvalidOperationException("Damage report not found");
+
+            // 1. Status Check - Only allow deletion of Reported or Rejected damages
+            if (damageReport.Status != DamageStatus.Reported &&
+                damageReport.Status != DamageStatus.Rejected &&
+                damageReport.Status != DamageStatus.Draft)
+            {
+                throw new InvalidOperationException(
+                    "Only Reported, Draft, or Rejected damage reports can be deleted. " +
+                    $"Current status: {damageReport.Status}");
+            }
+
+            // 2. CRITICAL: Check if WriteOffRequest exists for this damage
+            var hasWriteOffRequest = await _unitOfWork.WriteOffRequests
+                .Query()
+                .AnyAsync(wr => wr.DamageReportId == damageId);
+
+            if (hasWriteOffRequest)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete - A Write-Off request has been created for this damage report. " +
+                    "The damage has been processed into the write-off workflow. " +
+                    "Please cancel or delete the write-off request first.");
+            }
+
+            // 3. Check StockMovement records
+            var hasStockMovements = await _unitOfWork.StockMovements
+                .Query()
+                .AnyAsync(sm => (sm.ReferenceType == "Damage" || sm.ReferenceType == "DamageReport")
+                    && sm.ReferenceId == damageId);
+
+            if (hasStockMovements)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete - Stock movement records exist for this damage report. " +
+                    "This damage has already impacted inventory. Contact administrator for reversal.");
+            }
+
+            // 4. Check if damage is Approved or Processed
+            if (damageReport.Status == DamageStatus.Approved ||
+                damageReport.Status == DamageStatus.Processed ||
+                damageReport.Status == DamageStatus.WriteOffCreated)
+            {
+                throw new InvalidOperationException(
+                    "Cannot delete approved or processed damage reports. This violates audit trail integrity.");
+            }
+
+            // 5. Soft Delete (NEVER hard delete transactional data!)
+            damageReport.IsActive = false;
+            damageReport.UpdatedBy = deletedBy;
+            damageReport.UpdatedAt = DateTime.Now;
+
+            _unitOfWork.DamageReports.Update(damageReport);
+            await _unitOfWork.CompleteAsync();
+
+            // 6. Log the deletion
+            await _activityLogService.LogActivityAsync(
+                "Damage Report",
+                damageReport.Id,
+                "Delete",
+                $"Damage report {damageReport.ReportNo} deleted by {deletedBy}. " +
+                $"Type: {damageReport.DamageType}, Items: {damageReport.Items?.Count ?? 0}, " +
+                $"Value: ₹{damageReport.TotalValue:N2}",
+                deletedBy
+            );
+
+            return true;
+        }
+
         #endregion
     }
 }

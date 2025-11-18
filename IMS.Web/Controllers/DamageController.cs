@@ -920,6 +920,40 @@ namespace IMS.Web.Controllers
             }
         }
 
+        // POST: Damage/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,StoreManager")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var damage = await _damageService.GetDamageByIdAsync(id);
+                if (damage == null)
+                {
+                    TempData["Error"] = "Damage report not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                await _damageService.DeleteDamageAsync(id, User.Identity.Name);
+
+                TempData["Success"] = $"Damage report '{damage.DamageNo}' has been deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Business logic validation error (status, WriteOff, StockMovement, etc.)
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting damage report {DamageId}", id);
+                TempData["Error"] = "An error occurred while deleting the damage report.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         #endregion
     }
 
