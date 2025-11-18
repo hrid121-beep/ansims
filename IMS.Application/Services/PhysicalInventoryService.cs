@@ -22,6 +22,7 @@ namespace IMS.Application.Services
         private readonly IStockService _stockService;
         private readonly INotificationService _notificationService;
         private readonly IApprovalService _approvalService;
+        private readonly IActivityLogService _activityLogService;
         private readonly ILogger<PhysicalInventoryService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -30,6 +31,7 @@ namespace IMS.Application.Services
             IStockService stockService,
             INotificationService notificationService,
             IApprovalService approvalService,
+            IActivityLogService activityLogService,
             ILogger<PhysicalInventoryService> logger,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -37,6 +39,7 @@ namespace IMS.Application.Services
             _stockService = stockService;
             _notificationService = notificationService;
             _approvalService = approvalService;
+            _activityLogService = activityLogService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
         }
