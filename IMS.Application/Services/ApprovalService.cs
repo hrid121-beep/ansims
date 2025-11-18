@@ -129,23 +129,30 @@ namespace IMS.Application.Services
                 if (request == null)
                     throw new InvalidOperationException("Approval request not found or not pending");
 
-                // CRITICAL FIX: Validate user has required role to approve
-                var approvalSteps = await _unitOfWork.ApprovalSteps
-                    .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
-                                        step.Status == ApprovalStatus.Pending);
+                // Check if user is Admin - Admin can approve anything
+                var user = await _userManager.FindByIdAsync(dto.ApprovedBy);
+                var isAdmin = user != null && await _userManager.IsInRoleAsync(user, "Admin");
 
-                if (approvalSteps.Any())
+                // Validate user has required role to approve (skip for Admin)
+                if (!isAdmin)
                 {
-                    var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
-                    if (currentStep != null)
+                    var approvalSteps = await _unitOfWork.ApprovalSteps
+                        .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
+                                            step.Status == ApprovalStatus.Pending);
+
+                    if (approvalSteps.Any())
                     {
-                        var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
-                        if (!canApprove)
+                        var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
+                        if (currentStep != null)
                         {
-                            await _unitOfWork.RollbackTransactionAsync();
-                            throw new UnauthorizedAccessException(
-                                $"User does not have required role '{currentStep.ApproverRole}' to approve this request"
-                            );
+                            var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
+                            if (!canApprove)
+                            {
+                                await _unitOfWork.RollbackTransactionAsync();
+                                throw new UnauthorizedAccessException(
+                                    $"User not authorized to approve at this level. Required role: '{currentStep.ApproverRole}'"
+                                );
+                            }
                         }
                     }
                 }
@@ -213,23 +220,30 @@ namespace IMS.Application.Services
                 if (request == null)
                     throw new InvalidOperationException("Approval request not found or not pending");
 
-                // CRITICAL FIX: Validate user has required role to reject
-                var approvalSteps = await _unitOfWork.ApprovalSteps
-                    .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
-                                        step.Status == ApprovalStatus.Pending);
+                // Check if user is Admin - Admin can reject anything
+                var user = await _userManager.FindByIdAsync(dto.ApprovedBy);
+                var isAdmin = user != null && await _userManager.IsInRoleAsync(user, "Admin");
 
-                if (approvalSteps.Any())
+                // Validate user has required role to reject (skip for Admin)
+                if (!isAdmin)
                 {
-                    var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
-                    if (currentStep != null)
+                    var approvalSteps = await _unitOfWork.ApprovalSteps
+                        .GetAllAsync(step => step.ApprovalRequestId == request.Id &&
+                                            step.Status == ApprovalStatus.Pending);
+
+                    if (approvalSteps.Any())
                     {
-                        var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
-                        if (!canApprove)
+                        var currentStep = approvalSteps.OrderBy(s => s.StepLevel).FirstOrDefault();
+                        if (currentStep != null)
                         {
-                            await _unitOfWork.RollbackTransactionAsync();
-                            throw new UnauthorizedAccessException(
-                                $"User does not have required role '{currentStep.ApproverRole}' to reject this request"
-                            );
+                            var canApprove = await CanApproveAsync(dto.ApprovedBy, currentStep.ApproverRole);
+                            if (!canApprove)
+                            {
+                                await _unitOfWork.RollbackTransactionAsync();
+                                throw new UnauthorizedAccessException(
+                                    $"User not authorized to approve at this level. Required role: '{currentStep.ApproverRole}'"
+                                );
+                            }
                         }
                     }
                 }
