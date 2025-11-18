@@ -857,6 +857,12 @@ namespace IMS.Web.Controllers
                 .Where(pi => pi.Status == PhysicalInventoryStatus.UnderReview)
                 .ToListAsync();
 
+            // Test the actual GetAllPendingApprovals method
+            var pendingApprovals = await GetAllPendingApprovals();
+            var physicalInventoryApprovals = pendingApprovals
+                .Where(a => a.EntityType == "PHYSICAL_INVENTORY")
+                .ToList();
+
             var result = new
             {
                 CurrentUser = User.Identity.Name,
@@ -884,7 +890,22 @@ namespace IMS.Web.Controllers
                     IsDDGAdmin = userRoles.Contains("DDGAdmin"),
                     IsDDStore = userRoles.Contains("DDStore"),
                     IsADStore = userRoles.Contains("ADStore")
-                }
+                },
+                // NEW: Check what GetAllPendingApprovals returns
+                TotalPendingApprovals = pendingApprovals.Count,
+                PhysicalInventoryApprovalsCount = physicalInventoryApprovals.Count,
+                PhysicalInventoryApprovals = physicalInventoryApprovals.Select(a => new
+                {
+                    a.Id,
+                    a.EntityType,
+                    a.Description,
+                    a.Amount,
+                    a.RequestedBy,
+                    a.Priority
+                }).ToList(),
+                AllPendingByType = pendingApprovals.GroupBy(a => a.EntityType)
+                    .Select(g => new { EntityType = g.Key, Count = g.Count() })
+                    .ToList()
             };
 
             return Json(result);
