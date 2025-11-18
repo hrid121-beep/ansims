@@ -154,12 +154,13 @@ namespace IMS.Application.Services
 
             return new TemperatureStatisticsDto
             {
-                TotalLogs = logs.Count,
+                TotalReadings = logs.Count,
                 AlertCount = logs.Count(l => l.IsAlert),
                 AverageTemperature = logs.Any() ? logs.Average(l => l.Temperature) : 0,
                 MinTemperature = logs.Any() ? logs.Min(l => l.Temperature) : 0,
                 MaxTemperature = logs.Any() ? logs.Max(l => l.Temperature) : 0,
-                AverageHumidity = logs.Any() ? logs.Average(l => l.Humidity) : 0
+                AverageHumidity = logs.Any() ? logs.Average(l => l.Humidity) : 0,
+                ComplianceRate = logs.Any() ? (decimal)(logs.Count(l => !l.IsAlert) * 100.0 / logs.Count) : 100
             };
         }
 

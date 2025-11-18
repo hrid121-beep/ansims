@@ -152,6 +152,7 @@ namespace IMS.Application.Interfaces
         IRepository<SignatoryPreset> SignatoryPresets { get; }
 
         IRepository<Document> Documents { get; }
+        IRepository<TemperatureLog> TemperatureLogs { get; }
 
         // Transaction methods
         Task<int> CompleteAsync();

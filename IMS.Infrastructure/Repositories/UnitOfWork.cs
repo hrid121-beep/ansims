@@ -117,6 +117,7 @@ namespace IMS.Infrastructure.Repositories
         private IRepository<SignatoryPreset> _signatoryPresets;
 
         private IRepository<Document> _documents;
+        private IRepository<TemperatureLog> _temperatureLogs;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -226,6 +227,7 @@ namespace IMS.Infrastructure.Repositories
         public IRepository<SignatoryPreset> SignatoryPresets => _signatoryPresets ??= new Repository<SignatoryPreset>(_context);
 
         public IRepository<Document> Documents => _documents ??= new Repository<Document>(_context);
+        public IRepository<TemperatureLog> TemperatureLogs => _temperatureLogs ??= new Repository<TemperatureLog>(_context);
 
 
         // Transaction methods

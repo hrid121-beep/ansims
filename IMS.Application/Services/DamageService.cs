@@ -532,11 +532,10 @@ namespace IMS.Application.Services
 
             // 1. Status Check - Only allow deletion of Reported or Rejected damages
             if (damageReport.Status != DamageStatus.Reported &&
-                damageReport.Status != DamageStatus.Rejected &&
-                damageReport.Status != DamageStatus.Draft)
+                damageReport.Status != DamageStatus.Rejected)
             {
                 throw new InvalidOperationException(
-                    "Only Reported, Draft, or Rejected damage reports can be deleted. " +
+                    "Only Reported or Rejected damage reports can be deleted. " +
                     $"Current status: {damageReport.Status}");
             }
 
@@ -566,13 +565,14 @@ namespace IMS.Application.Services
                     "This damage has already impacted inventory. Contact administrator for reversal.");
             }
 
-            // 4. Check if damage is Approved or Processed
+            // 4. Check if damage is Approved or UnderReview (being processed)
             if (damageReport.Status == DamageStatus.Approved ||
-                damageReport.Status == DamageStatus.Processed ||
-                damageReport.Status == DamageStatus.WriteOffCreated)
+                damageReport.Status == DamageStatus.Verified ||
+                damageReport.Status == DamageStatus.UnderReview ||
+                damageReport.Status == DamageStatus.WrittenOff)
             {
                 throw new InvalidOperationException(
-                    "Cannot delete approved or processed damage reports. This violates audit trail integrity.");
+                    "Cannot delete approved, verified, or written-off damage reports. This violates audit trail integrity.");
             }
 
             // 5. Soft Delete (NEVER hard delete transactional data!)

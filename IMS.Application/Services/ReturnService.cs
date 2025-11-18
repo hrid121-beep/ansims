@@ -1195,13 +1195,13 @@ namespace IMS.Application.Services
             if (returnRequest == null)
                 throw new InvalidOperationException("Return request not found");
 
-            // 1. Status Check - Only allow deletion of Pending or Rejected returns
-            if (returnRequest.Status != "Pending" &&
-                returnRequest.Status != "Rejected" &&
-                returnRequest.Status != "Draft")
+            // 1. Status Check - Only allow deletion of Pending, Rejected, or Cancelled returns
+            if (returnRequest.Status != ReturnStatus.Pending &&
+                returnRequest.Status != ReturnStatus.Rejected &&
+                returnRequest.Status != ReturnStatus.Cancelled)
             {
                 throw new InvalidOperationException(
-                    "Only Pending, Draft, or Rejected returns can be deleted. " +
+                    "Only Pending, Rejected, or Cancelled returns can be deleted. " +
                     $"Current status: {returnRequest.Status}");
             }
 
@@ -1224,11 +1224,11 @@ namespace IMS.Application.Services
                     "Cannot delete - Return has already been restocked into inventory.");
             }
 
-            // 4. Check if already processed (approved, received, etc.)
-            if (returnRequest.Status == "Approved" ||
-                returnRequest.Status == "Received" ||
-                returnRequest.Status == "Restocked" ||
-                returnRequest.Status == "Completed")
+            // 4. Check if already processed (approved, in-process, completed, etc.)
+            if (returnRequest.Status == ReturnStatus.Approved ||
+                returnRequest.Status == ReturnStatus.ConditionChecked ||
+                returnRequest.Status == ReturnStatus.InProcess ||
+                returnRequest.Status == ReturnStatus.Completed)
             {
                 throw new InvalidOperationException(
                     "Cannot delete processed returns. This violates audit trail integrity.");
