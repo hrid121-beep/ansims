@@ -70,6 +70,21 @@ namespace IMS.Web.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetPendingCount()
+        {
+            try
+            {
+                var pendingApprovals = await GetAllPendingApprovals();
+                return Json(new { count = pendingApprovals.Count });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting pending count");
+                return Json(new { count = 0 });
+            }
+        }
+
         private async Task<List<ApprovalViewModel>> GetAllPendingApprovals()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -181,6 +196,12 @@ namespace IMS.Web.Controllers
                     // Get variance value for priority
                     decimal varianceValue = Math.Abs(inventory.TotalVarianceValue ?? 0);
 
+                    // Get initiator user details
+                    var initiatorUser = await _userManager.FindByIdAsync(inventory.InitiatedBy);
+                    string initiatorName = initiatorUser?.FullName ?? initiatorUser?.UserName ?? "Unknown";
+                    var initiatorRoles = initiatorUser != null ? await _userManager.GetRolesAsync(initiatorUser) : new List<string>();
+                    string initiatorRole = initiatorRoles.FirstOrDefault() ?? "User";
+
                     pendingApprovals.Add(new ApprovalViewModel
                     {
                         Id = inventory.Id,
@@ -188,8 +209,8 @@ namespace IMS.Web.Controllers
                         EntityId = inventory.Id,
                         Amount = varianceValue,
                         RequestedBy = inventory.InitiatedBy,
-                        RequestedByName = inventory.InitiatedBy,
-                        RequestedByRole = "Store Keeper",
+                        RequestedByName = initiatorName,
+                        RequestedByRole = initiatorRole,
                         RequestedDate = inventory.InitiatedDate ?? inventory.CountDate,
                         Priority = varianceValue > 50000 ? "High" : "Normal",
                         Description = inventory.ReferenceNumber ?? $"PI-{inventory.Id:D6}",

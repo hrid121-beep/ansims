@@ -1609,36 +1609,26 @@
         // Update pending counts function
         function updatePendingCounts() {
             $.ajax({
-                url: '/api/dashboard/pendingcounts',
+                url: '@Url.Action("GetPendingCount", "Approval")',
                 type: 'GET',
                 success: function(data) {
-                    // Update individual counts
-                    $('#pendingRequisitions').text(data.requisitions || 0);
-                    $('#pendingPurchases').text(data.purchases || 0);
-                    $('#pendingIssues').text(data.issues || 0);
-                    $('#pendingAdjustments').text(data.adjustments || 0);
-                    $('#pendingTransfers').text(data.transfers || 0);
-                    $('#pendingAllotments').text(data.allotments || 0);
-                    $('#pendingStockEntries').text(data.stockEntries || 0);
+                    var count = data.count || 0;
 
-                    // Calculate and update total
-                    var total = (data.requisitions || 0) +
-                               (data.purchases || 0) +
-                               (data.issues || 0) +
-                               (data.adjustments || 0) +
-                               (data.transfers || 0) +
-                               (data.allotments || 0) +
-                               (data.stockEntries || 0);
-
-                    if (total > 0) {
-                        $('#totalPendingCount').text(total).show();
-                        $('#approvalBadge').text(total).show();
-                        $('#pendingCount').text(total).show();
+                    if (count > 0) {
+                        $('#totalPendingCount').text(count).show();
+                        $('#approvalBadge').text(count).show();
+                        $('#pendingCount').text(count).show();
                     } else {
                         $('#totalPendingCount').hide();
                         $('#approvalBadge').hide();
                         $('#pendingCount').hide();
                     }
+                },
+                error: function() {
+                    // Silently fail - don't show errors for counts
+                    $('#totalPendingCount').hide();
+                    $('#approvalBadge').hide();
+                    $('#pendingCount').hide();
                 }
             });
         }
