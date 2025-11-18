@@ -1285,26 +1285,37 @@ namespace IMS.Application.Services
             if (inventory == null)
                 throw new InvalidOperationException("Physical inventory not found");
 
-            var varianceItems = inventory.Details
+            var allDetails = inventory.Details.ToList();
+
+            var varianceItems = allDetails
                 .Where(d => d.Variance != 0)
                 .Select(d => new VarianceItemDto
                 {
                     ItemId = d.ItemId,
-                    ItemName = d.Item.Name,
+                    ItemName = d.Item?.Name ?? "Unknown",
                     SystemQuantity = d.SystemQuantity,
                     PhysicalQuantity = d.PhysicalQuantity,
                     Variance = d.Variance,
                     VarianceValue = d.VarianceValue ?? 0
                 }).ToList();
 
+            // Calculate positive and negative variances
+            var positiveVariance = allDetails.Where(d => d.Variance > 0).Sum(d => d.Variance);
+            var negativeVariance = Math.Abs(allDetails.Where(d => d.Variance < 0).Sum(d => d.Variance));
+
             return new VarianceAnalysisDto
             {
                 InventoryId = inventoryId,
+                TotalItems = allDetails.Count,
+                ItemsWithVariance = varianceItems,
                 TotalSystemQuantity = inventory.TotalSystemQuantity ?? 0,
                 TotalPhysicalQuantity = inventory.TotalPhysicalQuantity ?? 0,
                 TotalVariance = inventory.TotalVariance ?? 0,
                 TotalVarianceValue = inventory.TotalVarianceValue ?? 0,
-                ItemsWithVariance = varianceItems  // Fix: Assign to correct property
+                TotalPositiveVariance = positiveVariance,
+                TotalNegativeVariance = negativeVariance,
+                ItemsWithPositiveVariance = allDetails.Count(d => d.Variance > 0),
+                ItemsWithNegativeVariance = allDetails.Count(d => d.Variance < 0)
             };
         }
         public async Task RecountItemsAsync(int inventoryId, List<int> itemIds, string requestedBy)
