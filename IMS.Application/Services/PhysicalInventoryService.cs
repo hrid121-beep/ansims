@@ -1200,55 +1200,38 @@ namespace IMS.Application.Services
                 if (inventory == null)
                     throw new InvalidOperationException("Physical inventory not found");
 
-                // Check approval hierarchy
-                var currentApprovalLevel = await _approvalService.GetCurrentApprovalLevelAsync(
-                    "PhysicalInventory", inventoryId);
+                // Physical Inventory uses direct approval (no multi-level workflow)
+                // Only authorized roles can approve
+                // Authorization is already handled by controller role check
 
-                var canApprove = await _approvalService.CanUserApproveAsync(
-                    approvedBy, currentApprovalLevel);
+                // Update status to Approved
+                inventory.Status = PhysicalInventoryStatus.Approved;
+                inventory.ApprovedBy = approvedBy;
+                inventory.ApprovedDate = DateTime.Now;
+                inventory.ApprovalRemarks = approvalRemarks;
 
-                if (!canApprove)
-                    throw new InvalidOperationException("User not authorized to approve at this level");
+                // Generate government audit report
+                await GenerateAuditReportAsync(inventory);
 
-                // Record approval
-                await _approvalService.ApproveAsync(
-                    "PhysicalInventory", inventoryId, approvedBy, approvalRemarks);
-
-                // Check if all approvals are complete
-                var allApproved = await _approvalService.AreAllApprovalsCompleteAsync(
-                    "PhysicalInventory", inventoryId);
-
-                if (allApproved)
+                // Auto-adjust stock if requested and authorized
+                if (autoAdjust && await CanAutoAdjustAsync(inventory))
                 {
-                    inventory.Status = PhysicalInventoryStatus.Approved;
-                    inventory.ApprovedBy = approvedBy;
-                    inventory.ApprovedDate = DateTime.Now;
-                    inventory.ApprovalRemarks = approvalRemarks;
-
-                    // Generate government audit report
-                    await GenerateAuditReportAsync(inventory);
-
-                    // Auto-adjust stock if requested and authorized
-                    if (autoAdjust && await CanAutoAdjustAsync(inventory))
-                    {
-                        await AdjustStockWithAuditTrailAsync(inventory);
-                        inventory.AdjustmentStatus = AdjustmentStatus.Completed;
-                        inventory.AdjustedDate = DateTime.Now;
-                    }
-
-                    // Notify higher authorities
-                    await NotifyHigherAuthoritiesAsync(inventory);
+                    await AdjustStockWithAuditTrailAsync(inventory);
+                    inventory.AdjustmentStatus = AdjustmentStatus.Completed;
+                    inventory.AdjustedDate = DateTime.Now;
                 }
-                else
-                {
-                    inventory.Status = PhysicalInventoryStatus.UnderReview;
 
-                    // Notify next approver
-                    await NotifyNextApproverAsync(inventory);
-                }
+                // Notify higher authorities
+                await NotifyHigherAuthoritiesAsync(inventory);
 
                 _unitOfWork.PhysicalInventories.Update(inventory);
                 await _unitOfWork.CompleteAsync();
+
+                // Log activity
+                await _activityLogService.LogActivityAsync(
+                    "Physical Inventory", inventoryId, "Approve",
+                    $"Physical inventory {inventory.ReferenceNumber} approved by {approvedBy}",
+                    approvedBy);
 
                 return MapToDto(inventory);
             }
@@ -1273,6 +1256,12 @@ namespace IMS.Application.Services
 
             _unitOfWork.PhysicalInventories.Update(inventory);
             await _unitOfWork.CompleteAsync();
+
+            // Log activity
+            await _activityLogService.LogActivityAsync(
+                "Physical Inventory", inventoryId, "Reject",
+                $"Physical inventory {inventory.ReferenceNumber} rejected by {rejectedBy}. Reason: {rejectionReason}",
+                rejectedBy);
 
             await NotifyRelevantOfficersAsync(inventory, "rejected");
 
